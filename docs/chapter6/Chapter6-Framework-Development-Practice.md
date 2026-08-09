@@ -1,121 +1,121 @@
-# Chapter 6 Framework Development Practice
+# Глава 6. Практика работы с фреймворками
 
-In Chapter 4, we implemented the core workflows of several agents such as ReAct, Plan-and-Solve, and Reflection by writing native code. This process gave us an understanding of the internal execution logic of agents. Subsequently, in Chapter 5, we switched to the "user" perspective and experienced the convenience and efficiency brought by low-code platforms.
+В главе 4 мы реализовали основные рабочие процессы нескольких агентов, таких как ReAct, Plan-and-Solve и Reflection, написав собственный код. Этот процесс дал нам понимание внутренней логики выполнения агентов. Впоследствии, в главе 5, мы перешли к «пользовательской» перспективе и ощутили удобство и эффективность, обеспечиваемые платформами с низким кодированием.
 
-The goal of this chapter is to explore how to use some mainstream **agent frameworks** in the industry to efficiently and standardly build reliable agent applications. We will first overview the current mainstream agent frameworks on the market, and then experience the framework-driven development model through a complete practical case for several representative frameworks.
+Цель этой главы — изучить, как использовать некоторые распространенные в отрасли **агентные структуры** для эффективного и стандартного создания надежных агентских приложений. Сначала мы рассмотрим основные платформы агентов, существующие на рынке, а затем испытаем модель разработки на основе платформы на полном практическом примере для нескольких репрезентативных платформ.
 
-## 6.1 From Manual Implementation to Framework Development
+## 6.1 От ручной реализации к разработке платформы
 
-Moving from writing one-time scripts to using a mature framework is an important mental leap in the field of software engineering. The code we wrote in Chapter 4 was primarily for teaching and understanding purposes. They can complete specific tasks well, but if we want to use them to build multiple, different types of agents with complex logic, we will soon encounter bottlenecks.
+Переход от написания одноразовых скриптов к использованию зрелой среды — важный умственный скачок в области разработки программного обеспечения. Код, который мы написали в главе 4, предназначался в первую очередь для целей обучения и понимания. Они могут хорошо выполнять конкретные задачи, но если мы захотим использовать их для создания нескольких различных типов агентов со сложной логикой, мы вскоре столкнемся с узкими местами.
 
-The essence of a framework is to provide a set of validated "specifications." It abstracts and encapsulates all the repetitive work common to all agents (such as main loops, state management, tool invocation, logging, etc.), allowing us to focus on their unique business logic when building new agents, rather than general underlying implementations.
+Суть структуры заключается в предоставлении набора проверенных «спецификаций». Он абстрагирует и инкапсулирует всю повторяющуюся работу, общую для всех агентов (например, основные циклы, управление состоянием, вызов инструментов, ведение журнала и т. д.), позволяя нам сосредоточиться на их уникальной бизнес-логике при создании новых агентов, а не на общих базовых реализациях.
 
-### 6.1.1 Why Agent Frameworks Are Needed
+### 6.1.1 Зачем нужны агентские платформы
 
-Before we start the practical work, we first need to clarify why we should use frameworks. Compared to directly writing independent agent scripts, the value of using frameworks is mainly reflected in the following aspects:
+Прежде чем мы приступим к практической работе, нам сначала нужно прояснить, почему нам следует использовать фреймворки. По сравнению с прямым написанием независимых скриптов агентов, ценность использования фреймворков в основном отражается в следующих аспектах:
 
-1. **Improve Code Reuse and Development Efficiency**: This is the most direct value. A good framework will provide a general `Agent` base class or executor that encapsulates the core loop of agent operation (Agent Loop). Whether it's ReAct or Plan-and-Solve, they can be quickly built based on standard components provided by the framework, thus avoiding repetitive work.
-2. **Achieve Decoupling and Extensibility of Core Components**: A robust agent system should consist of multiple loosely coupled modules. The framework's design will force us to separate different concerns:
-   - **Model Layer**: Responsible for interacting with large language models, can easily replace different models (OpenAI, Anthropic, local models).
-   - **Tool Layer**: Provides standardized tool definition, registration, and execution interfaces; adding new tools will not affect other code.
-   - **Memory Layer**: Handles short-term and long-term memory, can switch different memory strategies according to needs (such as sliding window, summary memory). This modular design makes the entire system highly extensible, making it simple to replace or upgrade any component.
-3. **Standardize Complex State Management**: The `Memory` class we implemented in `ReflectionAgent` is just a simple start. In real, long-running agent applications, state management is a huge challenge that needs to handle context window limitations, historical information persistence, multi-turn conversation state tracking, and other issues. A framework can provide a powerful and general state management mechanism, so developers don't have to deal with these complex issues every time.
-4. **Simplify Observability and Debugging Process**: When agent behavior becomes complex, understanding its decision-making process becomes crucial. A well-designed framework can have built-in powerful observability capabilities. For example, by introducing an event callback mechanism (Callbacks), we can automatically trigger logging or data reporting at key nodes in the agent lifecycle (such as `on_llm_start`, `on_tool_end`, `on_agent_finish`), making it easy to track and debug the complete running trajectory of the agent. This is far more efficient and systematic than manually adding `print` statements in code.
+1. **Повышение эффективности повторного использования кода и разработки**. Это самая прямая ценность. Хорошая среда предоставит общий базовый класс или исполнитель «Агент», который инкапсулирует основной цикл работы агента (цикл агента). Будь то ReAct или Plan-and-Solve, их можно быстро построить на основе стандартных компонентов, предоставляемых платформой, что позволяет избежать повторяющейся работы.
+2. **Достичь разделения и расширяемости основных компонентов**. Надежная система агентов должна состоять из нескольких слабосвязанных модулей. Структура структуры заставит нас разделить различные задачи:
+   - **Уровень модели**: отвечает за взаимодействие с большими языковыми моделями, может легко заменять различные модели (OpenAI, Anthropic, локальные модели).
+   - **Уровень инструментов**: обеспечивает стандартизированные интерфейсы определения, регистрации и выполнения инструментов; добавление новых инструментов не повлияет на другой код.
+   - **Уровень памяти**: управляет кратковременной и долговременной памятью, может переключать различные стратегии памяти в соответствии с потребностями (например, скользящее окно, сводная память). Модульная конструкция делает всю систему легко расширяемой, что упрощает замену или модернизацию любого компонента.
+3. **Стандартизация управления сложными состояниями**. Класс Memory, который мы реализовали в ReflectionAgent, — это всего лишь начало. В реальных, долго работающих агентских приложениях управление состоянием представляет собой огромную задачу, требующую решения ограничений контекстных окон, сохранения исторической информации, отслеживания состояния многоэтапного диалога и других проблем. Фреймворк может предоставить мощный и универсальный механизм управления состоянием, поэтому разработчикам не придется каждый раз сталкиваться с этими сложными проблемами.
+4. **Упрощение процесса наблюдения и отладки**. Когда поведение агента становится сложным, понимание процесса принятия им решений становится критически важным. Хорошо спроектированная платформа может иметь встроенные мощные возможности наблюдения. Например, вводя механизм обратного вызова событий (обратные вызовы), мы можем автоматически запускать ведение журнала или отчетность по данным на ключевых узлах жизненного цикла агента (таких как on_llm_start, on_tool_end, on_agent_finish), что упрощает отслеживание и отладку полной траектории работы агента. Это гораздо более эффективно и систематично, чем вручную добавлять операторы print в код.
 
-Therefore, moving from manual implementation to framework development is not only a change in code organization, but also the necessary path to building complex, reliable, and maintainable agent applications.
+Таким образом, переход от ручной реализации к разработке инфраструктуры — это не только изменение организации кода, но и необходимый путь к созданию сложных, надежных и удобных в обслуживании приложений-агентов.
 
-### 6.1.2 Selection and Comparison of Mainstream Frameworks
+### 6.1.2 Выбор и сравнение основных платформ
 
-The ecosystem of agent frameworks is developing at an unprecedented speed. If LangChain and LlamaIndex defined the paradigm of the first generation of general LLM application frameworks, then the new generation of frameworks is more focused on solving deep challenges in specific domains, especially **Multi-Agent Collaboration** and **Complex Workflow Control**.
+Экосистема агентных фреймворков развивается с беспрецедентной скоростью. Если LangChain и LlamaIndex определили парадигму первого поколения общих инфраструктур приложений LLM, то новое поколение инфраструктур больше ориентировано на решение глубоких задач в конкретных областях, особенно **Мультиагентное сотрудничество** и **Комплексное управление рабочими процессами**.
 
-In the subsequent practical work of this chapter, we will focus on four frameworks that are highly representative in these cutting-edge fields: AutoGen, AgentScope, CAMEL, and LangGraph. Their design philosophies are different, representing different technical paths for implementing complex agent systems, as shown in Table 6.1.
+В последующей практической работе в этой главе мы сосредоточимся на четырех платформах, которые весьма репрезентативны в этих передовых областях: AutoGen, AgentScope, CAMEL и LangGraph. Их философия проектирования различна и представляет собой разные технические пути реализации сложных агентных систем, как показано в Таблице 6.1.
 
 <div align="center">
-  <p>Table 6.1 Comparison of Four Agent Frameworks</p>
+  <p>Таблица 6.1. Сравнение четырех агентных платформ</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/6-figures/01.png" alt="" width="90%"/>
 </div>
 
 
-- **AutoGen**: The core idea of AutoGen is to achieve collaboration through conversation<sup>[1]</sup>. It abstracts multi-agent systems as a group chat composed of multiple "conversable" agents. Developers can define different roles (such as `Coder`, `ProductManager`, `Tester`) and set interaction rules between them (for example, after `Coder` finishes writing code, `Tester` automatically takes over). The task-solving process is the process where these agents continuously converse, collaborate, and iterate in the group chat through automated message passing until the final goal is achieved.
-- **AgentScope**: AgentScope is a fully functional development platform designed specifically for multi-agent applications<sup>[2]</sup>. Its core features are **ease of use** and **engineering**. It provides a very friendly programming interface that allows developers to easily define agents, build communication networks, and manage the entire application lifecycle. Its built-in **message passing mechanism** and support for distributed deployment make it very suitable for building and operating complex, large-scale multi-agent systems.
-- **CAMEL**: CAMEL provides a novel collaboration method called **Role-Playing**<sup>[3]</sup>. Its core concept is that we only need to set the respective roles and common task goals for two agents (for example, `AI Researcher` and `Python Programmer`), and they can autonomously conduct multiple rounds of dialogue under the guidance of "**Inception Prompting**," inspiring and cooperating with each other to complete tasks together. It greatly reduces the complexity of designing multi-agent dialogue processes.
-- **LangGraph**: As an extension of the LangChain ecosystem, LangGraph takes a different approach by modeling the agent's execution process as a **Graph**<sup>[4]</sup>. In traditional chain structures, information can only flow in one direction. LangGraph defines each operation (such as calling LLM, executing tools) as a **Node** in the graph and uses **Edges** to define the jump logic between nodes. This design naturally supports **Cycles**, making it exceptionally simple and intuitive to implement complex workflows such as Reflection that involve iteration, correction, and self-reflection.
+- **AutoGen**. Основная идея AutoGen — обеспечить сотрудничество посредством диалога<sup>[1]</sup>. Он абстрагирует мультиагентные системы как групповой чат, состоящий из нескольких «общающихся» агентов. Разработчики могут определять различные роли (например, «Кодер», «Менеджер продукта», «Тестер») и устанавливать правила взаимодействия между ними (например, после того, как «Кодер» заканчивает писать код, «Тестер» автоматически берет на себя управление). Процесс решения задач — это процесс, в котором эти агенты постоянно общаются, сотрудничают и повторяют действия в групповом чате посредством автоматической передачи сообщений до тех пор, пока не будет достигнута конечная цель.
+- **AgentScope**: AgentScope — это полнофункциональная платформа разработки, разработанная специально для мультиагентных приложений<sup>[2]</sup>. Его основными особенностями являются **простота использования** и **инжиниринг**. Он предоставляет очень удобный интерфейс программирования, который позволяет разработчикам легко определять агентов, строить сети связи и управлять всем жизненным циклом приложения. Встроенный **механизм передачи сообщений** и поддержка распределенного развертывания делают его очень подходящим для создания и эксплуатации сложных крупномасштабных многоагентных систем.
+- **CAMEL**: CAMEL предлагает новый метод совместной работы под названием **Ролевая игра**<sup>[3]</sup>. Его основная концепция заключается в том, что нам нужно всего лишь установить соответствующие роли и общие цели задач для двух агентов (например, «Исследователь искусственного интеллекта» и «Программист Python»), и они могут автономно проводить несколько раундов диалога под руководством «**Начальные подсказки**», вдохновляя и сотрудничая друг с другом для совместного выполнения задач. Это значительно упрощает разработку процессов многоагентного диалога.
+- **LangGraph**: Являясь расширением экосистемы LangChain, LangGraph использует другой подход, моделируя процесс выполнения агента как **Graph**<sup>[4]</sup>. В традиционных цепных структурах информация может течь только в одном направлении. LangGraph определяет каждую операцию (например, вызов LLM, выполнение инструментов) как **Node** в графе и использует **Edges** для определения логики перехода между узлами. Этот дизайн естественным образом поддерживает **Циклы**, что делает его чрезвычайно простым и интуитивно понятным для реализации сложных рабочих процессов, таких как рефлексия, которые включают итерацию, коррекцию и саморефлексию.
 
-In the following sections, we will deeply experience the framework-driven development model through a complete practical case for each of these four frameworks. **Please note** that all demonstrated project source files will be placed in the `code` folder, and only the principle part will be explained in the main text.
+В следующих разделах мы подробно рассмотрим модель разработки на основе платформы, представив полный практический пример каждой из этих четырех платформ. **Обратите внимание**, что все демонстрируемые исходные файлы проекта будут помещены в папку`code`папку, и в основном тексте будет объяснена только основная часть.
 
-## 6.2 Framework One: AutoGen
+## 6.2 Платформа первая: AutoGen
 
-As mentioned earlier, AutoGen's design philosophy is rooted in "driving collaboration through conversation." It cleverly maps complex task-solving processes to a series of automated conversations between agents with different roles. Based on this core concept, the AutoGen framework continues to evolve. We will use version `0.7.4` as an example because it is the latest version to date and represents an important architectural refactoring, transitioning from class inheritance design to a more flexible compositional architecture. To deeply understand and apply this framework, we first need to explain its most core constituent elements and underlying conversation interaction mechanisms.
+Как упоминалось ранее, философия дизайна AutoGen основана на «обеспечении сотрудничества посредством диалога». Он умело отображает сложные процессы решения задач в серии автоматических разговоров между агентами с разными ролями. Основываясь на этой основной концепции, платформа AutoGen продолжает развиваться. Мы будем использовать версию`0.7.4`в качестве примера, потому что это последняя версия на сегодняшний день и представляет собой важный архитектурный рефакторинг, переход от проектирования наследования классов к более гибкой композиционной архитектуре. Чтобы глубже понять и применить эту структуру, нам сначала необходимо объяснить ее наиболее основные составляющие элементы и основные механизмы взаимодействия в диалоге.
 
-### 6.2.1 Core Mechanisms of AutoGen
+### 6.2.1 Основные механизмы AutoGen
 
-The release of version `0.7.4` is an important milestone in AutoGen's development, marking a fundamental innovation in the framework's underlying design. This update is not a simple addition of features but a rethinking of the overall architecture, aimed at improving the framework's modularity, concurrency performance, and developer experience.
+Выпуск версии`0.7.4`является важной вехой в развитии AutoGen, знаменующей фундаментальное новшество в базовой конструкции платформы. Это обновление представляет собой не простое добавление функций, а переосмысление общей архитектуры, направленное на улучшение модульности платформы, производительности параллелизма и удобства разработки.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/6-figures/02.png" alt="" width="90%"/>
-  <p>Figure 6.1 AutoGen Architecture Diagram</p>
+  <p>Рисунок 6.1 Схема архитектуры AutoGen</p>
 </div>
 
-(1) Evolution of Framework Structure
+(1) Эволюция рамочной структуры
 
-As shown in Figure 6.1, the most significant change in the new architecture is the introduction of clear layering and asynchronous-first design philosophy.
+Как показано на рис. 6.1, наиболее значительным изменением в новой архитектуре является введение четкого многоуровневого подхода и философии проектирования, ориентированной на асинхронность.
 
-- **Layered Design:** The framework is split into two core modules:
-  - `autogen-core`: As the underlying foundation of the framework, it encapsulates core functions such as interaction with language models and message passing. Its existence ensures the stability and future extensibility of the framework.
-  - `autogen-agentchat`: Built on top of `core`, it provides high-level interfaces for developing conversational agent applications, simplifying the development process of multi-agent applications. This layering strategy makes each component's responsibilities clear and reduces system coupling.
-- **Asynchronous First:** The new architecture fully transitions to asynchronous programming (`async/await`). In multi-agent collaboration scenarios, network requests (such as calling LLM APIs) are the main time-consuming operations. Asynchronous mode allows the system to handle other tasks while waiting for one agent's response, thus avoiding thread blocking and significantly improving concurrent processing capabilities and system resource utilization efficiency.
+- **Многоуровневый дизайн.** Платформа разделена на два основных модуля:
+  - `autogen-core`: являясь базовой основой платформы, он инкапсулирует основные функции, такие как взаимодействие с языковыми моделями и передачу сообщений. Его существование обеспечивает стабильность и будущую расширяемость структуры.
+  - `autogen-agentchat`: построенный на базе `core`, он предоставляет высокоуровневые интерфейсы для разработки диалоговых приложений-агентов, упрощая процесс разработки многоагентных приложений. Эта стратегия многоуровневого распределения делает ясными обязанности каждого компонента и уменьшает связанность системы.
+- **Асинхронность прежде всего:** Новая архитектура полностью переходит на асинхронное программирование («async/await»). В сценариях совместной работы нескольких агентов сетевые запросы (например, вызов API-интерфейсов LLM) являются основными трудоемкими операциями. Асинхронный режим позволяет системе выполнять другие задачи, ожидая ответа одного агента, что позволяет избежать блокировки потоков и значительно улучшить возможности параллельной обработки и эффективность использования системных ресурсов.
 
-(2) Core Agent Components
+(2) Основные компоненты агента
 
-Agents are the basic units for executing tasks. In version `0.7.4`, agent design is more focused and modular.
+Агенты являются основными единицами выполнения задач. В версии`0.7.4`, конструкция агента более целенаправленная и модульная.
 
-- **AssistantAgent (Assistant Agent):** This is the main task solver, whose core is encapsulating a large language model (LLM). Its responsibility is to generate logical and knowledgeable replies based on conversation history, such as proposing plans, writing articles, or writing code. Through different system messages (System Message), we can assign it different "expert" roles.
-- **UserProxyAgent (User Proxy Agent):** This is a functionally unique component in AutoGen. It plays a dual role: it is both the "spokesperson" for human users, responsible for initiating tasks and conveying intentions; and a reliable "executor" that can be configured to execute code or call tools and feed results back to other agents. This design clearly distinguishes "thinking" (completed by `AssistantAgent`) from "action."
+- **AssistantAgent (Агент-помощник):** Это основной решатель задач, ядро ​​которого инкапсулирует большую языковую модель (LLM). Его обязанность — генерировать логичные и содержательные ответы на основе истории разговоров, например, предлагать планы, писать статьи или писать код. С помощью различных системных сообщений (System Message) мы можем назначать ему разные «экспертные» роли.
+- **UserProxyAgent (пользовательский прокси-агент):** Это функционально уникальный компонент AutoGen. Он играет двойную роль: он одновременно является «представителем» пользователей-людей, ответственным за инициирование задач и передачу намерений; и надежный «исполнитель», который можно настроить для выполнения кода или вызова инструментов и передачи результатов другим агентам. Этот дизайн четко отличает «мышление» (выполняемое `AssistantAgent`) от «действия».
 
-(3) From GroupChatManager to Team
+(3) От GroupChatManager к команде
 
-When tasks require multiple agents to collaborate, a mechanism is needed to coordinate the conversation process. In earlier versions, `GroupChatManager` assumed this responsibility. In the new architecture, a more flexible `Team` or group chat concept is introduced, such as `RoundRobinGroupChat`.
+Когда задачи требуют совместной работы нескольких агентов, необходим механизм для координации процесса общения. В более ранних версиях`GroupChatManager`взял на себя эту ответственность. В новой архитектуре более гибкая`Team`или представлена ​​концепция группового чата, например`RoundRobinGroupChat`.
 
-- **Round Robin Group Chat (RoundRobinGroupChat):** This is a clear, sequential conversation coordination mechanism. It will have participating agents speak in turn according to a predefined order. This mode is very suitable for tasks with fixed processes, such as a typical software development process: the product manager first proposes requirements, then the engineer writes code, and finally the code reviewer checks.
-- **Workflow:**
-  1. First, create a `RoundRobinGroupChat` instance and add all agents participating in collaboration (such as product managers, engineers, etc.) to it.
-  2. When a task starts, the group chat will activate the corresponding agents in turn according to the preset order.
-  3. The selected agent responds based on the current conversation context.
-  4. The group chat adds the new reply to the conversation history and activates the next agent.
-  5. This process continues until the maximum number of conversation rounds is reached or preset termination conditions are met.
+- **Групповой чат по круговому принципу (RoundRobinGroupChat):** Это четкий, последовательный механизм координации разговоров. Участвующие агенты будут говорить по очереди в заранее определенном порядке. Этот режим очень подходит для задач с фиксированными процессами, таких как типичный процесс разработки программного обеспечения: менеджер по продукту сначала предлагает требования, затем инженер пишет код и, наконец, проверяющий код.
+- **Рабочий процесс:**
+  1. Сначала создайте экземпляр RoundRobinGroupChat и добавьте в него всех агентов, участвующих в совместной работе (например, менеджеров по продуктам, инженеров и т. д.).
+  2. При запуске задания групповой чат поочередно активирует соответствующих агентов в заданном порядке.
+  3. Выбранный агент отвечает в зависимости от текущего контекста разговора.
+  4. Групповой чат добавляет новый ответ в историю разговоров и активирует следующего агента.
+  5. Этот процесс продолжается до тех пор, пока не будет достигнуто максимальное количество раундов разговора или не будут выполнены заданные условия завершения.
 
-In this way, AutoGen simplifies complex collaborative relationships into an automated "round table meeting" with a clear process that is easy to manage. Developers only need to define the role and speaking order of each team member, and the rest of the collaboration process can be autonomously driven by the group chat mechanism.
+Таким образом, AutoGen упрощает сложные отношения сотрудничества до автоматизированного «совещания за круглым столом» с четким процессом, которым легко управлять. Разработчикам нужно только определить роль и порядок выступления каждого члена команды, а остальная часть процесса совместной работы может автономно управляться механизмом группового чата.
 
-In the next section, we will personally experience how to define agents with different roles in the new architecture and organize them in a group chat coordinated by `RoundRobinGroupChat` to collaboratively complete a real programming task by building an instance of a simulated software development team.
+В следующем разделе мы лично испытаем, как определять агентов с разными ролями в новой архитектуре и организовывать их в групповой чат, координируемый`RoundRobinGroupChat`совместно выполнить реальную задачу программирования, создав смоделированную команду разработчиков программного обеспечения.
 
-### 6.2.2 Software Development Team
+### 6.2.2 Команда разработчиков программного обеспечения
 
-After understanding AutoGen's core components and conversation mechanisms, this section will specifically demonstrate how to apply these new features through a complete practical case. We will build a simulated software development team composed of multiple agents with different professional skills, who will collaborate to complete a real software development task.
+После понимания основных компонентов и механизмов взаимодействия AutoGen в этом разделе будет конкретно продемонстрировано, как применять эти новые функции на полном практическом примере. Мы создадим смоделированную команду разработчиков программного обеспечения, состоящую из нескольких агентов с разными профессиональными навыками, которые будут сотрудничать для выполнения реальной задачи по разработке программного обеспечения.
 
-(1) Business Objective
+(1) Бизнес-цель
 
-Our goal is to develop a web application with a clear function: **display the current price of Bitcoin in real-time**. Although this task is small, it completely covers typical stages of software development: from requirement analysis, technology selection, coding implementation to code review and final testing. This makes it an ideal scenario for testing AutoGen's automated collaboration process.
+Наша цель — разработать веб-приложение с четкой функцией: **отображать текущую цену биткойнов в режиме реального времени**. Хоть эта задача и небольшая, она полностью охватывает типичные этапы разработки ПО: от анализа требований, выбора технологии, реализации кода до проверки кода и финального тестирования. Это делает его идеальным сценарием для тестирования автоматизированного процесса совместной работы AutoGen.
 
-(2) Agent Team Roles
+(2) Роли в команде агентов
 
-To simulate a real software development process, we designed four agents with distinct responsibilities:
+Чтобы смоделировать реальный процесс разработки программного обеспечения, мы разработали четырех агентов с различными обязанностями:
 
-- **ProductManager (Product Manager):** Responsible for transforming users' vague requirements into clear, executable development plans.
-- **Engineer:** Based on the development plan, responsible for writing specific application code.
-- **CodeReviewer (Code Reviewer):** Responsible for reviewing code submitted by engineers to ensure its quality, readability, and robustness.
-- **UserProxy (User Proxy):** Represents the end user, initiates the initial task, and is responsible for executing and verifying the final delivered code.
+- **Менеджер продукта (менеджер по продукту):** отвечает за преобразование расплывчатых требований пользователей в четкие и выполнимые планы разработки.
+- **Инженер**: в зависимости от плана разработки отвечает за написание конкретного кода приложения.
+- **CodeReviewer (Проверщик кода):** отвечает за проверку кода, представленного инженерами, на предмет его качества, читаемости и надежности.
+- **UserProxy (прокси-сервер пользователя):** представляет конечного пользователя, инициирует начальную задачу и отвечает за выполнение и проверку окончательного доставленного кода.
 
-This role division is a key step in multi-agent system design, breaking down a complex task into multiple subtasks handled by domain "experts."
+Такое разделение ролей является ключевым шагом в проектировании мультиагентной системы, поскольку сложная задача разбивается на несколько подзадач, выполняемых «экспертами» предметной области.
 
-### 6.2.3 Core Code Implementation
+### 6.2.3 Реализация основного кода
 
-Below, we will analyze the core code of this automated team step by step.
+Ниже мы шаг за шагом проанализируем основной код этой автоматизированной команды.
 
-(1) Model Client Configuration
+(1) Модельная конфигурация клиента
 
-All LLM-based agents need a model client to interact with language models. AutoGen `0.7.4` provides a standardized `OpenAIChatCompletionClient` that can conveniently interface with any model service compatible with the OpenAI API specification (including OpenAI official service, Azure OpenAI, and local model services such as Ollama, etc.).
+Всем агентам на базе LLM необходим модельный клиент для взаимодействия с языковыми моделями. Автогенерация`0.7.4`обеспечивает стандартизированный`OpenAIChatCompletionClient`который может удобно взаимодействовать с любым сервисом модели, совместимым со спецификацией API OpenAI (включая официальный сервис OpenAI, Azure OpenAI и локальные сервисы моделей, такие как Ollama и т. д.).
 
-We create and configure the model client through an independent function and manage API Key and service address through environment variables. This is a good engineering practice that enhances code flexibility and security.
+Мы создаем и настраиваем клиент модели с помощью независимой функции и управляем ключом API и адресом службы с помощью переменных среды. Это хорошая инженерная практика, повышающая гибкость и безопасность кода.
 
 ```python
 from autogen_ext.models.openai import OpenAIChatCompletionClient
@@ -129,13 +129,13 @@ def create_openai_model_client():
     )
 ```
 
-(2) Definition of Agent Roles
+(2) Определение ролей агентов
 
-The core of defining agents lies in writing high-quality system messages (System Message). System messages are like setting "behavioral guidelines" and "professional knowledge bases" for agents, precisely specifying the agent's role, responsibilities, workflow, and even the way it interacts with other agents. A well-designed system message is key to ensuring that multi-agent systems can collaborate efficiently and accurately. In our software development team, we created an independent function for each role to encapsulate its definition.
+Суть определения агентов заключается в написании высококачественных системных сообщений (System Message). Системные сообщения подобны установке «рекомендаций по поведению» и «баз профессиональных знаний» для агентов, точно определяющих роль агента, обязанности, рабочий процесс и даже способ его взаимодействия с другими агентами. Хорошо продуманное системное сообщение является ключом к обеспечению эффективного и точного взаимодействия мультиагентных систем. В нашей команде разработчиков программного обеспечения мы создали независимую функцию для каждой роли, чтобы инкапсулировать ее определение.
 
-**Product Manager (ProductManager)**
+**Менеджер по продукту (ProductManager)**
 
-The product manager is responsible for initiating the entire process. Its system message not only defines its responsibilities but also standardizes the structure of its output and includes clear instructions to guide the conversation to the next stage (engineer).
+Менеджер по продукту отвечает за инициирование всего процесса. Его системное сообщение не только определяет его обязанности, но также стандартизирует структуру его результатов и включает четкие инструкции, которые помогут перевести разговор на следующий этап (инженер).
 
 ```python
 def create_product_manager(model_client):
@@ -164,9 +164,9 @@ Please respond concisely and clearly, and say "Please engineer start implementat
     )
 ```
 
-**Engineer**
+**Инженер**
 
-The engineer's system message focuses on technical implementation. It lists the engineer's technical expertise and specifies the specific action steps after receiving a task, also including instructions to guide the process to the code reviewer.
+Системное послание инженера сосредоточено на технической реализации. В нем перечислены технические знания инженера и указаны конкретные действия после получения задачи, а также инструкции по управлению процессом для проверяющего код.
 
 ```python
 def create_engineer(model_client):
@@ -195,9 +195,9 @@ Please provide complete runnable code and say "Please code reviewer check" after
     )
 ```
 
-**Code Reviewer (CodeReviewer)**
+**Проверщик кода (CodeReviewer)**
 
-The code reviewer's definition focuses on code quality, security, and standardization. Its system message details the review focus and process, ensuring a quality checkpoint before code delivery.
+В определении рецензента кода основное внимание уделяется качеству, безопасности и стандартизации кода. Его системное сообщение подробно описывает фокус и процесс проверки, обеспечивая контрольную точку качества перед доставкой кода.
 
 ```python
 def create_code_reviewer(model_client):
@@ -226,9 +226,9 @@ Please provide specific review comments and say "Code review completed, please u
     )
 ```
 
-**User Proxy (UserProxy)**
+**Прокси пользователя (Прокси пользователя)**
 
-`UserProxyAgent` is a special agent that does not rely on LLM for replies but acts as a user's proxy in the system. Its `description` field clearly describes its responsibilities. Especially important is that it is responsible for issuing the `TERMINATE` instruction after the task is finally completed to normally end the entire collaboration process.
+`UserProxyAgent`это специальный агент, который не полагается на LLM для ответов, а действует как доверенное лицо пользователя в системе. Его`description` field clearly describes its responsibilities. Especially important is that it is responsible for issuing the `TERMINATE`инструкция после окончательного завершения задачи, которая обычно завершает весь процесс совместной работы.
 
 ```python
 def create_user_proxy():
@@ -245,11 +245,11 @@ Please reply TERMINATE after completing the test.""",
     )
 ```
 
-Through these four independent definition functions, we not only built a fully functional "virtual team" but also demonstrated that "prompt engineering" through system messages is a core part of designing efficient multi-agent applications.
+С помощью этих четырех независимых функций определения мы не только создали полнофункциональную «виртуальную команду», но и продемонстрировали, что «оперативное проектирование» посредством системных сообщений является основной частью разработки эффективных мультиагентных приложений.
 
-(3) Define Team Collaboration Process
+(3) Определить процесс командного сотрудничества
 
-In this case, the software development process is relatively fixed (requirements -> coding -> review -> testing), so `RoundRobinGroupChat` (round-robin group chat) is the ideal choice. We add the four agents to the participant list in business logic order.
+В этом случае процесс разработки программного обеспечения относительно фиксирован (требования -> кодирование -> обзор -> тестирование), поэтому`RoundRobinGroupChat`(круговой групповой чат) — идеальный выбор. Мы добавляем четырех агентов в список участников в порядке бизнес-логики.
 
 ```python
 from autogen_agentchat.teams import RoundRobinGroupChat
@@ -268,13 +268,13 @@ team_chat = RoundRobinGroupChat(
 )
 ```
 
-- **Participant Order:** The order of the `participants` list determines the order in which agents speak.
-- **Termination Condition:** `termination_condition` is key to controlling when the collaboration process ends. Here we set that when any message contains the keyword "TERMINATE," the conversation ends. In our design, this instruction is issued by `UserProxy` after completing the final test.
-- **Maximum Turns:** `max_turns` is a safety valve used to prevent conversations from falling into infinite loops and avoid unnecessary resource consumption.
+- **Порядок участников:** Порядок в списке участников определяет порядок выступления агентов.
+- **Условие прекращения.** Термин «условие_терминации» является ключом к контролю завершения процесса сотрудничества. Здесь мы устанавливаем, что когда любое сообщение содержит ключевое слово «ПРЕКРАТИТЬ», разговор завершается. В нашем проекте эта инструкция выдается UserProxy после завершения финального теста.
+- **Максимальное количество оборотов.** «max_turns» – это предохранительный клапан, используемый для предотвращения зацикливания разговоров и предотвращения ненужного потребления ресурсов.
 
-(4) Startup and Execution
+(4) Запуск и выполнение
 
-Since AutoGen `0.7.4` adopts an asynchronous architecture, the startup and execution of the entire collaboration process are completed in an asynchronous function and finally executed through `asyncio.run()`.
+Поскольку AutoGen`0.7.4`принимает асинхронную архитектуру, запуск и выполнение всего процесса совместной работы выполняются в асинхронной функции и, наконец, выполняются через`asyncio.run()`.
 
 ```python
 async def run_software_development_team():
@@ -303,11 +303,11 @@ if __name__ == "__main__":
     result = asyncio.run(run_software_development_team())
 ```
 
-When the program runs, `task` is passed into `team_chat` as the initial message, the product manager receives the message as the first participant, and then the entire automated collaboration process begins.
+Когда программа запускается,`task`передается в`team_chat`В качестве исходного сообщения менеджер по продукту получает сообщение как первый участник, а затем начинается весь автоматизированный процесс совместной работы.
 
-(5) Expected Collaboration Effect
+(5) Ожидаемый эффект от сотрудничества
 
-When we run this software development team, we can observe a complete collaboration process:
+Когда мы управляем этой командой разработчиков программного обеспечения, мы можем наблюдать полный процесс сотрудничества:
 
 ```bash
 🔧 Initializing model client...
@@ -348,26 +348,26 @@ Enter your response: TERMINATE
 - Task completion status: Success
 ```
 
-The entire collaboration process demonstrates the advantages of the AutoGen framework: **natural conversation-driven collaboration**, **role specialization division**, **process automation management**, and **complete development closed loop**.
+Весь процесс совместной работы демонстрирует преимущества платформы AutoGen: **естественное сотрудничество, основанное на диалоге**, **разделение специализации ролей**, **управление автоматизацией процессов** и **полный замкнутый цикл разработки**.
 
-### 6.2.4 Analysis of AutoGen's Advantages and Limitations
+### 6.2.4 Анализ преимуществ и ограничений AutoGen
 
-Any technical framework has its specific applicable scenarios and design trade-offs. In this section, we will objectively analyze AutoGen's core advantages and the limitations and challenges it may face in practical applications.
+Любая техническая структура имеет свои конкретные применимые сценарии и компромиссы при проектировании. В этом разделе мы объективно проанализируем основные преимущества AutoGen, а также ограничения и проблемы, с которыми он может столкнуться в практическом применении.
 
-(1) Advantages
+(1) Преимущества
 
-- As shown in the case, we do not need to design complex state machines or control flow logic for the agent team, but naturally map a complete software development process to conversations between product managers, engineers, and reviewers. This approach is closer to the collaboration mode of human teams and significantly lowers the threshold for modeling complex tasks. Developers can focus more energy on defining "who (role)" and "what to do (responsibility)" rather than "how to do it (process control)."
-- The framework allows assigning highly specialized roles to each agent through system messages (System Message). In the case, `ProductManager` focuses on requirements, while `CodeReviewer` focuses on quality. A well-designed agent can be reused in different projects, easy to maintain and extend.
-- For process-oriented tasks, mechanisms like `RoundRobinGroupChat` provide clear, predictable collaboration processes. At the same time, the design of `UserProxyAgent` provides a natural interface for "Human-in-the-loop." It can serve as both the initiator of tasks and the supervisor and final acceptor of the process. This design ensures that automated systems are always under human supervision.
+- Как показано в этом случае, нам не нужно проектировать сложные конечные автоматы или логику потока управления для команды агентов, а естественным образом сопоставить полный процесс разработки программного обеспечения с диалогами между менеджерами по продукту, инженерами и рецензентами. Этот подход ближе к режиму сотрудничества человеческих команд и значительно снижает порог моделирования сложных задач. Разработчики могут сосредоточить больше усилий на определении «кто (роль)» и «что делать (ответственность)», а не «как это делать (управление процессом)».
+- Фреймворк позволяет назначать узкоспециализированные роли каждому агенту посредством системных сообщений (System Message). В данном случае ProductManager фокусируется на требованиях, а CodeReviewer — на качестве. Хорошо спроектированный агент можно повторно использовать в различных проектах, его легко поддерживать и расширять.
+- Для задач, ориентированных на процессы, такие механизмы, как RoundRobinGroupChat, обеспечивают четкие и предсказуемые процессы совместной работы. В то же время конструкция UserProxyAgent обеспечивает естественный интерфейс для «человека в цикле». Он может служить как инициатором задач, так и руководителем и конечным приемником процесса. Такая конструкция гарантирует, что автоматизированные системы всегда находятся под контролем человека.
 
-(2) Limitations
+(2) Ограничения
 
-- Although `RoundRobinGroupChat` provides a sequential process, conversations based on LLM are inherently uncertain. Agents may produce replies that deviate from expectations, causing conversations to go in unexpected directions or even fall into loops.
-- When the work results of the agent team do not meet expectations, the debugging process can be very tricky. Unlike traditional programs, we don't get a clear error stack but a long conversation history. This is called the "conversational debugging" dilemma.
+- Хотя RoundRobinGroupChat обеспечивает последовательный процесс, разговоры, основанные на LLM, по своей сути неопределенны. Агенты могут давать ответы, которые отклоняются от ожиданий, в результате чего разговор идет в неожиданном направлении или даже зацикливается.
+- Когда результаты работы команды агентов не соответствуют ожиданиям, процесс отладки может оказаться очень сложным. В отличие от традиционных программ, мы получаем не четкий стек ошибок, а длинную историю разговоров. Это называется дилеммой «диалоговой отладки».
 
-(3) Configuration Supplement for Non-OpenAI Models
+(3) Дополнение к конфигурации для моделей, отличных от OpenAI
 
-If you want to use non-OpenAI series models (such as DeepSeek, Tongyi Qianwen, etc.), in version 0.7.4, you need to pass a model information dictionary in the parameters of `OpenAIChatCompletionClient`. Taking DeepSeek as an example:
+Если вы хотите использовать модели серии, отличной от OpenAI (например, DeepSeek, Tongyi Qianwen и т. д.), в версии 0.7.4 вам необходимо передать словарь информации о модели в параметрах`OpenAIChatCompletionClient`. Возьмем DeepSeek в качестве примера:
 
 ```python
 from autogen_ext.models.openai import OpenAIChatCompletionClient
@@ -388,38 +388,38 @@ model_client = OpenAIChatCompletionClient(
 )
 ```
 
-This `model_info` dictionary helps AutoGen understand the model's capability boundaries, thereby better adapting to different model services.
+Этот`model_info`словарь помогает AutoGen понять границы возможностей модели, тем самым лучше адаптируясь к различным сервисам модели.
 
 
 
-## 6.3 Framework Two: AgentScope
+## 6.3 Структура вторая: AgentScope
 
-If AutoGen's design philosophy is "driving collaboration through conversation," then AgentScope represents another technical path: **engineering-first multi-agent platform**. AgentScope, developed by Alibaba DAMO Academy, is specifically designed for building large-scale, highly reliable multi-agent applications. It not only provides an intuitive and easy-to-use programming interface but, more importantly, has built-in enterprise-level features such as distributed deployment, fault recovery, and observability, making it particularly suitable for building production environment applications that need to run stably for a long time.
+Если философия проектирования AutoGen заключается в «стимулировании сотрудничества посредством диалога», то AgentScope представляет собой другой технический путь: **многоагентная платформа, ориентированная на разработку**. AgentScope, разработанный Alibaba DAMO Academy, специально предназначен для создания крупномасштабных высоконадежных мультиагентных приложений. Он не только предоставляет интуитивно понятный и простой в использовании интерфейс программирования, но, что более важно, имеет встроенные функции корпоративного уровня, такие как распределенное развертывание, восстановление после сбоев и наблюдаемость, что делает его особенно подходящим для создания приложений производственной среды, которым необходимо стабильно работать в течение длительного времени.
 
-### 6.3.1 Design of AgentScope
+### 6.3.1 Проектирование AgentScope
 
-Compared with AutoGen, the core difference of AgentScope lies in its **message-driven architectural design** and **industrial-grade engineering practices**. If AutoGen is more like a flexible "conversation studio," then AgentScope is a complete "agent operating system," providing developers with full lifecycle support from development, testing to deployment. Unlike the inheritance-based design adopted by many frameworks, AgentScope chooses **compositional architecture** and **message-driven mode**. This design not only enhances the modularity of the system but also lays the foundation for its excellent concurrency performance and distributed capabilities.
+По сравнению с AutoGen основное отличие AgentScope заключается в его **архитектурном проектировании, управляемом сообщениями** и **инженерных методах промышленного уровня**. Если AutoGen больше похож на гибкую «студию переговоров», то AgentScope — это полноценная «операционная система агента», предоставляющая разработчикам полную поддержку на протяжении всего жизненного цикла — от разработки, тестирования до развертывания. В отличие от архитектуры на основе наследования, принятой во многих платформах, AgentScope выбирает **композиционную архитектуру** и **режим, управляемый сообщениями**. Такая конструкция не только повышает модульность системы, но и закладывает основу для ее превосходной производительности одновременного выполнения и распределенных возможностей.
 
-(1) Layered Architecture System
+(1) Система многоуровневой архитектуры
 
-As shown in Figure 6.2, AgentScope adopts a clear layered modular design, forming a complete agent development ecosystem from bottom-level basic components to top-level application orchestration.
+Как показано на рис. 6.2, AgentScope имеет четкую многоуровневую модульную структуру, образующую полную экосистему разработки агентов, от базовых компонентов нижнего уровня до оркестровки приложений верхнего уровня.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/6-figures/03.png" alt="" width="90%"/>
-  <p>Figure 6.2 AgentScope Architecture Diagram</p>
+  <p>Рисунок 6.2 Схема архитектуры AgentScope</p>
 </div>
 
-In this architecture, the bottom layer is the **Foundational Components** layer, which provides core building blocks for the entire framework. The `Message` component defines a unified message format, supporting everything from simple text interaction to complex multimodal content; the `Memory` component provides short-term and long-term memory management; the `Model API` layer abstracts calls to different large language models; and the `Tool` component encapsulates the agent's ability to interact with the external world.
+В этой архитектуре нижним уровнем является уровень **Основные компоненты**, который обеспечивает основные строительные блоки для всей структуры.`Message`компонент определяет единый формат сообщений, поддерживающий все: от простого текстового взаимодействия до сложного мультимодального контента; тот`Memory`компонент обеспечивает управление кратковременной и долгосрочной памятью; тот`Model API`слой абстрагирует вызовы различных больших языковых моделей; и`Tool`компонент инкапсулирует способность агента взаимодействовать с внешним миром.
 
-Above the basic components, the **Agent-level Infrastructure** layer provides higher-level abstractions. This layer not only includes various pre-built agents (such as browser-using agents, deep research agents) but also implements the classic ReAct paradigm, supporting advanced features such as agent hooks, parallel tool calling, and state management. Particularly noteworthy is that this layer natively supports **asynchronous execution and real-time control**, which is an important advantage of AgentScope compared to other frameworks.
+Над базовыми компонентами уровень **Инфраструктура уровня агента** обеспечивает абстракции более высокого уровня. Этот уровень не только включает в себя различные предварительно созданные агенты (например, агенты, использующие браузер, агенты глубоких исследований), но также реализует классическую парадигму ReAct, поддерживая расширенные функции, такие как перехватчики агентов, параллельный вызов инструментов и управление состоянием. Особого внимания заслуживает то, что этот уровень изначально поддерживает **асинхронное выполнение и управление в реальном времени**, что является важным преимуществом AgentScope по сравнению с другими платформами.
 
-The **Multi-Agent Cooperation** layer is where AgentScope's core innovation lies. `MsgHub` serves as the message center, responsible for message routing and state management between agents; while the `Pipeline` system provides flexible workflow orchestration capabilities, supporting various execution modes such as sequential and concurrent. This design allows developers to easily build complex multi-agent collaboration scenarios.
+Уровень **Многоагентного сотрудничества** — это основная инновация AgentScope.`MsgHub`служит центром сообщений, отвечающим за маршрутизацию сообщений и управление состоянием между агентами; в то время как`Pipeline`Система обеспечивает гибкие возможности оркестрации рабочих процессов, поддерживая различные режимы выполнения, такие как последовательный и параллельный. Такая конструкция позволяет разработчикам легко создавать сложные сценарии многоагентной совместной работы.
 
-The top **Deployment & Development** layer reflects AgentScope's emphasis on engineering. `AgentScope Runtime` provides a production-grade runtime environment, while `AgentScope Studio` provides developers with a complete visual development toolchain.
+Верхний уровень **Развертывание и разработка** отражает акцент AgentScope на проектировании.`AgentScope Runtime`обеспечивает среду выполнения производственного уровня, в то время как`AgentScope Studio`предоставляет разработчикам полный набор инструментов визуальной разработки.
 
-(2) Message-Driven
+(2) Управляемый сообщениями
 
-AgentScope's core innovation lies in its **message-driven architecture**. In this architecture, all agent interactions are abstracted as the sending and receiving of **messages**, rather than traditional function calls.
+Основная инновация AgentScope заключается в его **архитектуре, управляемой сообщениями**. В этой архитектуре все взаимодействия агентов абстрагируются как отправка и получение **сообщений**, а не как традиционные вызовы функций.
 
 ```python
 from agentscope.message import Msg
@@ -437,16 +437,16 @@ message = Msg(
 )
 ```
 
-Using messages as the basic unit of interaction brings several key advantages:
+Использование сообщений в качестве базовой единицы взаимодействия дает несколько ключевых преимуществ:
 
-- **Asynchronous Decoupling**: The sender and receiver of messages are decoupled in time, without needing to wait for each other, naturally supporting high-concurrency scenarios.
-- **Location Transparency**: Agents do not need to care whether another agent is in a local process or on a remote server; the message system automatically handles routing.
-- **Observability**: Every message can be logged, tracked, and analyzed, greatly simplifying debugging and monitoring of complex systems.
-- **Reliability**: Messages can be persistently stored and retried. Even if the system fails, it can ensure the eventual consistency of interactions, improving the system's fault tolerance.
+- **Асинхронная развязка**: отправитель и получатель сообщений разъединяются во времени, без необходимости ждать друг друга, что естественным образом поддерживает сценарии с высоким уровнем параллелизма.
+- **Прозрачность местоположения**: агентам не нужно заботиться о том, находится ли другой агент в локальном процессе или на удаленном сервере; система сообщений автоматически обрабатывает маршрутизацию.
+- **Наблюдаемость**: каждое сообщение можно регистрировать, отслеживать и анализировать, что значительно упрощает отладку и мониторинг сложных систем.
+- **Надежность**. Сообщения можно постоянно хранить и повторять. Даже если система выйдет из строя, она может обеспечить конечную согласованность взаимодействий, повышая отказоустойчивость системы.
 
-(3) Agent Lifecycle Management
+(3) Управление жизненным циклом агента
 
-In AgentScope, each agent has a clear lifecycle (initialization, running, pausing, destruction, etc.) and is implemented based on a unified base class `AgentBase`. Developers usually only need to focus on its core `reply` method.
+В AgentScope каждый агент имеет четкий жизненный цикл (инициализация, запуск, приостановка, уничтожение и т. д.) и реализован на основе единого базового класса.`AgentBase`. Разработчикам обычно нужно сосредоточиться только на его ядре.`reply`метод.
 
 ```python
 from agentscope.agents import AgentBase
@@ -466,37 +466,37 @@ class CustomAgent(AgentBase):
         self.memory.add(x)
 ```
 
-This design pattern separates the agent's internal logic from external communication. Developers only need to define how the agent "thinks and responds" in the `reply` method.
+Этот шаблон проектирования отделяет внутреннюю логику агента от внешней коммуникации. Разработчикам нужно только определить, как агент «думает и реагирует» в`reply`метод.
 
-(4) Message Passing Mechanism
+(4) Механизм передачи сообщений
 
-AgentScope has a built-in **Message Center (MsgHub)**, which is the hub of the entire message-driven architecture. MsgHub is not only responsible for message routing and distribution but also integrates advanced functions such as persistence and distributed communication. It has the following characteristics:
+AgentScope имеет встроенный **Центр сообщений (MsgHub)**, который является центром всей архитектуры, управляемой сообщениями. MsgHub отвечает не только за маршрутизацию и распространение сообщений, но также интегрирует расширенные функции, такие как сохранение и распределенная связь. Он имеет следующие характеристики:
 
-- **Flexible Message Routing**: Supports multiple communication modes such as point-to-point, broadcast, and multicast, and can build flexible and complex interaction networks.
-- **Message Persistence**: Can automatically save all messages to databases (such as SQLite, MongoDB), ensuring that the state of long-running tasks can be recovered.
-- **Native Distributed Support**: This is a signature feature of AgentScope. Agents can be deployed on different processes or servers, and `MsgHub` will automatically handle cross-node communication through RPC (Remote Procedure Call), completely transparent to developers.
+- **Гибкая маршрутизация сообщений**: поддерживает несколько режимов связи, таких как двухточечный, широковещательный и многоадресный, а также позволяет создавать гибкие и сложные сети взаимодействия.
+- **Сохранение сообщений**: позволяет автоматически сохранять все сообщения в базах данных (например, SQLite, MongoDB), гарантируя возможность восстановления состояния долго выполняющихся задач.
+- **Встроенная распределенная поддержка**: это характерная особенность AgentScope. Агенты могут быть развернуты на разных процессах или серверах, а MsgHub будет автоматически управлять межузловым взаимодействием через RPC (вызов удаленных процедур), что полностью прозрачно для разработчиков.
 
-These engineering capabilities provided by the underlying architecture make AgentScope more advantageous than traditional conversation-driven frameworks when handling complex application scenarios that require high concurrency and high reliability. Of course, this also requires developers to understand and adapt to the asynchronous programming paradigm of message-driven.
+Эти инженерные возможности, предоставляемые базовой архитектурой, делают AgentScope более выгодным по сравнению с традиционными платформами, управляемыми диалогом, при обработке сложных сценариев приложений, требующих высокого уровня параллелизма и высокой надежности. Конечно, это также требует от разработчиков понимания и адаптации к парадигме асинхронного программирования, управляемого сообщениями.
 
-In the next section, we will deeply experience the capabilities of the AgentScope framework through a specific practical case, the Three Kingdoms Werewolf game, especially its advantages in handling concurrent interactions.
+В следующем разделе мы подробно рассмотрим возможности платформы AgentScope на конкретном практическом примере — игре «Три королевства-оборотня», особенно ее преимущества при обработке параллельных взаимодействий.
 
-### 6.3.2 Three Kingdoms Werewolf Game
+### 6.3.2 Игра «Троецарствие-оборотень»
 
-To deeply understand AgentScope's message-driven architecture and multi-agent collaboration capabilities, we will build a "Three Kingdoms Werewolf" game that integrates Chinese classical cultural elements. This case not only demonstrates AgentScope's advantages in handling complex multi-agent interactions but, more importantly, demonstrates how to fully leverage the power of message-driven architecture in a scenario that requires **real-time collaboration**, **role-playing**, and **strategic gaming**. Unlike traditional Werewolf, our "Three Kingdoms Werewolf" introduces classic characters such as Liu Bei, Guan Yu, and Zhuge Liang into the game. Each agent not only has to complete the basic tasks of Werewolf (such as werewolf killing, seer verification, villager reasoning) but also embodies the personality traits and behavior patterns of the corresponding Three Kingdoms characters. This design allows us to observe AgentScope's performance in handling **multi-level role modeling**.
+Чтобы глубже понять архитектуру AgentScope, управляемую сообщениями, и возможности многоагентной совместной работы, мы создадим игру «Three Kingdoms Werewolf», которая объединит элементы китайской классической культуры. Этот случай не только демонстрирует преимущества AgentScope в обработке сложных межагентных взаимодействий, но, что более важно, демонстрирует, как в полной мере использовать возможности архитектуры, управляемой сообщениями, в сценарии, который требует **сотрудничества в реальном времени**, **ролевых игр** и **стратегических игр**. В отличие от традиционного «Оборотня», наш «Оборотень трех королевств» вводит в игру классических персонажей, таких как Лю Бэй, Гуань Юй и Чжугэ Лян. Каждый агент не только должен выполнять основные задачи Оборотня (такие как убийство оборотня, проверка провидцев, рассуждения жителей деревни), но также воплощает в себе черты личности и модели поведения соответствующих персонажей Трех Королевств. Такая конструкция позволяет нам наблюдать за производительностью AgentScope при обработке **многоуровневого ролевого моделирования**.
 
-(1) Architecture Design and Core Components
+(1) Архитектурный проект и основные компоненты
 
-The system design of this case follows the principle of layered decoupling, dividing the game logic into three independent levels, each of which maps to one or more core components of AgentScope:
+Конструкция системы в этом случае соответствует принципу многоуровневого разделения, разделяя игровую логику на три независимых уровня, каждый из которых соответствует одному или нескольким основным компонентам AgentScope:
 
-- **Game Control Layer**: A `ThreeKingdomsWerewolfGame` class serves as the main controller of the game, responsible for maintaining global state (such as player survival list, current game stage), advancing the game process (calling night phase, day phase), and judging victory or defeat.
-- **Agent Interaction Layer**: Completely driven by `MsgHub`. All communication between agents, whether it's secret negotiations between werewolves or public debates during the day, is routed and distributed through the message center.
-- **Role Modeling Layer**: Each player is an instance based on `DialogAgent`. Through carefully designed system prompts, we inject each agent with the dual identity of "game role" and "Three Kingdoms personality."
+- **Уровень управления игрой**: класс ThreeKingdomsWerewolfGame служит основным контроллером игры, отвечающим за поддержание глобального состояния (например, список выживших игроков, текущий этап игры), продвижение игрового процесса (вызов ночной фазы, дневной фазы) и оценку победы или поражения.
+- **Уровень взаимодействия агентов**: полностью управляется MsgHub. Вся связь между агентами, будь то тайные переговоры между оборотнями или публичные дебаты в течение дня, маршрутизируется и распространяется через центр сообщений.
+- **Уровень ролевого моделирования**: каждый игрок представляет собой экземпляр, основанный на DialogAgent. С помощью тщательно продуманных системных подсказок мы наделяем каждого агента двойной идентичностью «игровой роли» и «личности Троецарствия».
 
-(2) Message-Driven Game Flow
+(2) Ход игры, управляемый сообщениями
 
-The core design of this case is to use **message-driven** instead of **state machine** to manage the game flow. In traditional implementations, game phase transitions are usually controlled by a centralized state machine. In the AgentScope paradigm, the game flow is naturally modeled as a series of well-defined message interaction patterns.
+Основная идея этого случая — использовать **управление сообщениями** вместо **конечного автомата** для управления игровым процессом. В традиционных реализациях фазовые переходы игры обычно контролируются централизованным конечным автоматом. В парадигме AgentScope ход игры естественным образом моделируется как серия четко определенных шаблонов взаимодействия сообщений.
 
-For example, the implementation of the werewolf phase is not a simple function call but dynamically creates a temporary, private communication channel that only includes werewolf players through `MsgHub`:
+Например, реализация фазы оборотня — это не простой вызов функции, а динамическое создание временного частного канала связи, который включает игроков-оборотней только через`MsgHub`:
 
 ```python
 async def werewolf_phase(self, round_num: int):
@@ -527,11 +527,11 @@ async def werewolf_phase(self, round_num: int):
         )
 ```
 
-The advantage of this design is that game logic is clearly expressed as "in a specific context, what mode of message exchange to conduct," rather than a series of rigid state transitions. Day discussion (full broadcast), seer verification (point-to-point request), and other phases all follow the same design paradigm.
+Преимущество этой конструкции заключается в том, что игровая логика четко выражена как «в конкретном контексте, какой режим обмена сообщениями проводить», а не как серия жестких переходов между состояниями. Дневное обсуждение (полная трансляция), проверка видящего (прямой запрос) и другие этапы следуют одной и той же парадигме проектирования.
 
-(3) Constraining Game Rules with Structured Output
+(3) Ограничение правил игры с помощью структурированного вывода
 
-A key challenge in Werewolf games is how to ensure that agent behavior conforms to game rules. AgentScope's **structured output mechanism** provides a solution to this problem. We define strict data models for different game behaviors:
+Ключевая задача в играх Werewolf — как обеспечить соответствие поведения агентов правилам игры. **Механизм структурированного вывода** AgentScope обеспечивает решение этой проблемы. Мы определяем строгие модели данных для различного игрового поведения:
 
 ```python
 class DiscussionModelCN(BaseModel):
@@ -557,11 +557,11 @@ class WitchActionModelCN(BaseModel):
     target_name: Optional[str] = Field(description="Poison target player name")
 ```
 
-In this way, we not only ensure **format consistency** of agent output but, more importantly, achieve **automated constraint of game rules**. For example, the witch agent cannot use both antidote and poison on the same target at the same time, and the seer can only verify one player per night. These constraints are automatically executed through field definitions and validation logic of data models.
+Таким образом, мы не только обеспечиваем **согласованность формата** выходных данных агента, но, что более важно, достигаем **автоматического ограничения правил игры**. Например, колдун не может одновременно использовать противоядие и яд на одной и той же цели, а провидец может проверять только одного игрока за ночь. Эти ограничения автоматически выполняются посредством определений полей и логики проверки моделей данных.
 
-(4) Dual Challenge of Role Modeling
+(4) Двойная задача ролевого моделирования
 
-In this case, the most interesting technical challenge is how to make agents play two levels of roles well at the same time: **game functional role** (werewolf, seer, etc.) and **cultural personality role** (Liu Bei, Cao Cao, etc.). We solve this problem through prompt engineering:
+В этом случае самая интересная техническая задача состоит в том, как заставить агентов одновременно хорошо играть два уровня ролей: **функциональную игровую роль** (оборотень, провидец и т. д.) и **роль культурной личности** (Лю Бэй, Цао Цао и т. д.). Эту проблему мы решаем за счет оперативного инжиниринга:
 
 ```python
 def get_role_prompt(role: str, character: str) -> str:
@@ -585,11 +585,11 @@ Role characteristics:
 """
 ```
 
-This design allows us to observe an interesting phenomenon: different Three Kingdoms characters, when playing the same game role, will exhibit completely different strategies and speech styles. For example, "Cao Cao" playing a werewolf may appear more cunning and good at disguise, while "Zhang Fei" playing a werewolf may appear more direct and impulsive.
+Такой дизайн позволяет нам наблюдать интересный феномен: разные персонажи «Троецарствия», играя одну и ту же игровую роль, будут демонстрировать совершенно разные стратегии и стили речи. Например, «Цао Цао», играющий оборотня, может показаться более хитрым и хорошо маскирующимся, а «Чжан Фэй», играющий оборотня, может показаться более прямым и импульсивным.
 
-(5) Concurrent Processing and Fault Tolerance Mechanism
+(5) Механизм параллельной обработки и отказоустойчивости
 
-AgentScope's asynchronous architecture plays an important role in this multi-agent game. The game often has scenarios that require **simultaneously collecting decisions from multiple agents**, such as the voting phase:
+Асинхронная архитектура AgentScope играет важную роль в этой многоагентной игре. В игре часто встречаются сценарии, требующие **одновременного сбора решений от нескольких агентов**, например, этап голосования:
 
 ```python
 # Collect voting decisions from all players in parallel
@@ -601,7 +601,7 @@ vote_msgs = await fanout_pipeline(
 )
 ```
 
-`fanout_pipeline` allows us to send the same message to all agents in parallel and asynchronously collect their responses. This not only improves the execution efficiency of the game but, more importantly, simulates the "simultaneous voting" scenario in real Werewolf games. At the same time, we add fault tolerance handling at key points:
+`fanout_pipeline`позволяет нам отправлять одно и то же сообщение всем агентам параллельно и асинхронно собирать их ответы. Это не только повышает эффективность игры, но, что более важно, имитирует сценарий «одновременного голосования» в реальных играх Werewolf. В то же время мы добавляем обработку отказоустойчивости в ключевых точках:
 
 ```python
 try:
@@ -619,11 +619,11 @@ except Exception as e:
     )
 ```
 
-This design ensures that even if an agent encounters an exception, the entire game process can continue.
+Такая конструкция гарантирует, что даже если агент столкнется с исключением, весь игровой процесс сможет продолжиться.
 
-(6) Case Output and Summary
+(6) Выводы и резюме дела
 
-To more intuitively experience AgentScope's operating mechanism, the following is a real running log excerpt from the game's night phase, showing the process of two werewolf agents playing "Sun Quan" and "Zhou Yu" conducting secret negotiations and executing a kill.
+Чтобы более интуитивно понять механизм работы AgentScope, ниже приведен реальный отрывок из журнала ночной фазы игры, показывающий процесс, когда два агента-оборотня, играющие «Сунь Цюань» и «Чжоу Юй», проводят секретные переговоры и совершают убийство.
 
 ```
 🎮 Welcome to Three Kingdoms Werewolf!
@@ -690,67 +690,67 @@ Sima Yi: We need more information to determine who is the werewolf.
 [Game continues...]
 ```
 
-### 6.3.3 Analysis of AgentScope's Advantages and Limitations
+### 6.3.3 Анализ преимуществ и ограничений AgentScope
 
-Through this "Three Kingdoms Werewolf" case, we deeply experienced the core advantages of the AgentScope framework. The framework, with its message-driven architecture as the core, elegantly maps complex game processes into a series of concurrent, asynchronous message passing events, thereby avoiding the rigidity and complexity of traditional state machines. Combined with its powerful structured output capability, we directly transform game rules into code-level constraints, greatly improving system stability and predictability. This design paradigm not only demonstrates its native concurrency advantages in performance but also ensures that even if a single agent encounters an exception, the overall process can run robustly in fault tolerance handling.
+В этом случае «Троецарствие оборотней» мы глубоко убедились в основных преимуществах платформы AgentScope. Платформа, в основе которой лежит архитектура, управляемая сообщениями, элегантно отображает сложные игровые процессы в серию параллельных асинхронных событий передачи сообщений, тем самым избегая жесткости и сложности традиционных конечных автоматов. В сочетании с мощными возможностями структурированного вывода мы напрямую преобразуем правила игры в ограничения на уровне кода, значительно повышая стабильность и предсказуемость системы. Эта парадигма проектирования не только демонстрирует преимущества параллелизма в производительности, но также гарантирует, что даже если один агент обнаружит исключение, весь процесс сможет работать устойчиво при обработке отказоустойчивости.
 
-However, AgentScope's engineering advantages also bring a certain complexity cost. Although its message-driven architecture is powerful, it has high technical requirements for developers, requiring understanding of asynchronous programming, distributed communication, and other concepts. For simple multi-agent conversation scenarios, this architecture may seem overly complex, with the risk of "over-engineering." In addition, as a relatively new framework, its ecosystem and community resources still need further improvement. Therefore, AgentScope is more suitable for building large-scale, highly reliable production-level multi-agent systems, while for rapid prototype development or simple application scenarios, choosing a more lightweight framework may be more appropriate.
+Однако инженерные преимущества AgentScope также приводят к определенным затратам на сложность. Хотя его архитектура, управляемая сообщениями, является мощной, она предъявляет высокие технические требования к разработчикам, требующие понимания асинхронного программирования, распределенной связи и других концепций. Для простых сценариев взаимодействия между несколькими агентами эта архитектура может показаться слишком сложной и сопряжена с риском «чрезмерного проектирования». Кроме того, поскольку это относительно новая структура, ее экосистема и общественные ресурсы все еще нуждаются в дальнейшем совершенствовании. Таким образом, AgentScope больше подходит для создания крупномасштабных высоконадежных многоагентных систем производственного уровня, а для быстрой разработки прототипов или простых сценариев применения может оказаться более подходящим выбор более облегченной платформы.
 
 
 
-## 6.4 Framework Three: CAMEL
+## 6.4 Схема третья: CAMEL
 
-Unlike comprehensive frameworks like AutoGen and AgentScope, CAMEL's original core goal is to explore how to enable two agents to autonomously collaborate to solve complex tasks through "role-playing" with minimal human intervention.
+В отличие от комплексных фреймворков, таких как AutoGen и AgentScope, первоначальная основная цель CAMEL — изучить, как дать возможность двум агентам автономно сотрудничать для решения сложных задач посредством «ролевой игры» с минимальным вмешательством человека.
 
-### 6.4.1 Autonomous Collaboration in CAMEL
+### 6.4.1 Автономное сотрудничество в CAMEL
 
-The cornerstone of CAMEL's autonomous collaboration is two core concepts: **Role-Playing** and **Inception Prompting**.
+Краеугольным камнем автономного сотрудничества CAMEL являются две основные концепции: **Ролевые игры** и **Начальные подсказки**.
 
-(1) Role-Playing
+(1) Ролевая игра
 
-In CAMEL's original design, a task is usually completed by two agents collaborating. These two agents are assigned complementary, clearly defined "roles." One plays the **"AI User"**, responsible for proposing requirements, issuing instructions, and conceiving task steps; the other plays the **"AI Assistant"**, responsible for executing specific operations and providing solutions based on instructions.
+В оригинальной конструкции CAMEL задача обычно выполняется двумя сотрудничающими агентами. Этим двум агентам отведены взаимодополняющие, четко определенные «роли». Один играет **«Пользователя ИИ»**, ответственного за выдвижение требований, выдачу инструкций и разработку этапов выполнения задач; другой играет **"ИИ-помощника"**, отвечающего за выполнение определенных операций и предоставление решений на основе инструкций.
 
-For example, in a task to "develop a stock trading strategy analysis tool":
+Например, в задаче «разработать инструмент анализа стратегии торговли акциями»:
 
-- The **AI User** role might be a "senior stock trader." It understands the market and strategies but doesn't understand programming.
-- The **AI Assistant** role is an "excellent Python programmer." It is proficient in programming but knows nothing about stock trading.
+- Роль **Пользователь искусственного интеллекта** может быть «старшим биржевым трейдером». Он понимает рынок и стратегии, но не понимает программирования.
+- Роль **AI Assistant** — «отличный программист Python». Он владеет программированием, но ничего не знает о торговле акциями.
 
-Through this setup, the task-solving process is naturally transformed into a conversation between two "cross-domain experts." The trader proposes professional requirements, the programmer transforms them into code implementation, and the two collaborate to complete complex tasks that neither could accomplish independently.
+Благодаря такой настройке процесс решения задач естественным образом превращается в беседу между двумя «междоменными экспертами». Трейдер выдвигает профессиональные требования, программист преобразует их в реализацию кода, и они вместе решают сложные задачи, которые ни один из них не может выполнить по отдельности.
 
-(2) Inception Prompting
+(2) Начальные подсказки
 
-Simply setting roles is not enough. How can we ensure that two AIs can always "stay in their roles" and efficiently move toward a common goal without continuous human supervision? This is where CAMEL's core technology, inception prompting, comes into play. "Inception prompting" is a carefully designed, structured initial instruction (System Prompt) injected into both agents before the conversation begins. This instruction is like an "action program" implanted in the agents, and it usually includes the following key parts:
+Просто установить роли недостаточно. Как мы можем гарантировать, что два ИИ всегда смогут «оставаться в своих ролях» и эффективно двигаться к общей цели без постоянного контроля со стороны человека? Именно здесь в игру вступает основная технология CAMEL – стимулирование начального этапа. «Начальная подсказка» — это тщательно разработанная, структурированная начальная инструкция (системная подсказка), вводимая обоим агентам перед началом разговора. Эта инструкция похожа на «программу действий», внедренную в агентов, и обычно включает в себя следующие ключевые части:
 
-- **Clarify own role**: For example, "You are a senior stock trader..."
-- **Inform collaborator's role**: For example, "You are working with an excellent Python programmer..."
-- **Define common goal**: For example, "Your common goal is to develop a stock trading strategy analysis tool."
-- **Set behavioral constraints and communication protocols**: This is the most critical part. For example, the instruction will require the AI user to "propose only one clear, specific step at a time" and require the AI assistant to "not ask for more details before completing the previous step," while also specifying that both parties need to use specific markers (such as `<SOLUTION>`) at the end of their replies to identify task completion.
+- **Уточните свою роль**. Например: «Вы старший биржевой трейдер…»
+- **Укажите роль соавтора**. Например, «Вы работаете с отличным программистом Python...».
+- **Определите общую цель**. Например: «Ваша общая цель — разработать инструмент анализа стратегии торговли акциями».
+- **Установите поведенческие ограничения и протоколы связи**: это самая важная часть. Например, инструкция потребует от пользователя ИИ «предлагать только один четкий конкретный шаг за раз» и потребует от помощника ИИ «не запрашивать дополнительную информацию перед выполнением предыдущего шага», а также указать, что обе стороны должны использовать определенные маркеры (например, `<РЕШЕНИЕ>`) в конце своих ответов, чтобы определить завершение задачи.
 
-These constraints ensure that the conversation does not deviate from the topic or fall into ineffective loops but advances in a highly structured, task-driven manner, as shown in Figure 6.3.
+Эти ограничения гарантируют, что разговор не отклонится от темы и не попадет в неэффективные петли, а будет развиваться в строго структурированной, ориентированной на задачи манере, как показано на рис. 6.3.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/6-figures/04.png" alt="" width="90%"/>
-  <p>Figure 6.3 CAMEL Creating Stock Trading Robot</p>
+  <p>Рисунок 6.3 CAMEL Создание робота для торговли акциями</p>
 </div>
 
-In the next section, we will experience this process through a specific example.
+В следующем разделе мы рассмотрим этот процесс на конкретном примере.
 
-### 6.4.2 AI Popular Science E-book
+### 6.4.2 Электронная научно-популярная книга с искусственным интеллектом
 
-To understand CAMEL framework's role-playing capabilities, we will build a practical collaborative case: having an AI psychologist work with an AI author to co-create a short e-book on "The Psychology of Procrastination." This case embodies CAMEL's core advantage of allowing two agents to leverage their respective professional domains to collaboratively complete complex creative tasks that a single agent would struggle with.
+Чтобы понять возможности ролевой игры CAMEL, мы создадим практический совместный пример: попросим психолога ИИ работать с автором ИИ для совместного создания короткой электронной книги на тему «Психология прокрастинации». Этот случай воплощает основное преимущество CAMEL, позволяющее двум агентам использовать свои соответствующие профессиональные области для совместного выполнения сложных творческих задач, с которыми один агент справился бы с трудом.
 
-(1) Task Setup
+(1) Настройка задачи
 
-**Scenario Setup**: Create a popular science e-book on the psychology of procrastination for general readers, requiring both scientific rigor and good readability.
+**Настройка сценария**. Создайте научно-популярную электронную книгу о психологии прокрастинации для широкого круга читателей, требующую как научной строгости, так и хорошей читабельности.
 
-**Agent Roles**:
+**Роли агентов**:
 
-- **Psychologist**: Possesses deep theoretical foundation in psychology, familiar with cognitive behavioral science, neuroscience, and other related fields, able to provide professional academic insights and empirical research support
-- **Writer**: Has excellent writing skills and narrative ability, good at transforming complex academic concepts into vivid and easy-to-understand text, focusing on reader experience and content readability
+- **Психолог**: Обладает глубокими теоретическими знаниями в области психологии, знаком с когнитивно-поведенческой наукой, нейробиологией и другими смежными областями, способен предоставить профессиональные академические знания и поддержку эмпирических исследований.
+- **Писатель**: обладает отличными навыками письма и повествовательными способностями, хорошо умеет преобразовывать сложные академические концепции в яркий и простой для понимания текст, уделяя особое внимание читательскому опыту и читабельности контента.
 
-(2) Define Collaboration Task
+(2) Определить задачу совместной работы
 
-First, we need to clarify the common goal of the two AI experts. We define this task through a detailed string `task_prompt`.
+Во-первых, нам необходимо прояснить общую цель двух экспертов по искусственному интеллекту. Мы определяем эту задачу через подробную строку`task_prompt`.
 
 ```python
 from colorama import Fore
@@ -788,11 +788,11 @@ Requirements:
 print(Fore.YELLOW + f"Collaboration task:\n{task_prompt}\n")
 ```
 
-`task_prompt` is the "task specification" for the entire collaboration. It is not only the goal we want to achieve but will also be used behind the scenes by CAMEL to generate "inception prompts," ensuring that the conversation between the two agents always revolves around this core goal.
+`task_prompt`это «спецификация задачи» для всей совместной работы. Это не только цель, которую мы хотим достичь, но и CAMEL будет использовать ее за кулисами для создания «начальных подсказок», гарантируя, что разговор между двумя агентами всегда вращается вокруг этой основной цели.
 
-(3) Initialize Role-Playing "Society"
+(3) Инициализировать ролевое «Общество»
 
-Next, we create a `RolePlaying` session instance. This is CAMEL's core operation, which quickly builds a two-agent collaboration "society" based on the roles and tasks we provide.
+Далее мы создаем`RolePlaying`экземпляр сеанса. Это основная деятельность CAMEL, которая быстро создает «общество» совместной работы двух агентов на основе ролей и задач, которые мы предоставляем.
 
 ```python
 # Initialize role-playing session
@@ -809,11 +809,11 @@ role_play_session = RolePlaying(
 print(Fore.CYAN + f"Specific task description:\n{role_play_session.task_prompt}\n")
 ```
 
-`RolePlaying` is a high-level API provided by CAMEL that encapsulates complex prompt engineering. We only need to pass in the names of the two roles and the task. In CAMEL's design, the `user` role is the "driver" and "demander" of the conversation, while the `assistant` role is the "executor" and "solution provider." Therefore, we assign the "writer" responsible for planning structure to `user_role_name` and the "psychologist" responsible for providing professional knowledge to `assistant_role_name`.
+`RolePlaying`— это API высокого уровня, предоставляемый CAMEL, который инкапсулирует сложную быструю разработку. Нам нужно только передать имена двух ролей и задачи. В конструкции CAMEL`user`роль является «движущей силой» и «требователем» разговора, тогда как`assistant`роль — «исполнитель» и «поставщик решения». Поэтому мы назначаем «писателя», ответственного за структуру планирования,`user_role_name`и «психолог», ответственный за предоставление профессиональных знаний`assistant_role_name`.
 
-(4) Start and Run Automated Conversation
+(4) Начать и запустить автоматический разговор
 
-Finally, we write a loop to drive the entire conversation process, allowing the two AI experts to begin their automated collaboration.
+Наконец, мы пишем цикл, который будет управлять всем процессом разговора, позволяя двум экспертам по искусственному интеллекту начать автоматическое сотрудничество.
 
 ```python
 # Start collaboration conversation
@@ -844,25 +844,25 @@ while n < chat_turn_limit:
 print(Fore.YELLOW + f"Total of {n} rounds of collaborative conversation")
 ```
 
-This `while` loop is the core of automated collaboration. The conversation is automatically initiated by the `init_chat()` method based on the task and roles, without the need to manually write an opening. Each step of the loop drives a complete round of interaction by calling `step()` (writer proposes requirements, psychologist provides content), and uses the psychologist's output from the previous round as input for the next round, forming a chain of creation. The entire process will continue until the preset conversation turn limit is reached, or automatically terminates after either agent outputs the task completion flag `<CAMEL_TASK_DONE>`.
+Этот`while`цикл — это ядро ​​автоматизированной совместной работы. Разговор автоматически инициируется`init_chat()`метод, основанный на задаче и ролях, без необходимости вручную писать вакансию. Каждый шаг цикла запускает полный цикл взаимодействия путем вызова`step()`(писатель предлагает требования, психолог предоставляет содержание) и использует результаты работы психолога предыдущего раунда в качестве входных данных для следующего раунда, образуя цепочку творчества. Весь процесс будет продолжаться до тех пор, пока не будет достигнут заданный предел хода разговора, или автоматически завершится после того, как любой агент выведет флаг завершения задачи.`<CAMEL_TASK_DONE>`.
 
-(5) Collaboration Process Demonstration
+(5) Демонстрация процесса сотрудничества
 
-When executing the above code, we don't just get a long string of monotonous Q&A but can observe a highly structured collaboration process, like a human expert team, automatically proceeding. The entire creation process naturally divides into several stages:
+Выполняя приведенный выше код, мы не просто получаем длинную цепочку монотонных вопросов и ответов, но можем наблюдать, как автоматически происходит высокоструктурированный процесс совместной работы, подобный экспертной группе людей. Весь процесс создания закономерно делится на несколько этапов:
 
-**Stage 1 (approximately rounds 1-5): Framework Building and Goal Alignment** In the early stages of the conversation, the "writer" agent first plays the leading role, proposing initial ideas for the overall structure and chapter arrangement of the e-book. Subsequently, the "psychologist" reviews and supplements this framework from a professional perspective, ensuring that core academic modules (such as theoretical foundations, key concepts, etc.) are not omitted, thereby reaching consensus on the final output at the beginning of collaboration.
+**Этап 1 (приблизительно раунды 1–5): Построение структуры и согласование целей** На ранних стадиях разговора агент-«писатель» сначала играет ведущую роль, предлагая первоначальные идеи по общей структуре и расположению глав электронной книги. Впоследствии «психолог» рассматривает и дополняет эту структуру с профессиональной точки зрения, гарантируя, что основные академические модули (такие как теоретические основы, ключевые концепции и т. д.) не будут упущены, тем самым достигая консенсуса по окончательному результату в начале сотрудничества.
 
-**Stage 2 (approximately rounds 6-20): Core Content Generation and Knowledge Translation** This is the most efficient content creation stage. The collaboration mode becomes a stable "request-response" loop:
+**Этап 2 (приблизительно раунды 6–20): Генерация основного контента и трансляция знаний** Это наиболее эффективный этап создания контента. Режим совместной работы становится стабильным циклом «запрос-ответ»:
 
-- **Psychologist**: Responsible for providing "hardcore" professional knowledge, such as scientific explanations of core concepts like "temporal discounting theory" and "executive function deficits," and citing relevant experimental research to support viewpoints.
-- **Writer**: Plays the role of "translator," transforming these rigorous but potentially obscure academic concepts into vivid, figurative metaphors and life-related cases. For example, it might compare the concept of "present bias in the brain" to "a willful child who only cares about immediate candy and not long-term health."
+- **Психолог**: отвечает за предоставление «жестких» профессиональных знаний, таких как научные объяснения основных понятий, таких как «теория временного дисконтирования» и «дефицит исполнительных функций», а также цитирование соответствующих экспериментальных исследований для подтверждения точек зрения.
+- **Писатель**: играет роль «переводчика», превращая эти строгие, но потенциально малопонятные академические концепции в яркие образные метафоры и случаи из жизни. Например, можно сравнить концепцию «настоящей предвзятости в мозге» с «упрямым ребенком, который заботится только о немедленном угощении, а не о долгосрочном здоровье».
 
-**Stage 3 (approximately rounds 21-25): Iterative Optimization and Quality Assurance** When the main content of the book is completed, the focus of the conversation shifts to polishing and improving the existing text. At this time, the roles of the two agents undergo subtle changes:
+**Этап 3 (приблизительно 21-25 раунды): Итеративная оптимизация и обеспечение качества** Когда основное содержание книги завершено, фокус разговора смещается на доработку и улучшение существующего текста. В это время роли двух агентов претерпевают небольшие изменения:
 
-- **Writer**: More focused on examining the overall fluency, logical coherence, and language style of the article, proposing revision suggestions from the perspective of "reader experience."
-- **Psychologist**: Again plays the role of "fact checker," ensuring that the scientific accuracy of core knowledge is not lost during translation and polishing, and supplementing certain viewpoints with more powerful empirical research support.
+- **Автор**: Больше внимания уделяет проверке общей беглости, логической последовательности и языкового стиля статьи, предлагая предложения по исправлению с точки зрения «читательского опыта».
+- **Психолог**: снова играет роль «проверщика фактов», гарантируя, что научная точность основных знаний не будет потеряна во время перевода и полировки, а также дополняя определенные точки зрения более мощной эмпирической исследовательской поддержкой.
 
-**Stage 4 (Conclusion): Summary and Elevation** In the last few rounds of conversation, both parties collaborate to complete the summary of practical suggestions and the review of the entire book, ensuring that the e-book has a clear, powerful ending that leaves a deep impression on readers and provides practical value.
+**Этап 4 (Заключение): Подведение итогов и развитие** На последних нескольких раундах беседы обе стороны сотрудничают, чтобы завершить краткое изложение практических предложений и обзор всей книги, гарантируя, что электронная книга имеет четкий и мощный финал, который оставит глубокое впечатление на читателей и обеспечит практическую ценность.
 
 ```
 Collaboration task:
@@ -893,58 +893,58 @@ Input: Draft: Procrastination refers to the behavior and internal tendency of re
 .....
 ```
 
-### 6.4.3 Analysis of CAMEL's Advantages and Limitations
+### 6.4.3 Анализ преимуществ и ограничений CAMEL
 
-Through the previous e-book creation case, we deeply experienced CAMEL framework's unique role-playing paradigm. Now let's objectively analyze the advantages and limitations of this design philosophy to make wise technical choices in actual projects.
+В предыдущем случае создания электронной книги мы глубоко испытали уникальную парадигму ролевой игры платформы CAMEL. Теперь давайте объективно проанализируем преимущества и ограничения этой философии проектирования, чтобы сделать разумный технический выбор в реальных проектах.
 
-(1) Advantages
+(1) Преимущества
 
-CAMEL's greatest advantage lies in its "light architecture, heavy prompting" design philosophy. Compared to AutoGen's complex conversation management and AgentScope's distributed architecture, CAMEL can achieve high-quality agent collaboration through carefully designed initial prompts. This naturally emergent collaborative behavior is often more flexible and efficient than hard-coded workflows.
+Самое большое преимущество CAMEL заключается в его философии дизайна «легкая архитектура, тяжелые подсказки». По сравнению со сложным управлением диалогами AutoGen и распределенной архитектурой AgentScope, CAMEL может обеспечить высококачественное сотрудничество агентов благодаря тщательно разработанным начальным подсказкам. Это естественно возникающее совместное поведение часто оказывается более гибким и эффективным, чем жестко запрограммированные рабочие процессы.
 
-It's worth noting that the CAMEL framework is undergoing rapid development and evolution. From its [GitHub repository](https://github.com/camel-ai/camel), we can see that CAMEL is far more than a simple two-agent collaboration framework and currently has:
+Стоит отметить, что платформа CAMEL претерпевает быстрое развитие и эволюцию. Из его [репозитория GitHub](https://github.com/camel-ai/camel), мы видим, что CAMEL — это нечто большее, чем простая платформа для совместной работы двух агентов, и на данный момент он имеет:
 
-- **Multimodal Capabilities**: Supports agent collaboration in multiple modalities such as text, image, and audio
-- **Tool Integration**: Built-in rich tool library, including search, calculation, code execution, etc.
-- **Model Adaptation**: Supports multiple LLM backends such as OpenAI, Anthropic, Google, and open-source models
-- **Ecosystem Linkage**: Achieved interoperability with mainstream frameworks such as LangChain, CrewAI, and AutoGen
+- **Мультимодальные возможности**: поддерживает совместную работу агентов в различных модальностях, таких как текст, изображения и аудио.
+- **Интеграция инструментов**: встроенная богатая библиотека инструментов, включая поиск, расчеты, выполнение кода и т. д.
+- **Адаптация модели**: поддержка нескольких серверов LLM, таких как OpenAI, Anthropic, Google и модели с открытым исходным кодом.
+- **Связь с экосистемами**: достигнута совместимость с основными платформами, такими как LangChain, CrewAI и AutoGen.
 
-(2) Main Limitations
+(2) Основные ограничения
 
-1. High Dependence on Prompt Engineering
+1. Высокая зависимость от оперативного проектирования
 
-CAMEL's success largely depends on the quality of initial prompts. This brings several challenges:
+Успех CAMEL во многом зависит от качества первоначальных подсказок. Это порождает несколько проблем:
 
-- **Prompt Design Threshold**: Requires deep understanding of the target domain and LLM behavioral characteristics
-- **Debugging Complexity**: When collaboration is ineffective, it's difficult to pinpoint whether the problem lies in role definition, task description, or interaction rules
-- **Consistency Challenge**: Different LLMs may have different understandings of the same prompt
+- **Порог быстрого проектирования**: требуется глубокое понимание целевой области и поведенческих характеристик LLM.
+- **Сложность отладки**. Когда совместная работа неэффективна, трудно определить, заключается ли проблема в определении роли, описании задачи или правилах взаимодействия.
+- **Проблема согласованности**: разные специалисты LLM могут по-разному понимать одну и ту же подсказку.
 
-2. Collaboration Scale Limitations
+2. Ограничения масштаба сотрудничества
 
-Although CAMEL performs excellently in two-agent collaboration, it faces challenges when handling large-scale multi-agent scenarios:
+Хотя CAMEL превосходно работает при совместной работе двух агентов, он сталкивается с проблемами при работе с крупномасштабными многоагентными сценариями:
 
-- **Conversation Management**: Lacks complex conversation routing mechanisms like AutoGen
-- **State Synchronization**: Doesn't have distributed state management capabilities like AgentScope
-- **Conflict Resolution**: Lacks effective arbitration mechanisms when multiple agents disagree
+- **Управление разговорами**: отсутствуют сложные механизмы маршрутизации разговоров, такие как AutoGen.
+- **Синхронизация состояний**: нет возможностей распределенного управления состоянием, таких как AgentScope.
+- **Разрешение конфликтов**: отсутствуют эффективные механизмы арбитража в случае несогласия нескольких агентов.
 
-3. Task Applicability Boundaries
+3. Границы применимости задачи
 
-CAMEL is particularly suitable for tasks requiring deep collaboration and creative thinking, but may not be the optimal choice in certain scenarios:
+CAMEL особенно подходит для задач, требующих глубокого сотрудничества и творческого мышления, но может не быть оптимальным выбором в определенных сценариях:
 
-- **Strict Process Control**: For tasks requiring precise step control, LangGraph's graph structure is more suitable
-- **Large-scale Concurrency**: AgentScope's message-driven architecture has more advantages in high-concurrency scenarios
-- **Complex Decision Trees**: AutoGen's group chat mode is more flexible in multi-party decision scenarios
+- **Строгий контроль процесса**: для задач, требующих точного пошагового контроля, графическая структура LangGraph больше подходит.
+- **Крупномасштабный параллелизм**: архитектура AgentScope, управляемая сообщениями, имеет больше преимуществ в сценариях с высоким уровнем параллелизма.
+- **Сложные деревья решений**: режим группового чата AutoGen более гибок в сценариях принятия многосторонних решений.
 
-Overall, CAMEL represents a unique and elegant multi-agent collaboration paradigm. Through its "human-centered" role-playing design, it transforms complex system engineering problems into intuitive interpersonal collaboration patterns. As its ecosystem continues to improve and functions continue to expand, CAMEL is becoming one of the important choices for building intelligent collaboration systems.
+В целом CAMEL представляет собой уникальную и элегантную парадигму многоагентного сотрудничества. Благодаря своей «ориентированной на человека» ролевой конструкции она преобразует сложные проблемы системного проектирования в интуитивно понятные модели межличностного сотрудничества. Поскольку его экосистема продолжает улучшаться, а функции продолжают расширяться, CAMEL становится одним из важных вариантов создания интеллектуальных систем совместной работы.
 
-## 6.5 Framework Four: LangGraph
+## 6.5 Четвертая структура: LangGraph
 
-### 6.5.1 LangGraph Structure Overview
+### 6.5.1 Обзор структуры LangGraph
 
-LangGraph, as an important extension of the LangChain ecosystem, represents a completely new direction in agent framework design. Unlike the "conversation"-based frameworks introduced earlier (such as AutoGen and CAMEL), LangGraph models the agent's execution flow as a **State Machine** and represents it as a **Directed Graph**. In this paradigm, the graph's **Nodes** represent specific computational steps (such as calling LLM, executing tools), while **Edges** define the transition logic from one node to another. The revolutionary aspect of this design is that it natively supports loops, making it unprecedentedly intuitive and simple to build complex agent workflows capable of iteration, reflection, and self-correction.
+LangGraph, являясь важным расширением экосистемы LangChain, представляет собой совершенно новое направление в разработке структуры агентов. В отличие от фреймворков, основанных на диалоге, представленных ранее (таких как AutoGen и CAMEL), LangGraph моделирует поток выполнения агента как **Конечный автомат** и представляет его как **Направленный граф**. В этой парадигме **Узлы** графа представляют собой конкретные вычислительные шаги (например, вызов LLM, выполнение инструментов), а **Ребра** определяют логику перехода от одного узла к другому. Революционный аспект этой конструкции заключается в том, что она изначально поддерживает циклы, что делает беспрецедентно интуитивно понятным и простым создание сложных рабочих процессов агентов, способных к итерациям, отражению и самокоррекции.
 
-To understand LangGraph, we need to first grasp its three basic components.
+Чтобы понять LangGraph, нам нужно сначала понять три его основных компонента.
 
-**First, is the global state (State)**. The entire graph's execution process revolves around a shared state object. This state is usually defined as a Python `TypedDict`, which can contain any information you need to track, such as conversation history, intermediate results, iteration count, etc. All nodes can read and update this central state.
+**Во-первых, это глобальное состояние (State)**. Весь процесс выполнения графа вращается вокруг общего объекта состояния. Это состояние обычно определяется как Python`TypedDict`, который может содержать любую информацию, которую необходимо отслеживать, например историю разговоров, промежуточные результаты, количество итераций и т. д. Все узлы могут читать и обновлять это центральное состояние.
 
 ```python
 from typing import TypedDict, List
@@ -957,7 +957,7 @@ class AgentState(TypedDict):
     # ... any other state to track
 ```
 
-**Second, are the nodes (Nodes)**. Each node is a Python function that receives the current state as input and returns an updated state as output. Nodes are units that perform specific work.
+**Во-вторых, это узлы (Nodes)**. Каждый узел представляет собой функцию Python, которая получает текущее состояние в качестве входных данных и возвращает обновленное состояние в качестве выходных данных. Узлы — это единицы, выполняющие конкретную работу.
 
 ```python
 # Define a "planner" node function
@@ -982,7 +982,7 @@ def executor_node(state: AgentState) -> AgentState:
     return state
 ```
 
-**Finally, are the edges (Edges)**. Edges are responsible for connecting nodes and defining the direction of the workflow. The simplest edge is a regular edge, which specifies that the output of one node always flows to another fixed node. LangGraph's most powerful feature lies in **Conditional Edges**. It uses a function to judge the current state and then dynamically decides which node to jump to next. This is the key to implementing loops and complex logical branches.
+**Наконец, это края (Edges)**. Края отвечают за соединение узлов и определение направления рабочего процесса. Простейшее ребро — это обычное ребро, которое указывает, что выходные данные одного узла всегда передаются в другой фиксированный узел. Самая мощная функция LangGraph — это **Условные ребра**. Он использует функцию для оценки текущего состояния, а затем динамически решает, к какому узлу перейти дальше. Это ключ к реализации циклов и сложных логических ветвей.
 
 ```python
 def should_continue(state: AgentState) -> str:
@@ -996,7 +996,7 @@ def should_continue(state: AgentState) -> str:
         return "end_workflow"
 ```
 
-After defining state, nodes, and edges, we can assemble them into an executable workflow like building blocks.
+После определения состояния, узлов и ребер мы можем собрать их в исполняемый рабочий процесс, например, строительные блоки.
 
 ```python
 from langgraph.graph import StateGraph, END
@@ -1036,18 +1036,18 @@ for event in app.stream(inputs):
     print(event)
 ```
 
-### 6.5.2 Three-Step Q&A Assistant
-After understanding LangGraph's core concepts, we will consolidate what we've learned through a practical case. We will build a simplified Q&A dialogue assistant that follows a clear, fixed three-step process to answer user questions:
+### 6.5.2 Трехэтапный помощник по вопросам и ответам
+Поняв основные концепции LangGraph, мы закрепим полученные знания на практическом примере. Мы создадим упрощенный диалоговый помощник вопросов и ответов, который будет следовать четкому, фиксированному трехэтапному процессу ответа на вопросы пользователей:
 
-1. **Understand**: First, analyze the user's query intent.
-2. **Search**: Then, simulate searching for information related to the intent.
-3. **Answer**: Finally, generate the final answer based on the intent and searched information.
+1. **Понимание**. Сначала проанализируйте намерение запроса пользователя.
+2. **Поиск**. Затем имитируйте поиск информации, связанной с намерением.
+3. **Ответ**. Наконец, сгенерируйте окончательный ответ на основе намерения и искомой информации.
 
-This case will clearly demonstrate how to define state, create nodes, and linearly connect them into a complete workflow. We will break down the code into four core steps: define state, create nodes, build graph, and run application.
+Этот кейс наглядно продемонстрирует, как определять состояние, создавать узлы и линейно соединять их в полный рабочий процесс. Мы разобьем код на четыре основных этапа: определение состояния, создание узлов, построение графа и запуск приложения.
 
-(1) Define Global State
+(1) Определить глобальное состояние
 
-First, we need to define a global state that runs through the entire workflow. **This is a shared data structure that is passed between each node of the graph, serving as the persistent context of the workflow.** Each node can read data from this structure and update it.
+Во-первых, нам нужно определить глобальное состояние, которое будет действовать на протяжении всего рабочего процесса. **Это общая структура данных, которая передается между каждым узлом графа и служит постоянным контекстом рабочего процесса.** Каждый узел может считывать данные из этой структуры и обновлять их.
 
 ```python
 from typing import TypedDict, Annotated
@@ -1062,13 +1062,13 @@ class SearchState(TypedDict):
     step: str            # Mark current step
 ```
 
-We created the `SearchState` `TypedDict`, defining a clear data schema for the state object. A key design is the inclusion of both `user_query` and `search_query` fields. This allows the agent to first optimize the user's natural language question into refined keywords more suitable for search engines, thereby significantly improving the quality of search results.
+Мы создали`SearchState` `TypedDict`, определяя четкую схему данных для объекта состояния. Ключевой дизайн – включение обоих`user_query`и`search_query`поля. Это позволяет агенту сначала оптимизировать вопрос пользователя на естественном языке до уточненных ключевых слов, более подходящих для поисковых систем, тем самым значительно улучшая качество результатов поиска.
 
-(2) Define Workflow Nodes
+(2) Определить узлы рабочего процесса
 
-After defining the state structure, the next step is to create the various nodes that make up our workflow. In LangGraph, each node is a Python function that performs a specific task. These functions receive the current state object as input and return a dictionary containing updated fields.
+После определения структуры состояния следующим шагом будет создание различных узлов, составляющих наш рабочий процесс. В LangGraph каждый узел представляет собой функцию Python, выполняющую определенную задачу. Эти функции получают на вход объект текущего состояния и возвращают словарь, содержащий обновленные поля.
 
-Before defining nodes, we first complete the project initialization setup, including loading environment variables and instantiating the large language model.
+Прежде чем определять узлы, мы сначала завершаем настройку инициализации проекта, включая загрузку переменных среды и создание экземпляра большой языковой модели.
 
 ```python
 import os
@@ -1092,11 +1092,11 @@ llm = ChatOpenAI(
 tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 ```
 
-Now, let's create the three core nodes one by one.
+Теперь давайте создадим три основных узла один за другим.
 
-(1) Understand and Query Node
+(1) Понять и запросить узел
 
-This node is the first step of the workflow. Its responsibility is to understand user intent and generate an optimized search query for it.
+Этот узел является первым шагом рабочего процесса. Его обязанность — понять намерения пользователя и сгенерировать для него оптимизированный поисковый запрос.
 
 ```python
 def understand_query_node(state: SearchState) -> dict:
@@ -1131,11 +1131,11 @@ Search terms: [Best search keywords]"""
     }
 ```
 
-This node uses a structured prompt to require the LLM to simultaneously complete two tasks: "intent understanding" and "keyword generation," and updates the parsed dedicated search keywords to the state's `search_query` field, preparing for the next step of precise search.
+Этот узел использует структурированную подсказку, требующую от LLM одновременного выполнения двух задач: «понимание намерения» и «генерацию ключевых слов», а также обновляет проанализированные выделенные ключевые слова поиска до состояния.`search_query`поле, готовясь к следующему этапу точного поиска.
 
-(2) Search Node
+(2) Узел поиска
 
-This node is responsible for executing the agent's "tool usage" capability. It will call the Tavily API for real internet search and has basic error handling functionality.
+Этот узел отвечает за реализацию возможностей агента по «использованию инструментов». Он будет вызывать API Tavily для реального поиска в Интернете и имеет базовые функции обработки ошибок.
 
 ```python
 def tavily_search_node(state: SearchState) -> dict:
@@ -1163,11 +1163,11 @@ def tavily_search_node(state: SearchState) -> dict:
         }
 ```
 
-This node initiates a real API call through `tavily_client.search`. It is wrapped in a `try...except` block to catch possible exceptions. If the search fails, it updates the `step` state to `"search_failed"`, which will be used by the next node to trigger a fallback plan.
+Этот узел инициирует реальный вызов API через`tavily_client.search`. Он завернут в`try...except`блокировать возможные исключения. Если поиск не удался, он обновляет`step`государство, чтобы`"search_failed"`, который будет использоваться следующим узлом для запуска запасного плана.
 
-(3) Answer Node
+(3) Узел ответа
 
-The final answer node can choose different answering strategies based on whether the previous search was successful, possessing a certain degree of flexibility.
+Узел окончательного ответа может выбирать различные стратегии ответа в зависимости от того, был ли предыдущий поиск успешным, обладая определенной степенью гибкости.
 
 ```python
 def generate_answer_node(state: SearchState) -> dict:
@@ -1191,11 +1191,11 @@ Please synthesize the search results and provide an accurate, useful answer...""
     }
 ```
 
-This node executes conditional logic by checking the value of `state["step"]`. If the search fails, it will use the LLM's internal knowledge to answer and inform the user of the situation. If the search succeeds, it will use a prompt containing real-time search results to generate a timely and evidence-based answer.
+Этот узел выполняет условную логику, проверяя значение`state["step"]`. Если поиск не удался, он будет использовать внутренние знания LLM, чтобы ответить и проинформировать пользователя о ситуации. Если поиск увенчается успехом, он будет использовать подсказку, содержащую результаты поиска в реальном времени, для получения своевременного и обоснованного ответа.
 
-(4) Build Graph
+(4) Построить график
 
-We connect all nodes together.
+Соединяем все узлы между собой.
 
 ```python
 from langgraph.graph import StateGraph, START, END
@@ -1221,11 +1221,11 @@ def create_search_assistant():
     return app
 ```
 
-(5) Running Case Demonstration
+(5) Демонстрация рабочего случая
 
-After running this script, you can ask some questions that require real-time information, such as the case in our first chapter: `I'm going to Beijing tomorrow, what's the weather like? Are there suitable attractions?`
+После запуска этого сценария вы можете задать несколько вопросов, требующих получения информации в реальном времени, как, например, в случае, описанном в нашей первой главе:`I'm going to Beijing tomorrow, what's the weather like? Are there suitable attractions?`
 
-You will see the terminal clearly display the agent's "thinking" process:
+Вы увидите, что терминал четко отображает «мыслительный» процесс агента:
 
 ```
 🔍 Intelligent Search Assistant Started!
@@ -1266,92 +1266,92 @@ Hope this information helps you arrange a pleasant Beijing trip! If you need mor
 🤔 What would you like to know:
 ```
 
-And it is a continuously interactive assistant, you can continue to ask questions.
+И это постоянно интерактивный помощник, вы можете продолжать задавать вопросы.
 
-### 6.5.3 Analysis of LangGraph's Advantages and Limitations
+### 6.5.3 Анализ преимуществ и ограничений LangGraph
 
-Any technical framework has its specific applicable scenarios and design trade-offs. In this section, we will objectively analyze LangGraph's core advantages and the limitations it may face in practical applications.
+Любая техническая структура имеет свои конкретные применимые сценарии и компромиссы при проектировании. В этом разделе мы объективно проанализируем основные преимущества LangGraph и ограничения, с которыми он может столкнуться в практическом применении.
 
-(1) Advantages
+(1) Преимущества
 
-- As shown in our intelligent search assistant case, LangGraph explicitly defines a complete real-time Q&A process as a "flowchart" composed of states, nodes, and edges. The greatest advantage of this design is **high controllability and predictability**. Developers can precisely plan every step of the agent's behavior, which is crucial for building production-level applications that require high reliability and auditability. Its most powerful feature lies in **native support for cycles**. Through conditional edges, we can easily build "reflection-correction" loops. For example, in our case, if the search fails, we can design a path to fall back to a backup plan. This is key to building agents capable of self-optimization and fault tolerance.
+- Как показано в нашем случае с интеллектуальным помощником по поиску, LangGraph явно определяет полный процесс вопросов и ответов в реальном времени как «блок-схему», состоящую из состояний, узлов и ребер. Самым большим преимуществом этой конструкции является **высокая управляемость и предсказуемость**. Разработчики могут точно планировать каждый шаг поведения агента, что имеет решающее значение для создания приложений производственного уровня, требующих высокой надежности и контролируемости. Его самая мощная функция заключается в **встроенной поддержке циклов**. Через условные ребра мы можем легко построить циклы «отражения-коррекции». Например, в нашем случае, если поиск не удался, мы можем разработать путь возврата к плану резервного копирования. Это ключ к созданию агентов, способных к самооптимизации и отказоустойчивости.
 
-- In addition, since each node is an independent Python function, this brings **high modularity**. At the same time, inserting a node waiting for human review in the process becomes very straightforward, providing a solid foundation for implementing reliable "Human-in-the-loop" collaboration.
+- Кроме того, поскольку каждый узел представляет собой независимую функцию Python, это обеспечивает **высокую модульность**. В то же время включение в процесс узла, ожидающего проверки человеком, становится очень простым, обеспечивая прочную основу для реализации надежного взаимодействия «человек в цикле».
 
-(2) Limitations
+(2) Ограничения
 
-- Compared to conversation-based frameworks, LangGraph requires developers to write more **boilerplate code**. Defining states, nodes, edges, and a series of operations makes the development process more cumbersome for simple tasks. Developers need to think more about "how to control the process (how)" rather than just "what to do (what)". Since the workflow is predefined, LangGraph's behavior is controllable but also lacks the dynamic, **"emergent" interaction** of conversational agents. Its strength lies in executing a determined, reliable process, rather than simulating open-ended, unpredictable social collaboration.
+- По сравнению с платформами, основанными на диалогах, LangGraph требует от разработчиков написания большего количества **шаблонного кода**. Определение состояний, узлов, ребер и ряда операций делает процесс разработки более громоздким для простых задач. Разработчикам нужно больше думать о том, «как контролировать процесс (как)», а не просто «что делать (что)». Поскольку рабочий процесс предопределен, поведение LangGraph можно контролировать, но ему не хватает динамического, **"экстренного" взаимодействия** диалоговых агентов. Его сила заключается в осуществлении целенаправленного и надежного процесса, а не в моделировании открытого и непредсказуемого социального сотрудничества.
 
-- The debugging process also presents challenges. Although the process is clearer than conversation history, problems may occur at multiple points: logical errors within a node, mutations in state data passed between nodes, or mistakes in edge transition condition judgments. This requires developers to have a global understanding of the entire graph's operating mechanism.
+- Процесс отладки также представляет проблемы. Хотя этот процесс более понятен, чем история диалога, проблемы могут возникнуть в нескольких точках: логические ошибки внутри узла, мутации в данных о состоянии, передаваемых между узлами, или ошибки в суждениях об условиях перехода границ. Это требует от разработчиков глобального понимания механизма работы всего графа.
 
-## 6.6 Chapter Summary
+## 6.6 Краткое содержание главы
 
-In this chapter, we experienced some of the most cutting-edge agent frameworks through hands-on practice in the form of cases.
+В этой главе мы познакомились с некоторыми из самых передовых агентских фреймворков на практике в виде кейсов.
 
-We saw that each framework has its own approach to implementing agent construction:
+Мы увидели, что у каждого фреймворка есть свой подход к реализации построения агентов:
 
-- **AutoGen** abstracts complex collaboration as a multi-role, automatically conducted "group chat," with its core being "driving collaboration through conversation."
-- **AgentScope** focuses on the robustness and scalability of industrial-grade applications, providing a solid engineering foundation for building high-concurrency, distributed multi-agent systems.
-- **CAMEL** demonstrates how to stimulate deep, autonomous collaboration between two expert agents with minimal code through its lightweight "role-playing" and "inception prompting" paradigm.
-- **LangGraph** returns to a more fundamental "state machine" model, giving developers precise control over workflows through explicit graph structures, especially its loop capability, paving the way for building reflective and correctable agents.
+- **AutoGen** абстрагирует сложное сотрудничество как многоролевой автоматически проводимый «групповой чат», суть которого заключается в «управлении сотрудничеством посредством беседы».
+- **AgentScope** фокусируется на надежности и масштабируемости приложений промышленного уровня, обеспечивая надежную инженерную основу для создания распределенных многоагентных систем с высоким уровнем параллелизма.
+- **CAMEL** демонстрирует, как стимулировать глубокое автономное сотрудничество между двумя агентами-экспертами с минимальным количеством кода с помощью облегченной парадигмы «ролевой игры» и «подсказки к началу работы».
+- **LangGraph** возвращается к более фундаментальной модели «конечного автомата», предоставляя разработчикам точный контроль над рабочими процессами посредством явных графовых структур, особенно возможностей цикла, открывая путь для создания отражающих и корректируемых агентов.
 
-Through in-depth analysis of these frameworks, we can distill a design trade-off: **the choice between "emergent collaboration" and "explicit control"**. AutoGen and CAMEL rely more on defining agents' "roles" and "goals," allowing complex collaborative behaviors to "emerge" from simple conversation rules. This approach is closer to human interaction patterns but is sometimes difficult to predict and debug. LangGraph requires developers to explicitly define every step and transition condition, sacrificing some "emergent" surprises in exchange for high reliability, controllability, and observability. At the same time, AgentScope reveals a second equally important dimension: **engineering**. Regardless of which collaboration paradigm we choose, to push it from experimental prototype to production application, we must face engineering challenges such as concurrency, fault tolerance, and distributed deployment. AgentScope was born to solve these problems, representing the critical leap from "can run" to "can serve stably."
+Благодаря углубленному анализу этих структур мы можем выделить компромиссный вариант дизайна: **выбор между «экстренным сотрудничеством» и «явным контролем»**. AutoGen и CAMEL больше полагаются на определение «ролей» и «целей» агентов, позволяя сложному совместному поведению «возникать» из простых правил общения. Этот подход ближе к моделям человеческого взаимодействия, но иногда его трудно предсказать и отладить. LangGraph требует от разработчиков явно определять каждый шаг и условие перехода, жертвуя некоторыми «неожиданными» сюрпризами в обмен на высокую надежность, управляемость и наблюдаемость. В то же время AgentScope открывает второе, не менее важное измерение: **инжиниринг**. Независимо от того, какую парадигму сотрудничества мы выберем, чтобы перейти от экспериментального прототипа к производственному приложению, нам придется столкнуться с инженерными проблемами, такими как параллелизм, отказоустойчивость и распределенное развертывание. AgentScope был создан для решения этих проблем, представляя собой критический скачок от «может работать» к «может стабильно работать».
 
-In summary, there is not just one way to build agents. Deeply understanding the framework design philosophies explored in this chapter can make us not only better "tool users" but also understand the various pros and cons and trade-offs in framework design.
+Подводя итог, можно сказать, что существует не один способ создания агентов. Глубокое понимание философии проектирования фреймворков, рассмотренной в этой главе, может помочь нам не только лучше «пользоваться инструментами», но и понять различные плюсы и минусы, а также компромиссы при проектировании фреймворков.
 
-In the next chapter, we will enter the core content of this tutorial, building our own agent framework from scratch, integrating all theory and practice.
-
-
-## Exercises
-
-1. This chapter introduced four distinctive agent frameworks: `AutoGen`, `AgentScope`, `CAMEL`, and `LangGraph`. Please analyze:
-
-   - In Table 6.1 of Section 6.1.2, multiple dimensions of these four frameworks were compared. Please select the two frameworks you are most familiar with and further compare them in depth from three dimensions: "collaboration mode," "control method," and "applicable scenarios."
-   - This chapter mentioned the trade-off between "emergent collaboration" and "explicit control." How do you understand the meaning of these two design philosophies?
-
-2. In the `AutoGen` case in Section 6.2, we built a "software development team." Please extend your thinking based on this case:
-
-   > **Hint**: This is a hands-on practice question, actual operation is recommended
-
-   - The current team uses `RoundRobinGroupChat` (round-robin group chat) mode, where agents speak in a fixed order. If requirements change and the engineer's code needs to be returned to the product manager for re-review, how should the collaboration process be modified? Please design a mechanism that supports "dynamic rollback."
-   - In the case, we defined the role and responsibilities of each agent through `System Message`. Please try to add a new role "Quality Assurance" to this team and design its system message so that it can perform automated testing after code review.
-   - `AutoGen`'s conversational collaboration has potential instability, which may cause conversations to deviate from the topic or fall into loops. Please think: How to design a "conversation quality monitoring" mechanism to intervene in time when anomalies are detected?
-
-3. In the `AgentScope` case in Section 6.3, we implemented a "Three Kingdoms Werewolf" game. Please analyze in depth:
-
-   - The case used `MsgHub` (message center) to manage communication between agents. Please explain what advantages message-driven architecture has compared to traditional function calls? In what scenarios is this architecture particularly valuable?
-   - The game used structured output (such as `DiscussionModelCN`, `WitchActionModelCN`) to constrain agent behavior. Please design a new game role "Hunter" and define its corresponding structured output model, including field definitions and validation rules.
-   - `AgentScope` supports distributed deployment, which means different agents can run on different servers. Please think: In a real-time game scenario like "Three Kingdoms Werewolf," what technical challenges will distributed deployment bring? How to ensure message ordering and consistency?
-
-4. In the `CAMEL` case in Section 6.4, we had a psychologist and writer collaborate to create an e-book.
-
-   - In the case, collaboration is forcibly terminated when the `<CAMEL_TASK_DONE>` flag is detected. But what if the two agents disagree (one thinks it can be terminated, one thinks it shouldn't) and cannot reach consensus? Please design a "conflict resolution" compatibility mechanism.
-   - `CAMEL` was originally designed for two-agent collaboration but has now been extended to support multi-agent. Please consult `CAMEL`'s latest documentation to understand its multi-agent collaboration module [`workforce`](https://docs.camel-ai.org/key_modules/workforce), and explain how it differs from `AutoGen`'s group chat mode in combination with the architecture diagram.
-
-5. In the `LangGraph` case in Section 6.5, we built a "three-step Q&A assistant." Please analyze:
-
-   - `LangGraph` models the agent process as a state machine and directed graph. Please draw the graph structure of the "understand-search-answer" process in the case, marking nodes, edges, and state transition conditions.
-   - The current assistant is a linear process. Please extend this case by adding a "reflection" node: if the generated answer quality is low (e.g., too brief or lacking details), the system should re-search or regenerate the answer. Please design the conditional edge logic for this loop mechanism.
-   - `LangGraph`'s advantage lies in native support for loops. Please design a more complex application scenario that fully utilizes this feature: for example, "code generation-testing-fixing" loop, "paper writing-review-revision" loop, etc. Draw the complete graph structure and explain the function of key nodes.
-
-6. Framework selection is one of the key decisions in agent product development. Suppose you are a technical architect at an `AI` company, and the company plans to develop the following three agent product applications. Please select the most suitable framework for each application (`AutoGen`, `AgentScope`, `CAMEL`, `LangGraph`, or develop from scratch without a framework) and explain in detail:
-
-   **Application A**: Intelligent customer service system, needs to handle a large number of concurrent user requests (1000+ per second), requires response time less than 2 seconds, system needs to run stably 7×24 hours, and support horizontal scaling.
-
-   **Application B**: Scientific research paper writing assistance platform, needs a "researcher agent" and a "writer agent" to collaborate deeply, jointly completing literature review, experimental design, data analysis, and paper writing. Requires agents to conduct multiple rounds of in-depth discussion and autonomously advance tasks.
-
-   **Application C**: Financial risk control approval system, needs to process loan applications according to strict procedures: document review → risk assessment → quota calculation → compliance check → manual review → final decision. Each link has clear judgment criteria and branch logic, requiring traceable and auditable processes.
+В следующей главе мы рассмотрим основное содержание этого руководства, создав нашу собственную структуру агента с нуля, интегрируя всю теорию и практику.
 
 
-## References
+## Упражнения
 
-[1] Wu Q, Bansal G, Zhang J, et al. Autogen: Enabling next-gen LLM applications via multi-agent conversations[C]//First Conference on Language Modeling. 2024.
+1. В этой главе были представлены четыре различных платформы агентов: AutoGen, AgentScope, CAMEL и LangGraph. Пожалуйста, проанализируйте:
 
-[2] Gao D, Li Z, Pan X, et al. Agentscope: A flexible yet robust multi-agent platform[J]. arXiv preprint arXiv:2402.14034, 2024.
+   - В таблице 6.1 раздела 6.1.2 сравниваются различные аспекты этих четырех структур. Пожалуйста, выберите две структуры, с которыми вы наиболее знакомы, и сравните их более подробно по трем измерениям: «режим сотрудничества», «метод управления» и «применимые сценарии».
+   - В этой главе упоминается компромисс между «экстренным сотрудничеством» и «явным контролем». Как вы понимаете смысл этих двух философий дизайна?
 
-[3] Li G, Hammoud H, Itani H, et al. Camel: Communicative agents for" mind" exploration of large language model society[J]. Advances in Neural Information Processing Systems, 2023, 36: 51991-52008.
+2. В случае с AutoGen в разделе 6.2 мы создали «команду разработчиков программного обеспечения». Пожалуйста, расширьте свое мышление на основе этого случая:
 
-[4] LangChain. LangGraph [EB/OL]. (2024). https://github.com/langchain-ai/langgraph.
+> **Подсказка**: это практический вопрос, рекомендуется реальная работа.
 
-[5] Microsoft. AutoGen - UserProxyAgent [EB/OL]. (2024). https://microsoft.github.io/autogen/stable/reference/python/autogen_agentchat.agents.html#autogen_agentchat.agents.UserProxyAgent.
+   - Текущая команда использует режим RoundRobinGroupChat (круговой групповой чат), в котором агенты говорят в фиксированном порядке. Если требования меняются и код инженера необходимо вернуть продакт-менеджеру для повторной проверки, как следует изменить процесс совместной работы? Пожалуйста, разработайте механизм, поддерживающий «динамический откат».
+   - В данном случае мы определили роль и обязанности каждого агента через «Системное сообщение». Попробуйте добавить в эту команду новую роль «Обеспечение качества» и спроектируйте ее системное сообщение так, чтобы она могла выполнять автоматическое тестирование после проверки кода.
+   - Диалоговое сотрудничество AutoGen потенциально нестабильно, что может привести к отклонению разговора от темы или зацикливанию. Пожалуйста, подумайте: как спроектировать механизм «мониторинга качества разговора», чтобы вовремя вмешиваться при обнаружении аномалий?
+
+3. В случае с AgentScope в разделе 6.3 мы реализовали игру «Три королевства-оборотня». Пожалуйста, проанализируйте внимательно:
+
+   - В данном случае для управления связью между агентами использовался MsgHub (центр сообщений). Пожалуйста, объясните, какие преимущества имеет архитектура, управляемая сообщениями, по сравнению с традиционными вызовами функций? В каких сценариях эта архитектура особенно ценна?
+   - В игре использовался структурированный вывод (например, «DiscussionModelCN», «WitchActionModelCN») для ограничения поведения агентов. Разработайте новую игровую роль «Охотник» и определите соответствующую модель структурированного вывода, включая определения полей и правила проверки.
+   - AgentScope поддерживает распределенное развертывание, что означает, что разные агенты могут работать на разных серверах. Подумайте: какие технические проблемы возникнут в таком игровом сценарии, как «Троецарствие оборотня», в реальном времени? Как обеспечить порядок и согласованность сообщений?
+
+4. В случае с «CAMEL» ​​в разделе 6.4 мы попросили психолога и писателя совместно создать электронную книгу.
+
+   - В этом случае сотрудничество принудительно прекращается при обнаружении флага `<CAMEL_TASK_DONE>`. Но что, если два агента не согласны (один думает, что его можно прекратить, другой думает, что этого не следует) и не могут достичь консенсуса? Пожалуйста, разработайте механизм совместимости «разрешения конфликтов».
+   - CAMEL изначально был разработан для совместной работы двух агентов, но теперь был расширен для поддержки нескольких агентов. Пожалуйста, обратитесь к последней документации `CAMEL`, чтобы понять его модуль многоагентной совместной работы [`workforce`](https://docs.camel-ai.org/key_modules/workforce) и объяснить, чем он отличается от режима группового чата `AutoGen` в сочетании со схемой архитектуры.
+
+5. В случае с LangGraph в разделе 6.5 мы создали «трехэтапного помощника по вопросам и ответам». Пожалуйста, проанализируйте:
+
+   - LangGraph моделирует процесс агента как конечный автомат и ориентированный граф. Нарисуйте, пожалуйста, графовую структуру процесса «понять-поиск-ответ» в кейсе, отметив узлы, ребра и условия перехода состояний.
+   - Текущий помощник представляет собой линейный процесс. Пожалуйста, расширьте этот случай, добавив узел «отражения»: если качество сгенерированного ответа низкое (например, слишком краткое или недостаточно подробное), система должна повторно выполнить поиск или повторно сгенерировать ответ. Пожалуйста, разработайте логику условного ребра для этого механизма цикла.
+   - Преимущество LangGraph заключается во встроенной поддержке циклов. Разработайте более сложный сценарий приложения, который полностью использует эту функцию: например, цикл «генерация кода-тестирование-исправление», цикл «написание статьи-проверка-проверка» и т. д. Нарисуйте полную структуру графа и объясните функцию ключевых узлов.
+
+6. Выбор платформы — одно из ключевых решений при разработке агентского продукта. Предположим, вы являетесь техническим архитектором в компании, занимающейся искусственным интеллектом, и компания планирует разработать следующие три приложения-агента. Пожалуйста, выберите наиболее подходящую платформу для каждого приложения («AutoGen», «AgentScope», «CAMEL», «LangGraph» или разработку с нуля без платформы) и подробно объясните:
+
+**Приложение А**: интеллектуальная система обслуживания клиентов, которая должна обрабатывать большое количество одновременных запросов пользователей (более 1000 в секунду), требует времени ответа менее 2 секунд, система должна стабильно работать 7×24 часа и поддерживать горизонтальное масштабирование.
+
+**Приложение B**: Платформа помощи в написании научных статей, нуждается в «агенте-исследователе» и «агенте-писателе» для тесного сотрудничества, совместного выполнения обзора литературы, планирования эксперимента, анализа данных и написания статей. Требует от агентов проведения нескольких раундов углубленного обсуждения и автономного продвижения задач.
+
+**Заявление C**: Система утверждения контроля финансовых рисков, необходимо обрабатывать заявки на кредит в соответствии со строгими процедурами: проверка документов → оценка риска → расчет квоты → проверка соответствия → ручная проверка → окончательное решение. Каждое звено имеет четкие критерии оценки и логику ветвей, требующие отслеживаемых и проверяемых процессов.
+
+
+## Ссылки
+
+[1] Ву Ц, Бансал Г, Чжан Дж и др. Autogen: создание приложений LLM нового поколения посредством многоагентных диалогов[C]//Первая конференция по языковому моделированию. 2024.
+
+[2] Гао Д., Ли З., Пан Х. и др. Agentscope: гибкая, но надежная многоагентная платформа[J]. Препринт arXiv arXiv:2402.14034, 2024.
+
+[3] Ли Г., Хаммуд Х., Итани Х. и др. Camel: Коммуникативные агенты для исследования «разума» общества с большой языковой моделью[J]. Достижения в области нейронных систем обработки информации, 2023, 36: 51991-52008.
+
+[4] Лангчейн. Лангграф [EB/OL]. (2024).https://github.com/langchain-ai/langgraph.
+
+[5] Майкрософт. AutoGen — UserProxyAgent [EB/OL]. (2024).https://microsoft.github.io/autogen/stable/reference/python/autogen_agentchat.agents.html#autogen_agentchat.agents.UserProxyAgent.
 

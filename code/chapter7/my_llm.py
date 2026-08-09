@@ -13,28 +13,28 @@ class MyLLM(HelloAgentsLLM):
         provider: Optional[str] = "auto",
         **kwargs
     ):
-        # 检查provider是否为我们想处理的'modelscope'
+        # Проверьте, является ли поставщик той областью модели, которую мы хотим обработать.
         if provider == "modelscope":
-            print("正在使用自定义的 ModelScope Provider")
+            print("Использование собственного поставщика ModelScope")
             self.provider = "modelscope"
             
-            # 解析 ModelScope 的凭证
+            # Анализ учетных данных для ModelScope
             self.api_key = api_key or os.getenv("MODELSCOPE_API_KEY")
             self.base_url = base_url or "https://api-inference.modelscope.cn/v1/"
             
-            # 验证凭证是否存在
+            # Убедитесь, что учетные данные существуют
             if not self.api_key:
                 raise ValueError("ModelScope API key not found. Please set MODELSCOPE_API_KEY environment variable.")
 
-            # 设置默认模型和其他参数
+            # Установите модель по умолчанию и другие параметры
             self.model = model or os.getenv("LLM_MODEL_ID") or "Qwen/Qwen2.5-VL-72B-Instruct"
             self.temperature = kwargs.get('temperature', 0.7)
             self.max_tokens = kwargs.get('max_tokens')
             self.timeout = kwargs.get('timeout', 60)
             
-            # 使用获取的参数创建OpenAI客户端实例
+            # Создайте экземпляр клиента OpenAI, используя полученные параметры.
             self._client = OpenAI(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
 
         else:
-            # 如果不是 modelscope, 则完全使用父类的原始逻辑来处理
+            # Если это не область видимости модели, для ее обработки будет использоваться исходная логика родительского класса.
             super().__init__(model=model, api_key=api_key, base_url=base_url, provider=provider, **kwargs)

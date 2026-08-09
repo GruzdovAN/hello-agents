@@ -1,7 +1,7 @@
 """
-AIME数学题目生成器
+Генератор математических вопросов AIME
 
-使用HelloAgents框架生成AIME风格的数学题目
+Используйте платформу HelloAgents для создания математических вопросов в стиле AIME.
 """
 
 import json
@@ -17,9 +17,9 @@ from datasets import load_dataset
 
 
 class AIMEGenerator:
-    """AIME题目生成器"""
+    """Генератор вопросов AIME"""
     
-    # AIME题目生成提示词（英文）
+    # Слова-подсказки для генерации вопросов AIME (на английском языке)
     GENERATION_PROMPT = """You are a professional mathematics competition problem designer, skilled in creating AIME (American Invitational Mathematics Examination) style problems.
 
 AIME Problem Characteristics:
@@ -53,15 +53,15 @@ Please output in the following JSON format, avoid using special escape character
         reference_dataset: str = "TianHongZXY/aime-1983-2025"
     ):
         """
-        初始化生成器
+        Генератор инициализации
 
-        Args:
-            llm: LLM实例（可选）
-            delay_seconds: 每次生成之间的延迟（秒），避免API速率限制
-            use_reference_examples: 是否使用真题作为参考样例
-            reference_dataset: 参考数据集名称，默认使用TianHongZXY/aime-1983-2025（900+道题）
+        Аргументы:
+            llm: экземпляр LLM (необязательно).
+            задержание_секунд: задержка в секундах между каждой сборкой, чтобы избежать ограничений скорости API.
+            use_reference_examples: следует ли использовать реальные вопросы в качестве справочных примеров.
+            reference_dataset: имя набора справочных данных, значение по умолчанию — TianHongZXY/aime-1983-2025 (более 900 вопросов)
         """
-        # 如果没有提供llm，创建默认的HelloAgentsLLM
+        # Если llm не указан, создайте HelloAgentsLLM по умолчанию.
         if llm is None:
             self.llm = HelloAgentsLLM()
         else:
@@ -70,27 +70,27 @@ Please output in the following JSON format, avoid using special escape character
         self.agent = SimpleAgent(
             name="AIME Generator",
             llm=self.llm,
-            system_prompt="你是一位专业的数学竞赛题目设计专家。"
+            system_prompt="Вы профессиональный эксперт по разработке вопросов для математических соревнований."
         )
         self.delay_seconds = delay_seconds
         self.use_reference_examples = use_reference_examples
         self.reference_examples = []
 
-        # 加载参考样例
+        # Загрузите эталонный образец
         if use_reference_examples:
             try:
-                print(f"📚 加载AIME真题数据集: {reference_dataset}")
-                # 尝试不同的split
+                print(f"📚 Загрузите реальный набор тестовых данных AIME: {reference_dataset}")
+                # Попробуйте разные варианты разделения
                 try:
                     dataset = load_dataset(reference_dataset, split="train")
                 except:
                     dataset = load_dataset(reference_dataset, split="test")
 
-                # 加载所有题目作为参考
+                # Загрузите все вопросы для справки
                 self.reference_examples = list(dataset)
-                print(f"   ✓ 已加载 {len(self.reference_examples)} 道参考题目")
+                print(f"   ✓ Загружено {len(self.reference_examples)} справочных вопросов.")
 
-                # 统计年份分布（如果有year字段）
+                # Статистическое распределение по годам (при наличии поля года)
                 year_counts = {}
                 for item in self.reference_examples:
                     year = item.get('year')
@@ -99,24 +99,24 @@ Please output in the following JSON format, avoid using special escape character
 
                 if year_counts:
                     year_range = f"{min(year_counts.keys())}-{max(year_counts.keys())}"
-                    print(f"   ℹ️  年份范围: {year_range}")
+                    print(f"   ℹ️ Диапазон лет: {year_range}")
 
             except Exception as e:
-                print(f"   ⚠️ 加载参考样例失败: {e}")
-                print(f"   ℹ️  将使用默认提示词生成")
+                print(f"   ⚠️ Не удалось загрузить эталонный образец: {e}.")
+                print(f"   ℹ️ Будет сгенерировано с использованием слов-подсказок по умолчанию.")
                 self.use_reference_examples = False
     
     def generate_single(self, max_retries: int = 3) -> Dict[str, Any]:
         """
-        生成单个题目
+        Создать один вопрос
 
-        Args:
-            max_retries: 最大重试次数
+        Аргументы:
+            max_retries: Максимальное количество повторов
 
-        Returns:
-            题目数据
+        Возврат:
+            данные вопроса
         """
-        # 构建提示词
+        # Составьте слова-подсказки
         prompt = self._build_prompt()
 
         for attempt in range(max_retries):
@@ -125,23 +125,23 @@ Please output in the following JSON format, avoid using special escape character
                 return self._parse_response(response)
             except Exception as e:
                 if attempt < max_retries - 1:
-                    tqdm.write(f"⚠️ 生成失败（尝试 {attempt + 1}/{max_retries}），{self.delay_seconds}秒后重试...")
+                    tqdm.write(f"⚠️ Генерация не удалась (попробуйте {attempt + 1}/{max_retries}), повторите попытку через {self.delay_секунды} секунд...")
                     time.sleep(self.delay_seconds)
                 else:
-                    tqdm.write(f"❌ 生成失败，已达最大重试次数: {e}")
+                    tqdm.write(f"❌ Генерация не удалась, достигнуто максимальное количество повторов: {e}")
                     return self._get_default_problem()
 
     def _build_prompt(self) -> str:
-        """构建生成提示词"""
+        """Создавайте и генерируйте подсказки"""
         if not self.use_reference_examples or not self.reference_examples:
             return self.GENERATION_PROMPT
 
-        # 随机选择一个参考样例
+        # Случайным образом выберите эталонный образец
         example = random.choice(self.reference_examples)
         example_problem = example.get('problem', 'Example problem')
         example_answer = example.get('answer', 0)
 
-        # 构建带参考样例的提示词（英文）
+        # Составьте слова-подсказки со справочными примерами (на английском языке)
         prompt = f"""You are a professional mathematics competition problem designer, skilled in creating AIME (American Invitational Mathematics Examination) style problems.
 
 【Reference Example】(For style reference only, please generate a completely different problem)
@@ -178,10 +178,10 @@ Important Notes:
         return prompt
 
     def _parse_response(self, response: str) -> Dict[str, Any]:
-        """解析LLM响应（支持LaTeX数学公式）"""
+        """Анализ ответов LLM (поддерживает математические формулы LaTeX)"""
         import re
 
-        # 提取JSON部分
+        # Извлечь часть JSON
         if "```json" in response:
             json_str = response.split("```json")[1].split("```")[0].strip()
         elif "```" in response:
@@ -189,52 +189,52 @@ Important Notes:
         else:
             json_str = response.strip()
 
-        # 使用json.loads的strict=False来处理转义字符
-        # 但这还不够，我们需要更智能的处理
+        # Используйте strict=False для json.loads для обработки экранированных символов.
+        # Но этого недостаточно, нам нужна более умная обработка
         try:
             problem_data = json.loads(json_str)
         except json.JSONDecodeError as e:
-            # 如果解析失败，尝试修复常见的LaTeX转义问题
-            # 方法：先将字符串中的单个反斜杠替换为双反斜杠（但保留已经转义的）
-            # 这样LaTeX的 \frac 会变成 \\frac，在JSON中是合法的
+            # Если синтаксический анализ не удался, попробуйте исправить распространенные проблемы с экранированием LaTeX.
+            # Метод: сначала замените одиночные обратные косые черты в строке двойными обратными косыми чертами (но сохраняйте экранированные).
+            # Таким образом, \frac LaTeX станет \\frac, что допустимо в JSON.
 
-            # 使用正则表达式：找到所有未转义的反斜杠（不是\\的\）
-            # 并将其替换为\\
+            # Использование регулярных выражений: найдите все неэкранированные обратные косые черты (\, которые не являются \\)
+            # и замените его на \\
             fixed_json_str = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r'\\\\', json_str)
 
             try:
                 problem_data = json.loads(fixed_json_str)
             except json.JSONDecodeError:
-                # 如果还是失败，打印错误信息并抛出
-                print(f"❌ JSON解析失败:")
-                print(f"原始响应: {response[:500]}...")
-                print(f"提取的JSON: {json_str[:500]}...")
+                # Если это по-прежнему не удается, напечатайте сообщение об ошибке и выдайте
+                print(f"❌ Не удалось выполнить синтаксический анализ JSON:")
+                print(f"Исходный ответ: {response[:500]}...")
+                print(f"Извлеченный JSON: {json_str[:500]}...")
                 raise
 
-        # 验证必需字段
+        # Проверьте обязательные поля
         if "problem" not in problem_data or "answer" not in problem_data:
-            raise ValueError("缺少必需字段: problem 或 answer")
+            raise ValueError("Отсутствует обязательное поле: проблема или ответ")
 
-        # 验证答案范围
+        # Подтвердить диапазон ответов
         answer = int(problem_data.get("answer", 0))
         if not (0 <= answer <= 999):
-            print(f"⚠️ 答案超出范围: {answer}，调整为0-999范围内")
+            print(f"⚠️ Ответ вне диапазона: {ответ}, скорректирован в диапазоне 0–999.")
             answer = max(0, min(999, answer))
             problem_data["answer"] = answer
 
-        # 确保有默认值
+        # Убедитесь, что существует значение по умолчанию
         problem_data.setdefault("solution", "No solution provided")
         problem_data.setdefault("topic", "Uncategorized")
 
         return problem_data
 
     def _get_default_problem(self) -> Dict[str, Any]:
-        """获取默认题目（生成失败时使用）"""
+        """Получить вопрос по умолчанию (используется в случае сбоя генерации)"""
         return {
-            "problem": "生成失败，请重新生成",
+            "problem": "Генерация не удалась, пожалуйста, перегенерируйте",
             "answer": 0,
             "solution": "N/A",
-            "topic": "未知"
+            "topic": "неизвестный"
         }
     
     def generate_batch(
@@ -243,81 +243,81 @@ Important Notes:
         checkpoint_path: str = None
     ) -> List[Dict[str, Any]]:
         """
-        批量生成题目
+        Генерируйте вопросы пакетно
 
-        Args:
-            num_problems: 生成题目数量
-            checkpoint_path: 检查点文件路径（用于保存进度）
+        Аргументы:
+            num_problems: количество сгенерированных вопросов
+            checkpoint_path: путь к файлу контрольной точки (используется для сохранения прогресса)
 
-        Returns:
-            题目列表
+        Возврат:
+            Список вопросов
         """
-        print(f"\n🎯 开始生成AIME题目")
-        print(f"   目标数量: {num_problems}")
-        print(f"   生成模型: {self.llm.model}")
-        print(f"   延迟设置: {self.delay_seconds}秒/题")
+        print(f"\n🎯 Начните генерировать вопросы AIME")
+        print(f"   Целевое количество: {num_problems}")
+        print(f"   Создать модель: {self.llm.model}")
+        print(f"   Настройка задержки: {self.delay_секунды} секунд/вопрос.")
 
-        # 尝试从检查点恢复
+        # Попробуйте восстановить с контрольной точки
         problems = []
         start_index = 0
 
         if checkpoint_path and os.path.exists(checkpoint_path):
-            print(f"\n📂 发现检查点文件，尝试恢复...")
+            print(f"\n📂 Найден файл контрольной точки, пытаюсь восстановить...")
             try:
                 with open(checkpoint_path, 'r', encoding='utf-8') as f:
                     problems = json.load(f)
                 start_index = len(problems)
-                print(f"   ✓ 已恢复 {start_index} 个题目，从第 {start_index + 1} 个继续")
+                print(f"   ✓ Вопросы {start_index} восстановлены, продолжайте с {start_index + 1}")
             except Exception as e:
-                print(f"   ⚠️ 恢复失败: {e}，从头开始")
+                print(f"   ⚠️ Не удалось восстановить: {e}, начните с нуля.")
                 problems = []
                 start_index = 0
 
-        # 生成题目（使用tqdm显示进度）
-        with tqdm(total=num_problems, initial=start_index, desc="生成AIME题目", unit="题") as pbar:
-            last_call_time = 0  # 上次API调用的时间
+        # Генерируйте вопросы (используйте tqdm для отображения прогресса)
+        with tqdm(total=num_problems, initial=start_index, desc="Создание вопросов AIME", unit="вопрос") as pbar:
+            last_call_time = 0  # Время последнего вызова API
 
             for i in range(start_index, num_problems):
-                # 计算距离上次调用的时间
+                # Подсчитать время с момента последнего звонка
                 if last_call_time > 0:
                     elapsed = time.time() - last_call_time
-                    # 如果距离上次调用不足delay_seconds，则等待
+                    # Если с момента последнего вызова прошло меньше задержки_секунд, подождите
                     if elapsed < self.delay_seconds:
                         wait_time = self.delay_seconds - elapsed
-                        tqdm.write(f"⏳ 等待 {wait_time:.1f} 秒以避免速率限制...")
+                        tqdm.write(f"⏳ Подождите {wait_time:.1f} секунд, чтобы избежать ограничения скорости...")
                         time.sleep(wait_time)
 
-                # 记录开始时间
+                # Время начала записи
                 start_time = time.time()
 
-                # 生成题目
+                # Генерировать вопросы
                 problem = self.generate_single()
                 problem["id"] = f"gen_aime_{i + 1}"
                 problem["generated_at"] = datetime.now().isoformat()
 
-                # 记录结束时间
+                # Время окончания записи
                 last_call_time = time.time()
                 generation_time = last_call_time - start_time
 
                 problems.append(problem)
 
-                # 更新进度条描述
+                # Обновить описание индикатора выполнения
                 pbar.set_postfix({
-                    "主题": problem.get('topic', 'N/A'),
-                    "答案": problem.get('answer', 'N/A'),
-                    "耗时": f"{generation_time:.1f}s"
+                    "тема": problem.get('topic', 'N/A'),
+                    "Отвечать": problem.get('answer', 'N/A'),
+                    "кропотливый": f"{generation_time:.1f}s"
                 })
                 pbar.update(1)
 
-                # 保存检查点
+                # Сохранить контрольную точку
                 if checkpoint_path:
                     try:
                         with open(checkpoint_path, 'w', encoding='utf-8') as f:
                             json.dump(problems, f, ensure_ascii=False, indent=2)
                     except Exception as e:
-                        tqdm.write(f"⚠️ 保存检查点失败: {e}")
+                        tqdm.write(f"⚠️ Не удалось сохранить контрольную точку: {e}.")
 
-        print(f"\n✅ 生成完成！共 {len(problems)} 个题目")
+        print(f"\n✅ Генерация завершена! Всего вопросов: {len(problems)}")
         return problems
     
     def save_problems(
@@ -325,55 +325,55 @@ Important Notes:
         problems: List[Dict[str, Any]],
         output_path: str
     ):
-        """保存题目到文件"""
-        # 确保目录存在
+        """Сохранить вопрос в файл"""
+        # Убедитесь, что каталог существует
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(problems, f, ensure_ascii=False, indent=2)
         
-        print(f"\n💾 题目已保存: {output_path}")
+        print(f"\n💾 Вопрос сохранен: {output_path}")
     
     def generate_and_save(
         self,
         num_problems: int = 30,
         output_dir: str = "data_generation/generated_data"
     ) -> str:
-        """生成并保存题目"""
-        # 创建输出目录
+        """Создавайте и сохраняйте вопросы"""
+        # Создать выходной каталог
         os.makedirs(output_dir, exist_ok=True)
 
-        # 清理旧的检查点文件
+        # Очистите старые файлы контрольных точек
         for file in os.listdir(output_dir):
             if file.startswith("checkpoint_") and file.endswith(".json"):
                 old_checkpoint = os.path.join(output_dir, file)
                 try:
                     os.remove(old_checkpoint)
-                    print(f"🗑️  已删除旧检查点文件: {file}")
+                    print(f"🗑️Удален старый файл контрольной точки: {file}.")
                 except Exception as e:
-                    print(f"⚠️ 删除旧检查点失败: {e}")
+                    print(f"⚠️ Не удалось удалить старую контрольную точку: {e}.")
 
-        # 设置检查点路径
+        # Установить путь к контрольной точке
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         checkpoint_path = os.path.join(output_dir, f"checkpoint_{timestamp}.json")
 
-        # 生成题目（带检查点）
+        # Генерация вопросов (с контрольными точками)
         problems = self.generate_batch(num_problems, checkpoint_path=checkpoint_path)
 
-        # 保存题目
+        # Сохранить вопрос
         output_path = os.path.join(output_dir, f"aime_generated_{timestamp}.json")
         self.save_problems(problems, output_path)
 
-        # 生成统计报告
+        # Формировать статистические отчеты
         self._generate_statistics_report(problems, output_dir, timestamp)
 
-        # 删除检查点文件
+        # Удалить файл контрольной точки
         if os.path.exists(checkpoint_path):
             try:
                 os.remove(checkpoint_path)
-                print(f"\n🗑️  已删除检查点文件")
+                print(f"\n🗑️ Файл контрольной точки удален.")
             except Exception as e:
-                print(f"\n⚠️ 删除检查点文件失败: {e}")
+                print(f"\n⚠️ Не удалось удалить файл контрольной точки: {e}.")
 
         return output_path
     
@@ -383,29 +383,29 @@ Important Notes:
         output_dir: str,
         timestamp: str
     ):
-        """生成统计报告"""
-        # 统计主题分布
+        """Формировать статистические отчеты"""
+        # Статистическое распределение тем
         topics = {}
         answers = []
 
         for problem in problems:
-            topic = problem.get("topic", "未知")
+            topic = problem.get("topic", "неизвестный")
             topics[topic] = topics.get(topic, 0) + 1
 
             if "answer" in problem:
                 answers.append(problem["answer"])
         
-        # 生成报告
-        report = f"""# AIME题目生成统计报告
+        # Создать отчет
+        report = f"""Статистический отчет о создании вопросов #AIME
 
-## 基本信息
+## Основная информация
 
-- **生成时间**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-- **题目数量**: {len(problems)}
+- **Время генерации**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+- **Количество вопросов**: {len(problems)}
 
-## 主题分布
+## Распределение тем
 
-| 主题 | 数量 | 占比 |
+| Тема | Количество | Пропорция |
 |------|------|------|
 """
         
@@ -415,47 +415,47 @@ Important Notes:
 
         if answers:
             report += f"""
-## 答案分析
+## Анализ ответов
 
-- **平均答案**: {sum(answers) / len(answers):.2f}
-- **最小答案**: {min(answers)}
-- **最大答案**: {max(answers)}
-- **答案范围**: {min(answers)}-{max(answers)}
+- **Средний ответ**: {sum(ответы) / len(ответы):.2f}
+- **Минимальный ответ**: {мин(ответы)}
+- **Максимальный ответ**: {max(ответы)}
+- **Диапазон ответов**: {мин(ответы)}-{макс(ответы)}
 """
         
         report += f"""
-## 题目列表
+## Список вопросов
 
-| ID | 主题 | 答案 |
+| удостоверение личности | Тема | Ответ |
 |-----|------|------|
 """
 
-        for problem in problems[:10]:  # 只显示前10个
+        for problem in problems[:10]:  # Показать только первые 10
             report += f"| {problem.get('id', 'N/A')} | {problem.get('topic', 'N/A')} | {problem.get('answer', 'N/A')} |\n"
         
         if len(problems) > 10:
-            report += f"\n*（仅显示前10个题目，完整列表请查看JSON文件）*\n"
+            report += f"\n*(Отображаются только первые 10 вопросов, полный список можно просмотреть в файле JSON)*\n"
         
         report += f"""
 ---
 
-*报告生成时间: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
+*Время формирования отчета: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
 """
         
-        # 保存报告
+        # сохранить отчет
         report_path = os.path.join(output_dir, f"generation_report_{timestamp}.md")
         with open(report_path, 'w', encoding='utf-8') as f:
             f.write(report)
         
-        print(f"📊 统计报告已保存: {report_path}")
+        print(f"📊 Статистический отчет сохранен: {report_path}")
 
 
 if __name__ == "__main__":
-    # 创建生成器
+    # Создать генератор
     generator = AIMEGenerator()
     
-    # 生成30个题目
+    # Создать 30 вопросов
     output_path = generator.generate_and_save(num_problems=30)
     
-    print(f"\n✅ 完成！生成的题目保存在: {output_path}")
+    print(f"\n ✅ Готово! Сгенерированные вопросы сохраняются в папке: {output_path}.")
 

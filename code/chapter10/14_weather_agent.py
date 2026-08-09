@@ -1,4 +1,4 @@
-"""在 Agent 中使用天气 MCP 服务器"""
+"""Использование сервера погоды MCP в Агенте"""
 
 import os
 from dotenv import load_dotenv
@@ -9,18 +9,18 @@ load_dotenv()
 
 
 def create_weather_assistant():
-    """创建天气助手"""
+    """Создать помощник погоды"""
     llm = HelloAgentsLLM()
 
     assistant = SimpleAgent(
-        name="天气助手",
+        name="помощник погоды",
         llm=llm,
-        system_prompt="""你是天气助手，可以查询城市天气。
-使用 get_weather 工具查询天气，支持中文城市名。
+        system_prompt="""Вы помощник погоды и можете узнать погоду в городе.
+Используйте инструмент get_weather для запроса погоды, который поддерживает названия китайских городов.
 """
     )
 
-    # 添加天气 MCP 工具
+    # Добавить инструмент погоды MCP
     server_script = os.path.join(os.path.dirname(__file__), "14_weather_mcp_server.py")
     weather_tool = MCPTool(server_command=["python", server_script])
     assistant.add_tool(weather_tool)
@@ -29,24 +29,24 @@ def create_weather_assistant():
 
 
 def demo():
-    """演示"""
+    """Демо"""
     assistant = create_weather_assistant()
 
-    print("\n查询北京天气：")
-    response = assistant.run("北京今天天气怎么样？")
-    print(f"回答: {response}\n")
+    print("\nПроверьте погоду в Пекине:")
+    response = assistant.run("Какая сегодня погода в Пекине?")
+    print(f"Ответ: {response}\n")
 
 
 def interactive():
-    """交互模式"""
+    """интерактивный режим"""
     assistant = create_weather_assistant()
 
     while True:
-        user_input = input("\n你: ").strip()
+        user_input = input("\nВы: ").strip()
         if user_input.lower() in ['quit', 'exit']:
             break
         response = assistant.run(user_input)
-        print(f"助手: {response}")
+        print(f"Ассистент: {response}")
 
 
 if __name__ == "__main__":

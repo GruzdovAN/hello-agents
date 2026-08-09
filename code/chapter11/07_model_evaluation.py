@@ -1,14 +1,14 @@
 """
-示例7: 模型评估
+Пример 7: Оценка модели
 
-演示如何使用RLTrainingTool评估训练后的模型
+Демонстрирует, как использовать RLTrainingTool для оценки обученной модели.
 """
 
 import sys
 from pathlib import Path
 import json
 
-# 添加项目路径
+# Добавить путь к проекту
 project_root = Path(__file__).parent.parent / "HelloAgents"
 sys.path.insert(0, str(project_root))
 
@@ -16,48 +16,48 @@ from hello_agents.tools import RLTrainingTool
 
 
 # ============================================================================
-# 示例1: 评估SFT模型
+# Пример 1: Оценка модели SFT
 # ============================================================================
 
 def evaluate_sft_model():
     """
-    评估SFT训练后的模型
+    Оцените обученную модель SFT
     
-    使用测试集评估模型的准确率
+    Оцените точность модели с помощью тестового набора
     """
     tool = RLTrainingTool()
     
     config = {
         "action": "evaluate",
         "model_path": "./output/quick_test/sft",
-        "max_samples": 50  # 使用50个测试样本
+        "max_samples": 50  # Используйте 50 тестовых образцов
     }
     
-    print("评估SFT模型:")
-    print(f"  模型路径: {config['model_path']}")
-    print(f"  测试样本数: {config['max_samples']}")
+    print("Оцените модель SFT:")
+    print(f"  Путь к модели: {config['model_path']}")
+    print(f"  Количество тестовых образцов: {config['max_samples']}")
     
-    # 实际评估时取消注释
+    # Раскомментируйте при фактической оценке
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 评估完成!")
-    # print(f"  准确率: {result_dict['accuracy']}")
-    # print(f"  平均奖励: {result_dict['average_reward']}")
+    # print(f"\n✅ Оценка завершена!")
+    # print(f" точность: {result_dict['accuracy']}")
+    # print(f" Среднее вознаграждение: {result_dict['average_reward']}")
     
-    print("\n💡 提示: 取消注释以运行评估")
+    print("\n💡 Совет: раскомментируйте, чтобы запустить оценку.")
     
     return config
 
 
 # ============================================================================
-# 示例2: 评估GRPO模型
+# Пример 2: Оценка модели GRPO
 # ============================================================================
 
 def evaluate_grpo_model():
     """
-    评估GRPO训练后的模型
+    Оцените модель после обучения GRPO
     
-    对比GRPO模型和SFT模型的性能
+    Сравните производительность модели GRPO и модели SFT.
     """
     tool = RLTrainingTool()
     
@@ -67,136 +67,136 @@ def evaluate_grpo_model():
         "max_samples": 50
     }
     
-    print("评估GRPO模型:")
-    print(f"  模型路径: {config['model_path']}")
-    print(f"  测试样本数: {config['max_samples']}")
+    print("Оцените модель GRPO:")
+    print(f"  Путь к модели: {config['model_path']}")
+    print(f"  Количество тестовых образцов: {config['max_samples']}")
     
-    # 实际评估时取消注释
+    # Раскомментируйте при фактической оценке
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 评估完成!")
-    # print(f"  准确率: {result_dict['accuracy']}")
-    # print(f"  平均奖励: {result_dict['average_reward']}")
+    # print(f"\n✅ Оценка завершена!")
+    # print(f" точность: {result_dict['accuracy']}")
+    # print(f" Среднее вознаграждение: {result_dict['average_reward']}")
     
-    print("\n💡 提示: 取消注释以运行评估")
+    print("\n💡 Совет: раскомментируйте, чтобы запустить оценку.")
     
     return config
 
 
 # ============================================================================
-# 示例3: 对比SFT和GRPO模型
+# Пример 3: Сравнение моделей SFT и GRPO
 # ============================================================================
 
 def compare_sft_grpo():
     """
-    对比SFT和GRPO模型的性能
+    Сравнение производительности моделей SFT и GRPO
     
-    在相同的测试集上评估两个模型
+    Оцените обе модели на одном тестовом наборе.
     """
     tool = RLTrainingTool()
     
     print("="*80)
-    print("SFT vs GRPO 模型对比")
+    print("Сравнение моделей SFT и GRPO")
     print("="*80)
     
-    # 评估SFT模型
-    print("\n1. 评估SFT模型...")
+    # Оценка моделей SFT
+    print("\n1. Оценить модель SFT...")
     sft_config = {
         "action": "evaluate",
         "model_path": "./output/quick_test/sft",
         "max_samples": 100
     }
     
-    # 实际评估时取消注释
+    # Раскомментируйте при фактической оценке
     # sft_result = tool.run(sft_config)
     # sft_data = json.loads(sft_result)
-    # print(f"   SFT准确率: {sft_data['accuracy']}")
+    # print(f" Точность SFT: {sft_data['accuracy']}")
     
-    # 评估GRPO模型
-    print("\n2. 评估GRPO模型...")
+    # Оцените модель GRPO
+    print("\n2. Оцените модель GRPO...")
     grpo_config = {
         "action": "evaluate",
         "model_path": "./output/quick_test/grpo",
         "max_samples": 100
     }
     
-    # 实际评估时取消注释
+    # Раскомментируйте при фактической оценке
     # grpo_result = tool.run(grpo_config)
     # grpo_data = json.loads(grpo_result)
-    # print(f"   GRPO准确率: {grpo_data['accuracy']}")
+    # print(f" Точность GRPO: {grpo_data['accuracy']}")
     
-    # 对比结果
-    print("\n对比结果:")
-    print("  SFT模型: 学习基本格式和推理步骤")
-    print("  GRPO模型: 通过强化学习优化推理能力")
-    print("  预期: GRPO模型准确率 > SFT模型准确率")
+    # Сравнить результаты
+    print("\nРезультаты сравнения:")
+    print("  Модель SFT: изучение основных форматов и шагов вывода")
+    print("  Модель GRPO: оптимизация возможностей рассуждения посредством обучения с подкреплением")
+    print("  Ожидается: точность модели GRPO > точность модели SFT.")
     
-    print("\n💡 提示: 取消注释以运行实际评估")
+    print("\n💡 Совет: раскомментируйте, чтобы запустить фактическую оценку.")
     
     return sft_config, grpo_config
 
 
 # ============================================================================
-# 示例4: 评估基线模型
+# Пример 4: Оценка базовой модели
 # ============================================================================
 
 def evaluate_baseline():
     """
-    评估基线模型(未训练的原始模型)
+    Оцените базовую модель (исходную необученную модель)
     
-    用于对比训练效果
+    Используется для сравнения эффектов тренировок.
     """
     tool = RLTrainingTool()
     
     config = {
         "action": "evaluate",
-        "model_path": "Qwen/Qwen3-0.6B",  # 原始模型
+        "model_path": "Qwen/Qwen3-0.6B",  # оригинальная модель
         "max_samples": 50
     }
     
-    print("评估基线模型:")
-    print(f"  模型: {config['model_path']}")
-    print(f"  测试样本数: {config['max_samples']}")
+    print("Оцените базовую модель:")
+    print(f"  Модель: {config['model_path']}")
+    print(f"  Количество тестовых образцов: {config['max_samples']}")
     
-    # 实际评估时取消注释
+    # Раскомментируйте при фактической оценке
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 评估完成!")
-    # print(f"  基线准确率: {result_dict['accuracy']}")
+    # print(f"\n✅ Оценка завершена!")
+    # print(f"Базовая точность: {result_dict['accuracy']}")
     
-    print("\n💡 提示: 基线模型通常准确率较低")
-    print("   训练后的模型应该显著优于基线")
+    print("\n💡 Совет: базовые модели обычно имеют меньшую точность.")
+    print("   Обученная модель должна значительно превосходить базовую.")
     
     return config
 
 
 # ============================================================================
-# 示例5: 完整评估流程
+# Пример 5: Полный процесс оценки
 # ============================================================================
 
 def complete_evaluation():
     """
-    完整的评估流程
+    Полный процесс оценки
     
-    评估基线、SFT和GRPO三个模型
+    Оцените три модели: базовую, SFT и GRPO.
     """
     tool = RLTrainingTool()
     
     models = {
-        "基线模型": "Qwen/Qwen3-0.6B",
-        "SFT模型": "./output/quick_test/sft",
-        "GRPO模型": "./output/quick_test/grpo"
+        "базовая модель": "Qwen/Qwen3-0.6B",
+        "Модель SFT": "./output/quick_test/sft",
+        "Модель ГРПО": "./output/quick_test/grpo"
     }
     
     print("="*80)
-    print("完整评估流程")
+    print("Полный процесс оценки")
     print("="*80)
     
     results = {}
     
     for name, model_path in models.items():
-        print(f"\n评估 {name}...")
-        print(f"  路径: {model_path}")
+        print(f"\nОценить {имя}...")
+        print(f"  Путь: {model_path}")
         
         config = {
             "action": "evaluate",
@@ -204,132 +204,132 @@ def complete_evaluation():
             "max_samples": 100
         }
         
-        # 实际评估时取消注释
+        # Раскомментируйте при фактической оценке
         # result = tool.run(config)
         # result_dict = json.loads(result)
         # results[name] = result_dict
-        # print(f"  准确率: {result_dict['accuracy']}")
+        # print(f" точность: {result_dict['accuracy']}")
     
     print("\n" + "="*80)
-    print("评估总结")
+    print("Резюме оценки")
     print("="*80)
     
-    # 实际评估时取消注释
+    # Раскомментируйте при фактической оценке
     # for name, result in results.items():
     #     print(f"{name}: {result['accuracy']}")
     
-    print("\n预期结果:")
-    print("  基线模型 < SFT模型 < GRPO模型")
-    print("  说明强化学习训练有效提升了模型性能")
+    print("\nОжидаемые результаты:")
+    print("  Базовая модель < модель SFT < модель GRPO")
+    print("  Это показывает, что обучение с подкреплением эффективно повышает производительность модели.")
     
-    print("\n💡 提示: 取消注释以运行完整评估")
+    print("\n💡 Совет: раскомментируйте, чтобы запустить полную оценку.")
     
     return models
 
 
 # ============================================================================
-# 示例6: 实际评估示例
+# Пример 6: Пример практической оценки
 # ============================================================================
 
 def practical_evaluation():
     """
-    实际评估示例 - 可以直接运行
+    Пример практической оценки – готовность к работе
     
-    评估quick_test训练的模型
+    Оцените модель, обученную с помощью fast_test
     """
     tool = RLTrainingTool()
     
     print("="*80)
-    print("实际评估示例")
+    print("Примеры практической оценки")
     print("="*80)
     
-    # 检查模型是否存在
+    # Проверьте, существует ли модель
     import os
     sft_path = "./output/quick_test/sft"
     grpo_path = "./output/quick_test/grpo"
     
     if not os.path.exists(sft_path):
-        print(f"\n❌ SFT模型不存在: {sft_path}")
-        print("   请先运行 00_quick_test.py 训练模型")
+        print(f"\n❌ Модель SFT не существует: {sft_path}")
+        print("   Пожалуйста, сначала запустите 00_quick_test.py, чтобы обучить модель.")
         return None
     
     if not os.path.exists(grpo_path):
-        print(f"\n❌ GRPO模型不存在: {grpo_path}")
-        print("   请先运行 00_quick_test.py 训练模型")
+        print(f"\n❌Модель GRPO не существует: {grpo_path}")
+        print("   Пожалуйста, сначала запустите 00_quick_test.py, чтобы обучить модель.")
         return None
     
-    print("\n✅ 模型文件存在,开始评估...")
+    print("\n✅ Файл модели существует, начните оценку...")
     
-    # 评估SFT模型
-    print("\n1. 评估SFT模型...")
+    # Оценка моделей SFT
+    print("\n1. Оценить модель SFT...")
     sft_config = {
         "action": "evaluate",
         "model_path": sft_path,
-        "max_samples": 20  # 使用较少样本快速测试
+        "max_samples": 20  # Быстрое тестирование с использованием меньшего количества образцов
     }
     
-    print("💡 提示: 取消下面的注释以开始评估")
+    print("💡 Совет: раскомментируйте ниже, чтобы начать оценку.")
     print("# sft_result = tool.run(sft_config)")
     print("# sft_data = json.loads(sft_result)")
-    print("# print(f'SFT准确率: {sft_data[\"accuracy\"]}')")
+    print("# print(f'SFT точность: {sft_data[\"accuracy\"]}')")
     
-    # 评估GRPO模型
-    print("\n2. 评估GRPO模型...")
+    # Оцените модель GRPO
+    print("\n2. Оцените модель GRPO...")
     grpo_config = {
         "action": "evaluate",
         "model_path": grpo_path,
         "max_samples": 20
     }
     
-    print("💡 提示: 取消下面的注释以开始评估")
+    print("💡 Совет: раскомментируйте ниже, чтобы начать оценку.")
     print("# grpo_result = tool.run(grpo_config)")
     print("# grpo_data = json.loads(grpo_result)")
-    print("# print(f'GRPO准确率: {grpo_data[\"accuracy\"]}')")
+    print("# print(f'Точность GRPO: {grpo_data[\"accuracy\"]}')")
     
-    # 实际评估时取消注释
+    # Раскомментируйте при фактической оценке
     # sft_result = tool.run(sft_config)
     # sft_data = json.loads(sft_result)
-    # print(f"\n✅ SFT评估完成: {sft_data['accuracy']}")
+    # print(f"\n ✅ Оценка SFT завершена: {sft_data['accuracy']}")
     
     # grpo_result = tool.run(grpo_config)
     # grpo_data = json.loads(grpo_result)
-    # print(f"✅ GRPO评估完成: {grpo_data['accuracy']}")
+    # print(f" ✅ Оценка GRPO завершена: {grpo_data['accuracy']}")
     
     return sft_config, grpo_config
 
 
 # ============================================================================
-# 主函数
+# основная функция
 # ============================================================================
 
 if __name__ == "__main__":
     print("="*80)
-    print("示例1: 评估SFT模型")
+    print("Пример 1: Оценка модели SFT")
     print("="*80)
     evaluate_sft_model()
     
     print("\n" + "="*80)
-    print("示例2: 评估GRPO模型")
+    print("Пример 2: Оценка модели GRPO")
     print("="*80)
     evaluate_grpo_model()
     
     print("\n" + "="*80)
-    print("示例3: 对比SFT和GRPO模型")
+    print("Пример 3: Сравнение моделей SFT и GRPO")
     print("="*80)
     compare_sft_grpo()
     
     print("\n" + "="*80)
-    print("示例4: 评估基线模型")
+    print("Пример 4: Оценка базовой модели")
     print("="*80)
     evaluate_baseline()
     
     print("\n" + "="*80)
-    print("示例5: 完整评估流程")
+    print("Пример 5: Полный процесс оценки")
     print("="*80)
     complete_evaluation()
     
     print("\n" + "="*80)
-    print("示例6: 实际评估示例")
+    print("Пример 6: Пример практической оценки")
     print("="*80)
     practical_evaluation()
 

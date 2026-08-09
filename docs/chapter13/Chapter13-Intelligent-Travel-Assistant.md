@@ -1,51 +1,51 @@
-# Chapter 13 Intelligent Travel Assistant
+# Глава 13. Умный помощник путешественника
 
-In previous chapters, we built the HelloAgents framework from scratch, implementing core functionalities including various agent paradigms, tool systems, memory mechanisms, protocol communication, and performance evaluation. Starting from this chapter, we will enter a completely new phase: **integrating all learned knowledge to build complete practical applications.**
+В предыдущих главах мы создали платформу HelloAgents с нуля, реализовав основные функции, включая различные парадигмы агентов, системы инструментов, механизмы памяти, связь по протоколам и оценку производительности. Начиная с этой главы, мы вступаем в совершенно новую фазу: **интеграцию всех полученных знаний для создания полноценных практических приложений.**
 
-Do you remember the first agent we built in Chapter 1? It was a simple intelligent travel assistant that demonstrated the basic principles of the `Thought-Action-Observation` loop. The intelligent travel assistant in this chapter will be a complete project, including the following core functions:
+Помните первого агента, которого мы создали в главе 1? Это был простой интеллектуальный помощник в путешествии, демонстрирующий основные принципы работы`Thought-Action-Observation`петля. Интеллектуальный помощник в путешествиях, описанный в этой главе, представляет собой полноценный проект, включающий следующие основные функции:
 
-**(1) Intelligent Itinerary Planning**: Users input destination, dates, preferences and other information, and the system automatically generates a complete itinerary plan including attractions, dining, and hotels.
+**(1) Интеллектуальное планирование маршрута**: пользователи вводят пункт назначения, даты, предпочтения и другую информацию, и система автоматически генерирует полный план маршрута, включая достопримечательности, рестораны и отели.
 
-**(2) Map Visualization**: Mark attraction locations on the map and draw tour routes, making the itinerary clear at a glance.
+**(2) Визуализация карты**: отмечайте места достопримечательностей на карте и рисуйте маршруты экскурсий, чтобы сделать маршрут понятным с первого взгляда.
 
-**(3) Budget Calculation**: Automatically calculate ticket, hotel, dining, and transportation costs, displaying budget details.
+**(3) Расчет бюджета**: автоматически рассчитывайте расходы на билеты, проживание, питание и транспорт, отображая подробную информацию о бюджете.
 
-**(4) Itinerary Editing**: Support adding, deleting, and adjusting attractions, updating the map in real-time.
+**(4) Редактирование маршрута**: поддержка добавления, удаления и настройки достопримечательностей, обновление карты в режиме реального времени.
 
-**(5) Export Function**: Support exporting as PDF or image, convenient for saving and sharing.
+**(5) Функция экспорта**: поддержка экспорта в формате PDF или изображения, удобная для сохранения и обмена.
 
-## 13.1 Project Overview and Architecture Design
+## 13.1 Обзор проекта и архитектурный дизайн
 
 ### 13.1.1 Why We Need an Intelligent Travel Assistant
 
-Planning a trip is both exciting and frustrating. You need to search for attraction information online, compare different guides, check weather forecasts, book hotels, calculate budgets, and plan routes. This process may take several hours or even days. And even after spending so much time, you're not sure whether the planned itinerary is reasonable, whether you've missed any important attractions, or whether the budget is accurate.
+Планирование поездки – это одновременно волнительно и неприятно. Вам нужно искать информацию о достопримечательностях в Интернете, сравнивать различные путеводители, проверять прогнозы погоды, бронировать отели, рассчитывать бюджет и планировать маршруты. Этот процесс может занять несколько часов или даже дней. И даже потратив столько времени, вы не уверены, разумен ли запланированный маршрут, пропустили ли вы какие-либо важные достопримечательности и верен ли бюджет.
 
-Traditional travel planning methods have several pain points. First is **scattered information**. Attraction information is on travel websites, weather information is on weather websites, hotel information is on booking websites - you need to switch between multiple websites and manually integrate this information. Second is **lack of personalization**. Most guides are generic and don't consider your personal preferences, budget constraints, travel time and other factors. Finally is **difficulty in adjustment**. When you want to modify the itinerary, you may need to replan the entire trip, because the order of attractions, time arrangements, and budget are all interconnected.
+Традиционные методы планирования путешествий имеют несколько болевых точек. Во-первых, это **разрозненная информация**. Информация о достопримечательностях находится на туристических веб-сайтах, информация о погоде — на веб-сайтах погоды, информация об отелях — на веб-сайтах бронирования — вам необходимо переключаться между несколькими веб-сайтами и вручную интегрировать эту информацию. Во-вторых, **отсутствие персонализации**. Большинство путеводителей носят общий характер и не учитывают ваши личные предпочтения, бюджетные ограничения, время в пути и другие факторы. Наконец, **трудность регулировки**. Если вы захотите изменить маршрут, вам, возможно, придется перепланировать всю поездку, поскольку порядок достопримечательностей, расписание и бюджет взаимосвязаны.
 
-AI technology provides new possibilities for solving these problems. Imagine that you only need to tell the system "I want to visit Beijing for 3 days, like history and culture, medium budget", and the system can automatically generate a complete itinerary plan for you, including which attractions to visit each day, where to eat, which hotel to stay at, and how much budget is needed. Moreover, this plan is adjustable - you can delete attractions you don't like, adjust the tour order, and the system will automatically update the map and budget.
+Технология искусственного интеллекта открывает новые возможности для решения этих проблем. Представьте, что вам нужно всего лишь сказать системе: «Я хочу посетить Пекин на 3 дня, например, история и культура, средний бюджет», и система может автоматически сгенерировать для вас полный план маршрута, в том числе, какие достопримечательности посещать каждый день, где поесть, в каком отеле остановиться и какой бюджет необходим. Причем этот план настраиваемый — вы можете удалить не понравившиеся достопримечательности, скорректировать порядок туров, а система автоматически обновит карту и бюджет.
 
-This is the intelligent travel assistant we want to build. It's not just a technical demonstration, but a truly useful application. Through this project, you will learn how to apply AI technology to practical problems, how to design multi-agent systems, and how to build complete Web applications.
+Это интеллектуальный помощник в путешествиях, который мы хотим создать. Это не просто техническая демонстрация, а действительно полезное приложение. Благодаря этому проекту вы узнаете, как применять технологию искусственного интеллекта для решения практических задач, как проектировать многоагентные системы и как создавать полноценные веб-приложения.
 
-### 13.1.2 Technical Architecture Overview
+### 13.1.2 Обзор технической архитектуры
 
-The system adopts the classic **front-end and back-end separation architecture**, divided into four layers, as shown in Figure 13.1:
+В системе используется классическая **архитектура разделения клиентской и внутренней частей**, разделенная на четыре уровня, как показано на рисунке 13.1:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-1.png" alt="" width="85%"/>
-  <p>Figure 13.1 Intelligent Travel Assistant Technical Architecture</p>
+  <p>Рисунок 13.1 Техническая архитектура Intelligent Travel Assistant</p>
 </div>
 
-**(1) Front-end Layer (Vue3+TypeScript)**: Responsible for user interaction and data display, including form input, result display, and map visualization.
+**(1) Интерфейсный уровень (Vue3+TypeScript)**: отвечает за взаимодействие с пользователем и отображение данных, включая ввод формы, отображение результатов и визуализацию карты.
 
-**(2) Back-end Layer (FastAPI)**: Responsible for API routing, data validation, and business logic.
+**(2) Внутренний уровень (FastAPI)**: отвечает за маршрутизацию API, проверку данных и бизнес-логику.
 
-**(3) Agent Layer (HelloAgents)**: Responsible for task decomposition, tool invocation, and result integration. Includes 4 specialized Agents.
+**(3) Уровень агента (HelloAgents)**: отвечает за декомпозицию задач, вызов инструментов и интеграцию результатов. Включает в себя 4 специализированных агента.
 
-**(4) External Service Layer**: Provides data and capabilities, including Amap API, Unsplash API, and LLM API.
+**(4) Уровень внешнего сервиса**: предоставляет данные и возможности, включая Amap API, Unsplash API и LLM API.
 
-The data flow process is as follows: User fills out form on front-end → Back-end validates data → Calls agent system → Agents sequentially call attraction search, weather query, hotel recommendation, itinerary planning Agents → Each Agent calls external APIs through MCP protocol → Integrate results and return to front-end → Front-end renders and displays.
+Процесс потока данных выглядит следующим образом: Пользователь заполняет форму на внешнем интерфейсе → Серверная часть проверяет данные → Вызывает агентскую систему → Агенты последовательно вызывают поиск достопримечательностей, запрос погоды, рекомендации отелей, планирование маршрута. Агенты → Каждый агент вызывает внешние API через протокол MCP → Интегрирует результаты и возвращается на внешний интерфейс → Внешний интерфейс визуализирует и отображает.
 
-The project structure reference is as follows, provided for easy source code location:
+Ссылка на структуру проекта приведена ниже и предназначена для облегчения поиска исходного кода:
 ```
 helloagents-trip-planner/
 ├── backend/                    # Backend code
@@ -66,29 +66,29 @@ helloagents-trip-planner/
     └── package.json           # npm dependencies
 ```
 
-Detailed architecture design and data flow will be introduced in subsequent sections.
+Подробное проектирование архитектуры и потока данных будет представлено в последующих разделах.
 
-### 13.1.3 Quick Experience: Run the Project in 5 Minutes
+### 13.1.3 Быстрый опыт: запуск проекта за 5 минут
 
-Before diving into implementation details, let's first run the project to see the final effect. This way you will have an intuitive understanding of the entire system.
+Прежде чем углубляться в детали реализации, давайте сначала запустим проект, чтобы увидеть конечный эффект. Таким образом, вы получите интуитивное понимание всей системы.
 
-**Environment Requirements:**
+**Требования к среде:**
 
-- Python 3.10 or higher
-- Node.js 16.0 or higher
-- npm 8.0 or higher
+- Питон 3.10 или выше
+- Node.js 16.0 или выше
+- НПМ 8.0 или выше
 
-**Obtain API Keys:**
+**Получить ключи API:**
 
-You need to prepare the following API keys:
+Вам необходимо подготовить следующие ключи API:
 
-- LLM API (OpenAI, DeepSeek, etc.)
-- Amap Web Service Key: Visit https://console.amap.com/ to register and create an application
-- Unsplash Access Key: Visit https://unsplash.com/developers to register and create an application
+- LLM API (OpenAI, DeepSeek и т. д.)
+- Ключ веб-службы Amap: посетите https://console.amap.com/, чтобы зарегистрироваться и создать приложение.
+- Ключ доступа к Unsplash: посетите https://unsplash.com/developers, чтобы зарегистрироваться и создать приложение.
 
-Put all API keys in the `.env` file.
+Поместите все ключи API в`.env`файл.
 
-Start the backend:
+Запустите бэкэнд:
 
 ```bash
 # 1. Enter backend directory
@@ -107,9 +107,9 @@ uvicorn app.api.main:app --reload
 python run.py
 ```
 
-After successful startup, visit http://localhost:8000/docs to see the API documentation.
+После успешного запуска посетитеhttp://localhost:8000/docsчтобы просмотреть документацию API.
 
-Open a new terminal window:
+Откройте новое окно терминала:
 
 ```bash
 # 1. Enter frontend directory
@@ -122,51 +122,51 @@ npm install
 npm run dev
 ```
 
-After successful startup, visit http://localhost:5173 to use the application.
+После успешного запуска посетитеhttp://localhost:5173использовать приложение.
 
-Experience core functions:
+Испытайте основные функции:
 
-First, fill in the destination city, travel dates, preferences, budget, transportation and accommodation types in the homepage form. After clicking the "Start Planning" button, the system will display a loading progress bar and quickly generate a result page, as shown in Figure 13.2.
+Сначала заполните город назначения, даты поездки, предпочтения, бюджет, транспорт и типы размещения в форме на главной странице. После нажатия кнопки «Начать планирование» система отобразит индикатор выполнения загрузки и быстро создаст страницу результатов, как показано на рисунке 13.2.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-2.png" alt="" width="85%"/>
-  <p>Figure 13.2 Travel Assistant Planning Progress Page</p>
+  <p>Рисунок 13.2 Страница хода выполнения планирования помощника по командировкам</p>
 </div>
 
-After successful loading, the page will clearly display itinerary overview, budget details, attraction map, daily itinerary details and weather information, as shown in Figures 13.3 and 13.4.
+После успешной загрузки на странице будет четко отображаться обзор маршрута, сведения о бюджете, карта достопримечательностей, сведения о ежедневном маршруте и информация о погоде, как показано на рисунках 13.3 и 13.4.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-3.png" alt="" width="85%"/>
-  <p>Figure 13.3 Travel Assistant Planning Completion Page</p>
+  <p>Рисунок 13.3 Страница завершения планирования Travel Assistant</p>
 </div>
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-4.png" alt="" width="85%"/>
-  <p>Figure 13.4 Travel Assistant Planning Completion Page</p>
+  <p>Рисунок 13.4 Страница завершения планирования Travel Assistant</p>
 </div>
 
-If users need personalized adjustments, they can click the "Edit Itinerary" button to freely adjust the order of attractions or delete certain attractions, as shown in Figure 13.5. After planning is complete, through the "Export Itinerary" dropdown menu, the final plan can be easily saved as an image or PDF file for convenient reference at any time.
+Если пользователям необходимы персональные настройки, они могут нажать кнопку «Редактировать маршрут», чтобы свободно изменить порядок достопримечательностей или удалить определенные достопримечательности, как показано на рисунке 13.5. После завершения планирования с помощью раскрывающегося меню «Экспорт маршрута» окончательный план можно легко сохранить в виде изображения или файла PDF для удобного использования в любое время.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-5.png" alt="" width="85%"/>
-  <p>Figure 13.5 Travel Assistant Planning Completion Page</p>
+  <p>Рисунок 13.5 Страница завершения планирования Travel Assistant</p>
 </div>
 
-## 13.2 Data Model Design
+## 13.2 Проектирование модели данных
 
-### 13.2.1 Data Flow in Web Applications
+### 13.2.1 Поток данных в веб-приложениях
 
-When building an intelligent travel assistant, we need to solve a core problem: **How to represent and transfer travel plan data?**
+При создании интеллектуального помощника по путешествиям нам необходимо решить основную проблему: **Как представлять и передавать данные плана путешествия?**
 
-We need to understand how data flows in a complete Web application. Imagine what happens when a user clicks the "Start Planning" button in the browser?
+Нам необходимо понять, как передаются данные в законченном веб-приложении. Представьте, что происходит, когда пользователь нажимает кнопку «Начать планирование» в браузере?
 
-The form data filled in by the user on the front-end (destination, dates, budget, etc.) needs to be sent to the back-end server through HTTP requests. After the back-end receives the data, it will call the agent system for processing. The agents will then call external services such as Amap API and Unsplash API to obtain data. The data formats returned by these external APIs are different - some use `lng`, some use `lon`, and some use `longitude`. Finally, the back-end needs to return the processed data to the front-end, which then renders it into the page the user sees.
+Данные формы, заполненные пользователем на внешнем интерфейсе (пункт назначения, даты, бюджет и т. д.), необходимо отправить на внутренний сервер посредством HTTP-запросов. После того как серверная часть получит данные, она вызовет систему агента для обработки. Затем агенты будут вызывать внешние службы, такие как Amap API и Unsplash API, для получения данных. Форматы данных, возвращаемые этими внешними API, различны. Некоторые используют`lng`, некоторое использование`lon`, и некоторые используют`longitude`. Наконец, серверная часть должна вернуть обработанные данные во внешний интерфейс, который затем отображает их на странице, которую видит пользователь.
 
-In this process, data undergoes multiple transformations: Front-end form → HTTP request → Back-end Python object → External API response → Back-end Python object → HTTP response → Front-end TypeScript object → Page display. Without a unified data format, each transformation step could go wrong. This is why we need **data models**.
+В этом процессе данные претерпевают несколько преобразований: внешняя форма → HTTP-запрос → внутренний объект Python → ответ внешнего API → внутренний объект Python → ответ HTTP → внешний объект TypeScript → отображение страницы. Без единого формата данных каждый шаг преобразования может пойти не так. Вот почему нам нужны **модели данных**.
 
-### 13.2.2 From Dictionaries to Pydantic Models
+### 13.2.2 От словарей к пидантическим моделям
 
-Let's start with the simple prototype from Chapter 1. In that prototype, we used Python dictionaries to represent attraction data:
+Начнем с простого прототипа из главы 1. В этом прототипе мы использовали словари Python для представления данных о привлекательности:
 
 ```python
 # Chapter 1 approach: using dictionaries
@@ -180,13 +180,13 @@ attraction = {
 lng = attraction["location"]["lng"]
 ```
 
-This approach is convenient in the prototype stage, but will encounter many problems in actual projects. First is the problem of **inconsistent field names**. The location data returned by Amap API is a string like `"116.397128,39.916527"`, which needs to be manually split into longitude and latitude. Unsplash API might use `longitude` and `latitude`. If we use dictionaries everywhere in the code, we need to handle these differences in every place.
+Этот подход удобен на стадии прототипа, но в реальных проектах может возникнуть множество проблем. Во-первых, это проблема **несовместимых имен полей**. Данные о местоположении, возвращаемые Amap API, представляют собой строку типа`"116.397128,39.916527"`, который необходимо вручную разделить на долготу и широту. Unsplash API может использовать`longitude`и`latitude`. Если мы используем словари повсюду в коде, нам нужно учитывать эти различия в каждом месте.
 
-Second is the problem of **type safety**. Suppose we accidentally set `price` as a string `"60"`, this won't immediately error in Python, but will cause problems when calculating the total budget. Worse, this kind of error can only be discovered at runtime, and the error message may be difficult to locate.
+Во-вторых, это проблема **типовой безопасности**. Предположим, мы случайно установили`price`как строка`"60"`, это не приведет к немедленной ошибке в Python, но вызовет проблемы при расчете общего бюджета. Хуже того, ошибки такого рода можно обнаружить только во время выполнения, и найти сообщение об ошибке может быть сложно.
 
-Finally is the problem of **maintainability**. When we need to add a new field to attractions (such as `rating`), we need to modify multiple places in the code. If we miss somewhere, it will lead to data inconsistency.
+Наконец, проблема **ремонтопригодности**. Когда нам нужно добавить новое поле к достопримечательностям (например,`rating`), нам нужно изменить несколько мест в коде. Если мы где-то пропустим, это приведет к несогласованности данных.
 
-Pydantic provides a solution. It is a Python data validation library that allows us to define data structures using classes and automatically handle validation, conversion, and serialization. Let's look at a simple example:
+Pydantic предлагает решение. Это библиотека проверки данных Python, которая позволяет нам определять структуры данных с помощью классов и автоматически выполнять проверку, преобразование и сериализацию. Давайте посмотрим на простой пример:
 
 ```python
 from pydantic import BaseModel, Field
@@ -211,13 +211,13 @@ attraction = Attraction(
 lng = attraction.location.longitude  # IDE will provide code completion
 ```
 
-This approach has several benefits. First, if we pass in the wrong type (such as setting `ticket_price` as a string), Pydantic will immediately throw an exception telling us where the error is. Second, the IDE can provide code completion and type checking based on type definitions, greatly reducing spelling errors. Finally, when we need to modify the data structure, we only need to modify the class definition, and all places using this class will automatically update.
+Этот подход имеет несколько преимуществ. Во-первых, если мы передадим неправильный тип (например, установив`ticket_price`в виде строки), Pydantic немедленно выдаст исключение, сообщающее нам, где находится ошибка. Во-вторых, IDE может обеспечить завершение кода и проверку типов на основе определений типов, что значительно снижает количество ошибок в написании. Наконец, когда нам нужно изменить структуру данных, нам нужно изменить только определение класса, и все места, использующие этот класс, автоматически обновятся.
 
-### 13.2.3 Core Concepts of Pydantic
+### 13.2.3 Основные понятия Pydantic
 
-Before diving into designing our data models, let's first understand several core concepts of Pydantic. The foundation of Pydantic is the `BaseModel` class, and all data models need to inherit from this class. Each field can specify a type, and Pydantic will automatically perform type checking and conversion.
+Прежде чем углубиться в разработку моделей данных, давайте сначала разберемся с несколькими основными концепциями Pydantic. В основе Pydantic лежит`BaseModel`класс, и все модели данных должны наследовать от этого класса. В каждом поле можно указать тип, и Pydantic автоматически выполнит проверку и преобразование типов.
 
-Field definition uses the `Field` function, which can specify default values, descriptions, validation rules, etc. `...` indicates that this field is required - if this field is not provided when creating an object, Pydantic will throw an exception. We can also use `Optional` to indicate optional fields, or directly provide default values.
+Field definition uses the`Field`function, which can specify default values, descriptions, validation rules, etc.`...`indicates that this field is required - if this field is not provided when creating an object, Pydantic will throw an exception. We can also use`Optional`для указания необязательных полей или непосредственного указания значений по умолчанию.
 
 ```python
 from pydantic import BaseModel, Field
@@ -230,7 +230,7 @@ class Attraction(BaseModel):
     description: Optional[str] = None  # Optional field
 ```
 
-Pydantic also supports nested models and lists. We can use another model as a field type in one model, allowing us to build complex data structures. For example, an attraction contains location information, and an itinerary contains multiple attractions.
+Pydantic также поддерживает вложенные модели и списки. Мы можем использовать другую модель в качестве типа поля в одной модели, что позволит нам создавать сложные структуры данных. Например, достопримечательность содержит информацию о местоположении, а маршрут содержит несколько достопримечательностей.
 
 ```python
 class DayPlan(BaseModel):
@@ -239,7 +239,7 @@ class DayPlan(BaseModel):
     hotel: Optional[Hotel] = None  # Optional hotel information
 ```
 
-One of the most powerful features is **custom validators**. Sometimes the data format returned by external APIs doesn't meet our requirements, and we can use the `field_validator` decorator to customize validation and conversion logic. For example, the temperature returned by Amap is a string like `"16°C"`, and we need to convert it to a number:
+Одна из самых мощных функций — **настраиваемые валидаторы**. Иногда формат данных, возвращаемый внешними API, не соответствует нашим требованиям, и мы можем использовать`field_validator`декоратор для настройки логики проверки и преобразования. Например, температура, возвращаемая Amap, представляет собой строку вида`"16°C"`, и нам нужно преобразовать его в число:
 
 ```python
 from pydantic import field_validator
@@ -256,13 +256,13 @@ class WeatherInfo(BaseModel):
         return v
 ```
 
-This validator will automatically execute before creating the object, converting the string to an integer. This way we don't need to manually handle temperature format in every place in the code.
+Этот валидатор автоматически выполнится перед созданием объекта, преобразуя строку в целое число. Таким образом, нам не нужно вручную обрабатывать формат температуры в каждом месте кода.
 
-### 13.2.4 Bottom-Up Model Design
+### 13.2.4 Разработка модели снизу вверх
 
-Now let's start designing the data models for the intelligent travel assistant. A good design principle is **bottom-up**: first define the most basic models, then gradually combine them into complex structures. The advantage of this approach is that each model is simple, easy to understand and maintain.
+Теперь давайте приступим к разработке моделей данных для интеллектуального помощника в путешествии. Хороший принцип проектирования — **снизу вверх**: сначала определите самые базовые модели, а затем постепенно объединяйте их в сложные структуры. Преимущество этого подхода в том, что каждая модель проста, легка для понимания и обслуживания.
 
-The most basic model is **location information**. Whether it's attractions, hotels, or restaurants, all need location information. We define a `Location` class to represent longitude and latitude coordinates:
+Самая базовая модель — **информация о местоположении**. Будь то достопримечательности, отели или рестораны, всем нужна информация о местоположении. Мы определяем`Location`класс для представления координат долготы и широты:
 
 ```python
 class Location(BaseModel):
@@ -271,9 +271,9 @@ class Location(BaseModel):
     latitude: float = Field(..., description="Latitude", ge=-90, le=90)
 ```
 
-Here we use range validation (`ge` means greater than or equal to, `le` means less than or equal to) to ensure longitude and latitude values are within reasonable ranges.
+Здесь мы используем проверку диапазона (`ge`означает больше или равно,`le`означает меньше или равно), чтобы гарантировать, что значения долготы и широты находятся в разумных пределах.
 
-Next is **attraction information**. An attraction contains name, address, location, visit duration, description, rating, image, and ticket price information. Note that we use `Location` as a field type, which is a nested model:
+Далее идет **информация о достопримечательностях**. Аттракцион содержит название, адрес, местоположение, продолжительность посещения, описание, рейтинг, изображение и информацию о цене билета. Обратите внимание, что мы используем`Location`как тип поля, который представляет собой вложенную модель:
 
 ```python
 class Attraction(BaseModel):
@@ -289,7 +289,7 @@ class Attraction(BaseModel):
     ticket_price: int = Field(default=0, ge=0, description="Ticket price (yuan)")
 ```
 
-Similarly, we define **meal information** and **hotel information**. These models have similar structures, all containing basic information such as name, address, location, and cost:
+Аналогичным образом мы определяем **информацию о питании** и **информацию об отеле**. Эти модели имеют схожую структуру и все содержат базовую информацию, такую ​​как имя, адрес, местоположение и стоимость:
 
 ```python
 class Meal(BaseModel):
@@ -313,7 +313,7 @@ class Hotel(BaseModel):
     estimated_cost: int = Field(default=0, description="Estimated cost (yuan/night)")
 ```
 
-**Budget information** is a special model that doesn't contain location information, but contains a summary of various expenses:
+**Информация о бюджете** – это специальная модель, которая не содержит информации о местоположении, но содержит сводку различных расходов:
 
 ```python
 class Budget(BaseModel):
@@ -325,7 +325,7 @@ class Budget(BaseModel):
     total: int = Field(default=0, description="Total cost")
 ```
 
-Now we can combine these basic models to build a **daily itinerary**. A daily itinerary contains date, description, transportation method, accommodation arrangement, hotel, attraction list, and meal list:
+Теперь мы можем объединить эти базовые модели и построить **ежедневный маршрут**. Ежедневный маршрут содержит дату, описание, способ транспортировки, способ размещения, отель, список достопримечательностей и список питания:
 
 ```python
 class DayPlan(BaseModel):
@@ -340,9 +340,9 @@ class DayPlan(BaseModel):
     meals: List[Meal] = Field(default_factory=list, description="Meal arrangements")
 ```
 
-Note that we use `List[Attraction]` to represent the attraction list, and `default_factory=list` means the default value is an empty list.
+Обратите внимание, что мы используем`List[Attraction]`представлять список достопримечательностей, и`default_factory=list`означает, что значение по умолчанию — пустой список.
 
-**Weather information** requires special handling because the temperature format returned by Amap is non-standard. We use a custom validator to handle this:
+**Информация о погоде** требует особого обращения, поскольку формат температуры, возвращаемый Amap, нестандартен. Для этого мы используем собственный валидатор:
 
 ```python
 class WeatherInfo(BaseModel):
@@ -367,7 +367,7 @@ class WeatherInfo(BaseModel):
         return v
 ```
 
-Finally, we define the **complete travel plan**. This is the top-level model that contains all information:
+Наконец, мы определяем **полный план путешествия**. Это модель верхнего уровня, содержащая всю информацию:
 
 ```python
 class TripPlan(BaseModel):
@@ -381,11 +381,11 @@ class TripPlan(BaseModel):
     budget: Optional[Budget] = Field(default=None, description="Budget information")
 ```
 
-This way, we have completed the design of the entire data model. From the most basic `Location`, to `Attraction`, `Meal`, `Hotel`, then to `DayPlan`, and finally to `TripPlan`, forming a clear hierarchical structure.
+Таким образом, мы завершили разработку всей модели данных. Из самого основного`Location`, к`Attraction`, `Meal`, `Hotel`, затем`DayPlan`и, наконец,`TripPlan`, образуя четкую иерархическую структуру.
 
-### 13.2.5 Application of Data Models in Web Applications
+### 13.2.5 Применение моделей данных в веб-приложениях
 
-Now let's see how these data models are used in actual Web applications. In FastAPI, Pydantic models can be directly used as type definitions for requests and responses. FastAPI will automatically perform data validation, serialization, and documentation generation.
+Теперь давайте посмотрим, как эти модели данных используются в реальных веб-приложениях. В FastAPI модели Pydantic можно напрямую использовать в качестве определений типов для запросов и ответов. FastAPI автоматически выполнит проверку данных, сериализацию и создание документации.
 
 ```python
 from fastapi import FastAPI
@@ -407,9 +407,9 @@ async def create_trip_plan(request: TripPlanRequest) -> TripPlan:
     return trip_plan
 ```
 
-When a user sends a POST request to `/api/trip/plan`, FastAPI will automatically convert the JSON data into a `TripPlanRequest` object. If the data format is incorrect (such as missing required fields or type mismatch), FastAPI will automatically return a 400 error and tell the user where the error is.
+Когда пользователь отправляет POST-запрос на`/api/trip/plan`, FastAPI автоматически преобразует данные JSON в`TripPlanRequest`объект. Если формат данных неверен (например, отсутствуют обязательные поля или несоответствие типов), FastAPI автоматически вернет ошибку 400 и сообщит пользователю, где находится ошибка.
 
-On the front-end, we also need to define corresponding TypeScript types. Although TypeScript and Python are different languages, the data structures are the same:
+Во внешнем интерфейсе нам также необходимо определить соответствующие типы TypeScript. Хотя TypeScript и Python — разные языки, структуры данных одинаковы:
 
 ```typescript
 interface Location {
@@ -433,21 +433,21 @@ interface TripPlan {
 }
 ```
 
-This way, the front-end and back-end use a unified data format. When the back-end returns a `TripPlan` object, the front-end can use it directly without any conversion. TypeScript's type checking can also help us avoid many errors.
+Таким образом, интерфейсная и серверная части используют единый формат данных. Когда серверная часть возвращает`TripPlan`объект, интерфейсная часть может использовать его напрямую без какого-либо преобразования. Проверка типов TypeScript также может помочь нам избежать многих ошибок.
 
-## 13.3 Multi-Agent Collaboration Design
+## 13.3 Проектирование многоагентного сотрудничества
 
-### 13.3.1 Why We Need Multi-Agent
+### 13.3.1 Зачем нам нужен мультиагент
 
-In Chapter 7, we learned how to build agents using SimpleAgent. The design philosophy of SimpleAgent is simple and direct: each time the `run()` method is called, the Agent analyzes the user's question, decides whether to call tools, and then returns the result. This design is very effective when handling simple tasks, but when facing tasks like travel planning, some problems arise.
+В главе 7 мы узнали, как создавать агенты с помощью SimpleAgent. Философия дизайна SimpleAgent проста и понятна: каждый раз, когда`run()`вызывается метод, Агент анализирует вопрос пользователя, решает, следует ли вызывать инструменты, а затем возвращает результат. Такая конструкция очень эффективна при решении простых задач, но при решении таких задач, как планирование поездки, возникают некоторые проблемы.
 
-If we use a single Agent to complete travel planning, what does this Agent need to do? First, it needs to search for attraction information, which requires calling Amap's POI search tool. Then, it needs to query weather information, which requires calling the weather query tool. Next, it needs to search for hotel information, which again requires calling the POI search tool. Finally, it needs to integrate all this information to generate a complete travel plan.
+Если для планирования поездки мы используем одного агента, что должен делать этот агент? Во-первых, ему необходимо найти информацию о достопримечательностях, для чего необходимо вызвать инструмент поиска POI компании Amap. Затем ему необходимо запросить информацию о погоде, для чего необходимо вызвать инструмент запроса погоды. Далее ему необходимо найти информацию об отеле, что снова требует вызова инструмента поиска POI. Наконец, необходимо интегрировать всю эту информацию для создания полного плана поездки.
 
-This sounds simple, but in actual operation, the first problem is encountered: **tool calling limitations**. SimpleAgent can only execute one tool per `run()` call. This means we need to call the `run()` method multiple times, with each call handling one task. But this brings a new problem: how to pass information between multiple calls? How to pass the attraction information obtained from the first call to the second call? We need to manually manage these intermediate results, and the code becomes very complex.
+Звучит просто, но в реальной работе возникает первая проблема: **ограничения вызова инструментов**. SimpleAgent может запускать только один инструмент за раз.`run()`вызов. Это означает, что нам нужно вызвать`run()`метод несколько раз, при этом каждый вызов обрабатывает одну задачу. Но это порождает новую проблему: как передавать информацию между несколькими вызовами? Как передать информацию о привлекательности, полученную при первом вызове, на второй вызов? Нам приходится вручную управлять этими промежуточными результатами, и код становится очень сложным.
 
-Of course, we can use ReactAgent to solve this problem. ReactAgent can execute multiple tools in one call, and it will automatically perform multiple rounds of thinking and action. But this brings new problems: **time cost**. Each round of thinking by ReactAgent requires calling the LLM. If three tools need to be called, at least three rounds of thinking are needed, which means at least three LLM calls. Moreover, these calls are serial - the next one can only start after the previous one is complete, so the total time will be very long.
+Конечно, мы можем использовать ReactAgent для решения этой проблемы. ReactAgent может запускать несколько инструментов за один вызов и автоматически выполнять несколько этапов обдумывания и действия. Но это приносит новые проблемы: **затраты времени**. Каждый раунд размышлений ReactAgent требует вызова LLM. Если нужно вызвать три инструмента, необходимо как минимум три раунда размышления, что означает как минимум три вызова LLM. Причем эти вызовы последовательные — следующий может начаться только после завершения предыдущего, поэтому общее время будет очень большим.
 
-The second problem is **prompt complexity**. If we want one Agent to complete all tasks, we need to describe the execution logic of each task in detail in the prompt. For example:
+Вторая проблема — **быстрая сложность**. Если мы хотим, чтобы один Агент выполнял все задачи, нам необходимо в командной строке подробно описать логику выполнения каждой задачи. Например:
 
 ```python
 COMPLEX_PROMPT = """You are a travel planning assistant. You need to:
@@ -459,32 +459,32 @@ Note: Must execute in order, each tool can only be called once, output must be i
 """
 ```
 
-This kind of prompt has several problems. First is **difficult to maintain**. If we want to modify the attraction search logic (such as adding rating filtering), we need to modify the entire prompt, which can easily affect other parts. Second is **error-prone**. The LLM needs to understand the requirements of multiple tasks simultaneously, and can easily confuse the formats and parameters of different tasks. Finally is **difficult to debug**. When the generated plan doesn't meet expectations, it's hard to know which part went wrong - is the attraction search inaccurate, did the weather query fail, or is there a problem with the integration logic?
+У такого рода подсказок есть несколько проблем. Во-первых, **сложно поддерживать**. Если мы хотим изменить логику поиска достопримечательностей (например, добавить фильтрацию рейтингов), нам нужно изменить всю подсказку, что может легко повлиять на другие части. Во-вторых, **склонен к ошибкам**. LLM должен понимать требования нескольких задач одновременно, и он может легко перепутать форматы и параметры разных задач. Наконец, **сложно отлаживать**. Когда сгенерированный план не соответствует ожиданиям, трудно понять, что пошло не так: неточный ли поиск достопримечательностей, не удалось выполнить запрос погоды или возникла проблема с логикой интеграции?
 
-Facing these problems, a natural idea is: can we decompose complex tasks into multiple simple tasks and let different Agents each do their own job? This is the core idea of multi-Agent collaboration.
+Столкнувшись с этими проблемами, возникает естественная идея: можем ли мы разложить сложные задачи на несколько простых задач и позволить каждому агенту выполнять свою работу? Это основная идея многоагентного сотрудничества.
 
-Imagine a travel agency in the real world. When you go to a travel agency to consult about a travel plan, you won't be served by just one person. Usually there will be a dedicated attraction consultant responsible for recommending attractions; a hotel consultant responsible for booking hotels; and an itinerary planner responsible for integrating all information into a complete itinerary. Each person focuses on their area of expertise, and finally the itinerary planner summarizes all the information. This division of labor and collaboration is much more efficient than having one person do everything.
+Представьте себе туристическое агентство в реальном мире. Когда вы идете в туристическое агентство, чтобы проконсультироваться по поводу плана путешествия, вас не будет обслуживать один человек. Обычно за рекомендации достопримечательностей отвечает специальный консультант по достопримечательностям; гостиничный консультант, отвечающий за бронирование отелей; и планировщик маршрута, ответственный за интеграцию всей информации в полный маршрут. Каждый человек сосредотачивается на своей области знаний, и, наконец, планировщик маршрута обобщает всю информацию. Такое разделение труда и сотрудничество гораздо эффективнее, чем когда все делает один человек.
 
-### 13.3.2 Agent Role Design
+### 13.3.2 Проектирование ролей агента
 
-Based on the task decomposition principle, we designed four specialized Agents, as shown in Figure 13.6:
+Основываясь на принципе декомпозиции задач, мы разработали четыре специализированных Агента, как показано на рисунке 13.6:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-6.png" alt="" width="85%"/>
-  <p>Figure 13.6 Multi-Agent Collaboration Flow</p>
+  <p>Рисунок 13.6. Схема многоагентной совместной работы</p>
 </div>
 
-- **AttractionSearchAgent (Attraction Search Expert)** focuses on searching for attraction information. It only needs to understand user preferences (such as "history and culture", "natural scenery"), then call Amap's POI search tool and return a list of related attractions. Its prompt is very simple, only needing to explain how to choose keywords based on preferences and how to call tools.
+- **AttractionSearchAgent (Эксперт по поиску достопримечательностей)** фокусируется на поиске информации о достопримечательностях. Ему нужно только понять предпочтения пользователя (например, «история и культура», «природные пейзажи»), а затем вызвать инструмент поиска POI Amap и вернуть список связанных достопримечательностей. Его подсказка очень проста: нужно только объяснить, как выбирать ключевые слова на основе предпочтений и как вызывать инструменты.
 
-- **WeatherQueryAgent (Weather Query Expert)** focuses on querying weather information. It only needs to know the city name, then call the weather query tool and return the weather forecast for the next few days. Its task is very clear and almost error-free.
+- **WeatherQueryAgent (Эксперт запросов погоды)** предназначен для запроса информации о погоде. Ему нужно только знать название города, затем вызвать инструмент запроса погоды и вернуть прогноз погоды на следующие несколько дней. Его задача очень ясна и практически безошибочна.
 
-- **HotelAgent (Hotel Recommendation Expert)** focuses on searching for hotel information. It needs to understand user accommodation needs (such as "budget", "luxury"), then call the POI search tool and return a list of hotels that meet the requirements.
+- **HotelAgent (Эксперт по рекомендациям отелей)** фокусируется на поиске информации об отелях. Ему необходимо понять потребности пользователей в размещении (например, «бюджет», «роскошь»), а затем вызвать инструмент поиска POI и вернуть список отелей, соответствующих требованиям.
 
-- **PlannerAgent (Itinerary Planning Expert)** is responsible for integrating all information. It receives the output from the first three Agents, plus the user's original requirements (dates, budget, etc.), and then generates a complete travel plan. It doesn't need to call any external tools, only needs to focus on information integration and itinerary arrangement.
+- **PlannerAgent (Эксперт по планированию маршрутов)** отвечает за интеграцию всей информации. Он получает выходные данные от первых трех агентов, а также исходные требования пользователя (даты, бюджет и т. д.), а затем генерирует полный план поездки. Ему не нужно вызывать какие-либо внешние инструменты, достаточно сосредоточиться на интеграции информации и составлении маршрута.
 
-Now let's design the role and prompt for each Agent in detail. When designing prompts, we need to consider several key questions: What input does this Agent need? What output should it produce? What tools does it need to call? What problems might it encounter?
+Теперь давайте детально продумаем роль и приглашение для каждого Агента. При разработке подсказок нам необходимо рассмотреть несколько ключевых вопросов: Какие входные данные нужны этому агенту? Какую продукцию он должен производить? Какие инструменты ему нужно вызвать? С какими проблемами он может столкнуться?
 
-**AttractionSearchAgent**'s task is to search for attractions based on user preferences. Its input is the city name and user preferences (such as "history and culture", "natural scenery"). It needs to call the `amap_maps_text_search` tool with parameters being keywords and city. Its output is a list of attractions, including name, address, rating, and other information.
+Задача **AttractionSearchAgent** — поиск достопримечательностей на основе предпочтений пользователя. Вводимыми данными являются название города и предпочтения пользователя (например, «история и культура», «природные пейзажи»). Для этого необходимо вызвать`amap_maps_text_search`инструмент с параметрами, являющимися ключевыми словами и городом. Его выходные данные представляют собой список достопримечательностей, включая название, адрес, рейтинг и другую информацию.
 
 ```python
 ATTRACTION_AGENT_PROMPT = """You are an attraction search expert.
@@ -502,9 +502,9 @@ ATTRACTION_AGENT_PROMPT = """You are an attraction search expert.
 """
 ```
 
-This prompt is concise but contains all necessary information. It clearly explains the tool call format, provides specific examples, and emphasizes two important principles: must use tools (can't fabricate) and search based on user preferences.
+Это приглашение является кратким, но содержит всю необходимую информацию. В нем четко объясняется формат вызова инструментов, приводятся конкретные примеры и подчеркиваются два важных принципа: необходимо использовать инструменты (невозможно изготовить) и поиск на основе предпочтений пользователя.
 
-**WeatherQueryAgent**'s task is simpler, only needing to query weather. Its input is the city name, and output is weather information.
+Задача **WeatherQueryAgent** проще: нужно только запросить погоду. На входе — название города, а на выходе — информация о погоде.
 
 ```python
 WEATHER_AGENT_PROMPT = """You are a weather query expert.
@@ -516,7 +516,7 @@ Please query weather information for {city}.
 """
 ```
 
-**HotelAgent**'s task is to search for hotels. Its input is the city name and accommodation type, and output is a hotel list.
+Задача **HotelAgent** — поиск отелей. На входе — название города и тип проживания, а на выходе — список отелей.
 
 ```python
 HOTEL_AGENT_PROMPT = """You are a hotel recommendation expert.
@@ -528,7 +528,7 @@ Please search for {accommodation} hotels in {city}.
 """
 ```
 
-**PlannerAgent** is the most complex because it needs to integrate all information. Its input is user requirements and the output from the first three Agents, and output is a complete travel plan (JSON format).
+**PlannerAgent** — самый сложный, поскольку ему необходимо интегрировать всю информацию. Его входные данные — это требования пользователя и выходные данные первых трех агентов, а выходные данные — полный план поездки (формат JSON).
 
 ```python
 PLANNER_AGENT_PROMPT = """You are an itinerary planning expert.
@@ -558,7 +558,7 @@ Strictly return in the following JSON format:
 
 ### 13.3.3 Agent Collaboration Flow
 
-Now let's see how these four Agents collaborate to complete the travel planning task. The entire flow can be divided into five steps:
+Теперь давайте посмотрим, как эти четыре агента сотрудничают при выполнении задачи планирования поездки. Весь процесс можно разделить на пять этапов:
 
 ```python
 class TripPlannerAgent:
@@ -595,11 +595,11 @@ class TripPlannerAgent:
         return trip_plan
 ```
 
-This flow executes four steps sequentially, with the output of each step serving as input for the next step. Note that we use the `TripPlanRequest` and `TripPlan` Pydantic models defined in Section 13.2.
+Этот поток последовательно выполняет четыре шага, при этом выходные данные каждого шага служат входными данными для следующего шага. Обратите внимание, что мы используем`TripPlanRequest`и`TripPlan`Пидантические модели, определенные в разделе 13.2.
 
-### 13.3.4 Query Construction
+### 13.3.4 Создание запроса
 
-PlannerAgent needs to integrate all information. This query needs to include all necessary information and be organized clearly and orderly so that the LLM can accurately understand it.
+PlannerAgent необходимо интегрировать всю информацию. Этот запрос должен включать всю необходимую информацию и быть организован четко и упорядоченно, чтобы LLM мог точно понять его.
 
 ```python
 def _build_planner_query(
@@ -635,15 +635,15 @@ Please generate a detailed travel plan, including daily attraction arrangements,
 """
 ```
 
-Through this multi-Agent collaboration design, we decompose a complex travel planning task into four simple subtasks. Each Agent focuses on its area of expertise, and also lays a good foundation for future feature expansion (such as adding restaurant recommendation Agent, transportation planning Agent).
+Благодаря этой схеме совместной работы нескольких агентов мы разбиваем сложную задачу планирования поездки на четыре простых подзадачи. Каждый агент фокусируется на своей области знаний, а также закладывает хорошую основу для будущего расширения функций (например, добавление агента по рекомендации ресторанов, агента по планированию транспорта).
 
-## 13.4 MCP Tool Integration Details
+## 13.4 Детали интеграции инструмента MCP
 
-### 13.4.1 Why Not Call APIs Directly
+### 13.4.1 Почему бы не вызывать API напрямую
 
-In Section 13.3, we designed four Agents to collaborate on the travel planning task. Among them, AttractionSearchAgent, WeatherQueryAgent, and HotelAgent all need to call Amap's API to obtain data. A natural question is: why not call Amap's HTTP API directly in the Agent?
+В разделе 13.3 мы разработали четырех агентов для совместной работы над задачей планирования поездки. Среди них AttractionSearchAgent, WeatherQueryAgent и HotelAgent необходимо вызывать API Amap для получения данных. Естественный вопрос: почему бы не вызвать HTTP API Amap непосредственно в Агенте?
 
-Let's first see what calling the API directly would look like. Amap provides a POI search API, and we need to construct HTTP requests, pass parameters, and parse responses:
+Давайте сначала посмотрим, как будет выглядеть прямой вызов API. Amap предоставляет API поиска POI, и нам нужно создавать HTTP-запросы, передавать параметры и анализировать ответы:
 
 ```python
 import requests
@@ -662,31 +662,31 @@ def search_poi(keywords: str, city: str, api_key: str):
     return data
 ```
 
-This approach looks simple, but will encounter several problems in actual use. First is **Agent cannot call autonomously**. In our HelloAgents framework, Agents call tools by recognizing tool call markers in prompts (such as `[TOOL_CALL:tool_name:arg1=value1]`). If we call the API directly in code, the Agent loses its autonomous decision-making ability and becomes a simple function call.
+Этот подход выглядит простым, но при реальном использовании он сталкивается с рядом проблем. Во-первых, **Агент не может звонить автономно**. В нашей среде HelloAgents агенты вызывают инструменты, распознавая маркеры вызова инструментов в подсказках (например,`[TOOL_CALL:tool_name:arg1=value1]`). Если мы вызываем API непосредственно в коде, Агент теряет способность автономного принятия решений и становится простым вызовом функции.
 
-Second is **complex parameter passing**. Amap's API has many parameters. For example, POI search has more than a dozen parameters such as `keywords`, `city`, `types`, `offset`, `page`, etc. If we want the Agent to use these parameters flexibly, we need to explain the meaning and format of each parameter in detail in the prompt, which will make the prompt very complex.
+Во-вторых, **сложная передача параметров**. API Amap имеет множество параметров. Например, поиск POI имеет более десятка параметров, таких как`keywords`, `city`, `types`, `offset`, `page`и т. д. Если мы хотим, чтобы Агент гибко использовал эти параметры, нам необходимо подробно объяснить в подсказке значение и формат каждого параметра, что сделает подсказку очень сложной.
 
-Third is **difficult response parsing**. The data returned by Amap API is in JSON format with a relatively complex structure. We need to write code to parse this data and extract the fields we need. If the API's response format changes, we need to modify the parsing code.
+В-третьих, **сложный анализ ответов**. Данные, возвращаемые Amap API, имеют формат JSON и имеют относительно сложную структуру. Нам нужно написать код для анализа этих данных и извлечения нужных нам полей. Если формат ответа API изменится, нам необходимо изменить код синтаксического анализа.
 
-Finally is **chaotic tool management**. Amap provides more than a dozen different APIs (POI search, weather query, route planning, etc.). If we write a function for each API and then manually register it to the Agent's tool list, the code will become very lengthy. And when we want to add a new API, we need to modify multiple places.
+Наконец, **хаотичное управление инструментами**. Amap предоставляет более десятка различных API (поиск POI, запрос погоды, планирование маршрута и т. д.). Если мы напишем функцию для каждого API, а затем вручную зарегистрируем ее в списке инструментов Агента, код станет очень длинным. И когда мы хотим добавить новый API, нам нужно изменить несколько мест.
 
-### 13.4.2 Amap MCP Integration
+### 13.4.2 Интеграция Amap MCP
 
-MCP (Model Context Protocol) is a standardized protocol proposed by Anthropic for connecting LLMs and external tools. This section will introduce how to integrate the Amap MCP server in the project. Our project uses `amap-mcp-server`, which is an MCP server implemented in Node.js:
+MCP (Model Context Protocol) — это стандартизированный протокол, предложенный Anthropic для подключения LLM и внешних инструментов. В этом разделе рассказывается, как интегрировать сервер Amap MCP в проект. В нашем проекте используется`amap-mcp-server`, который представляет собой сервер MCP, реализованный в Node.js:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-7.png" alt="" width="85%"/>
-  <p>Figure 13.7 amap-mcp-server Tools</p>
+  <p>Рис. 13.7 Инструменты amap-mcp-server</p>
 </div>
 
-The Amap MCP server provides various tools, mainly divided into the following categories, as shown in Table 13.1:
+Сервер Amap MCP предоставляет различные инструменты, в основном разделенные на следующие категории, как показано в Таблице 13.1:
 
 <div align="center">
-  <p>Table 13.1 Amap MCP Tool Categories</p>
+  <p>Таблица 13.1 Категории инструментов Amap MCP</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-table-1.png" alt="" width="85%"/>
 </div>
 
-Through the MCP protocol, we can easily integrate in HelloAgents:
+Через протокол MCP мы можем легко интегрироваться в HelloAgents:
 
 ```python
 from hello_agents.tools import MCPTool
@@ -704,13 +704,13 @@ mcp_tool = MCPTool(
 )
 ```
 
-What does this code do? First, `command` and `args` specify how to start the MCP server. `npx -y @sugarforever/amap-mcp-server` will download and run the `amap-mcp-server` package from the npm repository. The `env` parameter passes environment variables, here we pass the Amap API key.
+Что делает этот код? Первый,`command`и`args`укажите, как запустить MCP-сервер.`npx -y @sugarforever/amap-mcp-server`скачаем и запустим`amap-mcp-server`пакет из репозитория npm.`env`Параметр передает переменные среды, здесь мы передаем ключ API Amap.
 
-**Note:** Some examples in this document use `npx` to launch MCP (Model Context Protocol) services. However,in the code repository corresponding to this section of content, we actually use `uvx`. It’s important to note that `npx` and `uvx` share nearly identical design principles—the only difference lies in their ecosystems: `npx` targets JavaScript/Node.js (packages from npm), while `uvx` targets Python (packages from PyPI).There is no superiority or inferiority between the two methods. Please choose according to your needs when using them.
+**Примечание.** В некоторых примерах этого документа используется`npx`для запуска служб MCP (Model Context Protocol). Однако в репозитории кода, соответствующем этому разделу контента, мы фактически используем`uvx`. Важно отметить, что`npx`и`uvx`имеют почти одинаковые принципы проектирования — единственная разница заключается в их экосистемах:`npx`нацелен на JavaScript/Node.js (пакеты из npm), а`uvx`нацелен на Python (пакеты из PyPI). Между этими двумя методами нет превосходства или неполноценности. Пожалуйста, выбирайте в соответствии с вашими потребностями при их использовании.
 
-When we create the `MCPTool` object, it will start the MCP server process in the background and communicate with the server through standard input/output (stdin/stdout). This is a feature of the MCP protocol: using inter-process communication instead of HTTP, which is more efficient and easier to manage.
+Когда мы создаем`MCPTool`объект, он запустит процесс сервера MCP в фоновом режиме и будет взаимодействовать с сервером через стандартный ввод/вывод (stdin/stdout). Это особенность протокола MCP: использование межпроцессного взаимодействия вместо HTTP, что более эффективно и проще в управлении.
 
-The most critical parameter is `auto_expand=True`. When set to True, `MCPTool` will automatically query what tools the MCP server provides, and then create an independent Tool object for each tool. This is why we only created one `MCPTool`, but the Agent got 16 tools. Let's see this process:
+Наиболее критичным параметром является`auto_expand=True`. Если установлено значение True,`MCPTool`автоматически запросит, какие инструменты предоставляет сервер MCP, а затем создаст независимый объект Tool для каждого инструмента. Вот почему мы создали только один`MCPTool`, но Агенту досталось 16 инструментов. Давайте посмотрим на этот процесс:
 
 ```python
 # Create one MCPTool
@@ -722,16 +722,16 @@ print(list(agent.tools.keys()))
 # ['amap_maps_text_search', 'amap_maps_weather', ...]
 ```
 
-As shown in Figure 13.8, suppose the user wants to search for attractions in Beijing. AttractionSearchAgent receives the query "Please search for historical and cultural attractions in Beijing". The Agent analyzes this query and decides to call the `amap_maps_text_search` tool with parameters `keywords=attraction, city=Beijing`.
+Предположим, что, как показано на рис. 13.8, пользователь хочет найти достопримечательности Пекина. AttractionSearchAgent получает запрос «Пожалуйста, найдите исторические и культурные достопримечательности в Пекине». Агент анализирует этот запрос и решает вызвать`amap_maps_text_search`инструмент с параметрами`keywords=attraction, city=Beijing`.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-8.png" alt="" width="85%"/>
-  <p>Figure 13.8 MCP Tool Call Flow</p>
+  <p>Рисунок 13.8. Процесс вызова инструмента MCP</p>
 </div>
 
-The Agent generates a tool call marker: `[TOOL_CALL:amap_maps_text_search:keywords=attraction,city=Beijing]`. The HelloAgents framework parses this marker, extracts the tool name and parameters, and then calls the corresponding Tool object.
+Агент генерирует маркер вызова инструмента:`[TOOL_CALL:amap_maps_text_search:keywords=attraction,city=Beijing]`. Платформа HelloAgents анализирует этот маркер, извлекает имя и параметры инструмента, а затем вызывает соответствующий объект Tool.
 
-The Tool object is automatically created by `MCPTool`, and it will send the call request to the MCP server. Specifically, it will construct a JSON-RPC format message and send it to the server process through stdin:
+Объект Tool автоматически создается`MCPTool`, и он отправит запрос на вызов на сервер MCP. В частности, он создаст сообщение формата JSON-RPC и отправит его серверному процессу через стандартный ввод:
 
 ```json
 {
@@ -747,9 +747,9 @@ The Tool object is automatically created by `MCPTool`, and it will send the call
 }
 ```
 
-The MCP server receives this message, parses the parameters, and then calls Amap's HTTP API. It will construct an HTTP request, add the API key, send the request, and receive the response.
+Сервер MCP получает это сообщение, анализирует параметры, а затем вызывает HTTP API Amap. Он создаст HTTP-запрос, добавит ключ API, отправит запрос и получит ответ.
 
-Amap API returns JSON format data containing attraction list, address, coordinates, and other information. The MCP server parses this data, extracts key fields, and then constructs a response message, returning it to `MCPTool` through stdout:
+Amap API возвращает данные в формате JSON, содержащие список достопримечательностей, адрес, координаты и другую информацию. Сервер MCP анализирует эти данные, извлекает ключевые поля, а затем формирует ответное сообщение, возвращая его в`MCPTool`через стандартный вывод:
 
 ```json
 {
@@ -765,19 +765,19 @@ Amap API returns JSON format data containing attraction list, address, coordinat
 }
 ```
 
-`MCPTool` receives the response, extracts the text content, and returns it to the Agent. The Agent uses this result as the output of the tool call and continues to generate the final reply.
+`MCPTool`получает ответ, извлекает текстовое содержимое и возвращает его Агенту. Агент использует этот результат как выходные данные вызова инструмента и продолжает генерировать окончательный ответ.
 
-This process looks complex, but for the Agent, it only needs to know that there is a tool called `amap_maps_text_search` that can search for attractions. All the underlying details are encapsulated by the MCP protocol and `MCPTool`.
+Этот процесс выглядит сложным, но Агенту достаточно знать, что существует инструмент под названием`amap_maps_text_search`который может искать достопримечательности. Все основные детали инкапсулированы протоколом MCP и`MCPTool`.
 
-### 13.4.3 Sharing MCP Instances
+### 13.4.3 Совместное использование экземпляров MCP
 
-In our multi-Agent system, three Agents all need to use Amap tools. So should each Agent create its own `MCPTool` instance, or share the same instance?
+В нашей мультиагентной системе три агента должны использовать инструменты Amap. Так должен ли каждый Агент создавать свои собственные`MCPTool`экземпляр или использовать один и тот же экземпляр?
 
-If each Agent creates a `MCPTool` instance, this means three server processes will run simultaneously. Each process will independently call the Amap API, which may exceed the API's rate limit. Moreover, multiple processes will occupy more memory and CPU resources.
+Если каждый агент создает`MCPTool`Например, это означает, что три серверных процесса будут выполняться одновременно. Каждый процесс будет независимо вызывать API Amap, что может превышать ограничение скорости API. Более того, несколько процессов будут занимать больше памяти и ресурсов ЦП.
 
-A better approach is to let all Agents share the same `MCPTool` instance. This way, only one MCP server process needs to be started, and all API calls go through this process. This not only saves resources but also allows better control of API call frequency.
+Лучший подход — позволить всем агентам использовать один и тот же`MCPTool`пример. Таким образом, необходимо запустить только один процесс сервера MCP, и все вызовы API проходят через этот процесс. Это не только экономит ресурсы, но и позволяет лучше контролировать частоту вызовов API.
 
-In the code, we create a `MCPTool` instance in the constructor of `TripPlannerAgent`, and then add it to each sub-Agent's tool list:
+В коде мы создаем`MCPTool`экземпляр в конструкторе`TripPlannerAgent`, а затем добавьте его в список инструментов каждого субагента:
 
 ```python
 class TripPlannerAgent:
@@ -817,13 +817,13 @@ class TripPlannerAgent:
         self.hotel_agent.add_tool(self.mcp_tool)  # Share
 ```
 
-This way, all three Agents can use Amap's 16 tools, but only one MCP server process is running underneath. When we call the `plan_trip` method of `TripPlannerAgent`, the three Agents will call tools in sequence, and all requests are sent to the Amap API through the same MCP server.
+Таким образом, все три агента могут использовать 16 инструментов Amap, но под ним работает только один серверный процесс MCP. Когда мы вызываем`plan_trip`метод`TripPlannerAgent`, три агента будут последовательно вызывать инструменты, и все запросы отправляются в API Amap через один и тот же сервер MCP.
 
-### 13.4.4 Unsplash Image API Integration
+### 13.4.4 Интеграция API изображений Unsplash
 
-In addition to Amap, we also need to obtain images for attractions to make the travel plan more vivid and intuitive. We use the Unsplash API to search for attraction images. Note that Unsplash is a foreign service and is one of the few image APIs that can be used for free, so search results may not be accurate enough. In actual projects, you can consider using Bing, Baidu, or Amap's POI image API, but these services usually require payment.
+Помимо Amap, нам также необходимо получить изображения достопримечательностей, чтобы сделать план путешествия более ярким и интуитивно понятным. Мы используем Unsplash API для поиска изображений достопримечательностей. Обратите внимание, что Unsplash — это зарубежный сервис и один из немногих API изображений, которые можно использовать бесплатно, поэтому результаты поиска могут быть недостаточно точными. В реальных проектах вы можете рассмотреть возможность использования API изображений POI Bing, Baidu или Amap, но эти услуги обычно требуют оплаты.
 
-The integration of Unsplash API is relatively simple. We create an `UnsplashService` class to encapsulate API calls:
+Интеграция Unsplash API относительно проста. Мы создаем`UnsplashService`класс для инкапсуляции вызовов API:
 
 ```python
 # backend/app/services/unsplash_service.py
@@ -877,7 +877,7 @@ class UnsplashService:
         return photos[0].get("url") if photos else None
 ```
 
-This service class provides two methods: `search_photos` searches for multiple images, and `get_photo_url` gets the URL of a single image. We use this service in the API route to get images for each attraction:
+Этот класс обслуживания предоставляет два метода:`search_photos`ищет несколько изображений и`get_photo_url`получает URL-адрес одного изображения. Мы используем этот сервис в маршруте API для получения изображений для каждого аттракциона:
 
 ```python
 # backend/app/api/routes/trip.py
@@ -902,26 +902,26 @@ async def create_trip_plan(request: TripPlanRequest) -> TripPlan:
     return trip_plan
 ```
 
-Note that we didn't encapsulate Unsplash as a Tool or MCP tool, but called it directly in the API route. This is because image search doesn't require the Agent's intelligent decision-making, it's just a simple data enhancement step. If you want the Agent to autonomously decide whether images are needed or choose different image sources, you can consider encapsulating it as a Tool.
+Обратите внимание, что мы не инкапсулировали Unsplash как инструмент или инструмент MCP, а вызвали его непосредственно в маршруте API. Это связано с тем, что поиск изображений не требует интеллектуального принятия решений Агентом, это всего лишь простой шаг по улучшению данных. Если вы хотите, чтобы агент самостоятельно решал, нужны ли изображения, или выбирал разные источники изображений, вы можете рассмотреть возможность его инкапсуляции в качестве инструмента.
 
-## 13.5 Front-End Development Details
+## 13.5 Детали внешней разработки
 
-### 13.5.1 Front-End and Back-End Separation Web Architecture
+### 13.5.1 Веб-архитектура разделения клиентской и внутренней частей
 
-Before starting front-end development, we need to understand the architecture pattern of modern Web applications. In early Web development, front-end and back-end were mixed together. For example, technologies like PHP and JSP had HTML templates and business logic code written in the same file. This approach is convenient in small projects, but encounters many problems in large projects: front-end and back-end developers need frequent coordination, code is difficult to reuse, and testing is difficult.
+Прежде чем приступить к разработке внешнего интерфейса, нам необходимо понять структуру архитектуры современных веб-приложений. На ранних этапах веб-разработки интерфейсная и серверная части были смешаны. Например, в таких технологиях, как PHP и JSP, HTML-шаблоны и код бизнес-логики были записаны в одном файле. Этот подход удобен в небольших проектах, но сталкивается со многими проблемами в крупных проектах: разработчикам внешнего и внутреннего интерфейса требуется частая координация, код сложно повторно использовать, а тестирование затруднено.
 
-Modern Web applications generally adopt a **front-end and back-end separation** architecture. The back-end is only responsible for providing API interfaces and returning data in JSON format. The front-end is an independent application that calls back-end APIs through HTTP requests, obtains data, and then renders pages. This architecture has several obvious advantages: front-end and back-end can be developed, deployed, and tested independently; the front-end can be a Web application, mobile application, or desktop application, all using the same set of back-end APIs; the front-end can use modern frameworks and toolchains to provide a better user experience.
+Современные веб-приложения обычно используют **архитектуру разделения клиентской и внутренней части**. Серверная часть отвечает только за предоставление интерфейсов API и возврат данных в формате JSON. Интерфейс — это независимое приложение, которое вызывает внутренние API через HTTP-запросы, получает данные и затем отображает страницы. Эта архитектура имеет несколько очевидных преимуществ: интерфейсную и серверную части можно разрабатывать, развертывать и тестировать независимо друг от друга; интерфейсным интерфейсом может быть веб-приложение, мобильное приложение или настольное приложение, использующее один и тот же набор внутренних API; интерфейсная часть может использовать современные платформы и цепочки инструментов для обеспечения лучшего взаимодействия с пользователем.
 
-In our intelligent travel assistant project, the back-end is implemented with Python and FastAPI, providing a core API interface `POST /api/trip/plan` that receives travel requirements and returns travel plans. The front-end is implemented with Vue 3 and TypeScript, and is a single-page application (SPA). Users fill in forms in the browser, click the "Start Planning" button, the front-end sends an HTTP request to the back-end, waits for a response, and then renders the result page. Throughout this process, the page doesn't refresh, and the user experience is very smooth.
+В нашем проекте интеллектуального помощника по путешествиям серверная часть реализована с помощью Python и FastAPI, обеспечивая основной интерфейс API.`POST /api/trip/plan`который получает требования к поездкам и возвращает планы поездок. Интерфейс реализован с помощью Vue 3 и TypeScript и представляет собой одностраничное приложение (SPA). Пользователи заполняют формы в браузере, нажимают кнопку «Начать планирование», внешний интерфейс отправляет HTTP-запрос на серверную часть, ждет ответа, а затем отображает страницу результатов. На протяжении всего этого процесса страница не обновляется, и работа пользователя очень плавная.
 
-The choice of front-end technology stack needs to consider several factors: development efficiency, performance, ecosystem, and learning curve. As shown in Table 13.2, the project chose the following technology stack:
+При выборе стека интерфейсных технологий необходимо учитывать несколько факторов: эффективность разработки, производительность, экосистему и кривую обучения. Как показано в Таблице 13.2, в проекте был выбран следующий стек технологий:
 
 <div align="center">
-  <p>Table 13.2 Front-End Technology Stack</p>
+  <p>Таблица 13.2. Стек интерфейсных технологий</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/13-figures/13-table-2.png" alt="" width="85%"/>
 </div>
 
-The project's directory structure is as follows:
+Структура каталогов проекта следующая:
 
 ```
 frontend/
@@ -942,13 +942,13 @@ frontend/
 └── tsconfig.json
 ```
 
-The `views` directory stores page components, the `services` directory stores API call logic, the `types` directory stores TypeScript type definitions, and the `router` directory stores router configuration.
+The`views`каталог хранит компоненты страницы,`services`в каталоге хранится логика вызовов API,`types`В каталоге хранятся определения типов TypeScript, а`router`В каталоге хранится конфигурация маршрутизатора.
 
-### 13.5.2 Type Definitions
+### 13.5.2 Определения типов
 
-In Section 13.2, we used Pydantic to define data models on the back-end, such as `Location`, `Attraction`, `DayPlan`, `TripPlan`, etc. On the front-end, we need to define corresponding TypeScript types.
+В разделе 13.2 мы использовали Pydantic для определения моделей данных на серверной стороне, таких как`Location`, `Attraction`, `DayPlan`, `TripPlan`и т. д. Во внешнем интерфейсе нам необходимо определить соответствующие типы TypeScript.
 
-Let's see how to define these types. First is the most basic `Location` type, representing longitude and latitude coordinates:
+Давайте посмотрим, как определить эти типы. Сначала самое основное`Location`тип, представляющий координаты долготы и широты:
 
 ```typescript
 // frontend/src/types/index.ts
@@ -958,9 +958,9 @@ export interface Location {
 }
 ```
 
-This type definition corresponds exactly to the back-end Pydantic model. Note that TypeScript uses the `interface` keyword to define types, field types are separated by colons, and no default values are needed.
+Это определение типа в точности соответствует внутренней модели Pydantic. Обратите внимание, что TypeScript использует`interface`Ключевое слово для определения типов, типы полей разделяются двоеточиями, значения по умолчанию не требуются.
 
-Next is the `Attraction` type, representing attraction information:
+Далее идет`Attraction`тип, представляющий информацию о достопримечательности:
 
 ```typescript
 export interface Attraction {
@@ -976,9 +976,9 @@ export interface Attraction {
 }
 ```
 
-Note that we use the `Location` type as a field type here, which is a nested type. The question mark `?` indicates an optional field, corresponding to `Optional` in the back-end Pydantic model.
+Обратите внимание, что мы используем`Location`введите здесь тип поля, который является вложенным типом. Вопросительный знак`?`указывает на необязательное поле, соответствующее`Optional`во внутренней модели Pydantic.
 
-Similarly, we define types like `Meal`, `Hotel`, `Budget`, `WeatherInfo`, etc. Finally, the top-level `TripPlan` type:
+Аналогичным образом мы определяем такие типы, как`Meal`, `Hotel`, `Budget`, `WeatherInfo`и т. д. Наконец, верхний уровень`TripPlan`тип:
 
 ```typescript
 export interface TripPlan {
@@ -992,7 +992,7 @@ export interface TripPlan {
 }
 ```
 
-There's also the request type `TripPlanRequest`, corresponding to the back-end request model:
+Также есть тип запроса`TripPlanRequest`, соответствующий модели внутреннего запроса:
 
 ```typescript
 export interface TripPlanRequest {
@@ -1007,11 +1007,11 @@ export interface TripPlanRequest {
 }
 ```
 
-What are these type definitions for? First, when we call the API, TypeScript will check whether the data we pass conforms to the `TripPlanRequest` type. If we accidentally write `days` as a string, TypeScript will immediately report an error. Second, when we receive the API response, TypeScript will check whether the response data conforms to the `TripPlan` type. If the back-end's data structure changes, the front-end will immediately discover it. Finally, the IDE can provide code completion based on type definitions. When we type `tripPlan.`, the IDE will automatically list all available fields.
+Для чего нужны эти определения типов? Во-первых, когда мы вызываем API, TypeScript проверит, соответствуют ли передаваемые нами данные`TripPlanRequest`тип. Если мы случайно напишем`days`в виде строки TypeScript немедленно сообщит об ошибке. Во-вторых, когда мы получим ответ API, TypeScript проверит, соответствуют ли данные ответа`TripPlan`тип. Если структура данных серверной части изменится, интерфейсная часть немедленно обнаружит это. Наконец, IDE может обеспечить завершение кода на основе определений типов. Когда мы печатаем`tripPlan.`, IDE автоматически выведет список всех доступных полей.
 
-### 13.5.3 API Service Encapsulation
+### 13.5.3 Инкапсуляция службы API
 
-With type definitions, we can encapsulate API calls. We create an `api.ts` file and use Axios to send HTTP requests:
+С помощью определений типов мы можем инкапсулировать вызовы API. Мы создаем`api.ts`файл и используйте Axios для отправки HTTP-запросов:
 
 ```typescript
 import axios from 'axios'
@@ -1026,9 +1026,9 @@ const api = axios.create({
 })
 ```
 
-Here we create an Axios instance and configure the base URL, timeout, and request headers. Why is the timeout set to 2 minutes? Because generating a travel plan requires calling multiple Agents, each Agent needs to call the LLM and external APIs, and the entire process may take 10-30 seconds. If the timeout is too short, the request will be interrupted.
+Здесь мы создаем экземпляр Axios и настраиваем базовый URL-адрес, тайм-аут и заголовки запросов. Почему таймаут установлен на 2 минуты? Поскольку для создания плана поездки требуется вызов нескольких агентов, каждому агенту необходимо вызвать LLM и внешние API, и весь процесс может занять 10–30 секунд. Если таймаут слишком мал, запрос будет прерван.
 
-Next we add interceptors. Interceptors can execute some common logic before sending requests and after receiving responses, such as logging, error handling, authentication, etc.:
+Далее мы добавляем перехватчики. Перехватчики могут выполнять некоторую общую логику перед отправкой запросов и после получения ответов, например ведение журнала, обработку ошибок, аутентификацию и т. д.:
 
 ```typescript
 // Request interceptor
@@ -1053,7 +1053,7 @@ api.interceptors.response.use(
 )
 ```
 
-Finally, we define the API function, which is the only entry point for the front-end to call the back-end:
+Наконец, мы определяем функцию API, которая является единственной точкой входа для внешнего интерфейса для вызова внутреннего интерфейса:
 
 ```typescript
 // Generate travel plan
@@ -1063,11 +1063,11 @@ export const generateTripPlan = async (request: TripPlanRequest): Promise<TripPl
 }
 ```
 
-Note the type signature of this function: the parameter is of type `TripPlanRequest`, and the return value is of type `Promise<TripPlan>`. This means TypeScript will check whether the parameters passed by the caller meet the requirements, and will also check whether the use of the return value is correct.
+Обратите внимание на сигнатуру типа этой функции: параметр имеет тип`TripPlanRequest`, а возвращаемое значение имеет тип`Promise<TripPlan>`. Это означает, что TypeScript проверит, соответствуют ли параметры, переданные вызывающей стороной, требованиям, а также проверит правильность использования возвращаемого значения.
 
-### 13.5.4 Home Form Design
+### 13.5.4 Дизайн домашней формы
 
-The Home page is the user's entry point, containing a form for users to fill in travel requirements. We use Vue 3's Composition API to organize the code:
+Домашняя страница — это точка входа пользователя, содержащая форму, в которой пользователи могут заполнить требования к поездке. Мы используем Composition API Vue 3 для организации кода:
 
 ```vue
 <script setup lang="ts">
@@ -1095,9 +1095,9 @@ const formData = ref<TripPlanRequest>({
 </script>
 ```
 
-Here we use `ref` to create reactive variables. `formData` is the form data, of type `TripPlanRequest`. `loading` indicates whether it's loading, `loadingProgress` indicates the loading progress, and `loadingStatus` indicates the loading status text.
+Здесь мы используем`ref`для создания реактивных переменных.`formData`это данные формы типа`TripPlanRequest`. `loading`указывает, загружается ли он,`loadingProgress`указывает ход загрузки, и`loadingStatus`указывает текст состояния загрузки.
 
-The form submission logic is as follows:
+Логика отправки формы следующая:
 
 ```typescript
 const handleSubmit = async () => {
@@ -1129,11 +1129,11 @@ const handleSubmit = async () => {
 }
 ```
 
-This code does several things. First, it sets `loading` to true to display the loading state. Then, it starts a timer that updates the progress bar and status text every 500 milliseconds. This is a simulated progress because we can't accurately know the back-end's processing progress. But this lets users know the system is working, rather than being stuck.
+Этот код делает несколько вещей. Во-первых, он устанавливает`loading`значение true, чтобы отобразить состояние загрузки. Затем он запускает таймер, который обновляет индикатор выполнения и текст состояния каждые 500 миллисекунд. Это смоделированный прогресс, поскольку мы не можем точно знать ход обработки серверной части. Но это позволяет пользователям знать, что система работает, а не зависает.
 
-Next, it calls the `generateTripPlan` function to send the API request. This is an asynchronous operation, and we use `await` to wait for the response. If the request succeeds, clear the timer, set progress to 100%, then navigate to the result page and pass the travel plan data. If the request fails, display an error message. Finally, whether successful or failed, set `loading` to false to hide the loading state.
+Далее он вызывает`generateTripPlan`функция для отправки запроса API. Это асинхронная операция, и мы используем`await`дождаться ответа. Если запрос успешен, очистите таймер, установите прогресс на 100 %, затем перейдите на страницу результатов и передайте данные плана поездки. Если запрос не выполнен, отобразите сообщение об ошибке. Наконец, независимо от того, успешно это или нет, установите`loading`значение false, чтобы скрыть состояние загрузки.
 
-The template part uses Ant Design Vue components:
+Часть шаблона использует компоненты Ant Design Vue:
 
 ```vue
 <template>
@@ -1168,13 +1168,13 @@ The template part uses Ant Design Vue components:
 </template>
 ```
 
-Note the `v-model:value` directive, which implements two-way data binding. When users type in the input box, `formData.city` automatically updates. When the value of `formData.city` changes, the input box content also automatically updates.
+Обратите внимание на`v-model:value`директива, реализующая двустороннюю привязку данных. Когда пользователи вводят в поле ввода,`formData.city`автоматически обновляется. Когда значение`formData.city`изменяется, содержимое поля ввода также автоматически обновляется.
 
-### 13.5.5 Result Page Display
+### 13.5.5 Отображение страницы результатов
 
-The Result page is the core of the entire application, displaying the generated travel plan. This page includes several parts: itinerary overview, budget details, map visualization, daily itinerary details, and weather information.
+Страница результатов является ядром всего приложения и отображает созданный план поездки. Эта страница состоит из нескольких частей: обзор маршрута, сведения о бюджете, визуализация карты, сведения о ежедневном маршруте и информация о погоде.
 
-First is map visualization. We use the Amap JS API to mark attraction locations on the map:
+Во-первых, это визуализация карты. Мы используем Amap JS API, чтобы отмечать места достопримечательностей на карте:
 
 ```typescript
 import AMapLoader from '@amap/amap-jsapi-loader'
@@ -1204,9 +1204,9 @@ const initMap = async () => {
 }
 ```
 
-This code first loads the Amap SDK, then creates a map instance, and finally iterates through all attractions to create a marker for each. The marker's position is the attraction's longitude and latitude coordinates, which are obtained from the back-end's `Attraction` object.
+Этот код сначала загружает Amap SDK, затем создает экземпляр карты и, наконец, перебирает все достопримечательности, создавая для каждой маркер. Положение маркера — это координаты долготы и широты достопримечательности, которые получаются из серверной части`Attraction`объект.
 
-The export function uses the `html2canvas` and `jsPDF` libraries. `html2canvas` can convert DOM elements to Canvas, and then we can export the Canvas as an image or PDF:
+Функция экспорта использует`html2canvas`и`jsPDF`библиотеки.`html2canvas`можем преобразовать элементы DOM в Canvas, а затем экспортировать Canvas как изображение или PDF:
 
 ```typescript
 import html2canvas from 'html2canvas'
@@ -1235,19 +1235,19 @@ const exportAsPDF = async () => {
 }
 ```
 
-Through these front-end technologies, we implemented a complete Web application. Users can fill in forms in the browser, submit requests, wait for AI to generate travel plans, then view detailed itinerary arrangements, see attraction locations on the map, and export as images or PDFs. The entire process is smooth and natural - this is the charm of modern Web applications.
+С помощью этих интерфейсных технологий мы реализовали полноценное веб-приложение. Пользователи могут заполнять формы в браузере, отправлять запросы, ждать, пока ИИ создаст планы поездок, затем просматривать подробные маршруты, видеть места достопримечательностей на карте и экспортировать их в виде изображений или PDF-файлов. Весь процесс плавный и естественный — в этом прелесть современных веб-приложений.
 
-## 13.6 Feature Implementation Details
+## 13.6 Детали реализации функции
 
-This section introduces the core feature implementations of the intelligent travel assistant, including budget calculation, loading progress bar, itinerary editing, export functionality, and side navigation.
+В этом разделе представлены основные реализации интеллектуального помощника по путешествиям, включая расчет бюджета, индикатор выполнения загрузки, редактирование маршрута, функции экспорта и боковую навигацию.
 
-### 13.6.1 Budget Calculation Feature
+### 13.6.1 Функция расчета бюджета
 
-When planning a trip, budget is a very important consideration. Users need to know approximately how much this trip will cost and where the money will be spent. Our intelligent travel assistant provides automatic budget calculation functionality, dividing expenses into four major categories: attraction tickets, hotel accommodation, dining, and transportation.
+При планировании поездки бюджет является очень важным фактором. Пользователям необходимо примерно знать, сколько будет стоить такая поездка и куда пойдут деньги. Наш интеллектуальный помощник по путешествиям обеспечивает функцию автоматического расчета бюджета, разделяя расходы на четыре основные категории: билеты на аттракционы, проживание в отеле, питание и транспорт.
 
-Where is the budget calculation logic implemented? We chose to implement it in the back-end's PlannerAgent. Why not calculate on the front-end? Because budget estimation needs to be based on attraction ticket prices, hotel price ranges, dining standards, and other information, all of which are already obtained by PlannerAgent when generating the itinerary. If calculated on the front-end, we would need to duplicate this logic, and it might not be accurate.
+Где реализована логика расчета бюджета? Мы решили реализовать его в PlannerAgent серверной части. Почему бы не посчитать на фронтенде? Потому что оценка бюджета должна основываться на ценах на билеты на аттракционы, ценовых диапазонах отелей, стандартах питания и другой информации, которая уже получена PlannerAgent при создании маршрута. Если рассчитывать на внешнем интерфейсе, нам нужно будет продублировать эту логику, и она может быть неточной.
 
-In PlannerAgent's prompt, we explicitly require the LLM to generate budget information:
+В приглашении PlannerAgent мы явно требуем, чтобы LLM генерировал информацию о бюджете:
 
 ```python
 PLANNER_AGENT_PROMPT = """
@@ -1272,9 +1272,9 @@ Strictly return in the following JSON format:
 """
 ```
 
-The LLM will estimate the cost of each item based on the attractions, hotels, and dining arrangements in the itinerary. For example, if the itinerary includes the Forbidden City (ticket 60 yuan), Temple of Heaven (ticket 15 yuan), and Summer Palace (ticket 30 yuan), then the total attraction ticket cost is 105 yuan. If it's a 3-day 2-night trip with budget hotels (300 yuan per night), then the total hotel cost is 600 yuan.
+LLM оценит стоимость каждого предмета с учетом достопримечательностей, отелей и условий питания в маршруте. Например, если маршрут включает Запретный город (билет 60 юаней), Храм Неба (билет 15 юаней) и Летний дворец (билет 30 юаней), то общая стоимость билета на аттракцион составит 105 юаней. Если это поездка на 3 дня и 2 ночи с бюджетными отелями (300 юаней за ночь), то общая стоимость гостиницы составит 600 юаней.
 
-On the front-end, we use Ant Design Vue's Statistic component to display budget information. This component is specifically designed for displaying statistical data and supports number animations, prefixes/suffixes, custom styles, etc.:
+На внешнем интерфейсе мы используем компонент статистики Ant Design Vue для отображения информации о бюджете. Этот компонент специально разработан для отображения статистических данных и поддерживает анимацию чисел, префиксы/суффиксы, пользовательские стили и т. д.:
 
 ```vue
 <a-card v-if="tripPlan.budget" title="💰 Budget Details">
@@ -1306,15 +1306,15 @@ On the front-end, we use Ant Design Vue's Statistic component to display budget 
 </a-card>
 ```
 
-This code uses grid layout (`a-row` and `a-col`) to display the four expense items side by side. Each expense item uses an `a-statistic` component to display the title and value. Finally, a divider (`a-divider`) separates them, and below displays the total cost in large red font for emphasis.
+Этот код использует макет сетки (`a-row`и`a-col`), чтобы отобразить четыре статьи расходов рядом. Для каждой статьи расходов используется`a-statistic`компонент для отображения заголовка и значения. Наконец, делитель (`a-divider`) разделяет их, а ниже для наглядности отображается общая стоимость крупным красным шрифтом.
 
-Note the conditional rendering `v-if="tripPlan.budget"`. Because budget information is optional (defined as `Optional[Budget]` in the Pydantic model), if the LLM doesn't generate budget information, this card won't be displayed. This reflects the front-end's error tolerance for data.
+Обратите внимание на условный рендеринг`v-if="tripPlan.budget"`. Поскольку информация о бюджете не является обязательной (определяется как`Optional[Budget]`в модели Pydantic), если LLM не генерирует информацию о бюджете, эта карточка не будет отображаться. Это отражает устойчивость внешнего интерфейса к ошибкам данных.
 
-### 13.6.2 Loading Progress Bar
+### 13.6.2 Индикатор выполнения загрузки
 
-Generating a travel plan is a time-consuming operation. The back-end needs to sequentially call AttractionSearchAgent, WeatherQueryAgent, HotelAgent, and PlannerAgent, and each Agent needs to call the LLM and external APIs. The entire process may take 10-30 seconds. If the user clicks the "Start Planning" button and the page has no feedback, the user will think the system is stuck and may refresh the page or click repeatedly.
+Составление плана путешествия — трудоемкая операция. Серверной части необходимо последовательно вызывать AttractionSearchAgent, WeatherQueryAgent, HotelAgent и PlannerAgent, и каждый агент должен вызывать LLM и внешние API. Весь процесс может занять 10-30 секунд. Если пользователь нажмет кнопку «Начать планирование», а на странице нет обратной связи, он подумает, что система зависла, и может обновить страницу или щелкнуть несколько раз.
 
-To improve user experience, we added a loading progress bar and status prompts. Currently, it's just simulated progress, but it lets users know the system is working.
+Чтобы улучшить взаимодействие с пользователем, мы добавили индикатор выполнения загрузки и подсказки о состоянии. В настоящее время это просто симуляция прогресса, но она позволяет пользователям узнать, что система работает.
 
 ```typescript
 const loading = ref(false)
@@ -1351,11 +1351,11 @@ const handleSubmit = async () => {
 }
 ```
 
-### 13.6.3 Itinerary Editing Feature
+### 13.6.3 Функция редактирования маршрута
 
-Although AI-generated travel plans are intelligent, they may not fully meet users' personal needs. For example, users may not like a certain attraction and want to delete it, or want to adjust the order of attractions. We provide an itinerary editing feature that allows users to customize their itinerary.
+Хотя планы поездок, созданные с помощью ИИ, являются интеллектуальными, они могут не полностью отвечать личным потребностям пользователей. Например, пользователям может не понравиться определенная достопримечательность и они захотят удалить ее или изменить порядок достопримечательностей. Мы предоставляем функцию редактирования маршрута, которая позволяет пользователям настраивать свой маршрут.
 
-The core of the editing feature is **state management**. We need to maintain two states: the current itinerary plan and the original itinerary plan. When users enter edit mode, we save a copy of the original plan. If users cancel editing, we restore the original plan. If users save changes, we update the current plan:
+Основой функции редактирования является **управление состоянием**. Нам необходимо поддерживать два состояния: текущий план маршрута и исходный план маршрута. Когда пользователи входят в режим редактирования, мы сохраняем копию исходного плана. Если пользователи отменяют редактирование, мы восстанавливаем исходный план. Если пользователи сохраняют изменения, мы обновляем текущий план:
 
 ```typescript
 const editMode = ref(false)
@@ -1368,9 +1368,9 @@ const toggleEditMode = () => {
 }
 ```
 
-Note that we use `JSON.parse(JSON.stringify(...))` to deep copy the object. Why not assign directly? Because objects in JavaScript are reference types - if we assign directly, `originalPlan` and `tripPlan` will point to the same object, and modifying one will affect the other. Deep copying creates a completely independent copy.
+Обратите внимание, что мы используем`JSON.parse(JSON.stringify(...))`для глубокого копирования объекта. Почему бы не назначить напрямую? Поскольку объекты в JavaScript являются ссылочными типами, то если мы присваиваем их напрямую,`originalPlan`и`tripPlan`будет указывать на один и тот же объект, и изменение одного повлияет на другой. Глубокое копирование создает полностью независимую копию.
 
-The logic for moving attractions is to swap the positions of two elements in the array:
+Логика перемещения аттракционов заключается в смене позиций двух элементов массива:
 
 ```typescript
 // Move attraction
@@ -1385,9 +1385,9 @@ const moveAttraction = (dayIndex: number, attractionIndex: number, direction: 'u
 }
 ```
 
-This uses ES6's destructuring assignment syntax to swap two elements. `[a, b] = [b, a]` is an elegant way to swap without needing a temporary variable.
+Здесь используется синтаксис деструктуризации присваивания ES6 для замены двух элементов.`[a, b] = [b, a]`— это элегантный способ обмена без использования временной переменной.
 
-Deleting attractions uses the array's `splice` method:
+Удаление достопримечательностей использует массив`splice`метод:
 
 ```typescript
 // Delete attraction
@@ -1396,7 +1396,7 @@ const deleteAttraction = (dayIndex: number, attractionIndex: number) => {
 }
 ```
 
-When saving changes, we need to reinitialize the map because attraction positions may have changed:
+При сохранении изменений нам необходимо повторно инициализировать карту, поскольку позиции достопримечательностей могли измениться:
 
 ```typescript
 // Save changes
@@ -1415,7 +1415,7 @@ const cancelEdit = () => {
 }
 ```
 
-In the template, we display different UI based on the value of `editMode`. In edit mode, up, down, and delete buttons are displayed next to each attraction:
+В шаблоне мы отображаем разные пользовательские интерфейсы в зависимости от значения`editMode`. В режиме редактирования рядом с каждым аттракционом отображаются кнопки «вверх», «вниз» и «удалить»:
 
 ```vue
 <div v-if="editMode" class="edit-buttons">
@@ -1425,22 +1425,22 @@ In the template, we display different UI based on the value of `editMode`. In ed
 </div>
 ```
 
-### 13.6.4 Export Functionality
+### 13.6.4 Функциональность экспорта
 
-After users generate a satisfactory travel plan, they may want to save it or share it with friends. We provide two export methods: export as image and export as PDF.
+После того как пользователи составят удовлетворительный план путешествия, они могут захотеть сохранить его или поделиться им с друзьями. Мы предоставляем два метода экспорта: экспорт как изображение и экспорт в PDF.
 
-The core of the export functionality is the `html2canvas` library. This library can convert DOM elements to Canvas, and then we can export the Canvas as an image. But there's a technical challenge here: the map is rendered using Canvas, and `html2canvas` has compatibility issues when handling nested Canvas.
+Основой функции экспорта является`html2canvas`библиотека. Эта библиотека может конвертировать элементы DOM в Canvas, а затем мы можем экспортировать Canvas как изображение. Но здесь есть техническая проблема: карта отображается с использованием Canvas, и`html2canvas`имеет проблемы совместимости при работе с вложенным Canvas.
 
-We tried multiple solutions, including converting the map Canvas to an image before exporting, but due to Amap's Canvas rendering mechanism and cross-origin restrictions, this solution didn't completely solve the problem. In actual projects, you may need to consider the following alternative solutions:
+Мы попробовали несколько решений, включая преобразование Canvas карты в изображение перед экспортом, но из-за механизма рендеринга Canvas Amap и ограничений между источниками это решение не решило проблему полностью. В реальных проектах вам может потребоваться рассмотреть следующие альтернативные решения:
 
-1. **Use Amap's static map API**: Call the `maps_staticmap` tool to generate static map images to replace dynamic maps
-2. **Export separately**: Export the map and itinerary content separately, then merge them on the back-end
-3. **Use screenshot service**: Use headless browsers like Puppeteer to take screenshots on the server side
-4. **Simplify export content**: Hide the map when exporting, only export text content
+1. **Используйте API статических карт Amap**: вызовите инструмент «maps_staticmap», чтобы создать изображения статических карт для замены динамических карт.
+2. **Экспортировать отдельно**: экспортируйте карту и содержимое маршрута отдельно, а затем объедините их на серверной стороне.
+3. **Используйте службу снимков экрана**: используйте автономные браузеры, такие как Puppeteer, чтобы делать снимки экрана на стороне сервера.
+4. **Упрощение экспорта контента**: скройте карту при экспорте, экспортируйте только текстовый контент.
 
-In the current implementation, we adopted a simplified approach, temporarily hiding the map part when exporting and only exporting the text content and attraction information of the itinerary. Although this isn't the ideal solution, it ensures the export functionality is usable.
+В текущей реализации мы применили упрощенный подход, временно скрывая часть карты при экспорте и экспортируя только текстовое содержимое и информацию о достопримечательностях маршрута. Хотя это не идеальное решение, оно обеспечивает возможность использования функции экспорта.
 
-The logic for exporting as an image is simple:
+Логика экспорта в виде изображения проста:
 
 ```typescript
 import html2canvas from 'html2canvas'
@@ -1463,9 +1463,9 @@ const exportAsImage = async () => {
 }
 ```
 
-`scale: 2` means using 2x resolution, making the exported image clearer. `useCORS: true` allows cross-origin image loading, which is important for attraction images (from Unsplash).
+`scale: 2`означает использование 2-кратного разрешения, что делает экспортированное изображение более четким.`useCORS: true`позволяет загружать изображения из разных источников, что важно для привлечения изображений (из Unsplash).
 
-Exporting as PDF requires additional steps: first convert to Canvas, then convert to image, and finally add to PDF:
+Экспорт в PDF требует дополнительных шагов: сначала конвертируйте в Canvas, затем конвертируйте в изображение и, наконец, добавьте в PDF:
 
 ```typescript
 import jsPDF from 'jspdf'
@@ -1498,13 +1498,13 @@ const exportAsPDF = async () => {
 }
 ```
 
-Here we need to calculate the image height to maintain the aspect ratio. The width of A4 paper is 210mm, and we calculate the corresponding height based on the Canvas aspect ratio.
+Здесь нам нужно рассчитать высоту изображения, чтобы сохранить соотношение сторон. Ширина бумаги формата А4 составляет 210 мм, и мы рассчитываем соответствующую высоту на основе соотношения сторон холста.
 
-### 13.6.5 Side Navigation and Anchor Jumping
+### 13.6.5 Боковая навигация и переход от якоря
 
-The Result page has a lot of content, including itinerary overview, budget details, map, daily itinerary, weather information, etc. If users want to quickly jump to a certain section, they need to scroll a long distance. We provide side navigation and anchor jumping functionality, allowing users to quickly locate.
+Страница результатов содержит много контента, включая обзор маршрута, сведения о бюджете, карту, ежедневный маршрут, информацию о погоде и т. д. Если пользователи хотят быстро перейти к определенному разделу, им необходимо прокрутить большое расстояние. Мы предоставляем боковую навигацию и функцию перехода к якорю, что позволяет пользователям быстро находить нужные объекты.
 
-Side navigation uses Ant Design Vue's Menu component:
+Боковая навигация использует компонент меню Ant Design Vue:
 
 ```vue
 <a-menu
@@ -1520,7 +1520,7 @@ Side navigation uses Ant Design Vue's Menu component:
 </a-menu>
 ```
 
-When clicking a menu item, call the `scrollToSection` function:
+При нажатии на пункт меню вызывается`scrollToSection`функция:
 
 ```typescript
 const activeSection = ref('overview')
@@ -1535,9 +1535,9 @@ const scrollToSection = ({ key }: { key: string }) => {
 }
 ```
 
-`scrollIntoView` is a native browser API that can scroll an element into the visible area. `behavior: 'smooth'` means smooth scrolling rather than instant jumping. `block: 'start'` means the top of the element aligns with the top of the visible area.
+`scrollIntoView`— это собственный API браузера, который может прокручивать элемент в видимую область.`behavior: 'smooth'`означает плавную прокрутку, а не мгновенный прыжок.`block: 'start'`означает, что верхняя часть элемента совпадает с верхней частью видимой области.
 
-In various parts of the page, we need to add corresponding ids:
+В различных частях страницы нам нужно добавить соответствующие идентификаторы:
 
 ```vue
 <div id="overview">
@@ -1553,29 +1553,29 @@ In various parts of the page, we need to add corresponding ids:
 </div>
 ```
 
-This way, when users click a menu item in the side navigation, the page will smoothly scroll to the corresponding section.
+Таким образом, когда пользователи нажимают на пункт меню в боковой навигации, страница плавно прокручивается до соответствующего раздела.
 
-Through the implementation of these features, our intelligent travel assistant not only generates travel plans but also provides rich interactive features: budget calculation lets users understand costs, loading progress bar makes waiting less anxious, itinerary editing makes plans more personalized, export functionality allows plans to be shared and saved, and side navigation makes long pages easy to browse. The combination of these features forms a complete, user-friendly, and practical Web application.
+Благодаря реализации этих функций наш интеллектуальный помощник по путешествиям не только создает планы поездок, но и предоставляет богатые интерактивные функции: расчет бюджета позволяет пользователям понять затраты, индикатор выполнения загрузки делает ожидание менее тревожным, редактирование маршрута делает планы более персонализированными, функция экспорта позволяет делиться планами и сохранять их, а боковая навигация упрощает просмотр длинных страниц. Комбинация этих функций образует законченное, удобное и практичное веб-приложение.
 
-## 13.7 Conclusion
+## 13.7 Заключение
 
-Congratulations on completing Chapter 13!
+Поздравляем с завершением главы 13!
 
-Through this chapter, you not only learned how to build a complete intelligent travel assistant application, but more importantly, you mastered:
+Из этой главы вы не только узнали, как создать полноценное интеллектуальное приложение-помощник в путешествии, но, что более важно, освоили:
 
-1. **System Design Thinking**: How to decompose complex problems into multiple simple tasks
-2. **Engineering Practice Ability**: How to transform theoretical knowledge into runnable code
-3. **Full-Stack Development Ability**: How to integrate front-end and back-end technology stacks
-4. **AI Application Development**: How to use LLMs to build practical applications
+1. **Системное проектное мышление**: как разложить сложные проблемы на несколько простых задач.
+2. **Возможности инженерной практики**: Как превратить теоретические знания в работоспособный код.
+3. **Возможность полнофункциональной разработки**: как интегрировать стеки интерфейсных и серверных технологий.
+4. **Разработка приложений ИИ**: как использовать LLM для создания практических приложений
 
-This project is a starting point, not an endpoint. Based on this project, you can:
+Этот проект является отправной точкой, а не конечной точкой. На основе этого проекта вы сможете:
 
-- Add more features
-- Optimize user experience
-- Extend to other domains (such as intelligent shopping assistant, intelligent learning assistant, etc.)
-- Deploy to production environment to serve real users
+- Добавить больше функций
+- Оптимизируйте пользовательский опыт
+- Распространение на другие области (например, интеллектуальный помощник в покупках, интеллектуальный помощник в обучении и т. д.).
+- Развертывание в производственной среде для обслуживания реальных пользователей.
 
-The best way to learn is through practice. Don't just read the code - modify, extend, and optimize it yourself. Each practice will deepen your understanding of multi-Agent systems.
+Лучший способ учиться – это практика. Не просто читайте код — изменяйте, расширяйте и оптимизируйте его самостоятельно. Каждая практика углубит ваше понимание мультиагентных систем.
 
-Wishing you success on your journey in AI application development!
+Желаем вам успехов в разработке приложений искусственного интеллекта!
 

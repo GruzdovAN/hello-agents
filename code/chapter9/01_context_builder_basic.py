@@ -1,11 +1,11 @@
 """
-ContextBuilder 基础使用示例
+Пример базового использования ContextBuilder
 
-展示如何使用 ContextBuilder 构建优化的上下文，包括：
-1. 初始化 ContextBuilder
-2. 准备对话历史
-3. 添加记忆
-4. 构建结构化上下文
+Показывает, как использовать ContextBuilder для создания оптимизированных контекстов, в том числе:
+1. Инициализируйте ContextBuilder
+2. Подготовьте историю разговоров
+3. Добавьте воспоминания
+4. Создайте структурированный контекст
 """
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,20 +17,20 @@ from datetime import datetime
 
 def main():
     print("=" * 80)
-    print("ContextBuilder 基础使用示例")
+    print("Пример базового использования ContextBuilder")
     print("=" * 80 + "\n")
 
-    # 1. 初始化工具（Optional）
-    print("1. 初始化工具...")
+    # 1. Инструмент инициализации (дополнительно)
+    print("1. Инструмент инициализации...")
     # memory_tool = MemoryTool(user_id="user123")
     # rag_tool = RAGTool(knowledge_base_path="./knowledge_base")
 
-    # 2. 创建 ContextBuilder
-    print("2. 创建 ContextBuilder...")
+    # 2. Создайте ContextBuilder
+    print("2. Создайте ContextBuilder...")
     config = ContextConfig(
         max_tokens=3000,
         reserve_ratio=0.2,
-        min_relevance=0,#最小相关性阈值，0代表所有历史信息会被保留,
+        min_relevance=0,#Минимальный порог корреляции, 0 означает, что вся историческая информация будет сохранена.
         enable_compression=True
     )
 
@@ -40,63 +40,63 @@ def main():
         config=config
     )
 
-    # 3. 准备对话历史
-    print("3. 准备对话历史...")
+    # 3. Подготовьте историю разговоров
+    print("3. Подготовьте историю разговоров...")
     conversation_history = [
-        Message(content="我正在开发一个数据分析工具", role="user", timestamp=datetime.now()),
-        Message(content="很好!数据分析工具通常需要处理大量数据。您计划使用什么技术栈?", role="assistant", timestamp=datetime.now()),
-        Message(content="我打算使用Python和Pandas,已经完成了CSV读取模块", role="user", timestamp=datetime.now()),
-        Message(content="不错的选择!Pandas在数据处理方面非常强大。接下来您可能需要考虑数据清洗和转换。", role="assistant", timestamp=datetime.now()),
+        Message(content="Я разрабатываю инструмент анализа данных", role="user", timestamp=datetime.now()),
+        Message(content="Большой! Инструментам анализа данных часто приходится обрабатывать большие объемы данных. Какой стек технологий вы планируете использовать?", role="assistant", timestamp=datetime.now()),
+        Message(content="Я планирую использовать Python и Pandas и завершил модуль чтения CSV.", role="user", timestamp=datetime.now()),
+        Message(content="Отличный выбор! Pandas очень эффективен, когда дело доходит до обработки данных. Далее вы можете рассмотреть возможность очистки и преобразования данных.", role="assistant", timestamp=datetime.now()),
     ]
 
-    # 4. 添加一些记忆
-    print("4. 添加记忆...")
+    # 4. Добавьте немного воспоминаний
+    print("4. Добавьте воспоминания...")
     # memory_tool.run({
     #     "action": "add",
-    #     "content": "用户正在开发数据分析工具,使用Python和Pandas",
+    #     "content": "Пользователь разрабатывает инструменты анализа данных с использованием Python и Pandas",
     #     "memory_type": "semantic",
     #     "importance": 0.8
     # })
 
     # memory_tool.run({
     #     "action": "add",
-    #     "content": "已完成CSV读取模块的开发",
+    #     "content": "Разработка модуля чтения CSV завершена",
     #     "memory_type": "episodic",
     #     "importance": 0.7
     # })
 
-    # 5. 构建上下文
-    print("5. 构建上下文...\n")
+    # 5. Создайте контекст
+    print("5. Создайте контекст...\n")
     context_str = builder.build(
-        user_query="如何优化Pandas的内存占用?",
+        user_query="Как оптимизировать использование памяти Pandas?",
         conversation_history=conversation_history,
-        system_instructions="你是一位资深的Python数据工程顾问。你的回答需要:1) 提供具体可行的建议 2) 解释技术原理 3) 给出代码示例"
+        system_instructions="Вы старший консультант по разработке данных Python. Ваш ответ должен: 1) предоставить конкретные и осуществимые предложения 2) объяснить технические принципы 3) привести примеры кода"
     )
 
     print("=" * 80)
-    print("构建的上下文 (结构化字符串):")
+    print("Созданный контекст (структурированная строка):")
     print("=" * 80)
     print(context_str)
     print("=" * 80)
     print()
 
-    # 6. 将上下文字符串转换为消息格式供 LLM 使用
-    print("6. 将上下文传给 LLM...")
+    # 6. Преобразуйте строку контекста в формат сообщения для использования LLM.
+    print("6. Передайте контекст в LLM...")
     messages = [
         {"role": "system", "content": context_str},
-        {"role": "user", "content": "请回答"}
+        {"role": "user", "content": "пожалуйста, ответьте"}
 
     ]
 
     from hello_agents.core.llm import HelloAgentsLLM
     llm = HelloAgentsLLM()
-    # 注意: 实际使用时需要配置 LLM
+    # Примечание. LLM необходимо настроить для фактического использования.
     response = llm.invoke(messages)
-    print(f"LLM 回答: {response}")
+    print(f"LLM ответил: {response}")
 
-    print("✅ ContextBuilder 演示完成!")
-    print("\n提示: ContextBuilder 返回的是结构化的上下文字符串,")
-    print("      可以直接作为 system message 传给 LLM。")
+    print("✅ Демо-версия ContextBuilder завершена!")
+    print("\nСовет: ContextBuilder возвращает структурированную строку контекста.")
+    print("      Его можно передать непосредственно в LLM как системное сообщение.")
 
 
 if __name__ == "__main__":

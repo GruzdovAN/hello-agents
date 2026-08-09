@@ -1,28 +1,28 @@
 """
-第十二章示例8：LLM Judge评估
+Глава 12 Пример 8: Оценка судьи LLM
 
-对应文档：12.4.3 LLM Judge评估
+Соответствующий документ: 12.4.3 Оценка судьи LLM.
 
-这个示例展示如何使用LLM Judge评估生成的AIME题目质量。
+В этом примере показано, как использовать LLM Judge для оценки качества сгенерированных вопросов AIME.
 
-LLM Judge从4个维度评估题目质量：
-1. 正确性（Correctness）：题目和答案是否正确
-2. 清晰度（Clarity）：题目表述是否清晰
-3. 难度匹配（Difficulty Match）：难度是否符合AIME水平
-4. 完整性（Completeness）：题目是否完整
+Судья LLM оценивает качество вопросов по 4 измерениям:
+1. Корректность. Правильны ли вопросы и ответы?
+2. Ясность: ясно ли сформулирована тема?
+3. Соответствие сложности: соответствует ли сложность уровню AIME.
+4. Полнота. Является ли вопрос полным?
 """
 
 import sys
 import os
 import json
 
-# 添加HelloAgents路径
+# Добавить путь HelloAgents
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "HelloAgents"))
 
 from hello_agents import HelloAgentsLLM
 from hello_agents.evaluation import LLMJudge
 
-# 1. 准备生成的题目数据
+# 1. Подготовьте сгенерированные данные для вопросов.
 generated_problems = [
     {
         "problem_id": "generated_001",
@@ -38,39 +38,39 @@ generated_problems = [
     }
 ]
 
-# 2. 创建LLM Judge评估器
+# 2. Создайте судью-оценщика LLM.
 llm = HelloAgentsLLM(model_name="gpt-4o")
 judge = LLMJudge(llm=llm)
 
-# 3. 评估每道题目
+# 3. Оцените каждый вопрос
 print("="*60)
-print("LLM Judge评估")
+print("Оценка судьи LLM")
 print("="*60)
 
 all_scores = []
 
 for i, problem in enumerate(generated_problems, 1):
-    print(f"\n评估题目 {i}/{len(generated_problems)}")
-    print(f"题目ID: {problem['problem_id']}")
+    print(f"\nВопросы для оценки {i}/{len(generated_problems)}")
+    print(f"Идентификатор вопроса: {problem['problem_id']}")
     
-    # 评估单道题目
+    # Один вопрос для оценки
     result = judge.evaluate_single(problem)
     
-    # 显示评估结果
-    print(f"\n评估结果:")
-    print(f"  正确性: {result['correctness']}/5")
-    print(f"  清晰度: {result['clarity']}/5")
-    print(f"  难度匹配: {result['difficulty_match']}/5")
-    print(f"  完整性: {result['completeness']}/5")
-    print(f"  平均分: {result['average_score']:.2f}/5")
-    print(f"\n评语:")
+    # Показать результаты оценки
+    print(f"\nРезультаты оценки:")
+    print(f"  Правильность: {result['correctness']}/5")
+    print(f"  Ясность: {result['ясность']}/5")
+    print(f"  Соответствие по сложности: {result['difficulty_match']}/5")
+    print(f"  Полнота: {result['completeness']}/5")
+    print(f"  Средний балл: {result['average_score']:.2f}/5")
+    print(f"\nКомментарии:")
     print(f"  {result['feedback']}")
     
     all_scores.append(result)
 
-# 4. 计算总体统计
+# 4. Посчитать общую статистику
 print("\n" + "="*60)
-print("总体统计")
+print("Общая статистика")
 print("="*60)
 
 avg_correctness = sum(s['correctness'] for s in all_scores) / len(all_scores)
@@ -79,25 +79,25 @@ avg_difficulty = sum(s['difficulty_match'] for s in all_scores) / len(all_scores
 avg_completeness = sum(s['completeness'] for s in all_scores) / len(all_scores)
 avg_overall = sum(s['average_score'] for s in all_scores) / len(all_scores)
 
-print(f"\n平均分:")
-print(f"  正确性: {avg_correctness:.2f}/5")
-print(f"  清晰度: {avg_clarity:.2f}/5")
-print(f"  难度匹配: {avg_difficulty:.2f}/5")
-print(f"  完整性: {avg_completeness:.2f}/5")
-print(f"  总体平均: {avg_overall:.2f}/5")
+print(f"\nСредний балл:")
+print(f"  Правильность: {avg_correctness:.2f}/5")
+print(f"  Ясность: {avg_clarity:.2f}/5.")
+print(f"  Уровень сложности: {avg_difficulty:.2f}/5.")
+print(f"  Полнота: {avg_completeness:.2f}/5")
+print(f"  Общий средний показатель: {avg_overall:.2f}/5.")
 
-# 5. 质量评估
-print(f"\n质量评估:")
+# 5. Оценка качества
+print(f"\nОценка качества:")
 if avg_overall >= 4.0:
-    print("✅ 优秀 - 题目质量很高，可以直接使用")
+    print("✅ Отлично - вопросы высокого качества и их можно использовать напрямую.")
 elif avg_overall >= 3.0:
-    print("⚠️ 良好 - 题目质量可用，建议人工审核")
+    print("⚠️ Хорошее — качество вопроса приемлемое, рекомендуется проверка вручную.")
 elif avg_overall >= 2.0:
-    print("⚠️ 一般 - 题目质量一般，需要大幅改进")
+    print("⚠️ Среднее. Качество вопросов среднее и требует значительного улучшения.")
 else:
-    print("❌ 较差 - 题目质量差，需要重新生成")
+    print("❌ Плохое — качество вопроса плохое, его необходимо перегенерировать.")
 
-# 6. 保存评估结果
+# 6. Сохранить результаты оценки
 output_file = "./evaluation_results/llm_judge_results.json"
 os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
@@ -114,54 +114,54 @@ with open(output_file, 'w', encoding='utf-8') as f:
         }
     }, f, indent=2, ensure_ascii=False)
 
-print(f"\n✅ 评估结果已保存到 {output_file}")
+print(f"\n ✅ Результаты экзамена сохранены в {output_file}")
 
-# 运行输出示例：
+# Пример вывода запуска:
 # ============================================================
-# LLM Judge评估
+# Оценка судьи LLM
 # ============================================================
 # 
-# 评估题目 1/2
-# 题目ID: generated_001
+# Оценочные вопросы 1/2
+# Идентификатор вопроса: сгенерированный_001
 # 
-# 评估结果:
-#   正确性: 5/5
-#   清晰度: 4/5
-#   难度匹配: 5/5
-#   完整性: 5/5
-#   平均分: 4.75/5
+# Результаты оценки:
+#   Правильность: 5/5
+#   Четкость: 4/5
+#   Сложность матча: 5/5
+#   Полнота: 5/5
+#   Средний балл: 4,75/5
 # 
-# 评语:
+# Комментарии:
 #   This is an excellent AIME-level problem. The problem is well-posed,
 #   the solution is correct, and the difficulty is appropriate.
 # 
-# 评估题目 2/2
-# 题目ID: generated_002
+# Оценочные вопросы 2/2
+# Идентификатор вопроса: сгенерированный_002
 # 
-# 评估结果:
-#   正确性: 5/5
-#   清晰度: 5/5
-#   难度匹配: 3/5
-#   完整性: 5/5
-#   平均分: 4.50/5
+# Результаты оценки:
+#   Правильность: 5/5
+#   Четкость: 5/5
+#   Сложность матча: 3/5
+#   Полнота: 5/5
+#   Средний балл: 4,50/5
 # 
-# 评语:
+# Комментарии:
 #   The problem is correct and clear, but the difficulty is slightly
 #   below AIME level. Consider adding more complexity.
 # 
 # ============================================================
-# 总体统计
+# Общая статистика
 # ============================================================
 # 
-# 平均分:
-#   正确性: 5.00/5
-#   清晰度: 4.50/5
-#   难度匹配: 4.00/5
-#   完整性: 5.00/5
-#   总体平均: 4.62/5
+# Средний балл:
+#   Правильность: 5.00/5
+#   Четкость: 4,50/5
+#   Сложность матча: 4.00/5
+#   Полнота: 5.00/5
+#   Общий средний балл: 4,62/5
 # 
-# 质量评估:
-# ✅ 优秀 - 题目质量很高，可以直接使用
+# Оценка качества:
+# ✅ Отлично - вопросы высокого качества и их можно использовать напрямую.
 # 
-# ✅ 评估结果已保存到 ./evaluation_results/llm_judge_results.json
+# ✅ Результаты оценки сохранены в файле ./evaluation_results/llm_judge_results.json.
 

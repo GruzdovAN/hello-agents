@@ -1,37 +1,37 @@
-"""LLM服务模块"""
+"""Сервисный модуль LLM"""
 
 from hello_agents import HelloAgentsLLM
 from ..config import get_settings
 
-# 全局LLM实例
+# Глобальный экземпляр LLM
 _llm_instance = None
 
 
 def get_llm() -> HelloAgentsLLM:
     """
-    获取LLM实例(单例模式)
+    Получить экземпляр LLM (одиночный режим)
     
-    Returns:
-        HelloAgentsLLM实例
+    Возврат:
+        Экземпляр HelloAgentsLLM
     """
     global _llm_instance
     
     if _llm_instance is None:
         settings = get_settings()
         
-        # HelloAgentsLLM会自动从环境变量读取配置
-        # 包括OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL等
+        # HelloAgentsLLM автоматически считывает конфигурацию из переменных среды.
+        # Включая OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL и т. д.
         _llm_instance = HelloAgentsLLM()
         
-        print(f"✅ LLM服务初始化成功")
-        print(f"   提供商: {_llm_instance.provider}")
-        print(f"   模型: {_llm_instance.model}")
+        print(f"✅ Инициализация службы LLM прошла успешно")
+        print(f"   Поставщик: {_llm_instance.provider}")
+        print(f"   Модель: {_llm_instance.model}")
     
     return _llm_instance
 
 
 def reset_llm():
-    """重置LLM实例(用于测试或重新配置)"""
+    """Сброс экземпляра LLM (для тестирования или реконфигурации)"""
     global _llm_instance
     _llm_instance = None
 

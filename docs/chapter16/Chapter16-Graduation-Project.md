@@ -1,106 +1,106 @@
-# Chapter 16: Graduation Project - Building Your Own Multi-Agent Application
+# Глава 16. Выпускной проект
 
-Congratulations on reaching the final chapter of the Hello-Agents tutorial! In the previous 15 chapters, we built the HelloAgents framework from scratch and learned about core agent concepts, multiple paradigms, tool systems, memory mechanisms, communication protocols, reinforcement learning training, and performance evaluation. In Chapters 13-15, we also demonstrated how to integrate all learned knowledge through three complete practical projects (Intelligent Travel Assistant, Automated Deep Research Agent, and Cyber Town).
+Поздравляем с достижением последней главы руководства Hello-Agents! В предыдущих 15 главах мы создали платформу HelloAgents с нуля и узнали об основных концепциях агентов, нескольких парадигмах, системах инструментов, механизмах памяти, протоколах связи, обучении с подкреплением и оценке производительности. В главах 13–15 мы также продемонстрировали, как интегрировать все полученные знания с помощью трех полных практических проектов («Интеллектуальный помощник в путешествии», «Автоматический агент глубоких исследований» и «Кибергород»).
 
-Now, it's time for you to become a true agent system builder! This chapter will guide you in **building your own multi-agent application** and sharing your achievements with the community through open-source collaboration.
+Теперь пришло время стать настоящим строителем агентских систем! Эта глава поможет вам **создать собственное многоагентное приложение** и поделиться своими достижениями с сообществом посредством совместной работы с открытым исходным кодом.
 
-## 16.1 The Significance of the Graduation Project
+## 16.1 Значение дипломного проекта
 
-### 16.1.1 Why Do a Graduation Project
+### 16.1.1 Зачем делать дипломный проект
 
-The best way to learn technology is not by reading tutorials, but by **hands-on practice**. Through the previous chapters, you have mastered the theoretical knowledge and technical tools for building agent systems. However, the real challenge lies in: **How to apply this knowledge to real problems? How to design a complete system? How to handle various edge cases and exceptions?**
+Лучший способ изучить технологию — это не чтение обучающих программ, а **практическая практика**. Изучая предыдущие главы, вы овладели теоретическими знаниями и техническими инструментами для построения агентных систем. Однако настоящая проблема заключается в следующем: **Как применить эти знания к реальным проблемам? Как спроектировать полноценную систему? Как обрабатывать различные крайние случаи и исключения?**
 
-The core value of the graduation project is to cultivate your comprehensive application ability, selectively integrating all the knowledge learned previously (agent paradigms, tool systems, memory mechanisms, communication protocols, etc.) into a complete project.
+Основная ценность дипломного проекта — развить ваши комплексные прикладные способности, выборочно интегрируя все полученные ранее знания (парадигмы агентов, системы инструментов, механизмы памяти, протоколы связи и т. д.) в законченный проект.
 
-Through the learning and practice in this chapter, we hope you can independently design and implement a complete agent application, skillfully use various functions of the HelloAgents framework, master basic Git and GitHub operations, learn to write clear project documentation, participate in open-source community collaborative development, and ultimately obtain a technical work you can showcase.
+Мы надеемся, что благодаря изучению и практике, описанным в этой главе, вы сможете самостоятельно спроектировать и реализовать полноценное приложение-агент, умело использовать различные функции платформы HelloAgents, освоить базовые операции Git и GitHub, научиться писать понятную проектную документацию, участвовать в совместной разработке сообщества с открытым исходным кодом и, в конечном итоге, получить техническую работу, которую вы сможете продемонстрировать.
 
-### 16.1.2 Form of the Graduation Project
+### 16.1.2 Форма дипломного проекта
 
-Your graduation project will be submitted to the Hello-Agents co-creation project repository (`Co-creation-projects` directory) in the form of an **open-source project**. Specific requirements are as follows:
+Ваш дипломный проект будет отправлен в репозиторий проектов совместного творчества Hello-Agents (`Co-creation-projects`каталог) в виде **проекта с открытым исходным кодом**. Конкретные требования заключаются в следующем:
 
-1. **Project Naming**: Use the format `{your-GitHub-username}-{project-name}`, for example `jjyaoao-CodeReviewAgent`
+1. **Именование проекта**: используйте формат `{your-GitHub-username}-{project-name}`, например `jjyaoao-CodeReviewAgent`
 
-2. **Project Content**:
-   - A runnable Jupyter Notebook (`.ipynb` file) or Python script
-   - Complete dependency list (`requirements.txt`)
-   - Clear README documentation (`README.md`)
-   - Optional: demo videos, screenshots, datasets, etc.
+2. **Содержание проекта**:
+   - Запускаемый блокнот Jupyter (файл .ipynb) или скрипт Python.
+   - Полный список зависимостей (requirements.txt)
+   - Очистить документацию README (`README.md`)
+   - Дополнительно: демонстрационные видеоролики, снимки экрана, наборы данных и т. д.
 
-3. **Submission Method**: Submit via GitHub Pull Request (PR)
+3. **Метод отправки**: Отправка через запрос на извлечение GitHub (PR).
 
-4. **Review Process**: Community members will review your code, provide improvement suggestions, and merge into the main repository after approval
+4. **Процесс проверки**. Члены сообщества проверят ваш код, предоставят предложения по улучшению и после утверждения объединят его в основной репозиторий.
 
-## 16.2 Project Topic Selection Guide
+## 16.2 Руководство по выбору темы проекта
 
-### 16.2.1 Topic Selection Principles
+### 16.2.1 Принципы выбора тем
 
-A good graduation project should be practical, solving real problems rather than technology for technology's sake. We need to pursue completion within limited time and resources while clearly demonstrating your technical capabilities.
+Хороший дипломный проект должен быть практичным, решать реальные проблемы, а не технологии ради технологий. Нам необходимо добиться завершения в течение ограниченного времени и ресурсов, четко демонстрируя при этом ваши технические возможности.
 
-### 16.2.2 Recommended Topic Directions
+### 16.2.2 Рекомендуемые направления тем
 
-Here are some recommended project directions - you can choose one or propose your own ideas:
+Вот несколько рекомендуемых направлений проекта – вы можете выбрать одно или предложить свои идеи:
 
-**(1) Productivity Tools**
+**(1) Инструменты повышения производительности**
 
-- **Intelligent Code Review Assistant**: Automatically analyze code quality, discover potential bugs, provide optimization suggestions
-- **Intelligent Documentation Generator**: Automatically generate API documentation and user manuals based on code
-- **Intelligent Meeting Assistant**: Record meeting content, generate meeting minutes, extract action items
-- **Intelligent Email Assistant**: Automatically classify emails, generate reply drafts, remind of important matters
+- **Интеллектуальный помощник по проверке кода**: автоматически анализируйте качество кода, обнаруживайте потенциальные ошибки и предоставляйте предложения по оптимизации.
+- **Интеллектуальный генератор документации**: автоматически создавайте документацию по API и руководства пользователя на основе кода.
+- **Интеллектуальный помощник по собраниям**: записывайте содержимое собрания, генерируйте протоколы собраний, извлекайте элементы действий.
+- **Интеллектуальный помощник по электронной почте**: автоматически классифицируйте электронные письма, создавайте черновики ответов, напоминайте о важных делах.
 
-**(2) Learning Assistance**
+**(2) Помощь в обучении**
 
-- **Intelligent Learning Partner**: Recommend learning resources based on learning progress, generate practice questions, answer questions
-- **Intelligent Paper Assistant**: Help find literature, summarize papers, generate citations
-- **Intelligent Programming Tutor**: Provide programming exercises, code review, learning path planning
-- **Intelligent Language Learning Assistant**: Provide conversation practice, grammar correction, vocabulary expansion
+- **Интеллектуальный партнер по обучению**: рекомендуйте учебные ресурсы на основе прогресса в обучении, создавайте практические вопросы, отвечайте на вопросы.
+- **Интеллектуальный помощник по работе с бумагами**: помогает находить литературу, обобщать статьи, генерировать цитаты.
+- **Репетитор по интеллектуальному программированию**: предоставляет упражнения по программированию, проверку кода, планирование пути обучения.
+- **Интеллектуальный помощник по изучению языка**: обеспечивает разговорную практику, коррекцию грамматики, расширение словарного запаса.
 
-**(3) Creative Entertainment**
+**(3) Творческие развлечения**
 
-- **Intelligent Story Generator**: Generate novels, scripts, poetry based on user input
-- **Intelligent Game NPC**: Create game characters with personality who can naturally converse with players
-- **Intelligent Music Recommendation**: Recommend music based on mood and scene, generate playlists
-- **Intelligent Recipe Assistant**: Recommend recipes based on ingredients and taste, generate shopping lists
+- **Интеллектуальный генератор историй**: создавайте романы, сценарии и стихи на основе данных пользователя.
+- **Умный игровой NPC**: создавайте индивидуальных игровых персонажей, которые смогут естественно общаться с игроками.
+- **Интеллектуальная рекомендация музыки**: рекомендуйте музыку в зависимости от настроения и сцены, создавайте плейлисты.
+- **Интеллектуальный помощник по рецептам**: рекомендуйте рецепты на основе ингредиентов и вкуса, создавайте списки покупок.
 
-**(4) Data Analysis**
+**(4) Анализ данных**
 
-- **Intelligent Data Analyst**: Automatically analyze data, generate visualization charts, write analysis reports
-- **Intelligent Stock Analysis**: Analyze stock data and news sentiment, provide investment advice
-- **Intelligent Public Opinion Monitoring**: Monitor social media and news websites, analyze public opinion trends
-- **Intelligent Competitive Analysis**: Collect competitor information, comparative analysis, generate reports
+- **Интеллектуальный аналитик данных**: автоматически анализируйте данные, создавайте диаграммы визуализации, записывайте аналитические отчеты.
+- **Интеллектуальный анализ акций**: анализируйте биржевые данные и настроения в новостях, предоставляйте советы по инвестированию.
+- **Интеллектуальный мониторинг общественного мнения**: отслеживайте социальные сети и новостные сайты, анализируйте тенденции общественного мнения.
+- **Интеллектуальный конкурентный анализ**: сбор информации о конкурентах, сравнительный анализ, создание отчетов.
 
-**(5) Life Services**
+**(5) Службы жизнеобеспечения**
 
-- **Intelligent Health Assistant**: Record health data, provide health advice, create exercise plans
-- **Intelligent Financial Assistant**: Record income and expenses, analyze spending habits, provide financial advice
-- **Intelligent Shopping Assistant**: Compare prices, recommend products, generate shopping lists
-- **Intelligent Home Control**: Control smart home devices through natural language
+- **Интеллектуальный помощник по здоровью**: записывайте данные о состоянии здоровья, предоставляйте советы по здоровью, создавайте планы тренировок.
+- **Интеллектуальный финансовый помощник**: записывайте доходы и расходы, анализируйте привычки расходов, предоставляйте финансовые советы.
+- **Интеллектуальный помощник для покупок**: сравнивайте цены, рекомендуйте товары, создавайте списки покупок.
+- **Интеллектуальное управление домом**: управляйте устройствами умного дома с помощью естественного языка.
 
-### 16.2.3 Topic Selection Example
+### 16.2.3 Пример выбора темы
 
-Let's illustrate how to select a topic and design a project through a specific example.
+Проиллюстрируем, как выбрать тему и разработать проект на конкретном примере.
 
-**Project Name**: Intelligent Code Review Assistant (CodeReviewAgent)
+**Название проекта**: Интеллектуальный помощник по проверке кода (CodeReviewAgent)
 
-**Problem Analysis**: Code review is an important part of software development, but manual review is time-consuming and prone to missing issues. Existing static analysis tools can only find syntax errors and cannot understand code logic, so an intelligent assistant that can understand code semantics and provide in-depth analysis is needed.
+**Анализ проблем**. Проверка кода — важная часть разработки программного обеспечения, но проверка вручную требует много времени и может привести к упущению проблем. Существующие инструменты статического анализа могут только находить синтаксические ошибки и не могут понять логику кода, поэтому необходим интеллектуальный помощник, который сможет понять семантику кода и обеспечить углубленный анализ.
 
-**Core Functions**: This project will implement code quality analysis (check code style, naming conventions, comment completeness), potential bug detection (discover logic errors, boundary condition issues, resource leaks), performance optimization suggestions (identify performance bottlenecks, propose optimization solutions), security vulnerability scanning (detect SQL injection, XSS and other security issues), and best practice recommendations (propose improvements based on language features and design patterns).
+**Основные функции**. В этом проекте будет реализован анализ качества кода (проверка стиля кода, соглашения об именах, полнота комментариев), обнаружение потенциальных ошибок (обнаружение логических ошибок, проблем с граничными условиями, утечки ресурсов), предложения по оптимизации производительности (выявление узких мест в производительности, предложение решений по оптимизации), сканирование уязвимостей безопасности (обнаружение SQL-инъекций, XSS и других проблем безопасности) и рекомендации по передовому опыту (предложение улучшений на основе особенностей языка и шаблонов проектирования).
 
-**Expected Outcomes**: The final deliverable will be a runnable Jupyter Notebook demonstrating the complete review process, supporting mainstream languages like Python and JavaScript, capable of generating structured Markdown format review reports, and providing specific code examples and improvement suggestions.
+**Ожидаемые результаты**. Конечным результатом станет работающий Jupyter Notebook, демонстрирующий полный процесс проверки, поддерживающий основные языки, такие как Python и JavaScript, способный генерировать структурированные отчеты о проверке в формате Markdown, а также предоставляющий конкретные примеры кода и предложения по улучшению.
 
-## 16.3 Development Environment Preparation
+## 16.3 Подготовка среды разработки
 
-### 16.3.1 Installing Necessary Tools
+### 16.3.1 Установка необходимых инструментов
 
-Before starting development, please ensure your development environment has the following tools installed:
+Прежде чем приступить к разработке, убедитесь, что в вашей среде разработки установлены следующие инструменты:
 
-**(1) Python Environment**
+**(1) Среда Python**
 
 ```bash
 # Install HelloAgents
 pip install "hello-agents[all]"
 ```
 
-**(2) Git and GitHub**
+**(2) Git и GitHub**
 
 ```bash
 # Check Git version
@@ -122,7 +122,7 @@ ssh-keygen -t ed25519 -C "your.email@example.com"
 ssh -T git@github.com
 ```
 
-**(3) Jupyter Notebook**
+**(3) Блокнот Jupyter**
 
 ```bash
 # Install Jupyter
@@ -135,23 +135,23 @@ pip install jupyterlab
 jupyter lab
 ```
 
-### 16.3.2 Fork the Project Repository
+### 16.3.2 Форк репозитория проекта
 
-**Step 1: Fork the Repository**
+**Шаг 1. Создайте форк репозитория**
 
-1. Visit the Hello-Agents repository: https://github.com/datawhalechina/hello-agents
-2. Click the "Fork" button in the upper right corner, as shown in the red box in Figure 16.1
-3. Select your GitHub account and create the Fork
+1. Посетите репозиторий Hello-Agents: https://github.com/datawhalechina/hello-agents.
+2. Нажмите кнопку «Вилка» в правом верхнем углу, как показано в красном поле на рисунке 16.1.
+3. Выберите свою учетную запись GitHub и создайте форк.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/hello-agents/main/docs/images/16-figures/16-1.png" alt="" width="85%"/>
-  <p>Figure 16.1 Fork Repository Steps</p>
+  <p>Рисунок 16.1. Шаги создания форка репозитория</p>
 </div>
 
-**Step 2: Clone to Local**
+**Шаг 2. Клонируйте в локальное хранилище**
 
 ```bash
-# As shown in Figure 16.2, clone your forked repository
+# As shown in Рис. 16.2, clone your forked repository
 git clone git@github.com:your-username/hello-agents.git
 
 # Enter project directory
@@ -166,10 +166,10 @@ git remote -v
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/hello-agents/main/docs/images/16-figures/16-2.png" alt="" width="85%"/>
-  <p>Figure 16.2 Clone Repository to Local</p>
+  <p>Рисунок 16.2 Клонирование репозитория в локальный</p>
 </div>
 
-**Step 3: Create Development Branch**
+**Шаг 3. Создайте ветку разработки**
 
 ```bash
 # Create and switch to new branch
@@ -179,9 +179,9 @@ git checkout -b feature/your-project-name
 git checkout -b feature/code-review-agent
 ```
 
-### 16.3.3 Project Directory Structure
+### 16.3.3 Структура каталога проекта
 
-Create your project folder in the `Co-creation-projects` directory:
+Создайте папку проекта в папке`Co-creation-projects`каталог:
 
 ```bash
 # Enter co-creation projects directory
@@ -197,7 +197,7 @@ mkdir jjyaoao-CodeReviewAgent
 cd jjyaoao-CodeReviewAgent
 ```
 
-Recommended project structure:
+Рекомендуемая структура проекта:
 
 ```
 jjyaoao-CodeReviewAgent/
@@ -217,11 +217,11 @@ jjyaoao-CodeReviewAgent/
 └── .env.example          # Environment variable template
 ```
 
-## 16.4 Project Development Guide
+## 16.4 Руководство по разработке проекта
 
-### 16.4.1 Writing README Documentation
+### 16.4.1 Написание документации README
 
-README is the face of your project. A good README should contain the following:
+README — лицо вашего проекта. Хороший README должен содержать следующее:
 
 ```markdown
 # Project Name
@@ -320,9 +320,9 @@ MIT License
 Thanks to the Datawhale community and Hello-Agents project!
 ```
 
-### 16.4.2 Writing requirements.txt
+### 16.4.2 Написание файла require.txt
 
-List all Python dependencies required for the project:
+Перечислите все зависимости Python, необходимые для проекта:
 
 ```txt
 # Core dependencies
@@ -337,11 +337,11 @@ fastapi>=0.109.0
 uvicorn>=0.27.0
 ```
 
-### 16.4.3 Developing Jupyter Notebook
+### 16.4.3 Разработка блокнота Jupyter
 
-**(1) Notebook Structure Recommendations**
+**(1) Рекомендации по структуре ноутбука**
 
-A good Jupyter Notebook should contain the following parts:
+Хороший блокнот Jupyter должен содержать следующие части:
 
 ```python
 # ========================================
@@ -450,9 +450,9 @@ print(result)
 """
 ```
 
-### 16.4.4 Testing Your Project
+### 16.4.4 Тестирование вашего проекта
 
-Before submission, use this checklist to determine if your project meets submission requirements:
+Перед отправкой воспользуйтесь этим контрольным списком, чтобы определить, соответствует ли ваш проект требованиям подачи:
 
 ```markdown
 - [ ] Code runs normally without errors
@@ -466,24 +466,24 @@ Before submission, use this checklist to determine if your project meets submiss
 - [ ] Large files properly handled (see next section)
 ```
 
-### 16.4.5 Large File Handling Guide
+### 16.4.5 Руководство по работе с большими файлами
 
-**⚠️ Important: Avoid Oversized Main Repository**
+**⚠️ Важно: избегайте слишком большого размера основного репозитория**
 
-To keep the Hello-Agents main repository lightweight, please follow these large file handling guidelines:
+Чтобы сохранить легкость основного репозитория Hello-Agents, следуйте этим рекомендациям по обработке больших файлов:
 
-**(1) File Size Limits**
+**(1) Ограничения на размер файла**
 
-- **Total project size**: Not exceeding 5MB
-- **Prohibited from direct submission**: Video files, large datasets, model files
+- **Общий размер проекта**: не более 5 МБ.
+- **Прямая отправка запрещена**: видеофайлы, большие наборы данных, файлы моделей.
 
-**(2) Large File Handling Solutions**
+**(2) Решения для обработки больших файлов**
 
-If your project contains large files (datasets, videos, models, etc.), please use the following solutions:
+Если ваш проект содержит большие файлы (наборы данных, видео, модели и т. д.), воспользуйтесь следующими решениями:
 
-**Solution 1: Use External Links (Recommended)**
+**Решение 1. Используйте внешние ссылки (рекомендуется)**
 
-Upload large files to external platforms and provide download links in README:
+Загрузите большие файлы на внешние платформы и предоставьте ссылки для скачивания в README:
 
 ```markdown
 ## Datasets
@@ -495,15 +495,15 @@ The datasets used in this project are large. Please download from the following 
 - Demo video: [Bilibili](link) / [YouTube](link)
 ```
 
-Recommended external platforms:
-- **Datasets**: Baidu Netdisk, Google Drive, Kaggle, HuggingFace Datasets
-- **Videos**: Bilibili, YouTube, Tencent Video
-- **Models**: HuggingFace Models, ModelScope
-- **Images**: GitHub Issues, image hosting services
+Рекомендуемые внешние платформы:
+- **Наборы данных**: Baidu Netdisk, Google Drive, Kaggle, наборы данных HuggingFace.
+- **Видео**: Bilibili, YouTube, Tencent Video.
+- **Модели**: модели HuggingFace, ModelScope.
+- **Изображения**: проблемы с GitHub, услуги хостинга изображений.
 
-**Solution 2: Create Independent Repository**
+**Решение 2. Создайте независимый репозиторий**
 
-If the project has many resources, consider creating an independent data repository:
+Если в проекте много ресурсов, рассмотрите возможность создания независимого хранилища данных:
 
 ```markdown
 ## Project Resources
@@ -524,9 +524,9 @@ cp -r project-name-resources/data ./data
 \`\`\`
 ```
 
-**Solution 3: Use Sample Data**
+**Решение 3. Используйте образцы данных**
 
-Only provide small-scale sample data in the main repository:
+В основном репозитории предоставляйте только небольшие образцы данных:
 
 ```python
 # Explain in README
@@ -536,7 +536,7 @@ Only provide small-scale sample data in the main repository:
 - Complete dataset (100,000 records) download from [here](link)
 ```
 
-**(3) Best Practice Example**
+**(3) Пример передового опыта**
 
 ```
 your-username-project-name/
@@ -550,7 +550,7 @@ your-username-project-name/
     └── demo_result.png   # Demo results only (<1MB)
 ```
 
-README explanation:
+Объяснение README:
 
 ```markdown
 ## Data and Resources
@@ -568,18 +568,18 @@ Complete dataset (500MB) download from the following link:
 - YouTube: [Demo Video](link)
 ```
 
-## 16.5 Submitting Pull Request
+## 16.5 Отправка запроса на включение
 
-### 16.5.1 Submitting Code to GitHub
+### 16.5.1 Отправка кода на GitHub
 
-**Step 1: Check Modifications**
+**Шаг 1. Проверьте изменения**
 
 ```bash
 # View modified files
 git status
 ```
 
-**Step 2: Add Files**
+**Шаг 2. Добавьте файлы**
 
 ```bash
 # Add all modified files
@@ -589,68 +589,68 @@ git add .
 git add Co-creation-projects/your-username-project-name/
 ```
 
-**Step 3: Commit Changes**
+**Шаг 3. Зафиксируйте изменения**
 
-Commit messages should follow this format:
+Сообщения о фиксации должны иметь следующий формат:
 
 ```bash
 # Format: type: brief description
 git commit -m "feat: Add XXX graduation project"
 ```
 
-**Commit Type Specifications:**
+**Спецификации типа фиксации:**
 
-- `feat`: New feature or project (use this type for graduation projects)
-- `fix`: Bug fix
-- `docs`: Documentation update
-- `style`: Code format adjustment (doesn't affect functionality)
-- `refactor`: Code refactoring
-- `test`: Test-related
-- `chore`: Other modifications (e.g., dependency updates)
+- `feat`: новая функция или проект (используйте этот тип для дипломных проектов).
+- `fix`: исправление ошибки.
+- `docs`: обновление документации.
+- `style`: настройка формата кода (не влияет на функциональность)
+- `refactor`: рефакторинг кода.
+- `test`: связанный с тестированием
+- `chore`: другие модификации (например, обновления зависимостей).
 
-**Step 4: Push to GitHub**
+**Шаг 4. Отправьте сообщение на GitHub**
 
 ```bash
 # Push to your forked repository
 git push origin feature/your-project-name
 ```
 
-### 16.5.2 Creating Pull Request
+### 16.5.2 Создание запроса на включение
 
-**Step 1: Visit GitHub**
+**Шаг 1. Посетите GitHub**
 
-1. Visit your forked repository: `https://github.com/your-username/hello-agents`
-2. Click the "Pull requests" tab, as shown in Figure 16.3
-3. Click the "New pull request" button
+1. Посетите свой раздвоенный репозиторий: https://github.com/your-username/hello-agents.
+2. Перейдите на вкладку «Запросы на включение», как показано на рисунке 16.3.
+3. Нажмите кнопку «Новый запрос на включение»
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/hello-agents/main/docs/images/16-figures/16-3.png" alt="" width="85%"/>
-  <p>Figure 16.3 Creating Pull Request</p>
+  <p>Рисунок 16.3 Создание запроса на включение</p>
 </div>
 
-**Step 2: Select Branches**
+**Шаг 2. Выберите ветки**
 
-- Base repository: `datawhalechina/hello-agents`
-- Base branch: `main`
-- Head repository: `your-username/hello-agents`
-- Compare branch: `feature/your-project-name`
+- Базовый репозиторий: `datawhalechina/hello-agents`
+- Базовая ветка: `main`
+- Головной репозиторий: `ваше-пользователь/привет-агенты`
+- Ветка сравнения: `feature/имя-вашего-проекта`
 
-**Step 3: Fill in PR Information**
+**Шаг 3. Заполните PR-информацию**
 
-**⚠️ Important: Unified PR Title Format**
+**⚠️ Важно: Единый формат заголовка PR**
 
-For easy management and retrieval, all graduation project PR titles must follow this format:
+Для удобства управления и поиска все PR-заголовки дипломных проектов должны иметь следующий формат:
 
 ```
 [Graduation Project] Project Name - Brief Description
 ```
 
-Examples:
-- `[Graduation Project] CodeReviewAgent - Intelligent Code Review Assistant`
+Примеры:
+-`[Graduation Project] CodeReviewAgent - Intelligent Code Review Assistant`
 - `[Graduation Project] StudyBuddy - AI Learning Partner`
 - `[Graduation Project] DataAnalyst - Intelligent Data Analyst`
 
-**PR Description Template:**
+**Шаблон PR-описания:**
 
 ```markdown
 ## Project Information
@@ -692,40 +692,40 @@ Brief description of your project (2-3 sentences)
 (Optional) Other content that needs explanation
 ```
 
-**Step 4: Submit PR**
+**Шаг 4. Отправьте заявку**
 
-As shown in Figure 16.4, click the "Create pull request" button to submit.
+Как показано на рисунке 16.4, нажмите кнопку «Создать запрос на включение», чтобы отправить запрос.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/hello-agents/main/docs/images/16-figures/16-4.png" alt="" width="85%"/>
-  <p>Figure 16.4 Submit Pull Request</p>
+  <p>Рисунок 16.4. Отправка запроса на включение</p>
 </div>
 
-### 16.5.3 Responding to Review Comments
+### 16.5.3 Ответ на комментарии к обзору
 
-After submitting the PR, community members will review your code and provide suggestions. Please respond promptly:
+После отправки PR члены сообщества рассмотрят ваш код и дадут предложения. Пожалуйста, ответьте срочно:
 
-1. **View Comments**: Check reviewer comments on the PR page
-2. **Modify Code**: Modify code based on suggestions
-3. **Submit Updates**:
+1. **Просмотр комментариев**: просмотрите комментарии рецензентов на странице PR.
+2. **Изменить код**: изменить код на основе предложений.
+3. **Отправить обновления**:
    ```bash
    git add .
    git commit -m "fix: Modify XXX based on review comments"
    git push origin feature/your-project-name
    ```
-4. **Reply to Comments**: Reply to reviewers on GitHub, explaining your modifications
+4. **Ответ на комментарии**: ответ рецензентам на GitHub с объяснением внесенных вами изменений.
 
-## 16.6 Example Project Showcase
+## 16.6 Пример демонстрации проекта
 
-To help you better understand graduation project requirements, here's a complete example project. Don't worry - small creative ideas can also be included. Any work you create yourself is worth cherishing.
+Чтобы помочь вам лучше понять требования дипломного проекта, вот полный пример проекта. Не волнуйтесь, небольшие творческие идеи также могут быть включены. Любая работа, которую вы создаете сами, достойна уважения.
 
-**Project Information**
+**Информация о проекте**
 
-- **Project Name**: CodeReviewAgent
-- **Author**: @jjyaoao
-- **Project Path**: `Co-creation-projects/jjyaoao-CodeReviewAgent/`
+- **Название проекта**: CodeReviewAgent
+- **Автор**: @jjyaoao
+- **Путь к проекту**: `Co-creation-projects/jjyaoao-CodeReviewAgent/`
 
-**Project Structure**
+**Структура проекта**
 
 ```
 jjyaoao-CodeReviewAgent/
@@ -740,7 +740,7 @@ jjyaoao-CodeReviewAgent/
     └── review_report.md  # Sample report
 ```
 
-**Core Code Snippet (main.ipynb)**
+**Фрагмент основного кода (main.ipynb)**
 
 ```python
 # ========================================
@@ -908,7 +908,7 @@ with open("outputs/review_report.md", "w", encoding="utf-8") as f:
 print("\nReview report saved to outputs/review_report.md")
 ```
 
-**README.md Example**
+**Пример README.md**
 
 ```markdown
 # CodeReviewAgent - Intelligent Code Review Assistant
@@ -982,26 +982,26 @@ jupyter lab
 Thanks to the Datawhale community and Hello-Agents project!
 ```
 
-## 16.7 Summary and Outlook
+## 16.7 Резюме и перспективы
 
-By completing the graduation project, you should have mastered the complete process of agent system design: designing system architecture from requirements, skillfully using various functions and components of the HelloAgents framework, developing custom tools to extend agent capabilities, completing full project development from requirement analysis to code implementation, learning to use Git and GitHub for open-source collaboration, and writing clear technical documentation.
+Выполнив дипломный проект, вы должны были освоить полный процесс проектирования системы агентов: проектирование архитектуры системы на основе требований, умелое использование различных функций и компонентов платформы HelloAgents, разработку пользовательских инструментов для расширения возможностей агента, завершение полной разработки проекта от анализа требований до реализации кода, обучение использованию Git и GitHub для совместной работы с открытым исходным кодом и написание понятной технической документации.
 
-In this project, we built the HelloAgents framework from scratch and used it to implement multiple practical applications. Completing the graduation project is just the beginning. You can continue to deepen your learning of more agent paradigms and algorithms, prompt engineering and context engineering, multi-agent collaboration mechanisms, and other theoretical knowledge. You can also expand your technology stack by learning web development to build complete applications, learning databases to implement data persistence, and learning deployment to launch applications online. You can also continuously optimize your project by adding more features, optimizing performance and user experience, and improving testing and documentation. More importantly, actively participate in community contributions by helping other learners, participating in Hello-Agents framework development, and sharing your experiences and insights.
+В этом проекте мы создали платформу HelloAgents с нуля и использовали ее для реализации множества практических приложений. Выполнение дипломного проекта – это только начало. Вы можете продолжать углублять изучение дополнительных парадигм и алгоритмов агентов, оперативного проектирования и контекстного проектирования, механизмов многоагентного сотрудничества и других теоретических знаний. Вы также можете расширить свой набор технологий, изучив веб-разработку для создания полноценных приложений, изучив базы данных для реализации постоянного хранения данных и научившись развертыванию для запуска приложений в Интернете. Вы также можете постоянно оптимизировать свой проект, добавляя дополнительные функции, оптимизируя производительность и удобство использования, а также улучшая тестирование и документацию. Что еще более важно, активно участвуйте в работе сообщества, помогая другим учащимся, участвуя в разработке платформы Hello-Agents и делясь своим опытом и знаниями.
 
-From the simple agent in Chapter 1 to now being able to independently build complete multi-agent applications, you have traveled through an exciting learning journey. But this is not the end - it's a new beginning.
+От простого агента из главы 1 до возможности самостоятельно создавать полноценные мультиагентные приложения — вы прошли увлекательный путь обучения. Но это не конец – это новое начало.
 
-AI technology is changing rapidly, and the agent field is full of infinite possibilities. We hope you can maintain curiosity and continuously learn new technologies, courageously use AI technology to solve practical problems and create value, willingly share your experiences and achievements with the community, and constantly refine your work in pursuit of excellence.
+Технология искусственного интеллекта быстро меняется, и область агентов полна безграничных возможностей. Мы надеемся, что вы сможете поддерживать любознательность и постоянно изучать новые технологии, смело использовать технологии искусственного интеллекта для решения практических проблем и создания ценности, охотно делиться своим опытом и достижениями с сообществом и постоянно совершенствовать свою работу в стремлении к совершенству.
 
-Finally, thank you for reading this project in its entirety. We hope you have gained something from the learning process and that you can apply what you've learned to actual projects, creating amazing agent applications. The future of AI is full of infinite possibilities - let's explore and create together!
+Наконец, спасибо, что прочитали этот проект полностью. Мы надеемся, что вы получили что-то новое в процессе обучения и сможете применить полученные знания в реальных проектах, создавая удивительные агентные приложения. Будущее искусственного интеллекта полно безграничных возможностей — давайте исследовать и творить вместе!
 
-**Remember: The best way to learn is through hands-on practice!**
+**Помните: лучший способ обучения — это практическая практика!**
 
-Now, start building your own agent application! We look forward to seeing your excellent work in the Co-creation-projects directory!
+Теперь приступайте к созданию собственного приложения-агента! Будем рады видеть ваши отличные работы в каталоге Сотворчество-проекты!
 
-If you find the Hello-Agents project helpful, please give us a ⭐Star!
+Если проект Hello-Agents оказался для вас полезным, поставьте нам ⭐Звездочку!
 
 ---
 <div align="center">
-  <strong>🎓 Congratulations on completing the Hello-Agents tutorial! 🎉</strong>
+<strong>🎓 Поздравляем с завершением урока Hello-Agents! 🎉</strong>
 </div>
 

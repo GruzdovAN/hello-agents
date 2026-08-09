@@ -1,94 +1,94 @@
-# Chapter 3: Fundamentals of Large Language Models
+# Глава 3. Основы больших языковых моделей
 
-The first two chapters introduced the definition and development history of agents. This chapter will focus entirely on large language models themselves to answer a key question: How do modern agents work? We will start from the basic definition of language models, and through learning these principles, lay a solid foundation for understanding how LLMs acquire powerful knowledge reserves and reasoning capabilities.
+В первых двух главах мы определили определение агентов и историю их развития. Этот руководитель занимается большими языковыми моделями и отвечает на ключевой вопрос: как работают современные агенты? Мы начнем с базового определения языковых моделей и посредством разбора устраняем заложенную прочную основу для понимания того, как LLM приобретает видимый запас знаний и способностей к рассуждению.
 
-## 3.1 Language Models and Transformer Architecture
+## 3.1 Языковые модели и архитектура Трансформер
 
-### 3.1.1 From N-gram to RNN
+### 3.1.1 От N-граммы к RNN
 
-**Language Model (LM)** is the core of natural language processing, and its fundamental task is to calculate the probability of a word sequence (i.e., a sentence) appearing. A good language model can tell us what kind of sentences are fluent and natural. In multi-agent systems, language models are the foundation for agents to understand human instructions and generate responses. This section will review the evolution from classical statistical methods to modern deep learning models, laying a solid foundation for understanding the subsequent Transformer architecture.
+**Языковая модель (Language Model, LM)** — источники обработки естественного языка; Ее фундаментальная задача — вычислить отображение отображения последовательности слов (то есть предложения). Хорошая языковая модель показывает, какие предложения звучат бегло и естественно. В мультиагентных удобных языковых моделях — основа того, как агенты понимают инструкции человека и генерируют ответы. В этом разделе мы отслеживаем эволюцию от классических статистических методов к современной модели глубокого обучения и закладываем основу для понимания структуры Трансформатора.
 
-**(1) Statistical Language Models and the N-gram Idea**
+**(1) Статистические языковые модели и идеи N-gram**
 
-Before the rise of deep learning, statistical methods were the mainstream of language models. The core idea is that the probability of a sentence appearing equals the product of the conditional probabilities of each word in the sentence. For a sentence S composed of words $w_1,w_2,\cdots,w_m$, its probability P(S) can be expressed as:
+Для подхода к глубокому обучению основным подходом к языковым моделям были статистические методы. Суть идеи: вероятность предложения увеличить условные вероятности каждого слова в нем. Для предложения S из слов $w_1,w_2,\cdots,w_m$ защиты P(S) записывается так:
 
 $$P(S)=P(w_1,w_2,…,w_m)=P(w_1)⋅P(w_2∣w_1)⋅P(w_3∣w_1,w_2)⋯P(w_m∣w_1,…,w_{m−1})$$
 
-This formula is called the chain rule of probability. However, directly calculating this formula is almost impossible because conditional probabilities like $P(w_m∣w_1,\cdots,w_{m−1})$ are too difficult to estimate from a corpus, as the word sequence $w_1,\cdots,w_{m−1}$ may have never appeared in the training data.
+Эта формула называется цепным правилом вероятности. Однако непосредственно ее считать почти невозможно: условные возможности вида $P(w_m∣w_1,\cdots,w_{m−1})$ крайне трудно оценить по корпусу, ведь по цепи $w_1,\cdots,w_{m−1}$ можно было ни разу не встретиться с обучающимися данными.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-0.png" alt="Figure description" width="90%"/>
-  <p>Figure 3.1 Schematic diagram of Markov assumption</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-0.png" alt="Рис. description" width="90%"/>
+  <p>Рисунок 3.1 Схема марковского правительства</p>
 </div>
 
-To solve this problem, researchers introduced the **Markov Assumption**. Its core idea is: we don't need to trace back a word's entire history; we can approximately assume that a word's probability of appearing is only related to the limited $n−1$ words before it, as shown in Figure 3.1. Language models built on this assumption are called **N-gram models**. Here, "N" represents the context window size we consider. Let's look at some of the most common examples to understand this concept:
+Чтобы обойти эту проблему, исследователи ввели **марковское предположение (Предположение Маркова)**. Суть: не нужно учитывать все исторические слова; можно приближённо считать, что вероятность показа слов зависит только от ограниченных $n−1$ предыдущих слов (см. рисунок 3.1). Модели по этому предположению называют **N-граммными (N-gram)**. «N» — размер контекста окна. Разберём самые распространённые случаи:
 
-- **Bigram (when N=2)**: This is the simplest case, where we assume a word's appearance is only related to the one word before it. Therefore, the complex conditional probability $P(w_i∣w_1,\cdots,w_{i−1})$ in the chain rule can be approximated to a more easily calculable form:
+- **Биграмма (Bigram, N=2)**: самый простой случай — слово появления зависит только от одной оценки. Сложная условная защита $P(w_i∣w_1,\cdots,w_{i−1})$ в цепном правиле выглядит более удобной формой:
 
 $$P(w_{i}∣w_{1},…,w_{i−1})≈P(w_{i}∣w_{i−1})$$
 
-- **Trigram (when N=3)**: Similarly, we assume a word's appearance is only related to the two words before it:
+- **Триграмма (Trigram, N=3)**: слово появления зависит от двух предыдущих:
 
-$$P(w_i∣w_1,…,w_{i−1})≈P(w_i∣w_{i−2},w_{i−1})$$
+$$P(w_i∣w_1,…,w_{i-1})≈P(w_i∣w_{i-2},w_{i-1})$$
 
-These probabilities can be calculated through **Maximum Likelihood Estimation (MLE)** in large corpora. This term sounds complex, but its idea is very intuitive: what is most likely to appear is what we see most often in the data. For example, for a Bigram model, we want to calculate the probability $P(w_i∣w_{i−1})$ that the next word is $w_i$ after word $w_{i−1}$ appears. According to maximum likelihood estimation, this probability can be estimated through simple counting:
+Возможность этих оснований метода **максимального правдоподобия (Оценка максимального правдоподобия, MLE)** на больших корпусах. Название звучит сложно, а идея проста: наиболее вероятно то, что чаще всего встречается в данных. Например, для биграммной модели вероятности $P(w_i∣w_{i−1})$, что после слова $w_{i−1}$ следует $w_i$, по максимальному правдоподобию восприятия происходит простым подсчётом:
 
 $$P(w_i∣w_{i−1})=\frac{Count(w_{i−1},w_i)}{Count(w_{i−1})}$$
 
-Here, the `Count()` function represents "counting":
+Здесь функция`Count()`означает «подсчёт»:
 
-- $Count(w_{i−1},w_i)$: represents the total number of times the word pair $(w_{i−1},w_i)$ appears consecutively in the corpus.
-- $Count(w_{i−1})$: represents the total number of times the single word $w_{i−1}$ appears in the corpus.
+- $Count(w_{i−1},w_i)$: сколько раз пара слов $(w_{i−1},w_i)$ подряд встречается в корпусе.
+- $Count(w_{i−1})$: сколько раз одно слово $w_{i−1}$ встречается в корпусе.
 
-The formula's meaning is: we use "the number of times word pair $Count(w_{i−1},w_i)$ appears" divided by "the total number of times word $Count(w_{i−1})$ appears" as an approximate estimate of $P(w_i∣w_{i−1})$.
+Смысл формулы: «число появлений пары $Count(w_{i−1},w_i)$», делённое на «общее число появлений слов $Count(w_{i−1})$», даёт приближённую оценку $P(w_i∣w_{i−1})$.
 
-To make this process more concrete, let's manually perform a calculation. Suppose we have a mini corpus containing only the following two sentences: `datawhale agent learns`, `datawhale agent works`. Our goal is: using a Bigram (N=2) model, estimate the probability of the sentence `datawhale agent learns` appearing. According to the Bigram assumption, we examine consecutive pairs of words (i.e., word pairs) each time.
+Чтобы сделать это нагляднее, посчитаем вручную. Пусть мини-корпус содержит только два предложения:`datawhale agent learns`, `datawhale agent works`. Цель: с помощью биграммной (N=2) модели оценить вероятности предложения.`datawhale agent learns`. По биграммному предположению каждый раз смотрим на соседние пары слов.
 
-**Step 1: Calculate the probability of the first word** $P(datawhale)$ This is the number of times `datawhale` appears divided by the total number of words. `datawhale` appears 2 times, and the total number of words is 6.
+**Шаг 1: вероятность первого слова** $P(datawhale)$ — число появлений`datawhale`, делённое на общее число слов.`datawhale`встречается 2 раза, всего слов 6.
 
-$$P(\text{datawhale}) = \frac{\text{Number of "datawhale" in total corpus}}{\text{Total number of words in corpus}} = \frac{2}{6} \approx 0.333$$
+$$P(\text{datawhale}) = \frac{\text{Количество "datawhale" в общем корпусе}}{\text{Общее количество слов в корпусе}} = \frac{2}{6} \approx 0,333$$
 
-**Step 2: Calculate conditional probability** $P(agent∣datawhale)$ This is the number of times the word pair `datawhale agent` appears divided by the total number of times `datawhale` appears. `datawhale agent` appears 2 times, `datawhale` appears 2 times.
+**Шаг 2: условная защита** $P(agent∣datawhale)$ — число появлений пары`datawhale agent`, делённое на число явлений`datawhale`. Пара встречается 2 раза,`datawhale`— 2 раза.
 
-$$P(\text{agent}|\text{datawhale}) =  \frac{\text{Count}(\text{datawhale agent})}{\text{Count}(\text{datawhale})} =  \frac{2}{2} = 1$$
+$$P(\text{agent}|\text{datawhale}) = \frac{\text{Count}(\text{datawhale агент})}{\text{Count}(\text{datawhale})} = \frac{2}{2} = 1$$
 
-**Step 3: Calculate conditional probability** $P(learns∣agent)$ This is the number of times the word pair `agent learns` appears divided by the total number of times `agent` appears. `agent learns` appears 1 time, `agent` appears 2 times.
+**Шаг 3: условная защита** $P(learns∣agent)$ — число появлений пары`agent learns`, делённое на число явлений`agent`. Пара встречается 1 раз,`agent`— 2 раза.
 
-$$P(\text{learns}|\text{agent}) =  \frac{\text{Count(agent learns)}}{\text{Count(agent)}} =  \frac{1}{2} = 0.5$$
+$$P(\text{обучается}|\text{агент}) = \frac{\text{Count(агент обучается)}}{\text{Count(агент)}} = \frac{1}{2} = 0,5$$
 
-**Finally: Multiply the probabilities** So, the approximate probability of the entire sentence is:
+**Итог: перемножаем вероятность.** Приближённая вероятность всего предложения:
 
-$$P(\text{datawhale agent learns}) \approx  P(\text{datawhale}) \cdot  P(\text{agent}|\text{datawhale}) \cdot  P(\text{learns}|\text{agent}) \approx  0.333 \cdot 1 \cdot 0.5 \approx 0.167$$
+$$P(\text{агент datawhale учится}) \approx P(\text{datawhale}) \cdot P(\text{agent}|\text{datawhale}) \cdot P(\text{learns}|\text{agent}) \approx 0,333 \cdot 1 \cdot 0,5 \approx 0,167$$
 
 ```Python
 import collections
 
-# Example corpus, consistent with the corpus in the case explanation above
+# Пример корпуса, тот же, что в разборе выше
 corpus = "datawhale agent learns datawhale agent works"
 tokens = corpus.split()
 total_tokens = len(tokens)
 
-# --- Step 1: Calculate P(datawhale) ---
+# --- Шаг 1: вычислить P(datawhale) ---
 count_datawhale = tokens.count('datawhale')
 p_datawhale = count_datawhale / total_tokens
 print(f"Step 1: P(datawhale) = {count_datawhale}/{total_tokens} = {p_datawhale:.3f}")
 
-# --- Step 2: Calculate P(agent|datawhale) ---
-# First calculate bigrams for subsequent steps
+# --- Шаг 2: вычислить P(agent|datawhale) ---
+# Сначала считаем биграммы для следующих шагов
 bigrams = zip(tokens, tokens[1:])
 bigram_counts = collections.Counter(bigrams)
 count_datawhale_agent = bigram_counts[('datawhale', 'agent')]
-# count_datawhale was already calculated in step 1
+# count_datawhale уже посчитан на шаге 1
 p_agent_given_datawhale = count_datawhale_agent / count_datawhale
 print(f"Step 2: P(agent|datawhale) = {count_datawhale_agent}/{count_datawhale} = {p_agent_given_datawhale:.3f}")
 
-# --- Step 3: Calculate P(learns|agent) ---
+# --- Шаг 3: вычислить P(learns|agent) ---
 count_agent_learns = bigram_counts[('agent', 'learns')]
 count_agent = tokens.count('agent')
 p_learns_given_agent = count_agent_learns / count_agent
 print(f"Step 3: P(learns|agent) = {count_agent_learns}/{count_agent} = {p_learns_given_agent:.3f}")
 
-# --- Finally: Multiply the probabilities ---
+# --- Итог: перемножаем вероятности ---
 p_sentence = p_datawhale * p_agent_given_datawhale * p_learns_given_agent
 print(f"Finally: P('datawhale agent learns') ≈ {p_datawhale:.3f} * {p_agent_given_datawhale:.3f} * {p_learns_given_agent:.3f} = {p_sentence:.3f}")
 
@@ -99,43 +99,43 @@ Step 3: P(learns|agent) = 1/2 = 0.500
 Finally: P('datawhale agent learns') ≈ 0.333 * 1.000 * 0.500 = 0.167
 ```
 
-N-gram models, although simple and effective, have two fatal flaws:
+N-граммные модели просты и эффективны, но у них два крайних рассмотрения:
 
-1. **Data Sparsity**: If a word sequence has never appeared in the corpus, its probability estimate is 0, which is obviously unreasonable. Although this can be alleviated through smoothing techniques, it cannot be eradicated.
-2. **Poor Generalization Ability**: The model cannot understand semantic similarity between words. For example, even if the model has seen `agent learns` many times in the corpus, it cannot generalize this knowledge to semantically similar words. When we calculate the probability of `robot learns`, if the word `robot` has never appeared, or if the combination `robot learns` has never appeared, the probability calculated by the model will also be zero. The model cannot understand the semantic similarity between `agent` and `robot`.
+1. **Разреженность данных (Data Sparsity)**: если последовательность слов ни разу не встретилась в корпусе, вероятность вероятности равна 0 — это явно неразумно. Поглаживание смягчает проблему, но не использует ее.
+2. **Слабая обобщающая способность**: модель не понимает семантическое сходство слов. Даже если в корпусе много раз встречалось `агент учится`, она не перенесёт это знание на семантически близкие слова. При расчёте вероятности «робот учится», если слова «робот» или соглашения «робот учится» не было, вероятность тоже будет нулевой. Модель не видит сходства между «агентом» и «роботом».
 
-**(2) Neural Network Language Models and Word Embeddings**
+**(2) Нейросетевые языковые модели и векторные представления слов**
 
-The fundamental flaw of N-gram models is that they treat words as isolated, discrete symbols. To overcome this problem, researchers turned to neural networks and proposed an idea: represent words with continuous vectors. In 2003, the **Feedforward Neural Network Language Model** proposed by Bengio et al. was a milestone in this field<sup>[1]</sup>.
+Фундаментальный изъян N-грамм — слова трактуются как изолированные изолированные символы. Чтобы разобраться в этом, исследователи обратились к нейронным сетям с идеей: положение слов непрерывными векторами. В 2003 году **модель языкового анализа сети на основе прямого распространения (языковая модель нейронной сети с прямой связью)** Бенджио и соавторы стали вехой в этой области<sup>[1]</sup>.
 
-Its core idea can be divided into two steps:
+Идея рассматривается на два шага:
 
-1. **Build a semantic space**: Create a high-dimensional continuous vector space, then map each word in the vocabulary to a point in that space. This point (i.e., vector) is called a **Word Embedding** or word vector. In this space, semantically similar words have vectors that are close together in position. For example, the vectors of `agent` and `robot` will be very close, while the vectors of `agent` and `apple` will be far apart.
-2. **Learn the mapping from context to the next word**: Utilize the powerful fitting ability of neural networks to learn a function. The input of this function is the word vectors of the previous $n−1$ words, and the output is the probability distribution of each word in the vocabulary appearing after the current context.
+1. **Построить семантическое пространство**: создать многомерное непрерывное векторное пространство и отобразить каждое слово словаря в точке этого пространства. Эта точка (вектор) называется **эмбеддингом слова (встраивание слов)** или векторным словом. Семантически близкие слова оказываются рядом: слова «агент» и «робот» близки, «агент» и «яблоко» — в отдалении.
+2. **Выучить использование контекста в следующем слове**: с помощью мощной аппроксимирующей способности нейросети выучить функцию. На входе — предыдущие $n−1$ слов, на выходе — вероятности отображения каждого словаря слов после текущего контекста.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-1.png" alt="Figure description" width="90%"/>
-  <p>Figure 3.2 Schematic diagram of neural network language model architecture</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-1.png" alt="Рис. description" width="90%"/>
+  <p>Рисунок 3.2 Схема конструкции нейросетевой языковой модели</p>
 </div>
 
-As shown in Figure 3.2, in this architecture, word embeddings are automatically learned during model training. To complete the task of "predicting the next word," the model continuously adjusts the vector position of each word, ultimately making these vectors contain rich semantic information. Once we convert words into vectors, we can use mathematical tools to measure the relationships between them. The most commonly used method is **Cosine Similarity**, which measures their similarity by calculating the cosine of the angle between two vectors.
+Как показано на примере 3.2, встроенные слова автоматически выучиваются при обучении. Чтобы решить задачу «предсказать следующее слово», модель постоянно подстраивает положение векторов, и в итоге они насыщаются семантикой. Переведя слова вглубь, мы можем исследовать математические связи. Самый распространённый способ — **косинусное сходство (косинусное сходство)**: сходство по косинусу углу между двумя векторами.
 
-$$\text{similarity}(\vec{a}, \vec{b}) = \cos(\theta) = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}| |\vec{b}|}$$
+$$\text{сходство}(\vec{a}, \vec{b}) = \cos(\theta) = \frac{\vec{a} \cdot \vec{b}}{|\vec{a}| |\vec{b}|}$$
 
-The meaning of this formula is:
+Смысл формулы:
 
-- If two vectors have exactly the same direction, the angle is 0°, the cosine value is 1, indicating complete correlation.
-- If two vectors are orthogonal, the angle is 90°, the cosine value is 0, indicating no relationship.
-- If two vectors have completely opposite directions, the angle is 180°, the cosine value is -1, indicating complete negative correlation.
+- Если направления векторов совпадают, угол 0°, косинус 1 — полная положительная связь.
+- Если записано ортогонально, угол 90°, косинус 0 — связи нет.
+- Если направление противоположное, угол 180°, косинус −1 — полная отрицательная связь.
 
-Through this method, word vectors can not only capture simple relationships like "synonyms" but also capture more complex analogical relationships.
+Таким образом, слова улавливают не только «синонимы», но и более сложные аналогичные отношения.
 
-A famous example demonstrates the semantic relationships captured by word vectors: `vector('King') - vector('Man') + vector('Woman')` The result of this vector operation is surprisingly close to the position of `vector('Queen')` in the vector space. This is like performing semantic translation: we start from the point "king," subtract the vector of "male," add the vector of "female," and finally arrive at the position of "queen." This proves that word embeddings can learn abstract concepts like "gender" and "royalty."
+Классический пример:`vector('King') - vector('Man') + vector('Woman')`— результат успешен, близок к`vector('Queen')`в пространстве. Это как семантический перевод: из точки «король» вычитаем «мужское», прибавляем «женское» и попадаем в «королева». Значит, бед-эмдинги выучивают абстракции вроде «пол» и «монарший статус».
 
 ```Python
 import numpy as np
 
-# Assume we have learned simplified 2D word vectors
+# Допустим, мы выучили упрощённые 2D-векторы слов
 embeddings = {
     "king": np.array([0.9, 0.8]),
     "queen": np.array([0.9, 0.2]),
@@ -151,7 +151,7 @@ def cosine_similarity(vec1, vec2):
 # king - man + woman
 result_vec = embeddings["king"] - embeddings["man"] + embeddings["woman"]
 
-# Calculate similarity between result vector and "queen"
+# Сходство результирующего вектора с "queen"
 sim = cosine_similarity(result_vec, embeddings["queen"])
 
 print(f"Result vector of king - man + woman: {result_vec}")
@@ -162,165 +162,165 @@ Result vector of king - man + woman: [0.9 0.2]
 Similarity of this result with 'queen': 1.0000
 ```
 
-Neural network language models successfully solved the poor generalization problem of N-gram models through word embeddings. However, they still have a limitation similar to N-gram: the context window is fixed. They can only consider a fixed number of preceding words, which laid the groundwork for recurrent neural networks that can handle sequences of arbitrary length.
+Нейросетевые языковые модели посредством встраивания решили проблему слабого обобщения N-граммы. Но осталось ограничение, которое появилось на N-грамме: контекст окна зафиксирован. Модель видится только фиксированным числом предыдущих слов — это подготовка почвы для рекуррентных сетей, способных обработки последовательной длины.
 
-**(3) Recurrent Neural Networks (RNN) and Long Short-Term Memory Networks (LSTM)**
+**(3) Рекуррентные нейронные сети (RNN) и длинные сети с кратковременной памятью (LSTM)**
 
-Although the neural network language model in the previous section introduced word embeddings to solve the generalization problem, like N-gram models, its context window is of fixed size. To predict the next word, it can only see the previous n−1 words, and earlier historical information is discarded. This obviously does not conform to how we humans understand language. To break the limitation of fixed windows, **Recurrent Neural Networks (RNN)** emerged, with a very intuitive core idea: add "memory" capability to the network<sup>[2]</sup>.
+Несмотря на то, что предыдущая нейросетевая модель ввела в себя ограничения и обобщение, как и N-грамма, контекст ее окна фиксирован. Чтобы предсказать следующее слово, ей кажется, что звучит только n-1 слов, и выбрасывается более ранняя история. Это плохо согласуется с тем, как люди понимают язык. Чтобы снять ограничение фиксированного окна, появились **рекуррентные нейронные сети (Recurrent Neural Networks, RNN)** с последовательной идеей: дать сети «память»<sup>[2]</sup>.
 
-As shown in Figure 3.3, RNN's design introduces a **hidden state** vector, which we can understand as the network's short-term memory. At each step of processing the sequence, the network reads the current input word and combines it with its memory from the previous moment (i.e., the hidden state from the previous time step), then generates a new memory (i.e., the hidden state of the current time step) to pass to the next moment. This cyclical process allows information to continuously propagate backward through the sequence.
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-2.png" alt="Figure description" width="90%"/>
-  <p>Figure 3.3 Schematic diagram of RNN structure</p>
-</div>
-
-However, standard RNNs have a serious problem in practice: the **Long-term Dependency Problem**. During training, the model needs to adjust weights deep in the network based on errors at the output end through the backpropagation algorithm. For RNNs, the length of the sequence is the depth of the network. When the sequence is very long, gradients undergo multiple multiplications during backward propagation, which causes gradient values to rapidly approach zero (**gradient vanishing**) or become extremely large (**gradient explosion**). Gradient vanishing prevents the model from effectively learning the impact of early sequence information on later outputs, making it difficult to capture long-distance dependencies.
-
-To solve the long-term dependency problem, **Long Short-Term Memory (LSTM)** was designed<sup>[3]</sup>. LSTM is a special type of RNN, and its core innovation lies in introducing **Cell State** and a sophisticated **Gating Mechanism**. The cell state can be seen as an information pathway independent of the hidden state, allowing information to pass more smoothly between time steps. The gating mechanism consists of several small neural networks that can learn how to selectively let information through, thereby controlling the addition and removal of information in the cell state. These gates include:
-
-- **Forget Gate**: Decides which information to discard from the cell state of the previous moment.
-- **Input Gate**: Decides which new information from the current input to store in the cell state.
-- **Output Gate**: Decides which information to output to the hidden state based on the current cell state.
-
-### 3.1.2 Transformer Architecture Analysis
-
-In the previous section, we saw that RNNs and LSTMs process sequential data by introducing recurrent structures, which to some extent solved the problem of capturing long-distance dependencies. However, this recurrent computation method also brought new bottlenecks: it must process data sequentially. The computation at time step t must wait for time step t−1 to complete before it can begin. This means RNNs cannot perform large-scale parallel computation and are inefficient when processing long sequences, which greatly limits the improvement of model scale and training speed. Transformer was proposed by the Google team in 2017<sup>[4]</sup>. It completely abandoned the recurrent structure and instead relied entirely on a mechanism called **Attention** to capture dependencies within sequences, thereby achieving truly parallel computation.
-
-**(1) Overall Encoder-Decoder Structure**
-
-The original Transformer model was designed for the end-to-end task of machine translation. As shown in Figure 3.4, it follows a classic **Encoder-Decoder** architecture at the macro level.
+Как показано на рисунке 3.3, в RNN вводится вектор **скрытого состояния (скрытого состояния)** — постоянная сеть памяти. На каждом этапе сеть читает текущее слово, связывает его с памятью прошлого момента (скрытым состоянием шага) и формирует новую память (скрытое состояние текущего шага) для дальнейшей передачи. Этот цикл позволяет информации продолжать распространяться вдоль последовательности.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-3.png" alt="Figure description" width="50%"/>
-  <p>Figure 3.4 Overall Transformer architecture diagram</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-2.png" alt="Рис. description" width="90%"/>
+  <p>Рисунок 3.3 Схема структуры RNN</p>
 </div>
 
-We can understand this structure as a team with clear division of labor:
+На практике у стандартного RNN серьезная проблема: **долгосрочные зависимости (Long-term Dependency Issue)**. При обучении вес в сети подстраивается для возврата через обратную передачу. Для длины RNN последовательности — это глубина сети. На шагах последовательно градиенты многократно перемножаются и быстро начинают включаться (**затухание градиента, исчезновение градиента**) или начинаются движения (**взрыв градиента, взрыв градиента**). Затухание препятствий выучить влияние ранней информации на поздние выходы и уловить дальние в зависимости от ситуации.
 
-1. **Encoder**: The task is to "**understand**" the entire input sentence. It reads all input tokens (this concept will be introduced in Section 3.2.2) and ultimately generates a vector representation rich in contextual information for each token.
-2. **Decoder**: The task is to "**generate**" the target sentence. It references the preceding text it has already generated and "consults" the encoder's understanding results to generate the next word.
+Для решения проблемы долгосрочных зависимостей была предложена **долгая краткосрочная память (Long Short-Term Memory, LSTM)**<sup>[3]</sup>. LSTM — особый вид RNN; главное новшество — **состояние ячейки (Cell State)** и продуманный **механизм вентилей (Gating Mechanism)**. Состояние ячейки — отдельный канал информации рядом со скрытым состоянием, при котором данные передаются между шагами быстрее. Вентили — небольшие нейросети, которые учатся избирательно, пропуская информацию и контролируя добавление и удаление данных в состоянии ячейки. К ним относятся:
 
-To truly understand how Transformer works, the best method is to implement it yourself. In this section, we will adopt a "top-down" approach: first, we build the complete code framework of Transformer, defining all necessary classes and methods. Then, like completing a puzzle, we will implement the specific functions of these classes one by one.
+- **Вентиль забывания (Врата Забывания)**: решает, что выйти из состояния ячейки прошлого момента.
+- **Входной вентиль (Входной шлюз)**: определяет, какую новую информацию из текущего входа сохранить в состоянии ячейки.
+- **Выходной вентиль (Выходные ворота)**: определяет, что на основе текущего состояния ячейка выдает в скрытое состояние.
+
+### 3.1.2 Разработка конструкции трансформатора
+
+В предыдущем разделе RNN и LSTM обрабатывали последовательность через рекуррентность и частично определяли дальние зависимости. Но последующие преобразования производятся в новом узком месте: данные необходимо обрабатывать строго по порядку. Шаг t начинается только после завершения t−1. Таким образом, RNN плохо масштабируется на параллельных вычислениях и замедляется на параллельных курсах — это сильно ограничивает размер модели и скорость обучения. Transformer Предлагается командой Google в 2017 году<sup>[4]</sup>. Архитектура полностью отказалась от рекуррентности и опирается на механизм **внимания (Внимания)** для зависимостей внутри последовательности, что обеспечивает постоянную параллельность.
+
+**(1) Общая структура Кодер-декодер**
+
+Исходный Трансформатор создается для сквозной задачи машинного перевода. Как видно на рисунке 3.4, на макроуровне это классическая архитектура **кодировщик–декодировщик (Encoder–Decoder)**.
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-3.png" alt="Рис. description" width="50%"/>
+  <p>Рисунок 3.4 Общая схема конструкции Трансформатора</p>
+</div>
+
+Эту структуру можно представить как команду с четким разделением ролей:
+
+1. **Кодировщик (Encoder)**: задача — «**понять**» всё входное предложение. Он читает все входные токены (см. рисунок в разделе 3.2.2) и для каждого формирует векторное представление, богатый контекст.
+2. **Декодировщик (Decoder)**: задача — «**породить**» целевое предложение. Он опирается на уже сгенерированный ранее текст и «сверяется» с пониманием кодировщика, чтобы выдать следующее слово.
+
+Лучший способ понять Трансформера — реализовать его душу. В этом разделе идём «сверху вниз»: сначала соберём полный каркас со всеми необходимыми классами и методами, затем, как пазл, заполним представление частей.
 
 ```Python
 import torch
 import torch.nn as nn
 import math
 
-# --- Placeholder modules, to be implemented in subsequent subsections ---
+# --- Модули-заглушки, будут реализованы в следующих подразделах ---
 
 class PositionalEncoding(nn.Module):
     """
-    Positional encoding module
+    Модуль позиционного кодирования
     """
     def forward(self, x):
         pass
 
 class MultiHeadAttention(nn.Module):
     """
-    Multi-head attention mechanism module
+    Модуль многоголового внимания
     """
     def forward(self, query, key, value, mask):
         pass
 
 class PositionWiseFeedForward(nn.Module):
     """
-    Position-wise feed-forward network module
+    Модуль позиционно-независимой сети прямого распространения
     """
     def forward(self, x):
         pass
 
-# --- Encoder core layer ---
+# --- Ядро слоя кодировщика ---
 
 class EncoderLayer(nn.Module):
     def __init__(self, d_model, num_heads, d_ff, dropout):
         super(EncoderLayer, self).__init__()
-        self.self_attn = MultiHeadAttention() # To be implemented
-        self.feed_forward = PositionWiseFeedForward() # To be implemented
+        self.self_attn = MultiHeadAttention() # будет реализовано
+        self.feed_forward = PositionWiseFeedForward() # будет реализовано
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, mask):
-        # Residual connection and layer normalization will be explained in detail in Section 3.1.2.4
-        # 1. Multi-head self-attention
+        # Остаточная связь и нормализация слоя подробно — в разделе 3.1.2.4
+        # 1. Многоголовое самовнимание
         attn_output = self.self_attn(x, x, x, mask)
         x = self.norm1(x + self.dropout(attn_output))
 
-        # 2. Feed-forward network
+        # 2. Сеть прямого распространения
         ff_output = self.feed_forward(x)
         x = self.norm2(x + self.dropout(ff_output))
 
         return x
 
-# --- Decoder core layer ---
+# --- Ядро слоя декодировщика ---
 
 class DecoderLayer(nn.Module):
     def __init__(self, d_model, num_heads, d_ff, dropout):
         super(DecoderLayer, self).__init__()
-        self.self_attn = MultiHeadAttention() # To be implemented
-        self.cross_attn = MultiHeadAttention() # To be implemented
-        self.feed_forward = PositionWiseFeedForward() # To be implemented
+        self.self_attn = MultiHeadAttention() # будет реализовано
+        self.cross_attn = MultiHeadAttention() # будет реализовано
+        self.feed_forward = PositionWiseFeedForward() # будет реализовано
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
         self.norm3 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, encoder_output, src_mask, tgt_mask):
-        # 1. Masked multi-head self-attention (on itself)
+        # 1. Маскированное многоголовое самовнимание (на себе)
         attn_output = self.self_attn(x, x, x, tgt_mask)
         x = self.norm1(x + self.dropout(attn_output))
 
-        # 2. Cross-attention (on encoder output)
+        # 2. Перекрёстное внимание (на выходе кодировщика)
         cross_attn_output = self.cross_attn(x, encoder_output, encoder_output, src_mask)
         x = self.norm2(x + self.dropout(cross_attn_output))
 
-        # 3. Feed-forward network
+        # 3. Сеть прямого распространения
         ff_output = self.feed_forward(x)
         x = self.norm3(x + self.dropout(ff_output))
 
         return x
 ```
 
-**(2) From Self-Attention to Multi-Head Attention**
+**(2) От самовнимания к многоголовому любителю**
 
-Now, let's fill in the most critical module in the skeleton: the attention mechanism.
+Теперь заполним самый ближайший модуль каркаса: внимание к механизму.
 
-Imagine we are reading this sentence: "The agent learns because **it** is intelligent." When we read the bolded "**it**," to understand its reference, our brain unconsciously places more attention on the word "agent" earlier in the sentence. The **Self-Attention** mechanism is a mathematical modeling of this phenomenon. It allows the model to consider all other words in the sentence when processing each word and assign different "attention weights" to these words. The higher the weight of a word, the stronger its association with the current word, and the greater the proportion its information should occupy in the current word's representation.
+Представьте себе предложение: «Агент учится, потому что **он** умен». Когда мы читаем выделенное «**it**», чтобы понять, что оно ссылается, мозг бессознательно сильнее «смотрит» на слово «агент» раньше в предложении. **Самовнимание (Самовнимание)** — математическая модель этого явления. Оно позволяет моделировать при обработке каждого слова все остальные слова, предложения и назначать им разные «веса внимания». Чем выше вес, тем сильнее связь с текущим словом и тем больше доля его информации в представлении современных слов.
 
-To implement the above process, the self-attention mechanism introduces three learnable roles for each input token vector:
+Для этого сами вводит три обучаемых ролика для каждого входного векторного токена:
 
-- **Query (Q)**: Represents the current token, which is actively "querying" other tokens to obtain information.
-- **Key (K)**: Represents the "label" or "index" of tokens in the sentence that can be queried.
-- **Value (V)**: Represents the "content" or "information" carried by the token itself.
+- **Запрос (Q)**: текущий токен, который активно «запрашивает» информацию у других.
+- **Ключ (K)**: «метка» или «индекс» токенов в предложении, по которому можно запросить.
+- **Значение (V)**: «содержание» или информация, которую несёт сам токен.
 
-These three vectors are all obtained by multiplying the original word embedding vector by three different, learnable weight matrices ($W^Q,W^K,W^V$). The entire computation process can be divided into the following steps, which we can imagine as an efficient open-book exam:
+Все три вектора получают умножением исходного эмбеддинга на три разных обучаемых матрицы весов ($W^Q,W^K,W^V$). Весь процесс можно представить как эффективный экзамен с открытой книгой:
 
-- Prepare "exam questions" and "materials": For each word in the sentence, generate its $Q,K,V$ vectors through weight matrices.
-- Calculate relevance scores: To calculate the new representation of word $A$, use word $A$'s $Q$ vector to perform dot product operations with the $K$ vectors of all words in the sentence (including $A$ itself). This score reflects the importance of other words for understanding word $A$.
-- Stabilization and normalization: Divide all obtained scores by a scaling factor $\sqrt{d_{k}}$ ($d_{k}$ is the dimension of the $K$ vector) to prevent gradients from being too small, then use the Softmax function to convert scores into weights that sum to 1, which is the normalization process.
-- Weighted sum: Multiply the weights obtained in the previous step by each word's corresponding $V$ vector, then add all results together. The final vector is the new representation of word $A$ after integrating global contextual information.
+- Подготовить «вопросы» и «материалы»: для каждого слова сгенерировать записи $Q,K,V$ через матрицы весов.
+- Посчитайте оценку релевантности: для нового представления слова $A$ возьмите его $Q$ и сделайте скалярное произведение из $K$ всех слов (включая самого $A$). Оценка отражения других слов для понимания $A$.
+- Стабилизация и нормализация: все оценки делятся на масштабный множитель $\sqrt{d_{k}}$ ($d_{k}$ — размерность $K$), чтобы градиенты не становились слишком малыми, затем Softmax преобразует оценку в вес с суммой 1.
+- Взвешенная длина: вес умножают на соответствующие $V$ и складывают. Итоговый вектор — новое представление слова $A$ с учетом глобального контекста.
 
-This process can be summarized by a concise formula:
+Кратко это выражается формулой:
 
-$$\text{Attention}(Q,K,V)=\text{softmax}\left(\frac{QK^{T}}{\sqrt{d_{k}}}\right)V$$
+$$\text{Внимание}(Q,K,V)=\text{softmax}\left(\frac{QK^{T}}{\sqrt{d_{k}}}\right)V$$
 
-If only one attention calculation is performed (i.e., single-head), the model may only learn to focus on one type of association. For example, when processing "it," it might only learn to focus on the subject. But relationships in language are complex, and we want the model to simultaneously focus on multiple relationships (such as referential relationships, tense relationships, subordinate relationships, etc.). Multi-head attention mechanism emerged. Its idea is simple: instead of doing it all at once, divide it into several groups, do them separately, then merge.
+Если считать внимание один раз (одна «голова»), модель может выучить только один тип связей — например, при «оно» фокусироваться только на подлежащем. Но связи в языке сложны: нужны референции, время, подчинение и т.д. Так появилось **многоголовое внимание (Multi-Head Attention)**: вместо одного прохода — несколько независимых, затем объединение.
 
-It splits the original Q, K, V vectors into h parts along the dimension (h is the number of "heads"), and each part independently performs a single-head attention calculation. This is like having h different "experts" examine the sentence from different perspectives, with each expert capturing a different feature relationship. Finally, the "opinions" (i.e., output vectors) of these h experts are concatenated, then integrated through a linear transformation to obtain the final output.
+Исходные Q, K, V разрезают по размерам на части h (h — число «голова»), каждая часть независимо считает однолововое внимание. Это как «эксперты», смотрящие на предложения с разных сторон. Затем их «мнения» (выходные выражения) конкатенируются и через линейное преобразование получают конечный результат.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-4.png" alt="Figure description" width="50%"/>
-  <p>Figure 3.5 Multi-head attention mechanism</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-4.png" alt="Рис. description" width="50%"/>
+  <p>Рисунок 3.5 Механизм многоголового внимания</p>
 </div>
 
-As shown in Figure 3.5, this design allows the model to jointly attend to information from different positions and different representation subspaces, greatly enhancing the model's expressive power. Below is a simple implementation of multi-head attention for reference.
+Как показано на рисунке 3.5, такая схема позволяет совместно использовать информацию с разными позициями и из разных представленных подпространств, сильно повышая выразительность. Ниже — простое осуществление многоголового внимания.
 
 ```Python
 class MultiHeadAttention(nn.Module):
     """
-    Multi-head attention mechanism module
+    Модуль многоголового внимания
     """
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
@@ -330,70 +330,71 @@ class MultiHeadAttention(nn.Module):
         self.num_heads = num_heads
         self.d_k = d_model // num_heads
 
-        # Define linear transformation layers for Q, K, V and output
+        # Линейные слои для Q, K, V и выхода
         self.W_q = nn.Linear(d_model, d_model)
         self.W_k = nn.Linear(d_model, d_model)
         self.W_v = nn.Linear(d_model, d_model)
         self.W_o = nn.Linear(d_model, d_model)
 
     def scaled_dot_product_attention(self, Q, K, V, mask=None):
-        # 1. Calculate attention scores (QK^T)
+        # 1. Оценки внимания (QK^T)
         attn_scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_k)
 
-        # 2. Apply mask (if provided)
+        # 2. Применить маску (если задана)
         if mask is not None:
-            # Set positions where mask is 0 to a very small negative number, so they approach 0 after softmax
+            # Позиции с mask=0 заполняем очень малым отрицательным числом,
+            # чтобы после softmax они стремились к 0
             attn_scores = attn_scores.masked_fill(mask == 0, -1e9)
 
-        # 3. Calculate attention weights (Softmax)
+        # 3. Веса внимания (Softmax)
         attn_probs = torch.softmax(attn_scores, dim=-1)
 
-        # 4. Weighted sum (weights * V)
+        # 4. Взвешенная сумма (веса * V)
         output = torch.matmul(attn_probs, V)
         return output
 
     def split_heads(self, x):
-        # Transform input x shape from (batch_size, seq_length, d_model)
-        # to (batch_size, num_heads, seq_length, d_k)
+        # Форма x: (batch_size, seq_length, d_model)
+        # -> (batch_size, num_heads, seq_length, d_k)
         batch_size, seq_length, d_model = x.size()
         return x.view(batch_size, seq_length, self.num_heads, self.d_k).transpose(1, 2)
 
     def combine_heads(self, x):
-        # Transform input x shape from (batch_size, num_heads, seq_length, d_k)
-        # back to (batch_size, seq_length, d_model)
+        # Форма x: (batch_size, num_heads, seq_length, d_k)
+        # -> (batch_size, seq_length, d_model)
         batch_size, num_heads, seq_length, d_k = x.size()
         return x.transpose(1, 2).contiguous().view(batch_size, seq_length, self.d_model)
 
     def forward(self, Q, K, V, mask=None):
-        # 1. Perform linear transformations on Q, K, V
+        # 1. Линейные преобразования Q, K, V
         Q = self.split_heads(self.W_q(Q))
         K = self.split_heads(self.W_k(K))
         V = self.split_heads(self.W_v(V))
 
-        # 2. Calculate scaled dot-product attention
+        # 2. Масштабированное скалярное внимание
         attn_output = self.scaled_dot_product_attention(Q, K, V, mask)
 
-        # 3. Combine multi-head outputs and perform final linear transformation
+        # 3. Объединить головы и финальное линейное преобразование
         output = self.W_o(self.combine_heads(attn_output))
         return output
 ```
 
-**(3) Feed-Forward Neural Network**
+**(3) Сеть прямого распространения**
 
-In each Encoder and Decoder layer, the multi-head attention sublayer is followed by a **Position-wise Feed-Forward Network (FFN)**. If the role of the attention layer is to "dynamically aggregate" relevant information from the entire sequence, then the role of the feed-forward network is to extract higher-order features from this aggregated information.
+В каждом расположении кодировщика и декодера после подслоя многоголового внимания идет **позиционно-независимая сеть прямого распространения (Position-wise Feed-Forward Network, FFN)**. Если принять во внимание «динамически агрегирует» релевантную информацию по всей последовательности, то FFN извлекает из этой агрегации признаки более высокого порядка.
 
-The key to this name is "position-wise." It means this feed-forward network acts independently on each token vector in the sequence. In other words, for a sequence of length `seq_len`, this FFN is actually called `seq_len` times, processing one token each time. Importantly, all positions share the same set of network weights. This design both maintains the ability to independently process each position and greatly reduces the model's parameter count. This network's structure is very simple, consisting of two linear transformations and a ReLU activation function:
+Ключ в названии — «по позиции»: сеть действует независимо от каждого векторного токена. Для длины последовательности`seq_len`ФФН на самом деле проявляется`seq_len`раз, по одному токену. Важно: все позиции разделяют одни и те же по весу. Таким образом сохраняется независимая обработка позиций и сильно сокращается число параметров. Структура проста — два линейных преобразования и активация ReLU:
 
 $$\mathrm{FFN}(x)=\max\left(0, xW_{1}+b_{1}\right) W_{2}+b_{2}$$
 
-Where $x$ is the output of the attention sublayer. $W_1,b_1,W_2,b_2$ are learnable parameters. Typically, the output dimension `d_ff` of the first linear layer is much larger than the input dimension `d_model` (for example, `d_ff = 4 * d_model`), then after ReLU activation, it is mapped back to `d_model` dimension through the second linear layer. This "expand then shrink" design is believed to help the model learn richer feature representations.
+Здесь $x$ — выход подслоя внимания; $W_1,b_1,W_2,b_2$ — обучаемые параметры. Обычно выходная размерность первого линейного слоя`d_ff`Гораздо больше входной`d_model`(например,`d_ff = 4 * d_model`), а затем после того, как второй слой ReLU отображается обратно в`d_model`. Схема «расширить — сжать» помогает выучить более богатые представления.
 
-In our PyTorch skeleton, we can implement this module with the following code:
+В нашем каркасе модуля PyTorch можно реализовать так:
 
 ```Python
 class PositionWiseFeedForward(nn.Module):
     """
-    Position-wise feed-forward network module
+    Модуль позиционно-независимой сети прямого распространения
     """
     def __init__(self, d_model, d_ff, dropout=0.1):
         super(PositionWiseFeedForward, self).__init__()
@@ -403,159 +404,159 @@ class PositionWiseFeedForward(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, x):
-        # x shape: (batch_size, seq_len, d_model)
+        # форма x: (batch_size, seq_len, d_model)
         x = self.linear1(x)
         x = self.relu(x)
         x = self.dropout(x)
         x = self.linear2(x)
-        # Final output shape: (batch_size, seq_len, d_model)
+        # итоговая форма: (batch_size, seq_len, d_model)
         return x
 ```
 
-**(4) Residual Connections and Layer Normalization**
+**(4) Остаточные связи и нормализация слоев**
 
-In each encoder and decoder layer of Transformer, all submodules (such as multi-head attention and feed-forward networks) are wrapped by an `Add & Norm` operation. This combination ensures that Transformer can train stably.
+В каждом включении кодировщика и декодировщика Transformer все подмодули (многоголовое внимание и FFN) обёрнуты операцией.`Add & Norm`. Такое сочетание обеспечивает стабильное обучение.
 
-This operation consists of two parts:
+Она состоит из двух частей:
 
-- **Residual Connection (Add)**: This operation directly adds the submodule's input `x` to the submodule's output `Sublayer(x)`. This structure solves the **Vanishing Gradients** problem in deep neural networks. During backpropagation, gradients can bypass the submodule and propagate forward directly, ensuring that even if the network has many layers, the model can be effectively trained. Its formula can be expressed as: $\text{Output} = x + \text{Sublayer}(x)$.
-- **Layer Normalization (Norm)**: This operation normalizes all features of a single sample, making its mean 0 and variance 1. This solves the **Internal Covariate Shift** problem during model training, keeping the input distribution of each layer stable, thereby accelerating model convergence and improving training stability.
+- **Остаточная связь (Residual Connection, Add)**: вход подмодуля `x` напрямую складывается с его выходом `Sublayer(x)`. Это смягчает **затухание градиентов (Исчезающие градиенты)** в социальных сетях. При обратном распространении градиента можно обойти подмодуль и идти дальше напрямую — даже при многих слоях обучение остается эффективным. Формула: $\text{Output} = x + \text{Sublayer}(x)$.
+- **Уровень нормализации (Layer Normalization, Norm)**: нормализует все признаки одного образца так, чтобы среднее было 0, а дисперсия — 1. Этот уровень **сдвига внутренних ковариат (Internal Covariate Shift)** стабилизирует входное распределение каждого слоя, вызывает снижение вероятности и устойчивость обучения.
 
-**3.1.2.5 Positional Encoding**
+**3.1.2.5 Позиционное кодирование**
 
-We already understand that the core of Transformer is the self-attention mechanism, which captures dependencies by calculating relationships between any two tokens in a sequence. However, this computation method has an inherent problem: it does not contain any information about token order or position. For self-attention, the two sequences "agent learns" and "learns agent" are completely equivalent because it only cares about relationships between tokens and ignores their arrangement. To solve this problem, Transformer introduced **Positional Encoding**.
+Ядро Трансформер — самовнимание: в зависимости через связь между любыми двумя токенами. Но у такого расчёта есть врождённая проблема: в нём нет информации о порядке или позиции. Для самовнимания «агент учится» и «агент учится» эквивалентны — важны только связи, а не порядок. Поэтому ввели **позиционное кодирование (Positional Encoding)**.
 
-The core idea of positional encoding is to add an additional "position vector" representing its absolute and relative position information to each token embedding vector in the input sequence. This position vector is not learned but directly calculated through a fixed mathematical formula. This way, even if two tokens (for example, two tokens both called `agent`) have the same embedding, because they are in different positions in the sentence, the vectors they ultimately input to the Transformer model will become unique due to adding different positional encodings. The positional encoding proposed in the original paper uses sine and cosine functions to generate, with the formula as follows:
+Идея: к встраиванию каждого токена добавляется дополнительный «позиционный вектор» с информацией об абсолютной и относительной позиции. Он не учится, что считается по фиксированной формуле. Даже если два токена (два`agent`) имеют одинаковый эмбеддинг, из-за разных позиций итоговые входы в Transformer различны. В исходной использованной статье синус и косинус:
 
-$$PE_{(pos,2i)}=\sin\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)，$$
+$$PE_{(pos,2i)}=\sin\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right),$$
 
 $$PE_{(pos,2i+1)}=\cos\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)$$
 
-Where:
+Где:
 
-- $pos$ is the position of the token in the sequence (for example, $0$, $1$, $2$, ...)
-- $i$ is the dimension index in the position vector (from $0$ to $d_{\text{model}}/2$)
-- $d_{\text{model}}$ is the dimension of the word embedding vector (consistent with what we defined in the model)
+- $pos$ — ток позиции в последовательности (например, $0$, $1$, $2$, ...)
+- $i$ — размерность индекса в позиционном векторе (от $0$ до $d_{\text{model}}/2$)
+- $d_{\text{model}}$ — размерность встроенного слова (как в зависимости от модели)
 
-Now, let's implement the `PositionalEncoding` module and complete the last part of our Transformer skeleton code.
+Реализуем модуль`PositionalEncoding`и закончить каркас Трансформера.
 
 ```Python
 class PositionalEncoding(nn.Module):
     """
-    Add positional encoding to word embedding vectors of input sequence.
+    Добавляет позиционное кодирование к векторам эмбеддингов входной последовательности.
     """
     def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
 
-        # Create a sufficiently long positional encoding matrix
+        # Достаточно длинная матрица позиционного кодирования
         position = torch.arange(max_len).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
 
-        # pe (positional encoding) size is (max_len, d_model)
+        # pe (positional encoding) имеет размер (max_len, d_model)
         pe = torch.zeros(max_len, d_model)
 
-        # Even dimensions use sin, odd dimensions use cos
+        # Чётные размерности — sin, нечётные — cos
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
 
-        # Register pe as buffer, so it won't be treated as model parameter but will move with the model (e.g., to(device))
+        # pe регистрируем как buffer: не параметр модели, но переезжает вместе с ней (например, to(device))
         self.register_buffer('pe', pe.unsqueeze(0))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x.size(1) is the current input sequence length
-        # Add positional encoding to input vector
+        # x.size(1) — длина текущей входной последовательности
+        # Добавляем позиционное кодирование к входному вектору
         x = x + self.pe[:, :x.size(1)]
         return self.dropout(x)
 ```
 
-This subsection mainly helps understand the macro structure of Transformer and the operational details of each internal module. Since it's to supplement the knowledge system of large models in agent learning, we won't continue to implement further. At this point, we have laid a solid architectural foundation for understanding modern large language models. In the next section, we will explore the Decoder-Only architecture and see how it evolved based on Transformer's ideas.
+Это подразделение помогает понять макроструктуру Трансформатора и детали внутренних модулей. Поскольку цель — дополнить знания о больших моделях за несколько агентов, дальше мы не управляем. Мы заложили архитектурную основу современного LLM. В следующем разделе разберём архитектуру Decoder-Only и её эволюцию идей Transformer.
 
-### 3.1.3 Decoder-Only Architecture
+### 3.1.3 Архитектура только для декодера
 
-In the previous section, we built a complete Transformer model by hand, which performs excellently in many end-to-end scenarios. But when the task shifts to building a general model that can converse with people, create, and serve as an agent's brain, perhaps we don't need such a complex structure.
+В предыдущем разделе мы вручную собрали полный трансформатор, который хорошо работает во многих сквозных проводах. Но когда задача — построить базовую модель для диалога, творчества и «мозгового» агента, такая сложность может быть резервной.
 
-Transformer's design philosophy is "understand first, then generate." The encoder is responsible for deeply understanding the entire input sentence, forming a contextual memory containing global information, then the decoder generates translation based on this memory. But when OpenAI developed **GPT (Generative Pre-trained Transformer)**, they proposed a simpler idea<sup>[5]</sup>: **Isn't the core task of language to predict the next most likely word?**
+Философия Трансформер — «сначала понять, потом породить». Кодировщик глубоко понимает всё входное предложение и формирует контекстную память с глобальной информацией; декодировщик блокчейн осуществляет перевод, основываясь на этой памяти. Когда OpenAI разработала **GPT (Генераторный предварительно обученный преобразователь)**, предложила более простую идею<sup>[5]</sup>: **разве ядро ​​языка не в том, чтобы предсказать следующее наиболее вероятное слово?**
 
-Whether answering questions, writing stories, or generating code, essentially it's adding the most reasonable content word by word after an existing text sequence. Based on this idea, GPT made a bold simplification: **It completely abandoned the encoder and only kept the decoder part.** This is the origin of the **Decoder-Only** architecture.
+Отвечать на вопросы, писать историю или сокращать код — по сути, добавление слова к слову наиболее разумное продолжение уже связано с текстовой последовательностью. Исходя из этого, GPT пошла на смелое упрощение: **полностью отказалась от кодировщика и оставила только декодировщик.** Так сложилась архитектура **только для декодера**.
 
-The working mode of the Decoder-Only architecture is called **Autoregressive**. This professional-sounding term actually describes a very simple process:
+Режим работы Decoder-Only называют **авторегрессией (Авторегрессией)**. Слово «сложный» — простой процесс:
 
-1. Give the model a starting text (for example, "Datawhale Agent is").
-2. The model predicts the next most likely word (for example, "a").
-3. The model adds the word "a" it just generated to the end of the input text, forming a new input ("Datawhale Agent is a").
-4. Based on this new input, the model predicts the next word again (for example, "powerful").
-5. Continuously repeat this process until a complete sentence is generated or a stop condition is reached.
+1. Дать модель начального текста (например, «Агент Datawhale is»).
+2. Модель предсказывает следующее наиболее вероятное слово (например, «a»).
+3. Слово «a» добавляется в конце входа: «Datawhale Agent is a».
+4. При входе к новому снова предсказывается следующее слово (например, «мощный»).
+5. Цикл повторяется, пока не осуществится полное предложение или не сработает условие остановки.
 
-The model is like playing a "word chain" game, constantly "reviewing" the content it has already written, then thinking about what the next word should be.
+Модель как бы играет в «цепочку слов»: постоянно «перечитывает» уже написанное и думает, какое слово дальше.
 
-You might ask: during training, the model is often given the complete text sequence at once, so how does it ensure that when learning to predict the next token, it does not "peek" at later answers?
+Можно спросить: при обучении модели часто дают всю последовательность сразу — как она не «подглядывает» в будущие ответы, учась предсказывать следующий токен?
 
-The answer is **Masked Self-Attention**. In the Decoder-Only architecture, this mechanism becomes crucial. Its working principle is very clever:
+Ответ — **маскированное самовнимание (Маскированное Самовнимание)**. В Decoder-Only оно критично. Принцип таков:
 
-During training, although a whole text sequence can be fed into the model in parallel, after the self-attention mechanism calculates the attention score matrix (i.e., each word's attention score to all other words) and before Softmax normalization, the model applies a causal mask. This mask replaces the scores corresponding to all tokens after the current position with a very large negative number. When this matrix goes through Softmax, the probabilities at those positions become 0. In this way, when the model calculates the representation at any position, it is mathematically prevented from attending to information after that position.
+При обучении целую последовательность можно проводить параллельно, но после расчёта матрицы оценок внимания (оценка внимания каждого слова ко всем коронавирусом) и модели Softmax накладывает каузальную маску. Она заменяет оценки всех токенов *после* текущей позиции очень большим отрицательным числом. После Softmax вероятность на этих позициях становится 0. Такая модель при представлении любой позиции математически не может смотреть в будущем.
 
-During generation, the situation is even more direct: future tokens have not been generated yet, so the model can only use the already generated content as context and predict the next token step by step. Masked self-attention keeps the training objective consistent with autoregressive generation, ensuring that the model always relies only on information before the current position.
+При формировании ещё проще: будущих токенов ещё нет, модель использует только уже сгенерированный контекст, и шаг за шагом предсказывает следующий токен. Маскированное самовнимание теннисной цели обучения с авторегрессивной генерацией: модель всегда основывается только на информации о текущей позиции.
 
-**Advantages of Decoder-Only Architecture**
+**Преимущества конструкции только для декодера**
 
-This seemingly simple architecture has brought tremendous success, with advantages including:
+Кажущаяся простота принесла огромный успех:
 
-- **Unified Training Objective**: The model's only task is to "predict the next word," a simple goal very suitable for pre-training on massive unlabeled text data.
-- **Simple Structure, Easy to Scale**: Fewer components mean easier scaling. Today's GPT-4, Llama, and other giant models with hundreds of billions or even trillions of parameters are all based on this concise architecture.
-- **Naturally Suited for Generation Tasks**: Its autoregressive working mode perfectly matches all generative tasks (dialogue, writing, code generation, etc.), which is also the core reason it can become the foundation for building general agents.
+- **Единая цель обучения**: внутренняя проблема — «предсказать следующее слово»; Такая простая цель отлично подходит для обучения огромным неразмеченным текстам.
+- **Простая структура, легко масштабировать**: меньше компонентов — проще наращивать размер. Сегодняшние GPT-4, Llama и другие модели стоимостью в миллиарды и триллионы параметров основаны именно на этой удлиненной архитектуре.
+- **Естественно подходит для генерации**: авторегрессивный режим идеально соответствует всем финансовым задачам (диалог, письмо, код) — поэтому она и стала базой агентов.
 
-In summary, the Decoder-Only architecture evolved from Transformer's decoder, through the simple paradigm of "predicting the next word," opened the era of large language models we are in today.
+Итого: Decoder-Only вырос из декодировщика Transformer и через парадигму «предсказать следующее слово» открылся этап больших языковых моделей, в которых мы живём сегодня.
 
-## 3.2 Interacting with Large Language Models
+## 3.2 Взаимодействие с моделями некоторых языков
 
-### 3.2.1 Prompt Engineering
+### 3.2.1 Инженерия промптов
 
-If we compare large language models to an extremely capable "brain," then **Prompt** is the language we use to communicate with this "brain." Prompt engineering is the study of how to design precise prompts to guide the model to produce the responses we expect. For building agents, a carefully designed prompt can make collaboration and division of labor between agents efficient.
+Если сравнить большую языковую модель с чрезвычайно способным «мозгом», то **prompt (Prompt)** — язык общения с этим «мозгом». Инженерия промптовает, как проектировать точные подсказки, чтобы модели давали ожидаемые ответы. Для построения агентов тщательно продуманный план обеспечения эффективного сотрудничества и разделения труда между агентами.
 
-**(1) Model Sampling Parameters**
+**(1) Параметры сэмплирования модели**
 
-When using large models, you often see configurable parameters like `Temperature`. Their essence is to adjust the model's sampling strategy for "probability distribution" to match specific scenario needs. Configuring appropriate parameters can improve Agent performance in specific scenarios.
+При работе с моделями часто встречаются настраиваемые параметры.`Temperature`. По сути, они меняют сдвиги сэмплирования из «распределения вероятностей» в зависимости от сценария. Правильные параметры могут улучшить работу агента в конкретной задаче.
 
-The traditional probability distribution is calculated by the Softmax formula: $p_i = \frac{e^{z_i}}{\sum_{j=1}^k e^{z_j}}$. The essence of sampling parameters is to "readjust" or "truncate" the distribution based on different strategies, thereby changing the next token output by the large model.
+Традиционные решения по Softmax: $p_i = \frac{e^{z_i}}{\sum_{j=1}^k e^{z_j}}$. Суть параметров сэмплирования — «перенастроить» или «скрыть» показатели по разным стратегиям и тем самым изменить следующий токен, который выдаст модель.
 
-`Temperature`: Temperature is a key parameter controlling the "randomness" and "determinism" of model output. Its principle is to introduce a temperature coefficient $T\gt0$, rewriting Softmax as $p_i^{(T)} = \frac{e^{z_i / T}}{\sum_{j=1}^k e^{z_j / T}}$.
+`Temperature`: ключевой параметр «случайности» и «детерминизма» выхода. Вводят коэффициент температуры $T\gt0$ и переписывают Softmax как $p_i^{(T)} = \frac{e^{z_i / T}}{\sum_{j=1}^k e^{z_j / T}}$.
 
-When T decreases, the distribution becomes "steeper," high-probability item weights are further amplified, generating more "conservative" text with higher repetition rates. When T increases, the distribution becomes "flatter," low-probability item weights increase, generating more "diverse" but possibly incoherent content.
+Когда T принимается, важность становится «круче»: вес высоковероятных элементов увеличивается, текст более «консервативный», выше повторяемость. Когда T растёт, сумма «сплющивается»: вес невероятно низких элементов раскрывается, текст более «разнообразный», но может быть бессвязным.
 
-- Low temperature (0 $\leqslant$ Temperature $\lt$ 0.3): Output is more "precise, deterministic." Applicable scenarios: Factual tasks: such as Q&A, data calculation, code generation; Rigorous scenarios: legal text interpretation, technical documentation writing, academic concept explanation, etc.
+- Низкая температура (0 $\leqslant$ Температура $\lt$ 0,3): выход более «точный и детерминированный». Сценарии: фактологические задачи — вопросы и ответы, расчёты, генерация кода; строгие сценарии — толкование юридических текстов, техдокументации, аналитических понятий и т.п.
 
-- Medium temperature (0.3 $\leqslant$ Temperature $\lt$ 0.7): Output is "balanced, natural." Applicable scenarios: Daily conversation: such as customer service interaction, chatbots; Regular creation: such as email writing, product copy, simple story creation.
+- Средняя температура (0,3 $\leqslant$ Температура $\lt$ 0,7): выход «сбалансированный и рассуждающий». Сценарии: повседневный диалог — клиентский сервис, чат-боты; Обычное творчество — письма, продуктовые тексты, простые истории.
 
-- High temperature (0.7 $\leqslant$ Temperature $\lt$ 2): Output is "innovative, divergent." Applicable scenarios: Creative tasks: such as poetry creation, science fiction story conception, advertising slogan brainstorming, artistic inspiration; Divergent thinking.
+- Высокая температура (0,7 $\leqslant$ Температура $\lt$ 2): выход «инновационный и дивергентный». Сценарии: творческие задачи — стихи, фантастика, слоганы, художественное вдохновение; дивергентное мышление.
 
-`Top-k`: Its principle is to sort all tokens by probability from high to low, take the top k tokens to form a "candidate set," then "normalize" the probabilities of the filtered k tokens: $ \hat{p}_i = \frac{p_i}{\sum_{j \in \text{candidate set}} p_j}$
+`Top-k`: все токены сортируются по убыванию вероятности, берут верхние k в «кандидатный набор», затем «нормализуют» возможности этих k: $ \hat{p}_i = \frac{p_i}{\sum_{j \in \text{набор кандидатов}} p_j}$
 
-- Difference and connection with temperature sampling: Temperature sampling adjusts the probability distribution of all tokens (smooth or steep) through temperature T, without changing the number of candidate tokens (still considering all N). Top-k sampling limits the number of candidate tokens (only keeping the top k high-probability tokens) through the k value, then samples from them. When k=1, output is completely deterministic, degenerating to "greedy sampling."
+- Связь с температурным эмплированием: температура через Т меняет форму всего распределения (сглаживает или делает круче), не меняя число кандидатов (учитываются все N). Top-k через k ограничивает количество кандидатов (только верхние k), а затем эмплирует из них. При k=1 выход полностью определен — он возникает в «жадном сэмплировании».
 
-`Top-p`: Its principle is to sort all tokens by probability from high to low, starting from the first token after sorting, gradually accumulating probabilities until the cumulative sum first reaches or exceeds threshold p: $\sum_{i \in S} p_{(i)} \geq p$. At this point, all tokens included in the accumulation process form the "nucleus set," and finally the nucleus set is normalized.
+`Top-p`: токены сортируются по убыванию вероятности и накапливают вероятность с первого раза, пока впервые не достигнут или не превысит порог p: $\sum_{i \in S} p_{(i)} \geq p$. Все токены, попавшие в накопление, предусматривают «ядерный набор» (ядро), который затем нормализуют.
 
-- Difference and connection with Top-k: Compared to Top-k with fixed truncation size, Top-p can dynamically adapt to the "long tail" characteristics of different distributions, with better adaptability to extreme cases of uneven probability distribution.
+- Связь с Top-k: в отличие от Top-k с фиксированным размером обрезки, метод Top-p под воздействием «длинный хвост» разных распределений и лучше справляется с весьма неравномерными вероятностями.
 
-In text generation, when Top-p, Top-k, and temperature coefficient are set simultaneously, these parameters work together in a layered filtering manner, with priority order: temperature adjustment → Top-k → Top-p. Temperature adjusts the overall steepness of the distribution, Top-k first retains the k candidates with highest probability, then Top-p selects the minimum set with cumulative probability ≥ p from Top-k results as the final candidate set. However, usually choosing one of Top-k or Top-p is sufficient; if both are set, the actual candidate set is the intersection of the two.
-Note that if temperature is set to 0, Top-k and Top-p become irrelevant because the most likely Token will be the next predicted Token; if Top-k is set to 1, temperature and Top-p also become irrelevant because only one Token passes the Top-k criterion and it will be the next predicted Token.
+При генерации текста, если одновременно заданы Top-p, Top-k и температура, параметры работают слоями с приоритетом: корректировка температуры → Top-k → Top-p. Температура меняет крутизну распределения в целом: Top-k сначала защищает k наиболее вероятных кандидатов, затем Top-p из результата Top-k выбирает создание набора с резервной защитой ≥ p как окончательный кандидатский набор. Обычно достаточно одного из Top-k или Top-p; если заданы оба, фактический набор — пересечение двух.
+Рекомендации: при температуре = 0 Top-k и Top-p не имеют значения — следующим будет самый вероятный токен; при температуре Top-k = 1 и Top-p тоже не важно — через критерии Top-k проходит только один токен, и он становится следующим.
 
-**(2) Zero-shot, One-shot, and Few-shot Prompting**
+**(2) Подсказка «Нулевой выстрел», «Один выстрел» и «Несколько выстрелов»**
 
-According to the number of examples (Exemplars) we provide to the model, prompts can be divided into three types. To better understand them, let's use a sentiment classification task as an example, with the goal of having the model judge the emotional tone of a text (such as positive, negative, or neutral).
+В соответствии с примерами (образцами), которые мы даём модели, промпты делят на три типа. Для ясности возьмём задачу классификации тональности: модель должна определить эмоциональный тон текста (положительный отрицательный, нейтральный или нейтральный).
 
-**Zero-shot Prompting** This means we don't give the model any examples and directly ask it to complete the task based on instructions. This benefits from the model's powerful generalization ability acquired after pre-training on massive data.
+**Нулевой запрос** — без примеров, сразу просим выполнить задачу по инструкции. Это основано на мощной общедоступной способности после обучения на огромных данных.
 
-Case: We directly give the model instructions, requiring it to complete the sentiment classification task.
+Пример: даём инструкцию напрямую.
 
 ```Python
 Text: Datawhale's AI Agent course is excellent!
 Sentiment: Positive
 ```
 
-**One-shot Prompting** We provide the model with one complete example, showing it the task format and expected output style.
+**One-shot Prompting** — даём один полный пример, пример формы задачи и ожидаемый стиль ответа.
 
-Case: We first give the model a complete "question-answer" pair as a demonstration, then pose our new question.
+Пример: сначала пара «вопрос–ответ» как демонстрация, затем новый вопрос.
 
 ```Python
 Text: This restaurant's service is too slow.
@@ -565,11 +566,11 @@ Text: Datawhale's AI Agent course is excellent!
 Sentiment:
 ```
 
-The model will imitate the given example format and complete "Positive" for the second text.
+Модель повторяет формат и для второго текста пишет «Позитивный».
 
-**Few-shot Prompting** We provide multiple examples, which allows the model to more accurately understand the task's details, boundaries, and nuances, thereby achieving better performance.
+**Подсказка из нескольких кадров** — несколько примеров; модель точнее понимает детали, границы и тонкости задач и работает лучше.
 
-Case: We provide multiple examples covering different situations, allowing the model to have a more comprehensive understanding of the task.
+Пример: несколько ситуаций для более полного понимания задач.
 
 ```Python
 Text: This restaurant's service is too slow.
@@ -582,15 +583,15 @@ Text: Datawhale's AI Agent course is excellent!
 Sentiment:
 ```
 
-The model will synthesize all examples and more accurately classify the sentiment of the last sentence as "Positive."
+Модель синтезирует все формы и точнее относит последнее предложение к «Positive».
 
-**(3) Impact of Instruction Tuning**
+**(3) Настройка инструкций**
 
-Early GPT models (such as GPT-3) were mainly "text completion" models; they were good at continuing text based on preceding text but not necessarily good at understanding and executing human instructions.
+Ранние GPT (например, GPT-3) в основном были в моделях «продолжения текста»: хорошо дописывали текст по контексту, но не всегда хорошо одинаково и выполняли инструкции человеком.
 
-**Instruction Tuning** is a fine-tuning technique that uses a large amount of "instruction-answer" format data to further train pre-trained models. After instruction tuning, models can better understand and follow user instructions. All models we use in daily work and study today (such as `ChatGPT`, `DeepSeek`, `Qwen`) are instruction-tuned models in their model families.
+**Instruction Tuning** — техника дообучения большого объёма данных в формате «инструкция–ответ». После нее модели лучше понимают и заботятся о уважаемых пользователях. Все модели, которыми мы пользуемся в работе и учёбе сегодня (например,`ChatGPT`, `DeepSeek`, `Qwen`), в своих домах — модели, настроенные по инструкции.
 
-- **Prompts for "text completion" models (you need to use few-shot prompts to "teach" the model what to do):**
+- **Промпты для моделей «продолжения текста» (нужны несколько кадров, чтобы «научить» модель, что делать):**
 
 ```Plain
 This is a program that translates English to Chinese.
@@ -600,28 +601,28 @@ English: How are you?
 Chinese:
 ```
 
-- **Prompts for "instruction-tuned" models (you can directly give instructions):**
+- **Промпты для моделей, настроенных по инструкции (можно дать инструкцию напрямую):**
 
 ```Plain
 Please translate the following English to Chinese:
 How are you?
 ```
 
-The emergence of instruction tuning has greatly simplified how we interact with models, making direct, clear natural language instructions possible.
+Появление инструкции по настройке сильно упростило взаимодействие: стала возможна прямая, ясная инструкция на естественном языке.
 
-**(4) Basic Prompting Techniques**
+**(4) Базовые промптинга**
 
-**Role-playing** By assigning the model a specific role, we can guide its response style, tone, and knowledge scope, making its output more suitable for specific scenario needs.
+**Ролевая игра** — назначив модельную конкретную роль, которую мы направляем стиль ответа, тон и охват знаний под сценарий.
 
 ```Plain
-# Case
+# Пример
 You are now a senior Python programming expert. Please explain what GIL (Global Interpreter Lock) is in Python in a way that even a beginner can understand.
 ```
 
-**In-context Example** This is consistent with the idea of few-shot prompting. By providing clear input-output examples in the prompt, we "teach" the model how to handle our requests, which is especially effective when dealing with complex formats or specific style tasks.
+**Пример в девяти (пример в контексте)** — та же идея, что у нескольких кадров: явные пары вход–выход в подсказке «учат» модели обработки запроса; особенно полезно для сложных форм или особого стиля.
 
 ```Plain
-# Case
+# Пример
 I need you to extract product names and user sentiment from product reviews. Please output strictly in the JSON format below.
 
 Review: The screen display of this "Stardust" laptop is amazing, but I don't really like its keyboard feel.
@@ -631,19 +632,19 @@ Review: The "SoundMove" headphones I just bought have great sound quality, and t
 Output:
 ```
 
-**(5) Chain-of-Thought**
+**(5) Цепочка рассуждений**
 
-For complex problems requiring logical reasoning, calculation, or multi-step thinking, directly asking the model to give an answer often leads to errors. **Chain-of-Thought (CoT)** is a powerful prompting technique that improves the model's reasoning ability on complex tasks by guiding it to "think step by step."
+Для решения сложных задач с логикой, расчетами или многошаговым мышлением прямой запрос часто приводит к ошибкам. **Chain-of-Thought (CoT)** — мощная техника: направляющая модель «думать шаг за шагом», повышение качества рассуждений на сложных задачах.
 
-The key to implementing CoT is to add a simple guiding phrase in the prompt, such as "please think step by step" or "Let's think step by step."
+Ключ CoT — простая направляющая фраза в подсказке, например «пожалуйста, думайте шаг за шагом» или «Давайте подумаем шаг за шагом».
 
 ```Plain
-# Chain-of-Thought Prompt
+# Промпт Chain-of-Thought
 A basketball team won 60% of their 80 games in one season. In the next season, they played 15 games and won 12. What is the total winning percentage for both seasons?
 Please think step by step and solve.
 
 >>>
-(The model might output)
+(Модель может выдать)
 Okay, let's calculate step by step.
 Step 1: Calculate the number of games won in the first season.
 80 games * 60% = 48 games.
@@ -655,48 +656,48 @@ Total winning percentage = (Total wins / Total games) * 100% = (60 / 95) * 100% 
 So, the total winning percentage for both seasons is approximately 63.16%.
 ```
 
-By explicitly showing its reasoning process, the model not only more easily arrives at the correct answer but also makes its response more credible and easier for us to check and correct.
+Если исключить ход обсуждения, модель чаще всего приходит к верному ответу, ответ становится проверяемым и исправляемым.
 
-### 3.2.2 Text Tokenization
+### 3.2.2 Токенизация текста
 
-We know that computers essentially can only understand numbers. Therefore, before feeding natural language text to large language models, it must first be converted into a numerical format that the model can process. This process of converting text sequences into numerical sequences is called **Tokenization**. The role of a **Tokenizer** is to define a set of rules to split raw text into minimal units, which we call **Tokens**.
+Компьютеры, по сути, понимают только числа. Поэтому предложение естественного языка в LLM необходимо перевести в числовой форме. Преобразование текстовой последовательности в числовом названии **токенизация (Tokenization)**. Роль **токенизатора (Tokenizer)** — соблюдение правил разбиения сырого текста на минимальные значения — **токены (Tokens)**.
 
-**3.2.2.1 Why Tokenization is Needed**
+**3.2.2.1 Зачем нужна токенизация**
 
-Early natural language processing tasks might adopt simple tokenization strategies:
+Ранние НЛП-задачи можно использовать простые стратегии:
 
--   **Word-based**: Directly splits sentences into words using spaces or punctuation. This method is intuitive but faces significant challenges:
-    -   **Vocabulary Explosion and OOV**: A language's vocabulary is vast. If each word is treated as an independent token, the vocabulary becomes difficult to manage. Worse, the model cannot handle any word that does not appear in its vocabulary (e.g., "DatawhaleAgent"). This phenomenon is known as the "Out-Of-Vocabulary" (OOV) problem.
-    -   **Lack of Semantic Association**: The model struggles to capture the semantic relationships between morphologically similar words. For instance, "look," "looks," and "looking" are treated as three completely different tokens, despite sharing a common core meaning. Similarly, the semantics of low-frequency words in the training data cannot be fully learned due to their rare occurrences.
+-   **По словам (на основе слов)**: предложение сокращается в словах по пробелам или пунктуациям. Интуитивно, но с серьёзными проблемами:
+    -   **Взрыв словаря и OOV**: словарь языка огромен. Если каждое слово — отдельный токен, словарь трудно контролировать. Более того, модель не обрабатывает слово вне словаря (например, «DatawhaleAgent») — это проблема «Out-Of-Vocabulary» (OOV).
+    -   **Нет семантической связи**: модель плохо улавливает связь морфологически близких слов. «взглянуть», «выглядит» и «смотрит» — три разных токена в общем смысле. Семантика альтернативных слов тоже плохо выучивается из-за малой частоты.
 
--   **Character-based**: Splits text into individual characters. This method has a very small vocabulary (e.g., English letters, numbers, and punctuation) and thus avoids the OOV problem. However, its disadvantage is that individual characters mostly lack independent semantic meaning. The model must expend more effort learning to combine characters into meaningful words, leading to inefficient learning.
+-   **По символам (на основе символов)**: текст в европейских символах режется. Словарь мал (буквы, цифры, пунктуация), OOV почти нет. Но у символов почти нет самостоятельной семантики: модели приходится тратить больше времени, чтобы собрать из них слова — обучение неэффективно.
 
-To balance vocabulary size and semantic expression, modern large language models widely adopt **Subword Tokenization** algorithms. The core idea is to keep common words (like "agent") as single, complete tokens while breaking down uncommon words (like "Tokenization") into meaningful subword pieces (such as "Token" and "ization"). This approach not only controls the size of the vocabulary but also enables the model to understand and generate new words by combining subwords.
+Чтобы сбалансировать размер словаря и семантику, современный LLM широко использует **субсловную токенизацию (Subword Tokenization)**. Идея: частные слова (вроде «агент») о подарке целыми токенами, а редкие (вроде «токенизация») разбить на осмысленные куски («токен» и «изация»). Так контролируется размер словаря, и модель может интерпретировать и использовать новые слова, комбинируя субслова.
 
-**3.2.2.2 Byte-Pair Encoding Algorithm Analysis**
+**3.2.2.2 Разработка алгоритма парного байтового кодирования**
 
-Byte-Pair Encoding (BPE) is one of the most mainstream subword tokenization algorithms<sup>[6]</sup>, adopted by the GPT series models. Its core idea is very concise and can be understood as a "greedy" merging process:
+Байт-парное кодирование (BPE) — один из самых распространённых алгоритмов субсловной токенизации<sup>[6]</sup>, его используют модели серии GPT. Идея проста и похожа на «жадное» слияние:
 
-1. **Initialization**: Initialize the vocabulary to all basic characters appearing in the corpus.
-2. **Iterative Merging**: In the corpus, count the frequency of all adjacent token pairs, find the pair with the highest frequency, merge them into a new token, and add it to the vocabulary.
-3. **Repeat**: Repeat step 2 until the vocabulary size reaches a preset threshold.
+1. **Инициализация**: словарь — все базовые символы корпуса.
+2. **Итеративное слияние**: в корпусе происходит последовательное возникновение пар токенов, находят наименьшую частую пару, сливают в новый токен и включают в словарь.
+3. **Повтор**: Шаг 2 повторяется, пока размер словаря не достигнет заданного порога.
 
-**Case Demonstration:** Suppose our mini corpus is `{"hug": 1, "pug": 1, "pun": 1, "bun": 1}`, and we want to build a vocabulary of size 10. The BPE training process can be represented by Table 3.1:
+**Демонстрация:** пусть мини-корпус`{"hug": 1, "pug": 1, "pun": 1, "bun": 1}`, и нам нужен словарь размера 10. Процесс обучения BPE — в таблице 3.1:
 
 <div align="center">
-  <p>Table 3.1 Example of BPE Algorithm Merging Process</p>
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-5.png" alt="Figure description" width="90%"/>
+  <p>Таблица 3.1 Пример процесса слияния в алгоритме BPE</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/3-figures/1757249275674-5.png" alt="Рис. description" width="90%"/>
 </div>
 
-After training ends, when the vocabulary size reaches 10, we get new tokenization rules. Now, for an unseen word "bug," the tokenizer will first check if "bug" is in the vocabulary and find it's not; then check "bu" and find it's not; finally check "b" and "ug," find both are in, and thus split it into `['b', 'ug']`.
+После обучения, когда словарь достиг размера 10, появляются новые правила токенизации. Для незнакомого слова «bug» токенизатор сначала проверит «bug» — его нет; затем «bu» — нет; наконец «b» и «ug» — оба есть, и слово разобьётся на `['b', 'ug']`.
 
-Below we use a simple Python code to simulate the above process:
+Простая симуляция на Python:
 
 ```Python
 import re, collections
 
 def get_stats(vocab):
-    """Count token pair frequencies"""
+    """Подсчёт частот пар токенов"""
     pairs = collections.defaultdict(int)
     for word, freq in vocab.items():
         symbols = word.split()
@@ -705,7 +706,7 @@ def get_stats(vocab):
     return pairs
 
 def merge_vocab(pair, v_in):
-    """Merge token pairs"""
+    """Слияние пар токенов"""
     v_out = {}
     bigram = re.escape(' '.join(pair))
     p = re.compile(r'(?<!\S)' + bigram + r'(?!\S)')
@@ -714,9 +715,9 @@ def merge_vocab(pair, v_in):
         v_out[w_out] = v_in[word]
     return v_out
 
-# Prepare corpus, add </w> at the end of each word to indicate ending, and split characters
+# Готовим корпус: в конец каждого слова </w>, символы разделены пробелами
 vocab = {'h u g </w>': 1, 'p u g </w>': 1, 'p u n </w>': 1, 'b u n </w>': 1}
-num_merges = 4 # Set number of merges
+num_merges = 4 # число слияний
 
 for i in range(num_merges):
     pairs = get_stats(vocab)
@@ -743,74 +744,74 @@ New vocabulary (partial): ['h ug</w>', 'p ug</w>', 'p un</w>', 'b un</w>']
 --------------------
 ```
 
-This code clearly demonstrates how the BPE algorithm gradually builds and expands the vocabulary by iteratively merging the highest-frequency adjacent token pairs.
+Код показывает, как BPE итеративно строит и расширяет словарь, сливая самые близкие соседские пары.
 
-Many subsequent algorithms are optimizations based on BPE. Among them, WordPiece and SentencePiece developed by Google are the two most influential.
+Многие алгоритмы — оптимизация BPE. Наиболее влиятельные — WordPiece и SentencePiece от Google.
 
-- **WordPiece**: The algorithm adopted by Google's BERT model<sup>[7]</sup>. It is very similar to BPE, but the criterion for merging tokens is not "highest frequency" but "maximizing the improvement of the corpus's language model probability." Simply put, it prioritizes merging token pairs that can maximize the "fluency" improvement of the entire corpus.
-- **SentencePiece**: An open-source tokenization tool by Google<sup>[8]</sup>, adopted by the Llama series models. Its biggest feature is treating spaces as ordinary characters (usually represented by underscore `_`). This makes the tokenization and decoding process completely reversible and independent of specific languages (for example, it doesn't need to know that Chinese doesn't use spaces for word segmentation).
+- **WordPiece**: алгоритм модели BERT от Google<sup>[7]</sup>. Похож на BPE, но критерии слияния — не «максимальная частота», а «максимальная вероятность прироста языковой модели корпуса». Далее: приоритет у пар, сильнее всего повышающих «беглость» всего корпуса.
+- **SentencePiece**: открытый инструмент токенизации Google<sup>[8]</sup>, его используют модели Llama. Главная форма — пробелы трактуются как обычные символы (обычно подчёркивание `_`). Токенизация и декодирование полностью обращаются и не соответствуют языку (необязательно знать, что в китайском языке нет пробелов между словами).
 
-**3.2.2.3 Significance of Tokenizers for Developers**
+**3.2.2.3 Значение токенизаторов для разработчиков**
 
-Understanding the details of tokenization algorithms is not the goal, but as an agent developer, understanding the actual impact of tokenizers is important, as it directly relates to agent performance, cost, and stability:
+Детали алгоритмов — не самоцель; для разработчиков агентов практически важны последующие токенизации — они влияют на качество, стоимость и стабильность:
 
-- **Context Window Limitation**: The model's context window (such as 8K, 128K) is calculated in **Token count**, not character count or word count. The same text may have vastly different Token counts in different languages (such as Chinese and English) or with different tokenizers. Precisely managing input length and avoiding exceeding context limits is the foundation for building long-term memory agents.
-- **API Cost**: Most model APIs charge based on Token count. Understanding how your text will be tokenized is a key step in estimating and controlling agent operating costs.
-- **Model Performance Anomalies**: Sometimes strange model behavior stems from tokenization. For example, the model might be good at calculating `2 + 2` but might make mistakes with `2+2` (without spaces) because the latter might be treated by the tokenizer as an independent, uncommon token. Similarly, a word with different capitalization of the first letter might be split into completely different Token sequences, affecting the model's understanding. Considering these "traps" when designing prompts and parsing model outputs helps improve agent robustness.
+- **Ограничение контекстного окна**: модели контекста окна (8K, 128K) учитываются в **числе токенов**, а не в символах или словах. Один и тот же текст в разных странах (китайском и английском) или с разными токенизаторами дает сильно разное число Token. Точное управление вторым входом и недопущение выхода по лимиту — основа агентов с долгой памятью.
+- **Стоимость API**: большинство тарифов API рассчитываются по характеристикам токена. Понимание, как токенизируется ваш текст, — ключ к контролю и контролю операционных затрат агента.
+- **Аномалии поведения модели**: иногда странное поведение связано с токенизацией. Модель может правильно считать `2 + 2`, но ошибаться на `2+2` (без пробелов), потому что последнее может стать одним из редких токенов. Слово с разным регистром первых букв может разбиться совершенно по-разному по токену последовательности. Учёт таких «ловушек» при проектировании промптов и разборе выходов на повышение сопротивления агента.
 
-### 3.2.3 Calling Open-Source Large Language Models
+### 3.2.3 Вызов открытых моделей больших языков
 
-In Chapter 1 of this book, we interacted with large language models through APIs to drive our agents. This is a fast and convenient method, but not the only one. For many scenarios requiring sensitive data processing, offline operation, or fine cost control, deploying large language models directly locally becomes crucial.
+В главе 1 мы взаимодействовали с LLM через API, чтобы перемещать агентов. Это быстро и удобно, но не единственный путь. Когда требуется обработка более тяжёлых данных, работа в автономном режиме или жёсткий контроль затратны, локальное развёртывание становится критическим.
 
-**Hugging Face Transformers** is a powerful open-source library that provides standardized interfaces to load and use tens of thousands of pre-trained models. We will use it to complete this practice.
+**Hugging Face Transformers** — мощная открытая библиотека со стандартизированными интерфейсами для загрузки и использования тысяч предобученных моделей. С ее помощью выполним практику.
 
-**Environment Configuration and Model Selection**: To ensure most readers can run smoothly on personal computers, we deliberately chose a small-scale but powerful model: `Qwen/Qwen1.5-0.5B-Chat`. This is a dialogue model with about 500 million parameters open-sourced by Alibaba DAMO Academy. It's small in size, excellent in performance, and very suitable for introductory learning and local deployment.
+**Настройка окружения и выбор моделей.** Чтобы большинство читателей могли запустить пример на личном компьютере, намеренно выберите небольшую, но сильную модель:`Qwen/Qwen1.5-0.5B-Chat`. Эта диалоговая модель примерно на 500 млн параметров от Alibaba DAMO Academy: компактная, качественная, удобна для знакомств и локального развертывания.
 
-First, please ensure you have installed the necessary libraries:
+Сначала установите нужные библиотеки:
 
 ```Plain
 pip install transformers torch
 ```
 
-In the `transformers` library, we typically use the `AutoModelForCausalLM` and `AutoTokenizer` classes to automatically load weights and tokenizers matching the model. The following code will automatically download required model files and tokenizer configurations from Hugging Face Hub, which may take some time depending on your network speed.
+В`transformers`обычно используют классы`AutoModelForCausalLM`и`AutoTokenizer`, чтобы автоматически загрузить весы и токенизатор под моделью. Код ниже скачает нужные файлы модели и настройки токенизатора с помощью Hugging Face Hub — это может занять время в зависимости от сети.
 
 ```Python
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# Specify model ID
+# Указываем ID модели
 model_id = "Qwen/Qwen1.5-0.5B-Chat"
 
-# Set device, prioritize GPU
+# Устройство: приоритет GPU
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
 
-# Load tokenizer
+# Загрузка токенизатора
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-# Load model and move it to specified device
+# Загрузка модели и перенос на устройство
 model = AutoModelForCausalLM.from_pretrained(model_id).to(device)
 
 print("Model and tokenizer loaded!")
 ```
 
-Let's create a dialogue prompt. The Qwen1.5-Chat model follows a specific dialogue template. Then, we can use the `tokenizer` loaded in the previous step to convert the text prompt into numerical IDs (i.e., Token IDs) that the model can understand.
+Создадим диалоговый запрос. Модель Qwen1.5-Chat следует определенному шаблону диалога. Затем`tokenizer`Из шага переводится текстовый запрос в числовые идентификаторы (Token ID), понятные модели.
 
 ```Python
-# Prepare dialogue input
+# Готовим вход диалога
 messages = [
     {"role": "system", "content": "You are a helpful assistant."},
     {"role": "user", "content": "Hello, please introduce yourself."}
 ]
 
-# Use tokenizer's template to format input
+# Форматируем вход по шаблону токенизатора
 text = tokenizer.apply_chat_template(
     messages,
     tokenize=False,
     add_generation_prompt=True
 )
 
-# Encode input text
+# Кодируем входной текст
 model_inputs = tokenizer([text], return_tensors="pt").to(device)
 
 print("Encoded input text:")
@@ -821,25 +822,25 @@ print(model_inputs)
        device='cuda:0')}
 ```
 
-Now we can call the model's `generate()` method to generate an answer. The model will output a series of Token IDs representing its answer.
+Теперь вызываем`generate()`модели. Она выдает ряд идентификаторов токенов ответа.
 
-Finally, we need to use the tokenizer's `decode()` method to translate these numerical IDs back into human-readable text.
+Наконец, метод`decode()`токенизатор переводит числовые идентификаторы обратно в читаемый текст.
 
 ```Python
-# Use model to generate answer
-# max_new_tokens controls the maximum number of new Tokens the model can generate
+# Генерация ответа моделью
+# max_new_tokens — максимум новых Token, которые модель может породить
 generated_ids = model.generate(
     model_inputs.input_ids,
     max_new_tokens=512
 )
 
-# Truncate the input part from generated Token IDs
-# This way we only decode the newly generated part by the model
+# Обрезаем входную часть из сгенерированных Token IDs
+# так декодируем только вновь порождённую моделью часть
 generated_ids = [
     output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
 ]
 
-# Decode generated Token IDs
+# Декодируем Token IDs
 response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
 print("\nModel's answer:")
@@ -849,165 +850,164 @@ print(response)
 My name is Tongyi Qianwen, a pre-trained language model developed by Alibaba Cloud. I can answer questions, create text, express opinions, and write code. My main functions are to provide help in multiple fields, including but not limited to: language understanding, text generation, machine translation, question-answering systems, etc. Is there anything I can help you with?
 ```
 
-After running all the code, you will see the model-generated introduction about the Qwen model on your local computer. Congratulations, you have successfully deployed and run an open-source large language model locally!
+После запуска всего кода на локальном компьютере вы увидите сгенерированную модель представления Qwen. Поздравляем: вы успешно развернули и запустили открытую большую языковую модель локально!
 
-### 3.2.4 Model Selection
+### 3.2.4 Выбор модели
 
-In the previous section, we successfully ran a small open-source language model locally. This naturally raises a crucial question for agent developers: in the current context of hundreds of blooming models, how should we choose the most suitable model for specific tasks?
+В предыдущем разделе мы локально запустили небольшую открытую модель. Для разработчика агентов встаёт вопрос: при сотнях моделей как выбрать наиболее подходящую под задачу?
 
-Choosing a language model is not simply pursuing "the biggest, the strongest" but a decision-making process balancing performance, cost, speed, and deployment methods. This section will first organize several key considerations for model selection, then review current mainstream closed-source and open-source models.
+Выбор LLM — не гонка за «большой и независимость», баланс производительности, стоимости, скорости и пути развёртывания. Сначала разберём критерии, а затем просмотрим текущие закрытые и открытые модели.
 
-Since large language model technology is in a stage of rapid development, with new models and versions emerging constantly and extremely fast iteration, this section strives to provide an overview of current mainstream models and selection considerations when written, but readers should note that specific model versions and performance data mentioned may change over time, and only some work is listed, not comprehensively. We focus more on introducing core technical characteristics, development trends, and general selection principles in agent development.
+Технология LLM Быстроразвитые: новые модели и версии, созданные постоянно. Раздел дает обзор мейнстрима и выбор на момент написания; Любая версия и цифры могут быть устаревшими, перечисленные лишь работы, не полный каталог. Важнее — технические черты, тенденции и основные принципы выбора в разработке агентов.
 
-**3.2.4.1 Key Considerations for Model Selection**
+**3.2.4.1 Ключевые критерии выбора модели**
 
-When choosing a large language model for your agent, you can comprehensively evaluate from the following dimensions:
+При выборе LLM для агента по измерениям:
 
-- **Performance and Capability**: This is the core consideration. Different models excel at different tasks; some are good at logical reasoning and code generation, while others are better at creative writing or multilingual translation. You can refer to some public benchmark leaderboards (such as LMSys Chatbot Arena Leaderboard) to evaluate models' comprehensive capabilities.
-- **Cost**: For closed-source models, cost mainly manifests in API call fees, usually charged by Token count. For open-source models, cost manifests in hardware (GPU, memory) and operations required for local deployment. Choices need to be made based on application's expected usage and budget.
-- **Speed (Latency)**: For agents requiring real-time interaction (such as customer service, game NPCs), model response speed is crucial. Some lightweight or optimized models (such as GPT-3.5 Turbo, Claude 3.5 Sonnet) perform better in latency.
-- **Context Window**: The upper limit of Token count the model can process at once. For agents needing to understand long documents, analyze code repositories, or maintain long-term conversation memory, choosing a model with a larger context window (such as 128K Tokens or higher) is necessary.
-- **Deployment Method**: Using APIs is simplest and most convenient, but data needs to be sent to third parties and is subject to service provider terms. Local deployment can ensure data privacy and highest degree of autonomy, but has higher technical and hardware requirements.
-- **Ecosystem and Toolchain**: A model's popularity also determines the maturity of its surrounding ecosystem. Mainstream models usually have richer community support, tutorials, pre-trained models, fine-tuning tools, and compatible development frameworks (such as LangChain, LlamaIndex, Hugging Face Transformers), which can greatly accelerate development and reduce difficulty. Choosing a model with an active community and complete toolchain makes it easier to find solutions and resources when encountering problems.
-- **Fine-tunability and Customization**: For agents needing to process domain-specific data or perform specific tasks, model fine-tuning capability is crucial. Some models provide convenient fine-tuning interfaces and tools, allowing developers to customize training using their own datasets, significantly improving model performance and accuracy in specific scenarios. Open-source models usually provide greater flexibility in this regard.
-- **Safety and Ethics**: With widespread application of large language models, their potential safety risks and ethical issues are increasingly prominent. When choosing models, consider their performance in bias, toxicity, hallucination, etc., and service providers' or open-source communities' investment in model safety and responsible AI. For applications facing the public or involving sensitive information, model safety and ethical compliance are considerations that cannot be ignored.
+- **Производительность и возможности**: основные моменты выбора. Разные модели сильны в разном: одни — в логике и коде, другие — в творческом письме или многоязычном переводе. Ориентируйтесь на общедоступные тесты (например, таблицу лидеров LMSys Chatbot Arena) для оценки комплексных способностей.
+- **Стоимость**: в закрытых моделях — в основном взимается плата за API, обычно по признаку токена. Открыто — железо (GPU, память) и операция локального развертывания. Выбор зависит от ожидаемой нагрузки и бюджета.
+- **Скорость (Задержка)**: для агентов с реалтайм-взаимодействием (клиентский сервис, NPC в играх) скорость ответа критична. Лёгкие или защитные модели (GPT-3.5 Turbo, Claude 3.5 Sonnet) часто лучше по задержке.
+- **Контекстное окно**: верхний предел числа Токен за один проход. Для агентов, читающих длинные документы, анализирующих репозитории кода или содержащих долгую память диалога, необходимо большое окно (128 КБ токенов и выше).
+- **Способ развёртывания**: API проще всего, но данные уходят на стороне стороны и зависят от условий провайдера. Локальное развертывание обеспечивает конфиденциальность и недостатки автономности, но выше требований к навыкам и железу.
+- **Экосистема и инструментарий**: популярные модели определяют зрелость окружения. В мейнстриме обычно есть сообщество богачей, туториалы, предобученные модели, инструменты тонкой настройки и совместимые платформы (LangChain, LlamaIndex, Hugging Face Transformers) — это усовершенствование разработки. Активное сообщество и полный набор инструментов упрощают поиск решений.
+- **Дообучаемость и кастомизация**: для агентов на доменных данных или узких задачах важная возможность тонкой настройки. Некоторые модели оснащены удобным интерфейсом и инструментами; открытое обычно гибкое.
+- **Безопасность и этика**: с широким применением LLM выявляются риски и этические вопросы. См. информацию о предвзятости, токсичности, галлюцинациях и поставщиках инвестиций или сообществах по безопасности и ответственному AI. Для публичных приложений или прозрачных данных это запрещено.
 
-**3.2.4.2 Overview of Closed-Source Models**
+**3.2.4.2 Обзор закрытых моделей**
 
-Closed-source models usually represent the cutting edge of current AI technology and provide stable, easy-to-use API services, making them the first choice for building high-performance agents.
+Закрытые модели обычно размещаются в переднем крае и предоставляют стабильные и удобные API — частный выбор для высокопроизводительных агентов.
 
-1. **OpenAI GPT Series**: From GPT-3 that opened the large model era, to ChatGPT that introduced RLHF (Reinforcement Learning from Human Feedback) and achieved alignment with human intent, to GPT-4 that opened the multimodal era, OpenAI continues to lead industry development. The latest GPT-5 further elevates multimodal capabilities and general intelligence to new heights, seamlessly processing text, audio, and image inputs and generating corresponding outputs, with significantly improved response speed and naturalness, especially excelling in real-time voice dialogue.
-2. **Google Gemini Series**: Google DeepMind's Gemini series models are representatives of native multimodality, with the core feature of unified processing of multiple modalities including text, code, audio/video, and images, and advantages in massive information processing with ultra-long context windows. Gemini Ultra is its most powerful model, suitable for highly complex tasks; Gemini Pro is suitable for a wide range of tasks, providing high performance and efficiency; Gemini Nano is optimized for on-device deployment. The latest Gemini 2.5 series models, such as Gemini 2.5 Pro and Gemini 2.5 Flash, further improve reasoning capabilities and context windows, especially Gemini 2.5 Flash with faster inference speed and cost-effectiveness, suitable for scenarios requiring quick responses.
-3. **Anthropic Claude Series**: Anthropic is a company focused on AI safety and responsible AI. Its Claude series models have prioritized AI safety from the design stage, renowned for reliability in handling long documents, reducing harmful outputs, and following instructions, deeply favored by enterprise applications. Claude 3 series includes Claude 3 Opus (most intelligent, strongest performance), Claude 3 Sonnet (balanced choice of performance and speed), and Claude 3 Haiku (fastest, most compact model, suitable for near real-time interaction). The latest Claude 4 series models, such as Claude 4 Opus, have made significant progress in general intelligence, complex reasoning, and code generation, further improving capabilities in handling long contexts and multimodal tasks.
-4. **Domestic Mainstream Models**: China has emerged with many competitive closed-source models in the large language model field, represented by Baidu ERNIE Bot, Tencent Hunyuan, Huawei Pangu-α, iFlytek SparkDesk, and Moonshot AI. These domestic models have natural advantages in Chinese processing and deeply empower local industries.
+1. **Серия OpenAI GPT**: от GPT-3, открывшей эпоху больших моделей, через ChatGPT с RLHF (Reinforcement Learning from Human Feedback) и теннисом с намерениями человека, до GPT-4, открывшей мультимодальное эру, OpenAI продолжает задавать темп. Новейший GPT-5 повышает мультимодальность и общий интеллект ещё: без обработки текста, аудио и изображений и ресурсов выше соответствующих результатов; Заметно возросла скорость и естественность ответа, особенно в реалтайм-голосовом диалоге.
+2. **Серия Google Gemini**: модели Google DeepMind Gemini — представители нативной мультимодальности: единая обработка текста, кода, аудио/видео и изображений, а также ультрадлинные контекстные окна для огромных объемов информации. Gemini Ultra — самая мощная, для сложных задач; Gemini Pro — широкий спектр задач с балансом производительности и результативности; Gemini Nano — оптимизация под устройство. Новейшая серия Gemini 2.5 (Pro и Flash) обеспечивает рассуждение и контекст окна; Flash особенно быстр и выгоден по цене, поскольку происходит с быстрым ответом.
+3. **Серия Anthropic Claude**: Anthropic фокусируется на безопасности и ответственном ИИ. Клод с этапами планирования определяет безопасность в приоритете: надежность на уровне документов, снижение вредных результатов, проведение эффективных — сильных сторон для предприятия. Клод 3: Opus (самый умный), Sonnet (баланс производительности и скорости), Haiku (самый быстрый и компактный, почти реалтайм). Новейшая серия Claude 4 (например, Claude 4 Opus) заметно продвинулась в общем интеллекте, сложном распределении и генерации кода, а также в длинном диапазоне и мультимодальности.
+4. **Основные китайские модели**: в Китае сильны закрытые модели: Baidu ERNIE Bot, Tencent Hunyuan, Huawei Pangu-α, iFlytek SparkDesk, Moonshot AI. В них естественные преимущества китайского языка и глубокая интеграция в локальных областях.
 
-**3.2.4.3 Overview of Open-Source Models**
+**3.2.4.3 Обзор открытых моделей**
 
-Open-source models provide developers with the highest degree of flexibility, transparency, and autonomy, catalyzing a prosperous community ecosystem. They allow developers to deploy locally, perform customized fine-tuning, and have complete model control.
+Открытые модели обеспечивают гибкость, прозрачность и автономию и катализируют живую экосистему сообщества: локальное развертывание, кастомная точная настройка, полный контроль над моделью.
 
-- **Meta Llama Series**: Meta's Llama series is an important milestone in open-source large language models. The series has become the foundation for many derivative projects and research with excellent comprehensive performance, open licensing agreements, and strong community support. Llama 4 series was released in April 2025, Meta's first models adopting Mixture of Experts (MoE) architecture, which significantly improves computational efficiency by only activating model parts needed to process specific tasks. The series includes three distinctly positioned models: Llama 4 Scout supports a 10 million token context window designed for long document analysis and mobile deployment. Llama 4 Maverick focuses on multimodal capabilities, excelling in coding, complex reasoning, and multilingual support. Llama 4 Behemoth outperforms competitors in multiple STEM benchmarks and is Meta's most powerful model currently.
-- **Mistral AI Series**: Mistral AI from France is renowned for its "small size, high performance" model design. Its latest model Mistral Medium 3.1 was released in August 2025, with significantly improved accuracy and response speed in tasks such as code generation, STEM reasoning, and cross-domain Q&A, with benchmark performance superior to Claude Sonnet 3.7 and Llama 4 Maverick and other similar models. It has native multimodal capabilities, can simultaneously process mixed image and text inputs, and has a built-in "tone adaptation layer" to help enterprises more easily achieve brand-aligned outputs.
-- **Domestic Open-Source Forces**: Domestic manufacturers and research institutions are also actively embracing open source, such as Alibaba's **Qwen (Tongyi Qianwen)** series and Tsinghua University's collaboration with Zhipu AI's **ChatGLM** series. They provide powerful Chinese capabilities and have built active communities around themselves.
+- **Серия Meta Llama**: важное веха открыто LLM. Отличная комплексная производительность, открытая лицензия и сильное сообщество создали ее базу для множества производных проектов и исследований. Серия Llama 4 вышла в 2025 году — первые модели Мета с архитектурой Смесь экспертов (MoE): выше вычислительная эффективность за счет задействования только нужных частей под задачей. Три модели с разными позициями: Llama 4 Scout — контекст окна 10 миллионов токенов для документов и текущего деплоя; Llama 4 Maverick — мультимодальность, код, сложное рассуждение, многоязычность; Llama 4 Behemoth — лидер по ряду STEM-бенчмарков, на данный момент самая мощная модель Meta.
+- **Серия Mistral AI**: французская Mistral AI разработана «малый размер — высокая производительность». Новейшая Mistral Medium 3.1 (август 2025) с соблюдением требований к точности и скорости генерации кода, STEM-рассуждениях и кросс-доменном Q&A; бенчмарки лучше Claude Sonnet 3.7, Llama 4 Maverick и оригиналы. Есть нативная мультимодальность (смешанный входное изображение+текст) и встроенный «слой адаптации тона» для продуктов на предприятии, ориентированных на бренд.
+- **Китайские открытые силы**: производители и музыканты активно переходят на открытый код — серия Alibaba **Qwen (Tongyi Qianwen)** и серия **ChatGLM** (Tsinghua + Zhipu AI). Сильный китайский язык и активные сообщества вокруг них.
 
-For agent developers, closed-source models provide "out-of-the-box" convenience, while open-source models grant us "customization freedom." Understanding the characteristics and representative models of these two camps is the first step in making wise technical selections for our agent projects.
+Для разработчика агентов закрытые модели помогают использовать «из коробки», открыть — свободу кастомизации. Понимание черт левой левой — первый шаг к разумному техническому выбору.
 
-## 3.3 Scaling Laws and Limitations of Large Language Models
+## 3.3 Законы масштабирования и ограничения больших языковых моделей
 
-Large Language Models (LLMs) have made remarkable progress in recent years, with continuously expanding capability boundaries and increasingly rich application scenarios. However, behind these achievements lies a deep understanding of the relationship between model scale, data volume, and computational resources, namely **Scaling Laws**. Meanwhile, as an emerging technology, LLMs also face many challenges and limitations. This section will deeply explore these core concepts, aiming to help readers comprehensively understand LLMs' capability boundaries, thereby leveraging strengths and avoiding weaknesses when building agents.
+Большие языковые модели (LLM) в последние годы достигают прогресса: расширяются возможности границ, расширяются возможности применения, богатеют. Для этого стоит глубже понять связь масштабных моделей, объема данных и вычислительных ресурсов — **законы масштабирования (законы масштабирования)**. Как молодая технология, LLM, проблемы, вызовы и ограничения. Этот раздел разбирает эти ядра, чтобы читатель ясно видел возможности границ LLM и мог бы опираться на сильные стороны, избегающие слабых, при построении агентов.
 
-### 3.3.1 Scaling Laws
+### 3.3.1 Законы масштабирования
 
-**Scaling Laws** are one of the most important discoveries in the large language model field in recent years. They reveal that there are predictable power-law relationships between model performance and model parameter count, training data volume, and computational resources. This discovery provides theoretical guidance for the continuous development of large language models, clarifying the underlying logic that increasing resource investment can systematically improve model performance.
+**Законы масштабирования** — одно из самых отличных открытий в области LLM за последние годы. Они показывают привлекательные степенные показатели в зависимости от моделей качества и количества параметров, объема обучающих данных и вычислительных задач. Это дает теоретическое руководство: рост вложений в ресурсную систему статистически повышает качество модели.
 
-Research found that in log-log coordinate systems, model performance (usually measured by Loss) shows smooth power-law relationships with all three factors: parameter count, data volume, and computation<sup>[9]</sup>. Simply put, as long as we continuously and proportionally increase these three elements, model performance will predictably and smoothly improve without obvious bottlenecks. This discovery provides clear guidance for large model design and training: within resource constraints, maximize model scale and training data volume as much as possible.
+Исследования показывают: в лог-логарифмических моделях качества координат (обычно по потере) четко связаны степенным законом с числовыми параметрами, объемом данных и вычислениями<sup>[9]</sup>. Более того: если пропорционально наращивать эти три фактора, качество будет более выгодным и плавно растёт без очевидных плато. Для проектирования и изучения больших моделей это яркий ориентир: в рамках бюджета максимально увеличить масштаб моделей и объем данных.
 
-Early research focused more on increasing model parameter count, but DeepMind's "Chinchilla Law" proposed in 2022 made important corrections<sup>[10]</sup>. This law points out that under a given computational budget, to achieve optimal performance, **there is an optimal ratio between model parameter count and training data volume**. Specifically, optimal models should be smaller than previously commonly believed but need to be trained with much more data. For example, a 70 billion parameter Chinchilla model, because it was trained with 4 times more data than GPT-3 (175 billion parameters), actually outperforms the latter. This discovery corrected the one-sided perception of "bigger is better," emphasized the importance of data efficiency, and guided the design of many subsequent efficient large models (such as the Llama series).
+Ранние работы делали упор на рост числа параметров, но «закон Шиншилла» DeepMind (2022) в большей части поправки<sup>[10]</sup>. При заданном вычислительном бюджете для оптимума **есть регулировка соотношения чисел и объема данных**. Оптимальные модели должны быть меньше, чем предполагалось раньше, но обучаться на гораздо большем объеме данных. Например, модель Chinchilla по 70 млрд параметров, обученная в 4 раза большему объему данных, чем GPT-3 (175 млрд), фактически превосходит ничто. Это скорректировало однобокое «больше — лучше», уделив особое внимание эффективности данных и скорректировав дизайн многих моделей с эффектом воздействия (серия Llama).
 
-The most surprising product of scaling laws is "capability emergence." So-called capability emergence refers to when model scale reaches a certain threshold, it suddenly exhibits completely new capabilities that don't exist or perform poorly in small-scale models. For example, **Chain-of-Thought**, **Instruction Following**, multi-step reasoning, code generation, and other capabilities all significantly appeared only after model parameter counts reached tens or even hundreds of billions. This phenomenon indicates that large language models are not simply memorizing and reciting; they may have formed some deeper level of abstraction and reasoning capabilities during learning. For agent developers, capability emergence means choosing a sufficiently large-scale model is a prerequisite for achieving complex autonomous decision-making and planning capabilities.
+Самый удивительный продукт масштабирования — «появление способностей». Когда масштаб достигает порога, модель внезапно проявляет способности, которые отсутствуют или слабы у маленьких моделей. Например, **Цепочка мыслей**, **Следование инструкциям**, многошаговое рассуждение, генерация кода ярко внедрены лишь после усовершенствования и сотен миллиардов параметров. Это говорит: LLM не просто запоминают; в обучении могут формироваться более глубокие абстракции и рассуждения. Для разработчика агентов появление означает: достаточно крупную модель — предпочтение сложного автономного планирования и решений.
 
-### 3.3.2 Model Hallucination
+### 3.3.2 Модели галлюцинации
 
-**Model Hallucination** usually refers to content generated by large language models that contradicts objective facts, user input, or contextual information, or generates non-existent facts, entities, or events. The essence of hallucination is that models over-confidently "fabricate" information during generation rather than accurately retrieving or reasoning. According to manifestation forms, hallucinations can be divided into multiple types<sup>[11]</sup>, such as:
+**Галлюцинация модели (Model Hallucination)** — содержание, которое противоречит объективным фактам, введенным пользователем или контексту, либо обеспечивает несуществующие факты, сущности или события. Суть: модель слишком уверенно «измышляет» информацию вместо точного извлечения или рассуждения. По форме галлюцинации делятся на типы<sup>[11]</sup>, например:
 
-- **Factual Hallucinations**: Models generate information inconsistent with real-world facts.
-- **Faithfulness Hallucinations**: In tasks like text summarization and translation, generated content fails to faithfully reflect source text meaning.
-- **Intrinsic Hallucinations**: Model-generated content directly contradicts input information.
+- **Фактические (Фактические галлюцинации)**: информация, несовместимая с фактами реального мира.
+- **Верности источника (Галлюцинации Верности)**: в более широкой интерпретации и переводе порождённый текст неверно отражает смысл исходника.
+- **Внутренние (Внутренние галлюцинации)**: порождённое содержание прямо противоречит входу.
 
-Hallucination production results from multiple factors working together. First, training data may contain erroneous or contradictory information. Second, the model's autoregressive generation mechanism determines it only predicts the next most likely token without a built-in fact-checking module. Finally, when facing tasks requiring complex reasoning, models may make errors in logical chains, thus "fabricating" wrong conclusions. For example: a travel planning Agent might recommend a non-existent scenic spot or book a ticket with an incorrect flight number.
+Галлюцинации — результат нескольких факторов. Во-первых, в обучающих данных могут быть ошибки и противоречия. Во-вторых, авторегрессивный механизм показывает только следующий наиболее вероятный токен без встроенной проверки фактов. В-третьих, в задачах со структурированием распределения модель может ошибиться в логической цепочке и «сочинить» неверный вывод. Пример: Агент по планированию поездок может уменьшить незначительность достопримечательности или билета с неверным номером рейса.
 
-Additionally, large language models face challenges such as insufficient knowledge timeliness and biases in training data. Large language model capabilities come from their training data. This means the knowledge the model possesses is the latest material when its training data was collected. For events occurring after this date, newly emerged concepts, or latest facts, the model will be unable to perceive or correctly answer. Meanwhile, training data often contains various biases and stereotypes from human society. When models learn on this data, they inevitably absorb and reflect these biases<sup>[12]</sup>.
+Кроме того, LLM влияет на устаревание знаний и смещения данных. Модели способностей — из обучающих данных: знания актуальны на момент сбора корпуса. События после этой даты, новые концепции и факты модель не воспринимает или дает ошибочные ответы. Данные часто не соответствуют предвзятости и стереотипам общества; модель неизбежно их впитывает и отражает<sup>[12]</sup>.
 
-To improve large language model reliability, researchers and developers are actively exploring multiple methods to detect and mitigate hallucinations:
+Чтобы повысить надежность, исследователи и разработчики ищут способы обнаружения и смягчения галлюцинации:
 
-1. **Data Level**: Reduce hallucinations from the source through high-quality data cleaning, introducing factual knowledge, and Reinforcement Learning from Human Feedback (RLHF)<sup>[13]</sup>.
-2. **Model Level**: Explore new model architectures or enable models to express uncertainty about generated content.
-3. **Inference and Generation Level**:
-   1. **Retrieval-Augmented Generation (RAG)**<sup>[14]</sup>: This is currently one of the effective methods to mitigate hallucinations. RAG systems retrieve relevant information from external knowledge bases (such as document databases, web pages) before generation, then use retrieved information as context to guide models to generate fact-based answers.
-   2. **Multi-step Reasoning and Verification**: Guide models to perform multi-step reasoning and conduct self-checking or external verification at each step.
-   3. **Introducing External Tools**: Allow models to call external tools (such as search engines, calculators, code interpreters) to obtain real-time information or perform precise calculations.
+1. **Уровень данных**: качественная очистка, введение фактологических знаний и RLHF (Reinforcement Learning from Human Feedback)<sup>[13]</sup> снижают галлюцинацию в источнике.
+2. **Уровень модели**: новые модели конструкции или способности выражают неопределённость сравнительно порождённого.
+3. **Уровень выводов и генерации**:
+   1. **Расширенная генерация с поиском (RAG)**<sup>[14]</sup>: один из эффективных способов. Система перед генерацией извлекает релевантную информацию из внешних баз данных (документы, веб-сайты), а затем использует ее в качестве контекста, направляя модель к ответам на факты.
+   2. **Многошаговое рассуждение и проверка**: направляйте модель многошагового рассуждения с самопроверкой или внешней верификацией на каждом этапе.
+   3. **Внешние инструменты**: позволяют модели осуществлять поиск, калькулятор, интерпретатор кода для актуальной информации или точных компьютеров.
 
-Although hallucination problems are difficult to completely eliminate in the short term, through the above strategies, their occurrence frequency and impact can be significantly reduced, improving large language model reliability and practicality in actual applications.
+Полностью отказаться от галлюцинации в долгосрочной перспективе трудно, но стратегия заметно снижает тенденции и вред, повышает надежность и практичность выше LLM.
 
-## 3.4 Chapter Summary
+## 3.4 Итоги главы
 
-This chapter introduced foundational knowledge needed for building agents, focusing on large language models (LLMs) as their core component. Content started from early language model development, detailed the Transformer architecture, and introduced methods for interacting with LLMs. Finally, this chapter organized current mainstream model ecosystems, development patterns, and their inherent limitations.
+Глава дала фундамент, необходимый для строительных агентов, с фокусом на LLM, как их ядре. Сначала языковых моделей — через детальный разбор Transformer — к методам взаимодействия с LLM. В конце — экосистема мейнстрим-моделей, закономерности развития и врождённые ограничения.
 
-**Core Knowledge Review:**
+**Обзор главных знаний:**
 
-- **Model Evolution and Core Architecture**: This chapter traced from statistical language models (N-gram) to neural network models (RNN, LSTM), to the Transformer architecture that laid the foundation for modern LLMs. Through "top-down" code implementation, this chapter dissected Transformer's core components and explained the self-attention mechanism's key role in parallel computation and capturing long-distance dependencies.
-- **Interaction Methods with Models**: This chapter introduced two core aspects of interacting with LLMs: Prompt Engineering and Tokenization. The former guides model behavior, the latter is the foundation for understanding model input processing. Through practice of deploying and running open-source models locally, theoretical knowledge was applied to actual operations.
-- **Model Ecosystem and Selection**: This chapter systematically organized key factors to weigh when choosing models for agents and overviewed characteristics and positioning of closed-source models represented by OpenAI GPT and Google Gemini and open-source models represented by Llama and Mistral.
-- **Laws and Limitations**: This chapter explored scaling laws driving LLM capability improvement and explained underlying principles. Meanwhile, this chapter also analyzed models' inherent limitations such as factual hallucinations and outdated knowledge, which is crucial for building reliable, robust agents.
+- **Эволюция моделей и конструкция ядра**: от статистических языковых моделей (N-gram) к нейросетевым (RNN, LSTM) и к Transformer — на основе современной LLM. Посредством кода «сверху вниз» разобраны активные компоненты Transformer и роль самовнимания в параллельных вычислениях и дальних зависимостях.
+- **Способы взаимодействия с моделями**: два ядра — инженерия промптов и токенизация. Первое направляет поведение, второе — основа понимания входа. Практика локального развертывания открытых моделей привела к действию.
+- **Экосистема и выбор**: систематизированные факторы выбора модели для агента; обзор закрытых (OpenAI GPT, Google Gemini) и открытых (Llama, Mistral) моделей, их особенностей и позиционирования.
+- **Законы и ограничения**: законы масштабирования, двигающие рост способностей LLM, и врождённые границы — фактические галлюцинации, временные знания; это критично для надёжных устойчивых агентов.
 
-**From LLM Foundations to Building Agents:**
+**От основ LLM к строительству агентов:**
 
-This chapter's LLM foundations mainly help everyone better understand large models' birth and development process, which also contains some thinking about agent design. For example, how to design effective prompts to guide Agent planning and decision-making, how to choose appropriate models based on task requirements, and how to add verification mechanisms in Agent workflows to avoid model hallucinations—solutions to these problems are all built on this chapter's foundation. We are now ready to transition from theory to practice. In the next chapter, we will begin exploring classic agent paradigm construction, applying knowledge learned in this chapter to actual agent design.
+Основы LLM в этой главе помогают лучше понять рождение и развитие крупных моделей — и содержат идеи для агентов по дизайну. Как спроектировать эффективность подсказок для планирования и принятия решений Агент, как выбрать модель под задачей, как проверить проверку в рабочем процессе агента, чтобы исключить галлюцинации — ответы основаны на этом фундаменте. Мы готовы перейти от теории к примеру. В следующем главе начнём разбирать классические парадигмы агентов и знания этой главы к первому дизайну.
 
-## Exercises
+## Упражнения
 
-1. In natural language processing, language models have evolved from statistical to neural network models.
+1. В обработке естественного языка языковые модели эволюционировали от особенностей к нейросетевым.
 
-   - Please use the mini corpus provided in this chapter (`datawhale agent learns`, `datawhale agent works`) to calculate the probability of the sentence `agent works` under the Bigram model
-   - The core assumption of N-gram models is the Markov assumption. Please explain the meaning of this assumption and what fundamental limitations N-gram models have?
-   - How do neural network language models (RNN/LSTM) and Transformer overcome N-gram model limitations respectively? What are their respective advantages?
+   - По мини-корпусу из этой главы («агент данных-кита учится», «агент-кит данных работает») посчитайте рекомендации «агент работает» в биграммной модели
+   - Ядро Н-грамм — марковское предположение. Объясните его смысл и фундаментальные ограничения N-граммных моделей.
+   - Как нейросетевые языковые модели (RNN/LSTM) и преобразователь преодолевают ограничения N-грамм? В чем их преимущества?
 
-2. The Transformer architecture<sup>[4]</sup> is the foundation of modern large language models. Among them:
+2. Архитектура Transformer<sup>[4]</sup> — основа современных больших языковых моделей. Среди них:
 
-   > **Hint**: Can combine code implementation in Section 3.1.2 of this chapter to aid understanding
+> **Подсказка**: можно опереться на реализацию кода в разделе 3.1.2 главы
 
-   - What is the core idea of the Self-Attention mechanism?
-   - Why can Transformer process sequences in parallel while RNN must process serially? What role does Positional Encoding play?
-   - What is the difference between Decoder-Only architecture and complete Encoder-Decoder architecture? Why do current mainstream large language models all adopt Decoder-Only architecture?
+   - В чём идеи идеи внимания к себе?
+   - Почему Трансформатор обрабатывает параллельно, а RNN — только последовательно? Какую роль играет позиционное кодирование?
+   - Чем Decoder-Only отличается от полного Encoder-Decoder? Почему современный мейнстрим LLM почти все использует Decoder-Only?
 
-3. Text subword tokenization algorithms are a key technology for large language models, responsible for converting text into token sequences the model can process. Why can't we directly use "characters" or "words" as model input units? What problem does the BPE (Byte Pair Encoding) algorithm solve?
+3. Субсловная токенизация — ключевая технология LLM: текст превращается в последовательность токенов. Почему нельзя напрямую брать «символы» или «слова» в качестве источника входа? Какую проблему решает алгоритм BPE (кодирование пар байтов)?
 
-4. Section 3.2.3 of this chapter introduced how to deploy open-source large language models locally. Please complete the following practice and analysis:
+4. Раздел 3.2.3 показал, как локально развернуть открытую LLM. Выполните практику и анализ:
 
-   > **Hint**: This is a hands-on practice question; actual operation is recommended
+> **Подсказка**: практическое задание; рекомендуется реально восстановить
 
-   - Following this chapter's guidance, deploy a lightweight open-source model locally (recommend [Qwen3-0.6B](https://modelscope.cn/models/Qwen/Qwen3-0.6B)), try adjusting sampling parameters and observe their impact on output
-   - Choose a specific task (such as text classification, information extraction, code generation, etc.), design and compare different prompt strategies (such as Zero-shot, Few-shot, Chain-of-Thought) and their effect differences on output results
-   - Compare closed-source models and open-source models from dimensions of performance, cost, controllability, privacy, etc.
-   - If you want to build an enterprise-level customer service agent, which type of model would you choose? What factors need to be considered?
+   - В начале главы разверните легкую открытую локальную модель (рекомендуется [Qwen3-0.6B](https://modelscope.cn/models/Qwen/Qwen3-0.6B)), измените параметры сэмплирования и наблюдайте за влиянием на результат.
+   - Выберите задачу (классификация текста, извлечение информации, генерация кода и т.п.), спроектируйте и сравните стратегии предложений (нулевой выстрел, несколько шагов, цепочка мыслей) и различия эффектов.
+   - Сравните закрытые и открытые модели по производительности, стоимости, управляемости, приватности.
+   - Если вы создаете клиентский сервис предприятия-агента, какой тип модели вы выбираете? Какие факторы следует принять во внимание?
 
-5. Model Hallucination<sup>[11]</sup> is one of the key limitations of current large language models. This chapter introduced methods to mitigate hallucinations (such as retrieval-augmented generation, multi-step reasoning, external tool invocation)
+5. Галлюцинация моделей<sup>[11]</sup> — одна из китайских моделей современного искусства, LLM. Глава ввела методы смягчения (RAG, многошаговое рассуждение, внешний вызов инструментов)
 
-   - Please choose one and explain its working principle and applicable scenarios
-   - Research cutting-edge studies and papers—are there other methods to mitigate model hallucinations, and what improvements and advantages do they have?
+   - Выберите один метод и объясните принцип работы и сценарии применения.
+   - Изучите передовые работы и статьи: есть ли другие методы смягчения галлюцинаций, какие у них улучшения и преимущества?
 
-6. Suppose you want to design a paper-assisted reading agent that can help researchers quickly read and understand academic papers, including: summarizing core content of paper research, answering questions about papers, extracting key information, comparing viewpoints of different papers, etc. Please answer:
+6. Предположим, вы проектируете агентскую помощь в чтении статей, которая помогает исследователям быстро читать и понимать академические статьи: постепенно анализировать важные исследования, фактически по вопросам по статье, извлекать ключевую информацию, сравнивать позиции разных работ и т.п. Ответ:
 
-   - Which model would you choose as the base model when designing the agent? What factors need to be considered when choosing?
-   - How to design prompts to guide the model to better understand academic papers? Academic papers are usually very long and may exceed the model's context window limit—how would you solve this problem?
-   - Academic research is rigorous, meaning we need to ensure information generated by the agent is accurate, objective, and faithful to the original text. What designs do you think should be added to the system to better achieve this requirement?
+   - Какую модель вы выбираете как базовую? Какие факторы учитываются при выборе?
+   - Как спроектировать промпты, чтобы модель академических статей выглядела лучше? Статьи обычно очень длинные и могут закрывать контекст окна — как решить эту проблему?
+   - Академическое исследование требует строгости: информация агента должна быть точной, объективной и верной исходному тексту. Какие элементы системы проектирования помогают лучше справиться с этой задачей?
 
-## References
+## Список литературы
 
-[1] Bengio, Y., Ducharme, R., Vincent, P., & Jauvin, C. (2003). A neural probabilistic language model. *Journal of Machine Learning Research*, 3, 1137-1155.
+[1] Бенджио Ю., Дюшарм Р., Винсент П. и Жовен К. (2003). Нейронно-вероятностная языковая модель. *Журнал исследований машинного обучения*, 3, 1137-1155.
 
-[2] Elman, J. L. (1990). Finding structure in time. *Cognitive Science*, 14(2), 179-211.
+[2] Элман, Дж. Л. (1990). Нахождение структуры во времени. *Когнитивная наука*, 14(2), 179-211.
 
-[3] Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. *Neural Computation*, 9(8), 1735-1780.
+[3] Хохрайтер С. и Шмидхубер Дж. (1997). Длинная кратковременная память. *Нейронные вычисления*, 9(8), 1735–1780.
 
-[4] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). Attention is all you need. In *Advances in neural information processing systems* (pp. 5998-6008).
+[4] Васвани А., Шазир Н., Пармар Н., Ушкорейт Дж., Джонс Л., Гомес А. Н., ... и Полосухин И. (2017). Внимание – это все, что вам нужно. В *Достижениях в области нейронных систем обработки информации* (стр. 5998-6008).
 
-[5] Radford, A., Narasimhan, K., Salimans, T., & Sutskever, I. (2018). Improving language understanding by generative pre-training. OpenAI.
+[5] Рэдфорд А., Нарасимхан К., Салиманс Т. и Сатскевер И. (2018). Улучшение понимания языка посредством генеративной предварительной подготовки. ОпенАИ.
 
-[6] Gage, P. (1994). A new algorithm for data compression. *C Users Journal*, *12*(2), 23-38.
+[6] Гейдж, П. (1994). Новый алгоритм сжатия данных. *Журнал пользователя C*, *12*(2), 23–38.
 
-[7] Schuster, M., & Nakajima, K. (2012, March). Japanese and korean voice search. In *2012 IEEE international conference on acoustics, speech and signal processing (ICASSP)* (pp. 5149-5152). IEEE.
+[7] Шустер М. и Накадзима К. (март 2012 г.). Японский и корейский голосовой поиск. На *Международной конференции IEEE по акустике, речи и обработке сигналов (ICASSP)* 2012 г. (стр. 5149-5152). IEEE.
 
-[8] Kudo, T., & Richardson, J. (2018). SentencePiece: A simple and language independent subword tokenizer and detokenizer for neural text processing. *arXiv preprint arXiv:1808.06226*.
+[8] Кудо Т. и Ричардсон Дж. (2018). SentencePiece: простой и независимый от языка токенизатор и детокенизатор подслов для нейронной обработки текста. *Препринт arXiv arXiv:1808.06226*.
 
-[9] Kaplan, J., McCandlish, S., Henighan, T., Brown, T. B., Chess, B., Child, R., ... & Amodei, D. (2020). Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.
+[9] Каплан Дж., МакКэндлиш С., Хениган Т., Браун Т.Б., Чесс Б., Чайлд Р., ... и Амодей Д. (2020). Законы масштабирования для моделей нейронного языка. Препринт arXiv arXiv:2001.08361.
 
-[10] Hoffmann, J., Borgeaud, E., Mensch, A., Buchatskaya, E., Cai, T., Rutherford, R., ... & Sifre, L. (2022). Training Compute-Optimal Large Language Models. arXiv preprint arXiv:2203.07678.
+[10] Хоффманн Дж., Боржо Э., Менш А., Бучацкая Э., Кай Т., Резерфорд Р., ... и Сифре Л. (2022). Обучение вычислительно-оптимальных моделей большого языка. Препринт arXiv arXiv:2203.07678.
 
-[11] Huang, L., Yu, W., Ma, W., Zhong, W., Feng, Z., Wang, H., ... & Liu, T. (2023). A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions. *arXiv preprint arXiv:2311.05232*.
+[11] Хуан Л., Юй В., Ма В., Чжун В., Фэн З., Ван Х., ... и Лю Т. (2023). Исследование галлюцинаций в больших языковых моделях: принципы, таксономия, проблемы и открытые вопросы. *Препринт arXiv arXiv:2311.05232*.
 
-[12] Bender, E. M., Gebru, T., McMillan-Major, A., & Mitchell, M. (2021). On the Dangers of Stochastic Parrots: Can Language Models Be Too Big? .
+[12] Бендер Э.М., Гебру Т., Макмиллан-Мейджор А. и Митчелл М. (2021). Об опасностях стохастических попугаев: могут ли языковые модели быть слишком большими? .
 
-[13] Christiano, P., Leike, J., Brown, T. B., Martic, M., Legg, S., & Amodei, D. (2017). Deep reinforcement learning from human preferences. *arXiv preprint arXiv:1706.03741*.
+[13] Кристиано П., Лейке Дж., Браун Т.Б., Мартич М., Легг С. и Амодей Д. (2017). Глубокое обучение с подкреплением на основе человеческих предпочтений. *Препринт arXiv arXiv:1706.03741*.
 
-[14] Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goswami, N., ... & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. In *Advances in neural information processing systems* (pp. 9459-9474).
-
+[14] Льюис П., Перес Э., Пиктус А., Петрони Ф., Карпухин В., Госвами Н., ... и Киела Д. (2020). Генерация с расширенным поиском для наукоемких задач НЛП. В *Достижениях в области нейронных систем обработки информации* (стр. 9459-9474).

@@ -1,25 +1,25 @@
 """
-GitHub MCP 服务示例
+Пример сервиса GitHub MCP
 
-注意：需要设置环境变量
-    Windows: $env:GITHUB_PERSONAL_ACCESS_TOKEN="your_token_here"
-    Linux/macOS: export GITHUB_PERSONAL_ACCESS_TOKEN="your_token_here"
+Примечание. Необходимо установить переменные среды.
+    Windows: $env:GITHUB_PERSONAL_ACCESS_TOKEN="ваш_токен_здесь"
+    Linux/macOS: экспортируйте GITHUB_PERSONAL_ACCESS_TOKEN="your_token_here"
 """
 
 from hello_agents.tools import MCPTool
 
-# 创建 GitHub MCP 工具
+# Создайте инструмент GitHub MCP.
 github_tool = MCPTool(
     server_command=["npx", "-y", "@modelcontextprotocol/server-github"]
 )
 
-# 1. 列出可用工具
-print("📋 可用工具：")
+# 1. Перечислите доступные инструменты
+print("📋Доступные инструменты:")
 result = github_tool.run({"action": "list_tools"})
 print(result)
 
-# 2. 搜索仓库
-print("\n🔍 搜索仓库：")
+# 2. Поиск склада
+print("\n🔍 Поиск склада:")
 result = github_tool.run({
     "action": "call_tool",
     "tool_name": "search_repositories",

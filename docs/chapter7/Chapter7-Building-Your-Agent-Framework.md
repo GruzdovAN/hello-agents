@@ -1,65 +1,65 @@
-# Chapter 7 Building Your Agent Framework
+# Глава 7. Свой фреймворк агента
 
-In the previous chapters, we explained the fundamentals of agents and experienced the development convenience brought by mainstream frameworks. Starting from this chapter, we will enter a more challenging and valuable stage: **building an agent framework from scratch—HelloAgents**.
+В предыдущих главах мы объяснили основы агентов и испытали удобство разработки, обеспечиваемое основными платформами. Начиная с этой главы, мы перейдем к более сложному и ценному этапу: **созданию структуры агента с нуля — HelloAgents**.
 
-To ensure the continuity and reproducibility of the learning process, HelloAgents will advance development through version iterations. Each chapter will add new functional modules based on the previous chapter and integrate and implement agent-related knowledge points. Ultimately, we will use this self-built framework to efficiently implement the advanced application cases in the subsequent chapters of this book.
+Чтобы обеспечить непрерывность и воспроизводимость процесса обучения, HelloAgents будет продвигать разработку посредством итераций версий. В каждой главе будут добавляться новые функциональные модули на основе предыдущей главы, а также интегрироваться и внедряться знания, связанные с агентами. В конечном итоге мы будем использовать эту самостоятельно созданную структуру для эффективной реализации сложных случаев применения в последующих главах этой книги.
 
-## 7.1 Overall Framework Architecture Design
+## 7.1 Общий дизайн рамочной архитектуры
 
-### 7.1.1 Why Build Your Own Agent Framework
+### 7.1.1 Зачем создавать собственную структуру агентов
 
-In today's rapidly developing agent technology landscape, there are already many mature Agent frameworks on the market. So why do we still need to build a new framework from scratch?
+В сегодняшнем быстро развивающемся ландшафте агентных технологий на рынке уже существует множество зрелых агентных инфраструктур. Так почему же нам все еще нужно создавать новую структуру с нуля?
 
-(1) Rapid Iteration and Limitations of Market Frameworks
+(1) Быстрая итерация и ограничения рыночных структур
 
-The agent field is a rapidly developing area where new concepts emerge constantly. Each framework has its own positioning and understanding of agent design, but the core knowledge points of agents are consistent.
+Агентская сфера — это быстро развивающаяся область, в которой постоянно появляются новые концепции. Каждая структура имеет свое собственное позиционирование и понимание конструкции агентов, но основные знания агентов одинаковы.
 
-- **Complexity of Over-abstraction**: Many frameworks introduce numerous abstraction layers and configuration options in pursuit of generality. Taking LangChain as an example, although its chain invocation mechanism is flexible, it has a steep learning curve for beginners, often requiring understanding of many concepts to complete simple tasks.
-- **Instability from Rapid Iteration**: Commercial frameworks frequently change API interfaces to capture market share. Developers often face the frustration of code not running after version upgrades, with maintenance costs remaining high.
-- **Black-box Implementation Logic**: Many frameworks encapsulate core logic too tightly, making it difficult for developers to understand the internal working mechanisms of Agents and lacking deep customization capabilities. When encountering problems, they can only rely on documentation and community support, especially if the community is not active enough, feedback may take a very long time without anyone pushing it forward, affecting subsequent development efficiency.
-- **Complexity of Dependencies**: Mature frameworks often carry a large number of dependency packages, with large installation package sizes, which may cause dependency conflict problems when needing to cooperate with other project code.
+- **Сложность чрезмерной абстракции**. Многие платформы вводят многочисленные уровни абстракции и параметры конфигурации в стремлении к общности. Возьмем в качестве примера LangChain, хотя его механизм вызова цепочки является гибким, новичкам приходится нелегко его изучить, часто требуя понимания многих концепций для выполнения простых задач.
+- **Нестабильность из-за быстрой итерации**. Коммерческие платформы часто меняют интерфейсы API, чтобы захватить долю рынка. Разработчики часто сталкиваются с разочарованием, когда код не запускается после обновления версии, а затраты на обслуживание остаются высокими.
+- **Логика реализации «черного ящика»**: многие платформы слишком жестко инкапсулируют базовую логику, что затрудняет понимание разработчиками внутренних рабочих механизмов агентов и не дает возможностей глубокой настройки. При возникновении проблем они могут полагаться только на документацию и поддержку сообщества, особенно если сообщество недостаточно активно, обратная связь может занять очень много времени, и никто не подтолкнет ее вперед, что влияет на последующую эффективность разработки.
+- **Сложность зависимостей**. Зрелые платформы часто содержат большое количество пакетов зависимостей с большими размерами установочных пакетов, что может вызвать проблемы конфликта зависимостей при необходимости взаимодействия с другим кодом проекта.
 
-(2) Capability Leap from User to Builder
+(2) Переход от пользователя к разработчику
 
-Building your own Agent framework is actually a process of transforming from a "user" to a "builder." The value brought by this transformation is long-term.
+Создание собственной структуры агента на самом деле представляет собой процесс превращения из «пользователя» в «строителя». Ценность, которую принесет эта трансформация, носит долгосрочный характер.
 
-- **Deep Understanding of Agent Working Principles**: By implementing each component hands-on, developers can truly understand the Agent's thinking process, tool invocation mechanisms, and the pros and cons and differences of various design patterns.
-- **Gaining Complete Control**: A self-built framework means complete control over every line of code, allowing precise tuning according to specific needs without being constrained by third-party framework design philosophies.
-- **Cultivating System Design Capabilities**: The framework construction process involves core software engineering skills such as modular design, interface abstraction, and error handling, which are of significant value to developers' long-term growth.
+- **Глубокое понимание принципов работы агента**: реализуя каждый компонент на практике, разработчики могут по-настоящему понять мыслительный процесс агента, механизмы вызова инструментов, а также плюсы, минусы и различия различных шаблонов проектирования.
+- **Получение полного контроля**. Самостоятельно созданная платформа означает полный контроль над каждой строкой кода, что позволяет осуществлять точную настройку в соответствии с конкретными потребностями, не ограничиваясь философией проектирования сторонней платформы.
+- **Развитие возможностей системного проектирования**. Процесс создания инфраструктуры включает в себя основные навыки разработки программного обеспечения, такие как модульное проектирование, абстракция интерфейса и обработка ошибок, которые имеют важное значение для долгосрочного роста разработчиков.
 
-(3) Necessity of Customization Needs and Deep Mastery
+(3) Необходимость адаптации и глубокого мастерства
 
-In practical applications, the needs for agents vary greatly across different scenarios, often requiring secondary development based on general frameworks.
+В практических приложениях потребности в агентах сильно различаются в зависимости от сценария, часто требуя вторичной разработки на основе общих инфраструктур.
 
-- **Optimization Needs for Specific Domains**: Vertical domains such as finance, healthcare, and education often require targeted prompt templates, special tool integration, and customized security strategies.
-- **Precise Control of Performance and Resources**: In production environments, there are strict requirements for response time, memory usage, and concurrent processing capabilities. The "one-size-fits-all" solutions of general frameworks often cannot meet refined needs.
-- **Transparency Requirements for Learning and Teaching**: In our teaching scenario, learners expect to clearly see every step of the agent construction process and understand the working mechanisms of different paradigms, which requires the framework to have high observability and interpretability.
+- **Необходимость оптимизации для конкретных областей**. Вертикальные области, такие как финансы, здравоохранение и образование, часто требуют целевых шаблонов подсказок, интеграции специальных инструментов и индивидуальных стратегий безопасности.
+- **Точный контроль производительности и ресурсов**. В производственных средах предъявляются строгие требования ко времени отклика, использованию памяти и возможностям параллельной обработки. Универсальные решения общих рамок часто не могут удовлетворить изысканные потребности.
+- **Требования к прозрачности обучения и преподавания**. В нашем сценарии обучения учащиеся ожидают, что они будут четко видеть каждый этап процесса создания агента и понимать рабочие механизмы различных парадигм, что требует, чтобы структура имела высокую наблюдаемость и интерпретируемость.
 
-### 7.1.2 Design Philosophy of HelloAgents Framework
+### 7.1.2 Философия разработки платформы HelloAgents
 
-Building a new Agent framework is not about the number of features but whether the design philosophy can truly solve the pain points of existing frameworks. The design of the HelloAgents framework revolves around a core question: How can learners both get started quickly and deeply understand the working principles of Agents?
+Создание новой среды агента зависит не от количества функций, а от того, может ли философия проектирования действительно решить болевые точки существующих инфраструктур. Разработка платформы HelloAgents вращается вокруг основного вопроса: как учащиеся могут быстро приступить к работе и глубоко понять принципы работы агентов?
 
-When you first encounter any mature framework, you may be attracted by its rich features, but you will soon discover a problem: to complete a simple task, you often need to understand more than a dozen different concepts such as Chain, Agent, Tool, Memory, Retriever, etc. Each concept has its own abstraction layer, making the learning curve extremely steep. Although this complexity brings powerful functionality, it also becomes an obstacle for beginners. The HelloAgents framework attempts to find a balance between functional completeness and learning friendliness, forming four core design philosophies.
+Когда вы впервые столкнетесь с какой-либо зрелой структурой, вас могут привлечь ее богатые возможности, но вскоре вы обнаружите проблему: для выполнения простой задачи вам часто необходимо понять более десятка различных концепций, таких как цепочка, агент, инструмент, память, ретривер и т. д. Каждая концепция имеет свой собственный уровень абстракции, что делает кривую обучения чрезвычайно крутой. Хотя эта сложность обеспечивает мощную функциональность, она также становится препятствием для новичков. Платформа HelloAgents пытается найти баланс между функциональной полнотой и удобством обучения, формируя четыре основные философии дизайна.
 
-(1) Balance Between Lightweight and Teaching-Friendly
+(1) Баланс между легкостью и удобством для обучения
 
-An excellent learning framework should have complete readability. HelloAgents separates core code by chapters, based on a simple principle: any developer with a certain programming foundation should be able to fully understand the framework's working principles within a reasonable time. In dependency management, the framework adopts a minimalist strategy. Except for OpenAI's official SDK and a few necessary basic libraries, no heavy dependencies are introduced. When encountering problems, we can directly locate the framework's own code without searching for answers in complex dependency relationships.
+Отличная система обучения должна быть полностью удобочитаемой. HelloAgents разделяет основной код по главам, основываясь на простом принципе: любой разработчик с определенными знаниями в области программирования должен иметь возможность полностью понять принципы работы платформы в разумные сроки. В управлении зависимостями фреймворк придерживается минималистской стратегии. За исключением официального SDK OpenAI и нескольких необходимых базовых библиотек, никаких серьезных зависимостей не предусмотрено. При возникновении проблем мы можем напрямую найти собственный код фреймворка, не ища ответов в сложных отношениях зависимости.
 
-(2) Pragmatic Choice Based on Standard APIs
+(2) Прагматичный выбор на основе стандартных API
 
-OpenAI's API has become an industry standard, and almost all mainstream LLM providers are working hard to be compatible with this interface. HelloAgents chooses to build on this standard rather than reinventing an abstract interface. This decision is mainly motivated by several points. First is the guarantee of compatibility. After mastering the use of HelloAgents, when migrating to other frameworks or integrating it into existing projects, the underlying API invocation logic is completely consistent. Second is the reduction of learning costs. You don't need to learn new conceptual models because all operations are based on standard interfaces you are already familiar with.
+API OpenAI стал отраслевым стандартом, и почти все основные поставщики LLM прилагают все усилия, чтобы быть совместимыми с этим интерфейсом. HelloAgents предпочитает опираться на этот стандарт, а не изобретать заново абстрактный интерфейс. Это решение в основном мотивировано несколькими моментами. Во-первых, это гарантия совместимости. После освоения использования HelloAgents при переходе на другие платформы или интеграции его в существующие проекты базовая логика вызова API полностью согласована. Во-вторых, снижение затрат на обучение. Вам не нужно изучать новые концептуальные модели, поскольку все операции основаны на уже знакомых вам стандартных интерфейсах.
 
-(3) Careful Design of Progressive Learning Path
+(3) Тщательная разработка прогрессивного пути обучения
 
-HelloAgents provides a clear learning path. We will save the learning code for each chapter as a historical version that can be downloaded via pip, so there is no need to worry about the cost of using the code, because every core function will be written by yourself. This design allows you to move forward according to your own needs and pace. Each upgrade is natural, without conceptual jumps or understanding gaps. It's worth mentioning that the content of this chapter is also based on the content of the previous six chapters. Similarly, this chapter also lays the framework foundation for subsequent advanced knowledge learning.
+HelloAgents обеспечивает четкий путь обучения. Мы сохраним код обучения для каждой главы в виде исторической версии, которую можно будет загрузить через pip, поэтому не нужно беспокоиться о стоимости использования кода, поскольку каждая основная функция будет написана вами. Такая конструкция позволяет вам двигаться вперед в соответствии с вашими потребностями и темпом. Каждое обновление естественно, без концептуальных скачков и пробелов в понимании. Стоит отметить, что содержание этой главы также основано на содержании предыдущих шести глав. Аналогичным образом, эта глава также закладывает основу для последующего углубленного изучения знаний.
 
-(4) Unified "Tool" Abstraction: Everything is a Tool
+(4) Единая абстракция «инструмента»: все является инструментом.
 
-To thoroughly implement the lightweight and teaching-friendly philosophy, HelloAgents made a key simplification in architecture: except for the core Agent class, everything is Tools. Memory, RAG (Retrieval-Augmented Generation), RL (Reinforcement Learning), MCP (Protocol), and other modules that need to be learned independently in many other frameworks are all uniformly abstracted as a "tool" in HelloAgents. The original intention of this design is to eliminate unnecessary abstraction layers, allowing learners to return to the most intuitive core logic of "agents calling tools," thereby truly achieving the unity of quick start and deep understanding.
+Чтобы полностью реализовать легкую и удобную для обучения философию, HelloAgents внесло ключевое упрощение в архитектуру: за исключением основного класса агента, все является инструментами. Память, RAG (генерация с расширенным поиском), RL (обучение с подкреплением), MCP (протокол) и другие модули, которые необходимо изучать независимо во многих других средах, все они абстрагируются как «инструменты» в HelloAgents. Первоначальная цель этого проекта — устранить ненужные уровни абстракции, позволяя учащимся вернуться к наиболее интуитивной базовой логике «агентов, вызывающих инструменты», тем самым действительно достигая единства быстрого старта и глубокого понимания.
 
-### 7.1.3 Learning Objectives of This Chapter
+### 7.1.3 Цели обучения этой главы
 
-Let's first look at the core learning content of Chapter 7:
+Давайте сначала посмотрим на основное содержание обучения главы 7:
 
 ```
 hello-agents/
@@ -89,11 +89,11 @@ hello-agents/
 └──
 ```
 
-Before starting to write specific code, we need to first establish a clear architectural blueprint. The architectural design of HelloAgents follows the core principles of "layered decoupling, single responsibility, unified interface," which maintains code organization and facilitates content expansion by chapters.
+Прежде чем приступить к написанию конкретного кода, нам необходимо сначала разработать четкий архитектурный план. Архитектурный дизайн HelloAgents соответствует основным принципам «многоуровневого разделения, единой ответственности, унифицированного интерфейса», который поддерживает организацию кода и облегчает расширение контента по главам.
 
-**Quick Start: Installing HelloAgents Framework**
+**Быстрое начало: установка HelloAgents Framework**
 
-To allow readers to quickly experience the complete functionality of this chapter, we provide a directly installable Python package. You can install the version corresponding to this chapter with the following command:
+Чтобы читатели могли быстро освоить всю функциональность этой главы, мы предоставляем устанавливаемый непосредственно пакет Python. Вы можете установить версию, соответствующую этой главе, с помощью следующей команды:
 
 ```bash
 # hello-agents framework code visible link: https://github.com/jjyaoao/helloagents
@@ -101,14 +101,14 @@ To allow readers to quickly experience the complete functionality of this chapte
 pip install "hello-agents==0.1.1"
 ```
 
-Learning this chapter can be done in two ways:
+Изучить эту главу можно двумя способами:
 
-1. **Experiential Learning**: Directly install the framework using `pip`, run example code, and quickly experience various functions
-2. **Deep Learning**: Follow the content of this chapter, implement each component from scratch, and deeply understand the framework's design ideas and implementation details
+1. **Экспериментальное обучение**: установите платформу напрямую с помощью pip, запустите пример кода и быстро освойте различные функции.
+2. **Глубокое обучение**: следуйте содержанию этой главы, реализуйте каждый компонент с нуля и глубоко поймите идеи дизайна платформы и детали реализации.
 
-We recommend adopting the "experience first, then implement" learning path. In this chapter, we provide complete test files. You can rewrite core functions and run tests to verify whether your implementation is correct. This learning method ensures both practicality and learning effectiveness. If you want to deeply understand the framework's implementation details or wish to participate in the framework's development, you can visit this [GitHub repository](https://github.com/jjyaoao/helloagents).
+Мы рекомендуем выбрать путь обучения «сначала опыт, а затем внедрение». В этой главе мы предоставляем полные тестовые файлы. Вы можете переписать основные функции и запустить тесты, чтобы проверить правильность вашей реализации. Этот метод обучения обеспечивает как практичность, так и эффективность обучения. Если вы хотите глубже понять детали реализации платформы или принять участие в ее разработке, вы можете посетить этот [репозиторий GitHub](https://github.com/jjyaoao/helloagents).
 
-Before starting, let's experience building a simple agent using Hello-agents in 30 seconds!
+Прежде чем начать, давайте попробуем создать простой агент с помощью Hello-агентов за 30 секунд!
 
 ```python
 # Configure the LLM API in the .env file in the same-level folder. You can refer to the .env.example in the code folder, or reuse the .env file from previous chapter cases.
@@ -151,23 +151,23 @@ print(f"Number of historical messages: {len(agent.get_history())}")
 
 
 
-## 7.2 HelloAgentsLLM Extension
+## 7.2 Расширение HelloAgentsLLM
 
-The content of this section will be an iterative upgrade based on the `HelloAgentsLLM` created in Section 4.1.3. We will transform this basic client into a more adaptive model invocation hub. This upgrade mainly revolves around the following three goals:
+Содержимое этого раздела представляет собой итеративное обновление на основе`HelloAgentsLLM`созданный в разделе 4.1.3. Мы превратим этот базовый клиент в более адаптивный центр вызова моделей. Это обновление в основном направлено на достижение следующих трех целей:
 
-1. **Multi-provider Support**: Achieve seamless switching between various mainstream LLM service providers such as OpenAI, ModelScope, Zhipu AI, etc., avoiding framework binding to specific vendors.
-2. **Local Model Integration**: Introduce VLLM and Ollama, two high-performance local deployment solutions, as production-grade supplements to the Hugging Face Transformers solution in Section 3.2.3, meeting the needs of data privacy and cost control.
-3. **Automatic Detection Mechanism**: Establish an automatic recognition mechanism that enables the framework to intelligently infer the type of LLM service used based on environment information, simplifying the user's configuration process.
+1. **Поддержка нескольких поставщиков**. Обеспечьте плавное переключение между различными основными поставщиками услуг LLM, такими как OpenAI, ModelScope, Zhipu AI и т. д., избегая привязки платформы к конкретным поставщикам.
+2. **Интеграция локальной модели**: представьте VLLM и Ollama, два высокопроизводительных решения для локального развертывания, в качестве дополнения производственного уровня к решению Hugging Face Transformers (см. раздел 3.2.3), отвечающего требованиям конфиденциальности данных и контроля затрат.
+3. **Механизм автоматического обнаружения**: установите механизм автоматического распознавания, который позволяет платформе интеллектуально определять тип используемой службы LLM на основе информации о среде, упрощая процесс настройки пользователя.
 
-### 7.2.1 Supporting Multiple Providers
+### 7.2.1 Поддержка нескольких провайдеров
 
-The `HelloAgentsLLM` class we previously defined can already connect to any service compatible with the OpenAI interface through the two core parameters `api_key` and `base_url`. This theoretically guarantees universality, but in practical applications, different service providers have differences in environment variable naming, default API addresses, and recommended models. If users need to manually query and modify code every time they switch service providers, it will greatly affect development efficiency. To solve this problem, we introduce `provider`. The improvement idea is: let `HelloAgentsLLM` handle the configuration details of different service providers internally, thereby providing users with a unified and concise invocation experience. We will elaborate on the specific implementation details in Section 7.2.3 "Automatic Detection Mechanism." Here, we first focus on how to use this mechanism to extend the framework.
+The `HelloAgentsLLM`класс, который мы определили ранее, уже может подключаться к любому сервису, совместимому с интерфейсом OpenAI, через два основных параметра.`api_key`и`base_url`. Теоретически это гарантирует универсальность, но в практических приложениях разные поставщики услуг имеют различия в именах переменных среды, адресах API по умолчанию и рекомендуемых моделях. Если пользователям придется вручную запрашивать и изменять код каждый раз, когда они меняют поставщика услуг, это сильно повлияет на эффективность разработки. Для решения этой проблемы мы вводим`provider`. Идея улучшения такова: пусть`HelloAgentsLLM`обрабатывать детали конфигурации различных поставщиков услуг внутри компании, тем самым предоставляя пользователям унифицированный и краткий интерфейс вызова. Мы подробно остановимся на конкретных деталях реализации в разделе 7.2.3 «Механизм автоматического обнаружения». Здесь мы сначала сосредоточимся на том, как использовать этот механизм для расширения структуры.
 
-Below, we will demonstrate how to add support for the ModelScope platform by inheriting `HelloAgentsLLM`. We hope readers will not only learn how to "use" the framework but also master how to "extend" it. Directly modifying the source code of installed libraries is not a recommended practice because it makes subsequent library upgrades difficult.
+Ниже мы продемонстрируем, как добавить поддержку платформы ModelScope путем наследования`HelloAgentsLLM`. Мы надеемся, что читатели не только научатся «использовать» эту структуру, но и научатся «расширять» ее. Непосредственное изменение исходного кода установленных библиотек не рекомендуется, поскольку это затрудняет последующие обновления библиотек.
 
-(1) Create Custom LLM Class and Inherit
+(1) Создайте собственный класс LLM и наследуйте его.
 
-Suppose we have a `my_llm.py` file in our project directory. We first import the `HelloAgentsLLM` base class from the `hello_agents` library, then create a new class named `MyLLM` that inherits from it.
+Предположим, у нас есть`my_llm.py`файл в каталоге нашего проекта. Сначала мы импортируем`HelloAgentsLLM`базовый класс из`hello_agents`библиотеку, затем создайте новый класс с именем`MyLLM`которое наследуется от него.
 
 ```python
 # my_llm.py
@@ -183,9 +183,9 @@ class MyLLM(HelloAgentsLLM):
     pass # Leave empty for now
 ```
 
-(2) Override `__init__` Method to Support New Provider
+(2) Переопределить`__init__`Метод поддержки нового провайдера
 
-Next, we override the `__init__` method in the `MyLLM` class. Our goal is: when the user passes `provider="modelscope"`, execute our custom logic; otherwise, call the original logic of the parent class `HelloAgentsLLM`, enabling it to continue supporting other built-in providers like OpenAI.
+Далее мы переопределяем`__init__`метод в`MyLLM`сорт. Наша цель: когда пользователь проходит`provider="modelscope"`, выполнить нашу пользовательскую логику; в противном случае вызовите исходную логику родительского класса`HelloAgentsLLM`, что позволяет ему продолжать поддерживать других встроенных поставщиков, таких как OpenAI.
 
 ```python
 class MyLLM(HelloAgentsLLM):
@@ -225,20 +225,20 @@ class MyLLM(HelloAgentsLLM):
 
 ```
 
-This code demonstrates the idea of "overriding": we intercept the case of `provider="modelscope"` and handle it specially. For all other cases, we hand it back to the parent class through `super().__init__(...)`, preserving all the original framework functionality.
+Этот код демонстрирует идею «переопределения»: мы перехватываем случай`provider="modelscope"`и обращаться с этим специально. Во всех остальных случаях мы передаем его обратно родительскому классу через`super().__init__(...)`, сохраняя всю исходную функциональность платформы.
 
-(3) Using the Custom `MyLLM` Class
+(3) Использование пользовательского`MyLLM`Сорт
 
-Now, we can use our own `MyLLM` class in the project's business logic just like using the native `HelloAgentsLLM`.
+Теперь мы можем использовать свои собственные`MyLLM`класс в бизнес-логике проекта, как при использовании собственного`HelloAgentsLLM`.
 
-First, configure the ModelScope API key in the `.env` file:
+Сначала настройте ключ API ModelScope в`.env`файл:
 
 ```bash
 # .env file
 MODELSCOPE_API_KEY="your-modelscope-api-key"
 ```
 
-Then, import and use `MyLLM` in the main program:
+Затем импортируйте и используйте`MyLLM`в основной программе:
 
 ```python
 # my_main.py
@@ -265,25 +265,25 @@ for chunk in response_stream:
     pass
 ```
 
-Through the above steps, we have successfully extended new functionality to the `hello-agents` library without modifying its source code. This method not only ensures code cleanliness and maintainability but also ensures that our customized functionality will not be lost when upgrading the `hello-agents` library in the future.
+Благодаря вышеуказанным шагам мы успешно расширили новые функциональные возможности`hello-agents`библиотеку без изменения ее исходного кода. Этот метод не только обеспечивает чистоту и удобство сопровождения кода, но также гарантирует, что наши настроенные функциональные возможности не будут потеряны при обновлении.`hello-agents`библиотека в будущем.
 
-### 7.2.2 Local Model Invocation
+### 7.2.2 Вызов локальной модели
 
-In Section 3.2.3, we learned how to use the Hugging Face Transformers library to run open-source models locally. This method is very suitable for introductory learning and functional verification, but its underlying implementation has limited performance when handling high-concurrency requests and is usually not the first choice for production environments.
+В разделе 3.2.3 мы узнали, как использовать библиотеку Hugging Face Transformers для локального запуска моделей с открытым исходным кодом. Этот метод очень подходит для вводного обучения и функциональной проверки, но его базовая реализация имеет ограниченную производительность при обработке запросов с высоким уровнем параллелизма и обычно не является лучшим выбором для производственных сред.
 
-To achieve high-performance, production-grade model inference services locally, the community has produced excellent tools such as VLLM and Ollama. They significantly improve model throughput and operational efficiency through techniques such as continuous batching and PagedAttention, and encapsulate models as API services compatible with OpenAI standards. This means we can seamlessly integrate them into `HelloAgentsLLM`.
+Чтобы обеспечить высокопроизводительные услуги вывода моделей промышленного уровня на местном уровне, сообщество разработало отличные инструменты, такие как VLLM и Ollama. Они значительно повышают пропускную способность моделей и эффективность работы с помощью таких методов, как непрерывная пакетная обработка и PagedAttention, а также инкапсулируют модели в виде сервисов API, совместимых со стандартами OpenAI. Это означает, что мы можем легко интегрировать их в`HelloAgentsLLM`.
 
-**VLLM**
+**ВЛЛМ**
 
-VLLM is a high-performance Python library designed for LLM inference. Through advanced technologies such as PagedAttention, it can achieve throughput several times higher than standard Transformers implementations. Below are the complete steps to deploy a VLLM service locally:
+VLLM — это высокопроизводительная библиотека Python, предназначенная для вывода LLM. Благодаря передовым технологиям, таким как PagedAttention, пропускная способность может быть в несколько раз выше, чем у стандартных реализаций Transformers. Ниже приведены полные шаги по локальному развертыванию службы VLLM:
 
-First, you need to install VLLM according to your hardware environment (especially CUDA version). It is recommended to follow its [official documentation](https://docs.vllm.ai/en/latest/getting_started/installation.html) for installation to avoid version mismatch issues.
+Во-первых, вам необходимо установить VLLM в соответствии с вашей аппаратной средой (особенно версией CUDA). Рекомендуется следовать его [официальной документации](https://docs.vllm.ai/en/latest/getting_started/installation.html) для установки, чтобы избежать проблем с несоответствием версий.
 
 ```python
 pip install vllm
 ```
 
-After installation, use the following command to start an OpenAI-compatible API service. VLLM will automatically download the specified model weights from Hugging Face Hub (if they don't exist locally). We still use the Qwen1.5-0.5B-Chat model as an example:
+После установки используйте следующую команду, чтобы запустить службу API, совместимую с OpenAI. VLLM автоматически загрузит указанные веса моделей из Hugging Face Hub (если они не существуют локально). В качестве примера мы по-прежнему используем модель Qwen1.5-0.5B-Chat:
 
 ```
 # Start VLLM service and load Qwen1.5-0.5B-Chat model
@@ -293,26 +293,26 @@ python -m vllm.entrypoints.openai.api_server \
     --port 8000
 ```
 
-After the service starts, it will provide an OpenAI-compatible API at the `http://localhost:8000/v1` address.
+После запуска службы она предоставит OpenAI-совместимый API на`http://localhost:8000/v1`адрес.
 
-**Ollama**
+**Оллама**
 
-Ollama further simplifies local model management and deployment by encapsulating model download, configuration, and service startup into a single command, making it very suitable for quick start. Visit the Ollama [official website](https://ollama.com) to download and install the client for your operating system.
+Ollama еще больше упрощает управление и развертывание локальной модели, инкапсулируя загрузку, настройку и запуск службы модели в одну команду, что делает ее очень удобной для быстрого запуска. Посетите Олламу [официальный сайт](https://ollama.com), чтобы загрузить и установить клиент для вашей операционной системы.
 
-After installation, open the terminal and execute the following command to download and run a model (using Llama 3 as an example). Ollama will automatically handle model download, service encapsulation, and hardware acceleration configuration.
+После установки откройте терминал и выполните следующую команду, чтобы загрузить и запустить модель (на примере Llama 3). Ollama автоматически выполнит загрузку модели, инкапсуляцию сервисов и настройку аппаратного ускорения.
 
 ```
 # First run will automatically download the model, subsequent runs will directly start the service
 ollama run llama3
 ```
 
-When you see the model's interactive prompt in the terminal, it indicates that the service has successfully started in the background. Ollama will expose an OpenAI-compatible API interface at the `http://localhost:11434/v1` address by default.
+Когда вы видите интерактивное приглашение модели в терминале, это означает, что служба успешно запустилась в фоновом режиме. Оллама представит API-интерфейс, совместимый с OpenAI, на`http://localhost:11434/v1`адрес по умолчанию.
 
-**Integrating with `HelloAgentsLLM`**
+**Интеграция с`HelloAgentsLLM`**
 
-Since both VLLM and Ollama follow industry-standard APIs, integrating them into `HelloAgentsLLM` is very simple. We only need to treat them as a new `provider` when instantiating the client.
+Поскольку и VLLM, и Ollama используют стандартные API, их интеграция в`HelloAgentsLLM`это очень просто. Нам нужно только относиться к ним как к новым`provider`при создании экземпляра клиента.
 
-For example, connecting to a locally running **VLLM** service:
+Например, подключение к локально работающей службе **VLLM**:
 
 ```python
 llm_client = HelloAgentsLLM(
@@ -323,7 +323,7 @@ llm_client = HelloAgentsLLM(
 )
 ```
 
-Or, by setting environment variables and letting the client auto-detect, achieve zero code modification:
+Или, установив переменные среды и позволив клиенту автоматически обнаруживать, добиться нулевого изменения кода:
 
 ```bash
 # Set in .env file
@@ -334,7 +334,7 @@ LLM_API_KEY="vllm"
 llm_client = HelloAgentsLLM() # Will automatically detect as vllm
 ```
 
-Similarly, connecting to a local **Ollama** service is just as simple:
+Аналогично, подключиться к локальному сервису **Ollama** так же просто:
 
 ```python
 llm_client = HelloAgentsLLM(
@@ -345,25 +345,25 @@ llm_client = HelloAgentsLLM(
 )
 ```
 
-Through this unified design, our agent core code requires no modifications to freely switch between cloud APIs and local models. This provides great flexibility for subsequent application development, deployment, cost control, and data privacy protection.
+Благодаря такому унифицированному дизайну основной код нашего агента не требует никаких изменений для свободного переключения между облачными API и локальными моделями. Это обеспечивает большую гибкость для последующей разработки и развертывания приложений, контроля затрат и защиты конфиденциальности данных.
 
-### 7.2.3 Automatic Detection Mechanism
+### 7.2.3 Механизм автоматического обнаружения
 
-To minimize the user's configuration burden as much as possible and follow the principle of "convention over configuration," `HelloAgentsLLM` internally designs two core auxiliary methods: `_auto_detect_provider` and `_resolve_credentials`. They work together, with `_auto_detect_provider` responsible for inferring the service provider based on environment information, while `_resolve_credentials` completes specific parameter configuration based on the inference result.
+Чтобы максимально минимизировать нагрузку пользователя на настройку и следовать принципу «соглашение важнее конфигурации»,`HelloAgentsLLM`внутренне разрабатывает два основных вспомогательных метода:`_auto_detect_provider`и`_resolve_credentials`. Они работают вместе, с`_auto_detect_provider`отвечает за определение поставщика услуг на основе информации об окружающей среде, в то время как`_resolve_credentials`завершает настройку конкретного параметра на основе результата вывода.
 
-The `_auto_detect_provider` method is responsible for automatically inferring the service provider based on environment information, according to the following priority order:
+The `_auto_detect_provider`Метод отвечает за автоматический вывод поставщика услуг на основе информации об окружающей среде в соответствии со следующим порядком приоритетов:
 
-1. **Highest Priority: Check Environment Variables for Specific Service Providers** This is the most direct and reliable basis for judgment. The framework will sequentially check whether environment variables such as `MODELSCOPE_API_KEY`, `OPENAI_API_KEY`, `ZHIPU_API_KEY`, etc. exist. Once any one is found, it will immediately determine the corresponding service provider.
+1. **Наивысший приоритет: проверьте переменные среды для конкретных поставщиков услуг** Это наиболее прямая и надежная основа для принятия решения. Платформа последовательно проверит, существуют ли такие переменные среды, как «MODELSCOPE_API_KEY», «OPENAI_API_KEY», «ZHIPU_API_KEY» и т. д. Как только какой-либо из них будет найден, он немедленно определит соответствующего поставщика услуг.
 
-2. **Second Highest Priority: Determine Based on `base_url`** If the user has not set a specific service provider's key but has set the generic `LLM_BASE_URL`, the framework will parse this URL instead.
+2. **Второй наивысший приоритет: определение на основе `base_url`**. Если пользователь не установил ключ конкретного поставщика услуг, но установил общий `LLM_BASE_URL`, платформа вместо этого будет анализировать этот URL-адрес.
 
-   - **Domain Matching**: Identify cloud service providers by checking whether the URL contains characteristic strings such as `"api-inference.modelscope.cn"`, `"api.openai.com"`, etc.
+   - **Сопоставление доменов**. Определите поставщиков облачных услуг, проверив, содержит ли URL-адрес характерные строки, такие как `"api-inference.modelscope.cn"`, `"api.openai.com"` и т. д.
 
-   - **Port Matching**: Identify local deployment solutions by checking whether the URL contains standard ports for local services such as `:11434` (Ollama), `:8000` (VLLM), etc.
+   - **Сопоставление портов**. Определите решения для локального развертывания, проверив, содержит ли URL-адрес стандартные порты для локальных служб, такие как `:11434` (Ollama), `:8000` (VLLM) и т. д.
 
-3. **Auxiliary Judgment: Analyze API Key Format** In some cases, if neither of the above two methods can determine, the framework will try to analyze the format of the generic environment variable `LLM_API_KEY`. For example, some service providers' API keys have fixed prefixes or unique encoding formats. However, since this method may have ambiguity (e.g., multiple service providers have similar key formats), its priority is lower and is only used as an auxiliary means.
+3. **Вспомогательное решение: анализ формата ключа API** В некоторых случаях, если ни один из двух вышеуказанных методов не может определить, платформа попытается проанализировать формат общей переменной среды `LLM_API_KEY`. Например, ключи API некоторых поставщиков услуг имеют фиксированные префиксы или уникальные форматы кодирования. Однако, поскольку этот метод может иметь неоднозначность (например, несколько поставщиков услуг имеют одинаковые форматы ключей), его приоритет ниже и используется только как вспомогательное средство.
 
-Some key code is as follows:
+Некоторые ключевые коды выглядят следующим образом:
 
 ```python
 def _auto_detect_provider(self, api_key: Optional[str], base_url: Optional[str]) -> str:
@@ -399,7 +399,7 @@ def _auto_detect_provider(self, api_key: Optional[str], base_url: Optional[str])
     return "auto"
 ```
 
-Once the `provider` is determined (whether user-specified or auto-detected), the `_resolve_credentials` method takes over to handle the differentiated configuration of service providers. It will actively search for corresponding environment variables based on the value of `provider` and set default `base_url` for it. Some key implementations are as follows:
+Как только`provider`определяется (задается пользователем или определяется автоматически),`_resolve_credentials`Метод берет на себя обработку дифференцированной конфигурации поставщиков услуг. Он будет активно искать соответствующие переменные среды на основе значения`provider`и установить по умолчанию`base_url`для этого. Вот некоторые ключевые реализации:
 
 ```python
 def _resolve_credentials(self, api_key: Optional[str], base_url: Optional[str]) -> tuple[str, str]:
@@ -417,14 +417,14 @@ def _resolve_credentials(self, api_key: Optional[str], base_url: Optional[str]) 
     # ... Logic for other service providers
 ```
 
-Let's experience the convenience brought by automatic detection through a simple example. Suppose a user wants to use the local Ollama service, they only need to configure the `.env` file as follows:
+Давайте испытаем удобство автоматического обнаружения на простом примере. Предположим, пользователь хочет использовать локальную службу Ollama, ему нужно только настроить`.env`файл следующим образом:
 
 ```bash
 LLM_BASE_URL="http://localhost:11434/v1"
 LLM_MODEL_ID="llama3"
 ```
 
-They don't need to configure `LLM_API_KEY` at all or specify `provider` in the code. Then, in Python code, they simply instantiate `HelloAgentsLLM`:
+Им не нужно настраивать`LLM_API_KEY`вообще или укажите`provider`в коде. Затем в коде Python они просто создают экземпляр`HelloAgentsLLM`:
 
 ```python
 from dotenv import load_dotenv
@@ -443,30 +443,30 @@ for chunk in llm.think(messages):
 
 ```
 
-In this process, the `_auto_detect_provider` method successfully infers the `provider` as `"ollama"` by parsing `"localhost"` and `:11434` in `LLM_BASE_URL`. Subsequently, the `_resolve_credentials` method sets the correct default parameters for Ollama.
+В этом процессе`_auto_detect_provider` method successfully infers the `provider`как`"ollama"`путем анализа`"localhost"`и`:11434`в`LLM_BASE_URL`. Впоследствии`_resolve_credentials`Метод устанавливает правильные параметры по умолчанию для Олламы.
 
-Compared to the basic implementation in Section 4.1.3, the current HelloAgentsLLM has the following significant advantages:
+По сравнению с базовой реализацией из раздела 4.1.3, текущая версия HelloAgentsLLM имеет следующие существенные преимущества:
 
 <div align="center">
-  <p>Table 7.1 Comparison of HelloAgentLLM Different Version Features</p>
+  <p>Таблица 7.1. Сравнение функций различных версий HelloAgentLLM</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/7-figures/table-01.png" alt="" width="90%"/>
 </div>
 
-As shown in Table 7.1 above, this evolution embodies an important principle of framework design: **start simple, gradually improve**. We enhanced functional completeness while maintaining interface simplicity.
+Как показано в Таблице 7.1 выше, эта эволюция воплощает важный принцип проектирования структуры: **начинайте с простого, постепенно совершенствуйтесь**. Мы повысили функциональную полноту, сохранив при этом простоту интерфейса.
 
 
 
-## 7.3 Framework Interface Implementation
+## 7.3 Реализация интерфейса платформы
 
-In the previous section, we built `HelloAgentsLLM`, a core component that solves the key problem of communicating with large language models. However, it still needs a series of supporting interfaces and components to handle data flow, manage configuration, handle exceptions, and provide a clear, unified structure for upper-layer application construction. This section will cover the following three core files:
+В предыдущем разделе мы построили`HelloAgentsLLM`, основной компонент, который решает ключевую проблему взаимодействия с большими языковыми моделями. Однако ему по-прежнему требуется ряд вспомогательных интерфейсов и компонентов для управления потоком данных, управления конфигурацией, обработки исключений и обеспечения четкой унифицированной структуры для создания приложений верхнего уровня. В этом разделе будут рассмотрены следующие три основных файла:
 
-- `message.py`: Defines the unified message format within the framework, ensuring standardization of information transfer between agents and models.
-- `config.py`: Provides a centralized configuration management solution, making framework behavior easy to adjust and extend.
-- `agent.py`: Defines the abstract base class (`Agent`) for all agents, providing a unified interface and specification for implementing different types of agents in the future.
+- `message.py`: определяет унифицированный формат сообщений в рамках, обеспечивая стандартизацию передачи информации между агентами и моделями.
+- `config.py`: предоставляет решение для централизованного управления конфигурацией, упрощая настройку и расширение поведения платформы.
+- `agent.py`: определяет абстрактный базовый класс ("Агент") для всех агентов, предоставляя унифицированный интерфейс и спецификацию для реализации различных типов агентов в будущем.
 
-### 7.3.1 Message Class
+### 7.3.1 Класс сообщения
 
-In the interaction between agents and large language models, conversation history is crucial context. To manage this information in a standardized way, we designed a simple `Message` class. It will be extended in the subsequent context engineering chapter.
+Во взаимодействии между агентами и большими языковыми моделями история разговоров является важнейшим контекстом. Чтобы управлять этой информацией стандартизированным способом, мы разработали простой`Message`сорт. Он будет расширен в следующей главе по контекстной инженерии.
 
 ```python
 """Message system"""
@@ -504,11 +504,11 @@ class Message(BaseModel):
         return f"[{self.role}] {self.content}"
 ```
 
-The design of this class has several key points. First, we strictly limit the values of the `role` field to four types: `"user"`, `"assistant"`, `"system"`, `"tool"` through `typing.Literal`, which directly corresponds to the OpenAI API specification and ensures type safety. In addition to the two core fields `content` and `role`, we also added `timestamp` and `metadata`, reserving space for logging and future feature expansion. Finally, the `to_dict()` method is one of its core functions, responsible for converting the internally used `Message` object to a dictionary format compatible with the OpenAI API, embodying the design principle of "rich internally, compatible externally."
+В конструкции этого класса есть несколько ключевых моментов. Во-первых, мы строго ограничиваем значения`role`поле на четыре типа:`"user"`, `"assistant"`, `"system"`, `"tool"`через`typing.Literal`, что напрямую соответствует спецификации OpenAI API и обеспечивает безопасность типов. В дополнение к двум основным направлениям`content`и`role`, мы также добавили`timestamp`и`metadata`, резервируя место для регистрации и будущего расширения функций. Наконец,`to_dict()`метод является одной из его основных функций, отвечающих за преобразование внутренне используемых`Message`объект в формате словаря, совместимом с API OpenAI, воплощающем принцип проектирования «богатый внутри, совместимый снаружи».
 
-### 7.3.2 Config Class
+### 7.3.2 Класс конфигурации
 
-The responsibility of the `Config` class is to centralize hard-coded configuration parameters in the code and support reading from environment variables.
+Ответственность`Config`Целью класса является централизация жестко закодированных параметров конфигурации в коде и поддержка чтения из переменных среды.
 
 ```python
 """Configuration management"""
@@ -547,11 +547,11 @@ class Config(BaseModel):
         return self.dict()
 ```
 
-First, we divide configuration items logically into `LLM configuration`, `System configuration`, etc., making the structure clear at a glance. Second, each configuration item has a reasonable default value, ensuring that the framework can work with zero configuration. The most core is the `from_env()` class method, which allows users to override default configurations by setting environment variables without modifying code, which is especially useful when deploying to different environments.
+Сначала мы логически разделим элементы конфигурации на`LLM configuration`, `System configuration`и т. д., делая структуру понятной с первого взгляда. Во-вторых, каждый элемент конфигурации имеет разумное значение по умолчанию, что гарантирует работу платформы с нулевой конфигурацией. Самым основным является`from_env()`метод класса, который позволяет пользователям переопределять конфигурации по умолчанию, устанавливая переменные среды без изменения кода, что особенно полезно при развертывании в разных средах.
 
-### 7.3.3 Agent Abstract Base Class
+### 7.3.3 Абстрактный базовый класс агента
 
-The `Agent` class is the top-level abstraction of the entire framework. It defines the common behaviors and attributes that an agent should have but does not care about specific implementation methods. We implement it through Python's `abc` (Abstract Base Classes) module, which forces all concrete agent implementations (such as `SimpleAgent`, `ReActAgent`, etc. in subsequent chapters) to follow the same "interface."
+The `Agent`class — это абстракция верхнего уровня всей структуры. Он определяет общее поведение и атрибуты, которые должен иметь агент, но не заботится о конкретных методах реализации. Мы реализуем это через Python`abc`(Абстрактные базовые классы), который заставляет все конкретные реализации агентов (например,`SimpleAgent`, `ReActAgent`и т. д. в последующих главах), чтобы следовать тому же «интерфейсу».
 
 ```python
 """Agent base class"""
@@ -598,21 +598,21 @@ class Agent(ABC):
         return f"Agent(name={self.name}, provider={self.llm.provider})"
 ```
 
-The design of this class embodies the abstraction principle in object-oriented programming. First, it is defined as an abstract class that cannot be directly instantiated by inheriting `ABC`. Its constructor `__init__` clearly defines the core dependencies of an Agent: name, LLM instance, system prompt, and configuration. The most important part is the `run` method decorated with `@abstractmethod`, which forces all subclasses to implement this method, thereby ensuring that all agents have a unified execution entry point. In addition, the base class also provides common history management methods, which work in coordination with the `Message` class, reflecting the connection between components.
+Конструкция этого класса воплощает принцип абстракции объектно-ориентированного программирования. Во-первых, он определяется как абстрактный класс, экземпляр которого не может быть создан напрямую путем наследования.`ABC`. Его конструктор`__init__`четко определяет основные зависимости агента: имя, экземпляр LLM, системное приглашение и конфигурация. Самая важная часть – это`run`метод, украшенный`@abstractmethod`, что заставляет все подклассы реализовать этот метод, тем самым гарантируя, что все агенты имеют единую точку входа выполнения. Кроме того, базовый класс также предоставляет общие методы управления историей, которые работают в координации с`Message`класс, отражающий связь между компонентами.
 
-At this point, we have completed the design and implementation of the core basic components of the `HelloAgents` framework.
+На данный момент мы завершили проектирование и внедрение основных базовых компонентов`HelloAgents`рамки.
 
-## 7.4 Framework Implementation of Agent Paradigms
+## 7.4 Структура реализации парадигм агентов
 
-The content of this section will perform framework refactoring based on the three classic Agent paradigms (ReAct, Plan-and-Solve, Reflection) built in Chapter 4, and add SimpleAgent as a basic conversation paradigm. We will transform these independent Agent implementations into framework components based on a unified architecture. This refactoring mainly revolves around the following three core goals:
+Содержимое этого раздела будет выполнять рефакторинг инфраструктуры на основе трех классических парадигм агента (ReAct, Plan-and-Solve, Reflection), созданных в главе 4, и добавлять SimpleAgent в качестве базовой парадигмы диалога. Мы преобразуем эти независимые реализации агентов в компоненты инфраструктуры на основе унифицированной архитектуры. Этот рефакторинг в основном вращается вокруг следующих трех основных целей:
 
-1. **Systematic Improvement of Prompt Engineering**: Deeply optimize the prompts from Chapter 4, transitioning from specific task-oriented to generalized design, while enhancing format constraints and role definitions.
-2. **Standardization and Unification of Interfaces and Formats**: Establish a unified Agent base class and standardized running interface, with all Agents following the same initialization parameters, method signatures, and history management mechanisms.
-3. **Highly Configurable Customization Capabilities**: Support user-defined prompt templates, configuration parameters, and execution strategies.
+1. **Систематическое улучшение подсказок**. Глубоко оптимизируйте подсказки из главы 4, переходя от ориентированного на конкретные задачи к обобщенному дизайну, одновременно улучшая ограничения формата и определения ролей.
+2. **Стандартизация и унификация интерфейсов и форматов**. Создайте единый базовый класс агента и стандартизированный рабочий интерфейс, при котором все агенты будут использовать одинаковые параметры инициализации, сигнатуры методов и механизмы управления историей.
+3. **Широко настраиваемые возможности настройки**: поддержка определяемых пользователем шаблонов подсказок, параметров конфигурации и стратегий выполнения.
 
-### 7.4.1 SimpleAgent
+### 7.4.1 Простой агент
 
-SimpleAgent is the most basic Agent implementation, demonstrating how to build a complete conversational agent on the framework foundation. We will extend the existing `SimpleAgent` class and override its core methods to build a more extensible version. First, create a `my_simple_agent.py` file in your project directory:
+SimpleAgent — это самая базовая реализация агента, демонстрирующая, как создать полноценный диалоговый агент на основе платформы. Мы расширим существующие`SimpleAgent`class и переопределить его основные методы для создания более расширяемой версии. Сначала создайте`my_simple_agent.py`файл в каталоге вашего проекта:
 
 ```python
 # my_simple_agent.py
@@ -640,7 +640,7 @@ class MySimpleAgent(SimpleAgent):
         print(f"✅ {name} initialization complete, tool calling: {'enabled' if self.enable_tool_calling else 'disabled'}")
 ```
 
-Next, we need to override the `run` method. SimpleAgent supports optional tool calling functionality, which also facilitates expansion in subsequent chapters:
+Далее нам нужно переопределить`run`метод. SimpleAgent поддерживает дополнительные функции вызова инструментов, что также облегчает расширение в последующих главах:
 
 ```python
 # Continue adding in my_simple_agent.py
@@ -705,7 +705,7 @@ class MySimpleAgent(SimpleAgent):
         return base_prompt + tools_section
 ```
 
-Now we implement the core logic of tool calling:
+Теперь мы реализуем основную логику вызова инструментов:
 
 ```python
 # Continue adding in my_simple_agent.py
@@ -828,7 +828,7 @@ class MySimpleAgent(SimpleAgent):
         return param_dict
 ```
 
-We can also add streaming response functionality and convenience methods to the custom Agent:
+Мы также можем добавить функциональность потокового ответа и удобные методы к пользовательскому агенту:
 
 ```python
 # Continue adding in my_simple_agent.py
@@ -894,7 +894,7 @@ class MySimpleAgent(SimpleAgent):
         return []
 ```
 
-Create a test file `test_simple_agent.py`:
+Создайте тестовый файл`test_simple_agent.py`:
 
 ```python
 # test_simple_agent.py
@@ -954,15 +954,15 @@ print(f"Available tools: {basic_agent.list_tools()}")
 print(f"\nConversation history: {len(basic_agent.get_history())} messages")
 ```
 
-In this section, by inheriting the `Agent` base class, we successfully built a fully functional basic conversational agent `MySimpleAgent` that follows framework specifications. It not only supports basic conversation but also has optional tool calling capabilities, streaming response, and convenient tool management methods.
+В этом разделе, наследуя`Agent`базовый класс, мы успешно создали полнофункциональный базовый диалоговый агент`MySimpleAgent`это соответствует спецификациям структуры. Он не только поддерживает базовый диалог, но также имеет дополнительные возможности вызова инструментов, потоковую передачу ответов и удобные методы управления инструментами.
 
-### 7.4.2 ReActAgent
+### 7.4.2 РеактАгент
 
-The framework-based ReActAgent maintains the core logic unchanged while improving code organization and maintainability, mainly through prompt optimization and integration with the framework's tool system.
+ReActAgent на основе платформы сохраняет основную логику неизменной, одновременно улучшая организацию кода и удобство сопровождения, главным образом за счет быстрой оптимизации и интеграции с системой инструментов платформы.
 
-(1) Improvement of Prompt Template
+(1) Улучшение шаблона подсказки
 
-Maintains the original format requirements, emphasizing "only one step can be executed at a time" to avoid confusion, and clarifies the usage scenarios of two types of Actions.
+Сохраняются исходные требования к формату, подчеркивая, что «за раз можно выполнить только один шаг», чтобы избежать путаницы, и уточняются сценарии использования двух типов действий.
 
 ```python
 MY_REACT_PROMPT = """You are an AI assistant with reasoning and action capabilities. You can analyze problems through thinking, then call appropriate tools to obtain information, and finally provide accurate answers.
@@ -994,9 +994,9 @@ Now begin your reasoning and action:
 """
 ```
 
-(2) Complete Implementation of Rewritten ReActAgent
+(2) Полная реализация переписанного ReActAgent.
 
-Create a `my_react_agent.py` file to rewrite ReActAgent:
+Создайте`my_react_agent.py`файл для перезаписи ReActAgent:
 
 ```python
 # my_react_agent.py
@@ -1027,17 +1027,17 @@ class MyReActAgent(ReActAgent):
         print(f"✅ {name} initialization complete, max steps: {max_steps}")
 ```
 
-The meaning of its initialization parameters is as follows:
+Смысл его параметров инициализации следующий:
 
-- `name`: Name of the Agent.
-- `llm`: Instance of `HelloAgentsLLM`, responsible for communicating with the large language model.
-- `tool_registry`: Instance of `ToolRegistry`, used to manage and execute tools available to the Agent.
-- `system_prompt`: System prompt, used to set the Agent's role and behavioral guidelines.
-- `config`: Configuration object, used to pass framework-level settings.
-- `max_steps`: Maximum execution steps of the ReAct loop, preventing infinite loops.
-- `custom_prompt`: Custom prompt template, used to replace the default ReAct prompt.
+- `name`: Имя агента.
+- `llm`: экземпляр HelloAgentsLLM, отвечающий за взаимодействие с большой языковой моделью.
+- `tool_registry`: Экземпляр `ToolRegistry`, используемый для управления и выполнения инструментов, доступных агенту.
+- `system_prompt`: системное приглашение, используемое для установки роли агента и правил поведения.
+- `config`: объект конфигурации, используемый для передачи настроек уровня платформы.
+- `max_steps`: Максимальное количество шагов выполнения цикла ReAct, предотвращающее бесконечные циклы.
+- `custom_prompt`: пользовательский шаблон приглашения, используемый для замены приглашения ReAct по умолчанию.
 
-The framework-based ReActAgent decomposes the execution process into clear steps:
+ReActAgent на основе платформы разбивает процесс выполнения на четкие этапы:
 
 ```python
 def run(self, input_text: str, **kwargs) -> str:
@@ -1088,11 +1088,11 @@ def run(self, input_text: str, **kwargs) -> str:
     return final_answer
 ```
 
-Through the above refactoring, we successfully integrated the ReAct paradigm into the framework. The core improvement lies in utilizing the unified `ToolRegistry` interface and improving the stability of the agent's think-action loop execution through a configurable, more rigorous prompt template. For ReAct test cases, since tool calls are required, test code is provided at the end of the document.
+Благодаря описанному выше рефакторингу мы успешно интегрировали парадигму ReAct в инфраструктуру. Основное улучшение заключается в использовании унифицированного`ToolRegistry`интерфейс и повышение стабильности выполнения цикла «мышление-действие» агента с помощью настраиваемого, более строгого шаблона подсказок. Для тестовых случаев ReAct, поскольку требуются вызовы инструментов, тестовый код приведен в конце документа.
 
-### 7.4.3 ReflectionAgent
+### 7.4.3 Агент отражения
 
-Since these types of Agents have already implemented core logic in Chapter 4, only the corresponding Prompts are provided here. Unlike the prompts specifically for code generation in Chapter 4, the framework version adopts a generalized design, making it suitable for various scenarios such as text generation, analysis, and creation, and supports deep customization by users through the `custom_prompts` parameter.
+Поскольку эти типы агентов уже реализовали базовую логику в главе 4, здесь представлены только соответствующие подсказки. В отличие от подсказок, специально предназначенных для генерации кода в главе 4, версия платформы имеет обобщенный дизайн, что делает ее подходящей для различных сценариев, таких как генерация, анализ и создание текста, и поддерживает глубокую настройку пользователей через`custom_prompts`параметр.
 
 ```python
 DEFAULT_PROMPTS = {
@@ -1132,7 +1132,7 @@ Please provide an improved answer.
 }
 ```
 
-You can try to build your own MyReflectionAgent based on the code from Chapter 4 and the ReAct implementation above. Below is a test code for verifying ideas.
+Вы можете попытаться создать свой собственный MyReflectionAgent на основе кода из главы 4 и приведенной выше реализации ReAct. Ниже приведен тестовый код для проверки идей.
 
 ```python
 # test_reflection_agent.py
@@ -1163,9 +1163,9 @@ result = general_agent.run("Write a short article about the development history 
 print(f"Final result: {result}")
 ```
 
-### 7.4.4 PlanAndSolveAgent
+### 7.4.4 Агент PlanAndSolve
 
-Unlike the free-text plan output in Chapter 4, the framework version mandates that the Planner output the plan in Python list format and provides a complete exception handling mechanism to ensure stable execution of subsequent steps. Framework-based Plan-and-Solve prompts:
+В отличие от вывода плана в виде произвольного текста в главе 4, версия платформы требует, чтобы Планировщик выдавал план в формате списка Python, и предоставляет полный механизм обработки исключений для обеспечения стабильного выполнения последующих шагов. Подсказки «Планируй и решай» на основе платформы:
 
 ````bash
 # Default planner prompt template
@@ -1177,8 +1177,8 @@ Your output must be a Python list, where each element is a string describing a s
 Question: {question}
 
 Please output your plan strictly in the following format:
-```python
-["Step 1", "Step 2", "Step 3", ...]
+```питон
+["Шаг 1", "Шаг 2", "Шаг 3", ...]
 ```
 """
 
@@ -1204,7 +1204,7 @@ Please only output the answer for the "current step":
 """
 ````
 
-This section still provides a comprehensive test file `test_plan_solve_agent.py`, which you can design and implement yourself.
+В этом разделе по-прежнему представлен подробный тестовый файл.`test_plan_solve_agent.py`, который вы можете спроектировать и реализовать самостоятельно.
 
 ```python
 # test_plan_solve_agent.py
@@ -1234,7 +1234,7 @@ print(f"\nFinal result: {result}")
 print(f"Conversation history: {len(agent.get_history())} messages")
 ```
 
-Finally, you can add a new prompt and try implementing `custom_prompt` to load custom prompts.
+Наконец, вы можете добавить новое приглашение и попробовать реализовать`custom_prompt`для загрузки пользовательских подсказок.
 
 ```python
 # Create custom prompts specifically for math problems
@@ -1273,24 +1273,24 @@ math_result = math_agent.run(question)
 print(f"Math-specific Agent result: {math_result}")
 ```
 
-As shown in Table 7.2, through this framework refactoring, we not only maintained the core functionality of various Agent paradigms from Chapter 4 but also significantly improved code organization, maintainability, and extensibility. All Agents now share a unified infrastructure while maintaining their respective characteristics and advantages.
+Как показано в таблице 7.2, благодаря этому рефакторингу структуры мы не только сохранили основные функциональные возможности различных парадигм агентов из главы 4, но также значительно улучшили организацию кода, удобство сопровождения и расширяемость. Все агенты теперь используют единую инфраструктуру, сохраняя при этом свои соответствующие характеристики и преимущества.
 
 <div align="center">
-  <p>Table 7.2 Comparison of Agent Implementations Across Chapters</p>
+  <p>Таблица 7.2. Сравнение реализаций агентов по главам</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/7-figures/table-02.png" alt="" width="90%"/>
 </div>
 
-### 7.4.5 FunctionCallAgent
+### 7.4.5 ФункцияВызовАгента
 
-FunctionCallAgent is an Agent introduced in hello-agents after version 0.2.8, based on OpenAI's native function calling mechanism. It demonstrates how to build an Agent using OpenAI's function calling capabilities.
-It supports the following features:
+FunctionCallAgent — это агент, представленный в hello-agents после версии 0.2.8 и основанный на собственном механизме вызова функций OpenAI. Он демонстрирует, как создать агент, используя возможности вызова функций OpenAI.
+Он поддерживает следующие функции:
 
-- _build_tool_schemas: Constructs OpenAI function calling schema through tool descriptions
-- _extract_message_content: Extracts text content from OpenAI responses
-- _parse_function_call_arguments: Parses JSON string parameters returned by the model
-- _convert_parameter_types: Converts parameter types
+- _build_tool_schemas: создает схему вызова функций OpenAI посредством описаний инструментов.
+- _extract_message_content: извлекает текстовое содержимое из ответов OpenAI.
+- _parse_function_call_arguments: анализирует строковые параметры JSON, возвращаемые моделью.
+- _convert_parameter_types: преобразует типы параметров.
 
-These features enable native OpenAI Function Calling capabilities, providing stronger robustness compared to prompt-constrained approaches.
+Эти функции обеспечивают встроенные возможности вызова функций OpenAI, обеспечивая более высокую надежность по сравнению с подходами с ограничением подсказок.
 
 ```python
 def _invoke_with_tools(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]], tool_choice: Union[str, dict], **kwargs):
@@ -1348,23 +1348,23 @@ completion = client.chat.completions.create(
 print(completion)
 ```
 
-## 7.5 Tool System
+## 7.5 Система инструментов
 
-The content of this section will deeply explore the design and implementation of the tool system based on the Agent infrastructure built earlier. We will start from infrastructure construction and gradually delve into custom development design. The learning objectives of this section revolve around the following three core aspects:
+В содержании этого раздела подробно рассматривается проектирование и реализация системы инструментов на основе инфраструктуры агента, созданной ранее. Мы начнем со строительства инфраструктуры и постепенно углубимся в индивидуальное проектирование. Цели обучения этого раздела вращаются вокруг следующих трех основных аспектов:
 
-1. **Unified Tool Abstraction and Management**: Establish a standardized Tool base class and ToolRegistry registration mechanism to provide unified infrastructure for tool development, registration, discovery, and execution.
+1. **Унифицированная абстракция инструментов и управление ими**. Создайте стандартизированный базовый класс инструментов и механизм регистрации ToolRegistry, чтобы обеспечить унифицированную инфраструктуру для разработки, регистрации, обнаружения и выполнения инструментов.
 
-2. **Practice-Driven Tool Development**: Using mathematical calculation tools as a case study, demonstrate how to design and implement custom tools, allowing readers to master the complete process of tool development.
+2. **Разработка инструментов, основанная на практике**: используя инструменты математических расчетов в качестве примера, продемонстрируйте, как разрабатывать и реализовывать специальные инструменты, что позволит читателям освоить весь процесс разработки инструментов.
 
-3. **Advanced Integration and Optimization Strategies**: Through the design of multi-source search tools, demonstrate how to integrate multiple external services, implement intelligent backend selection, result merging, and fault tolerance, reflecting the design thinking of the tool system in complex scenarios.
+3. **Расширенные стратегии интеграции и оптимизации**: с помощью разработки инструментов поиска из нескольких источников продемонстрируйте, как интегрировать несколько внешних служб, реализовать интеллектуальный выбор серверной части, объединение результатов и отказоустойчивость, отражая дизайнерское мышление системы инструментов в сложных сценариях.
 
-### 7.5.1 Tool Base Class and Registration Mechanism Design
+### 7.5.1 Базовый класс инструмента и разработка механизма регистрации
 
-When building an extensible tool system, we need to first establish a set of standardized infrastructure. This infrastructure includes the Tool base class, ToolRegistry registry, and tool management mechanisms.
+При создании расширяемой системы инструментов нам необходимо сначала создать набор стандартизированной инфраструктуры. Эта инфраструктура включает базовый класс Tool, реестр ToolRegistry и механизмы управления инструментами.
 
-(1) Abstract Design of Tool Base Class
+(1) Абстрактная конструкция базового класса инструмента
 
-The Tool base class is the core abstraction of the entire tool system, defining the interface specifications that all tools must follow:
+Базовый класс Tool — это основная абстракция всей системы инструментов, определяющая спецификации интерфейса, которым должны следовать все инструменты:
 
 ````python
 class Tool(ABC):
@@ -1384,11 +1384,11 @@ class Tool(ABC):
         """Get tool parameter definitions"""
         pass
 ````
-This design embodies the core idea of object-oriented design: through the unified `run` method interface, all tools can be executed in a consistent manner, accepting dictionary parameters and returning string results, ensuring framework consistency. At the same time, tools have self-description capabilities. Through the `get_parameters` method, they can clearly tell callers what parameters they need. This introspection mechanism provides a foundation for automated documentation generation and parameter validation. The design of metadata such as name and description gives the tool system good discoverability and understandability.
+Этот дизайн воплощает основную идею объектно-ориентированного проектирования: посредством унифицированного`run`интерфейс метода, все инструменты могут выполняться согласованным образом, принимая параметры словаря и возвращая строковые результаты, обеспечивая согласованность инфраструктуры. В то же время инструменты обладают возможностями самоописания. Через`get_parameters`метод, они могут четко сообщить вызывающему абоненту, какие параметры им нужны. Этот механизм самоанализа обеспечивает основу для автоматического создания документации и проверки параметров. Структура метаданных, таких как имя и описание, обеспечивает хорошую доступность и понятность инструментальной системы.
 
-(2) ToolParameter Parameter Definition System
+(2) Система определения параметров ToolParameter
 
-To support complex parameter validation and documentation generation, we designed the ToolParameter class:
+Для поддержки сложной проверки параметров и создания документации мы разработали класс ToolParameter:
 
 ````python
 class ToolParameter(BaseModel):
@@ -1399,11 +1399,11 @@ class ToolParameter(BaseModel):
     required: bool = True
     default: Any = None
 ````
-This design allows tools to precisely describe their parameter requirements, supporting type checking, default value setting, and automatic documentation generation.
+Такая конструкция позволяет инструментам точно описывать требования к параметрам, поддерживает проверку типов, настройку значений по умолчанию и автоматическое создание документации.
 
-(3) Implementation of ToolRegistry
+(3) Реализация ToolRegistry
 
-ToolRegistry is the management hub of the tool system, providing core functions such as tool registration, discovery, and execution. In this section, we mainly use the following functions:
+ToolRegistry — это центр управления системой инструментов, обеспечивающий основные функции, такие как регистрация, обнаружение и выполнение инструментов. В этом разделе мы в основном используем следующие функции:
 
 ````python
 class ToolRegistry:
@@ -1438,14 +1438,14 @@ class ToolRegistry:
         }
         print(f"✅ Tool '{name}' registered.")
 ````
-ToolRegistry supports two registration methods:
+ToolRegistry поддерживает два метода регистрации:
 
-1. **Tool Object Registration**: Suitable for complex tools, supports complete parameter definition and validation
-2. **Direct Function Registration**: Suitable for simple tools, quickly integrates existing functions
+1. **Регистрация объекта инструмента**: подходит для сложных инструментов, поддерживает полное определение и проверку параметров.
+2. **Прямая регистрация функций**: подходит для простых инструментов, быстро интегрирует существующие функции.
 
-(4) Tool Discovery and Management Mechanism
+(4) Механизм обнаружения и управления инструментами
 
-The registry provides rich tool management functions:
+Реестр предоставляет богатые функции управления инструментами:
 
 ````python
 def get_tools_description(self) -> str:
@@ -1462,13 +1462,13 @@ def get_tools_description(self) -> str:
 
     return "\n".join(descriptions) if descriptions else "No tools available"
 ````
-The description string generated by this method can be directly used to build the Agent's prompt, letting the Agent know what tools are available.
+Строку описания, созданную этим методом, можно напрямую использовать для создания подсказки агента, сообщая агенту, какие инструменты доступны.
 
-### 7.5.2 Custom Tool Development
+### 7.5.2 Разработка индивидуальных инструментов
 
-With the infrastructure in place, let's see how to develop a complete custom tool. A mathematical calculation tool is a good example because it is simple and intuitive. The most direct way is to use ToolRegistry's function registration feature.
+Имея готовую инфраструктуру, давайте посмотрим, как разработать полноценный специализированный инструмент. Инструмент математических расчетов является хорошим примером, поскольку он прост и интуитивно понятен. Самый прямой способ — использовать функцию регистрации функций ToolRegistry.
 
-Let's create a custom mathematical calculation tool. First, create `my_calculator_tool.py` in your project directory:
+Давайте создадим собственный инструмент математических вычислений. Сначала создайте`my_calculator_tool.py`в каталоге вашего проекта:
 
 ```python
 # my_calculator_tool.py
@@ -1535,7 +1535,7 @@ def create_calculator_registry():
     return registry
 ```
 
-The tool not only supports basic arithmetic operations but also covers commonly used mathematical functions and constants, meeting the needs of most calculation scenarios. You can also extend this file yourself to create a more complete calculation function. We provide a test file `test_my_calculator.py` to help you verify the functionality:
+Этот инструмент не только поддерживает основные арифметические операции, но также охватывает часто используемые математические функции и константы, удовлетворяя потребности большинства сценариев вычислений. Вы также можете самостоятельно расширить этот файл, чтобы создать более полную функцию расчета. Предоставляем тестовый файл`test_my_calculator.py`чтобы помочь вам проверить функциональность:
 
 ```python
 # test_my_calculator.py
@@ -1604,24 +1604,24 @@ if __name__ == "__main__":
     test_with_simple_agent()
 ```
 
-Through this simplified mathematical calculation tool case, we learned how to quickly develop custom tools: write a simple calculation function, register it through ToolRegistry, and then integrate it with SimpleAgent. For more intuitive observation, Figure 7.1 is provided here to clearly understand the code's running logic.
+В этом примере с упрощенным инструментом математических расчетов мы научились быстро разрабатывать собственные инструменты: написать простую функцию расчета, зарегистрировать ее через ToolRegistry, а затем интегрировать ее с SimpleAgent. Для более интуитивного наблюдения здесь представлен рисунок 7.1, чтобы лучше понять логику выполнения кода.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/7-figures/01.png" alt="" width="90%"/>
-  <p>Figure 7.1 SimpleAgent Workflow Based on HelloAgents</p>
+  <p>Рис. 7.1 Рабочий процесс SimpleAgent на основе HelloAgents</p>
 </div>
 
-### 7.5.3 Multi-Source Search Tool
+### 7.5.3 Инструмент поиска по нескольким источникам
 
-In practical applications, we often need to integrate multiple external services to provide more powerful functionality. Search tools are a typical example, integrating multiple search engines to provide more complete real information. In Chapter 1, we used Tavily's search API, and in Chapter 4, we used SerpApi's search API. Therefore, this time we use these two APIs to implement multi-source search functionality. If you haven't installed the corresponding Python dependencies, you can run the following script:
+В практических приложениях нам часто необходимо интегрировать несколько внешних сервисов для обеспечения более мощной функциональности. Инструменты поиска являются типичным примером интеграции нескольких поисковых систем для предоставления более полной реальной информации. В главе 1 мы использовали API поиска Tavily, а в главе 4 — API поиска SerpApi. Поэтому на этот раз мы используем эти два API для реализации функции поиска по нескольким источникам. Если вы не установили соответствующие зависимости Python, вы можете запустить следующий скрипт:
 
 ```bash
 pip install "hello-agents[search]==0.1.1"
 ```
 
-(1) Unified Interface Design for Search Tools
+(1) Единый дизайн интерфейса для инструментов поиска
 
-The SearchTool built into the HelloAgents framework demonstrates how to design an advanced multi-source search tool:
+Инструмент SearchTool, встроенный в платформу HelloAgents, демонстрирует, как разработать расширенный инструмент поиска по нескольким источникам:
 
 ````python
 class SearchTool(Tool):
@@ -1645,11 +1645,11 @@ class SearchTool(Tool):
         self.available_backends = []
         self._setup_backends()
 ````
-The core idea of this design is to automatically select the best search backend based on available API keys and dependency libraries.
+Основная идея этого дизайна — автоматически выбирать лучший сервер поиска на основе доступных ключей API и библиотек зависимостей.
 
-(2) Integration Strategy for TAVILY and SERPAPI Search Sources
+(2) Стратегия интеграции источников поиска TAVILY и SERPAPI
 
-The framework implements intelligent backend selection logic:
+Фреймворк реализует интеллектуальную логику выбора серверной части:
 
 ````python
 def _search_hybrid(self, query: str) -> str:
@@ -1675,11 +1675,11 @@ def _search_hybrid(self, query: str) -> str:
     # If both are unavailable, prompt user to configure API
     return "❌ No available search sources, please configure TAVILY_API_KEY or SERPAPI_API_KEY environment variables"
 ````
-This design embodies the core concept of high-availability systems: through degradation mechanisms, the system can gradually degrade from the optimal search source to available alternatives. When all search sources are unavailable, it clearly prompts the user to configure the correct API keys.
+Эта конструкция воплощает основную концепцию систем высокой доступности: с помощью механизмов деградации система может постепенно переходить от оптимального источника поиска к доступным альтернативам. Когда все источники поиска недоступны, пользователю явно предлагается настроить правильные ключи API.
 
-(3) Unified Formatting of Search Results
+(3) Единое форматирование результатов поиска
 
-Different search engines return results in different formats. The framework handles this through a unified formatting method:
+Разные поисковые системы выдают результаты в разных форматах. Платформа обрабатывает это с помощью унифицированного метода форматирования:
 
 ````python
 def _search_tavily(self, query: str) -> str:
@@ -1701,7 +1701,7 @@ def _search_tavily(self, query: str) -> str:
     return result
 ````
 
-Based on the framework's design philosophy, we can create our own advanced search tool. This time we use a class-based approach to demonstrate different implementation methods. Create `my_advanced_search.py`:
+Основываясь на философии проектирования платформы, мы можем создать собственный инструмент расширенного поиска. На этот раз мы используем подход на основе классов для демонстрации различных методов реализации. Создавать`my_advanced_search.py`:
 
 ```python
 # my_advanced_search.py
@@ -1838,7 +1838,7 @@ def create_advanced_search_registry():
     return registry
 ```
 
-Next, we can test the tool we wrote ourselves. Create `test_advanced_search.py`:
+Далее мы можем протестировать инструмент, который написали сами. Создавать`test_advanced_search.py`:
 
 ```python
 # test_advanced_search.py
@@ -1896,15 +1896,15 @@ if __name__ == "__main__":
     test_with_agent()
 ```
 
-Through this advanced search tool design practice, we learned how to use classes to build complex tool systems. Compared to the function approach, the class approach is more suitable for tools that need to maintain state (such as API clients, configuration information).
+Благодаря этому расширенному опыту проектирования инструментов поиска мы научились использовать классы для создания сложных систем инструментов. По сравнению с функциональным подходом классовый подход больше подходит для инструментов, которым необходимо поддерживать состояние (например, клиенты API, информация о конфигурации).
 
-### 7.5.4 Advanced Features of Tool System
+### 7.5.4 Расширенные функции системы инструментов
 
-After mastering basic tool development and multi-source integration, let's explore advanced features of the tool system. These features enable the tool system to run stably in complex production environments and provide more powerful capabilities for Agents.
+Освоив базовую разработку инструментов и интеграцию с несколькими источниками, давайте изучим расширенные функции системы инструментов. Эти функции позволяют системе инструментов стабильно работать в сложных производственных средах и предоставляют более мощные возможности агентам.
 
-(1) Tool Chain Invocation Mechanism
+(1) Механизм вызова цепочки инструментов
 
-In practical applications, Agents often need to combine multiple tools to complete complex tasks. We can design a tool chain manager to support this scenario, borrowing the graph concept mentioned in Chapter 6:
+В практических приложениях агентам часто приходится комбинировать несколько инструментов для выполнения сложных задач. Мы можем разработать менеджер цепочки инструментов для поддержки этого сценария, позаимствовав концепцию графа, упомянутую в главе 6:
 
 ```python
 # tool_chain_manager.py
@@ -2014,9 +2014,9 @@ def create_research_chain() -> ToolChain:
     return chain
 ```
 
-(2) Asynchronous Tool Execution Support
+(2) Поддержка асинхронного выполнения инструментов
 
-For time-consuming tool operations, we can provide asynchronous execution support:
+Для трудоемких инструментальных операций мы можем обеспечить поддержку асинхронного выполнения:
 
 ```python
 # async_tool_executor.py
@@ -2090,62 +2090,62 @@ async def test_parallel_execution():
         print(f"Task {i+1} result: {result[:100]}...")
 ```
 
-Based on the above design and implementation experience, we can summarize the core concepts of tool system development: At the design level, each tool should follow the single responsibility principle, focusing on specific functionality while maintaining interface uniformity, and treating comprehensive exception handling and security-first input validation as basic requirements. In terms of performance optimization, use asynchronous execution to improve concurrent processing capabilities while reasonably managing external connections and system resources.
+Основываясь на приведенном выше опыте проектирования и реализации, мы можем обобщить основные концепции разработки инструментальных систем: на уровне проектирования каждый инструмент должен следовать принципу единой ответственности, фокусируясь на конкретной функциональности, сохраняя при этом единообразие интерфейса и рассматривая комплексную обработку исключений и проверку входных данных с учетом безопасности в качестве основных требований. С точки зрения оптимизации производительности используйте асинхронное выполнение, чтобы улучшить возможности параллельной обработки, одновременно разумно управляя внешними соединениями и системными ресурсами.
 
 
 
-## 7.6 Chapter Summary
+## 7.6 Краткое содержание главы
 
-Before formally summarizing, we want to share good news with everyone: For all methods and functions implemented in this chapter, complete test cases are provided in the GitHub repository. You can visit [this link](https://github.com/datawhalechina/hello-agents/tree/main/code/chapter7) to view and run these test codes. This directory contains demonstrations of four Agent paradigms, integration tests of the tool system, usage examples of advanced features, and interactive Agent experiences. If you want to verify whether your implementation is correct or want to deeply understand the actual usage of the framework, these test cases will be valuable references.
+Прежде чем подвести формальный итог, мы хотим поделиться со всеми хорошими новостями: для всех методов и функций, реализованных в этой главе, в репозитории GitHub представлены полные тестовые примеры. Вы можете посетить [эту ссылку](https://github.com/datawhalechina/hello-agents/tree/main/code/chapter7), чтобы просмотреть и запустить эти тестовые коды. Этот каталог содержит демонстрации четырех парадигм агентов, интеграционные тесты системы инструментов, примеры использования расширенных функций и интерактивные возможности агента. Если вы хотите проверить правильность вашей реализации или хотите глубоко понять фактическое использование платформы, эти тестовые примеры будут ценным справочным материалом.
 
-Looking back at this chapter, we completed a challenging task: step by step, we built a basic agent framework—HelloAgents. This process consistently followed the core principles of "layered decoupling, single responsibility, and unified interfaces."
+Оглядываясь назад на эту главу, мы видим, что выполнили сложную задачу: шаг за шагом создали базовую структуру агентов — HelloAgents. Этот процесс последовательно следовал основным принципам «многоуровневого разделения, единой ответственности и унифицированных интерфейсов».
 
-In the specific implementation of the framework, we re-implemented four classic Agent paradigms. From SimpleAgent's basic conversation mode to ReActAgent's combination of reasoning and action; from ReflectionAgent's self-reflection and iterative optimization to PlanAndSolveAgent's decomposition planning and step-by-step execution. The tool system, as the core of Agent capability extension, was a complete engineering practice.
+В конкретной реализации платформы мы повторно реализовали четыре классические парадигмы агентов. От базового режима разговора SimpleAgent до сочетания рассуждений и действий в ReActAgent; от саморефлексии и итеративной оптимизации ReflectionAgent до планирования декомпозиции и пошагового выполнения PlanAndSolveAgent. Система инструментов, являющаяся основой расширения возможностей агента, представляла собой полноценную инженерную практику.
 
-More importantly, the construction of Chapter 7 is not the endpoint but provides the necessary technical foundation for deeper learning in subsequent chapters. We fully considered the extensibility of subsequent content in the initial design, reserving necessary interfaces and extension points for implementing advanced features. The unified LLM interface, standardized message system, and tool registration mechanism we established together constitute a complete technical foundation. This allows us to more calmly learn more advanced topics in subsequent chapters: Chapter 8's memory and RAG system will expand Agent's capability boundaries based on this; Chapter 9's context engineering will delve into the message processing mechanism we have established; Chapter 10's agent protocol will require extending new tools.
+Что еще более важно, построение главы 7 не является конечной точкой, а обеспечивает необходимую техническую основу для более глубокого изучения последующих глав. При первоначальном проектировании мы полностью учли возможность расширения последующего контента, оставив необходимые интерфейсы и точки расширения для реализации расширенных функций. Единый интерфейс LLM, стандартизированная система сообщений и механизм регистрации инструментов, которые мы создали вместе, составляют полную техническую основу. Это позволяет нам более спокойно изучать более сложные темы в последующих главах: Память Главы 8 и система RAG расширят границы возможностей Агента на основе этого; Контекстная инженерия главы 9 будет посвящена установленному нами механизму обработки сообщений; Протокол агента главы 10 потребует расширения новых инструментов.
 
-Next, we will explore together how to add RAG systems and Memory mechanisms to the framework. Stay tuned for Chapter 8!
+Далее мы вместе рассмотрим, как добавить в структуру системы RAG и механизмы памяти. Оставайтесь с нами, чтобы увидеть главу 8!
 
 
-## Exercises
+## Упражнения
 
-1. This chapter built the `HelloAgents` framework and explained "why we need to build our own Agent framework." Please analyze:
+1. В этой главе была создана структура HelloAgents и объяснено, «почему нам необходимо создать собственную структуру агентов». Пожалуйста, проанализируйте:
 
-   - Section 7.1.1 mentioned four main limitations of current mainstream frameworks. Combined with your actual experience using a framework in [Chapter 6 exercises](../chapter6/第六章%20框架开发实践.md#习题) or actual projects, explain how these problems affect development efficiency.
-   - `HelloAgents` proposes the design philosophy of "everything is a tool," abstracting modules like `Memory`, `RAG`, and `MCP` as tools. What are the advantages of this design? Are there any limitations? Please provide examples.
-   - Comparing the agent code implemented from scratch in Chapter 4 with the framework implementation in this chapter, what specific improvements does the framework bring? If you were to design a framework, what design principles would you prioritize?
+   - В разделе 7.1.1 упоминаются четыре основных ограничения нынешних основных структур. В сочетании с вашим реальным опытом использования платформы в [упражнениях главы 6](../chapter6/第六章%20框架开发实践.md#习题) или реальных проектах объясните, как эти проблемы влияют на эффективность разработки.
+   - «HelloAgents» предлагает философию дизайна «все является инструментом», абстрагируя такие модули, как «Memory», «RAG» и «MCP», как инструменты. Каковы преимущества этой конструкции? Есть ли какие-либо ограничения? Пожалуйста, приведите примеры.
+   - Сравнивая код агента, реализованный с нуля в главе 4, с реализацией платформы в этой главе, какие конкретные улучшения вносит эта платформа? Если бы вам пришлось разрабатывать структуру, какие принципы проектирования вы бы поставили в приоритет?
 
-2. In Section 7.2, we extended `HelloAgentsLLM` to support multiple model providers and local model invocation.
+2. В разделе 7.2 мы расширили HelloAgentsLLM для поддержки нескольких поставщиков моделей и вызова локальных моделей.
 
-   > <strong>Hint</strong>: This is a practical exercise, hands-on operation is recommended
+> <strong>Подсказка</strong>. Это практическое упражнение, рекомендуется выполнить практическое упражнение.
 
-   - Referring to the example in Section 7.2.1, try adding support for a new model provider to `HelloAgentsLLM` (such as `Gemini`, `Anthropic`, `Kim`). Implement it through inheritance and enable automatic detection of that provider's environment variables.
-   - Section 7.2.3 introduced three priorities of the automatic detection mechanism. Please analyze: If both `OPENAI_API_KEY` and `LLM_BASE_URL="http://localhost:11434/v1"` are set, which provider will the framework ultimately choose? Is this priority design reasonable?
-   - Besides `VLLM` and `Ollama` introduced in this chapter, there are other local model deployment solutions like `SGLang`. Please first search for and understand the basic information and characteristics of `SGLang`, then compare `VLLM`, `SGLang`, and `Ollama` in terms of ease of use, resource consumption, inference speed, and inference accuracy.
+   - Ссылаясь на пример в разделе 7.2.1, попробуйте добавить поддержку нового поставщика модели в HelloAgentsLLM (например, Gemini, Anthropic, Kim). Реализуйте его посредством наследования и включите автоматическое обнаружение переменных среды этого поставщика.
+   - В разделе 7.2.3 представлены три приоритета механизма автоматического обнаружения. Пожалуйста, проанализируйте: если установлены оба OPENAI_API_KEY и LLM_BASE_URL="http://localhost:11434/v1"`, какой поставщик в конечном итоге выберет платформа? Разумен ли такой приоритетный дизайн?
+   - Помимо VLLM и Ollama, представленных в этой главе, существуют и другие решения для развертывания локальных моделей, такие как SGLang. Пожалуйста, сначала найдите и поймите основную информацию и характеристики `SGLang`, затем сравните `VLLM`, `SGLang` и `Ollama` с точки зрения простоты использования, потребления ресурсов, скорости вывода и точности вывода.
 
-3. In Section 7.3, we implemented the `Message` class, `Config` class, and `Agent` base class. Please analyze:
+3. В разделе 7.3 мы реализовали класс Message, класс Config и базовый класс Agent. Пожалуйста, проанализируйте:
 
-   - The `Message` class uses `Pydantic`'s `BaseModel` for data validation. What are the advantages of this design in practical applications?
-   - The `Agent` base class defines two methods: `run` and `_execute`, where `run` is the public interface and `_execute` is an abstract method. What is this design pattern called? What are its benefits?
-   - In the `Config` class, we used the singleton pattern. Please explain what the singleton pattern is, why configuration management needs to use the singleton pattern, and what problems would arise if the singleton pattern is not used.
+   - Класс Message использует BaseModel от Pydantic для проверки данных. Каковы преимущества этой конструкции в практическом применении?
+   - Базовый класс Agent определяет два метода: run и _execute, где run — это общедоступный интерфейс, а _execute — абстрактный метод. Как называется этот шаблон проектирования? Каковы его преимущества?
+   - В классе Config мы использовали шаблон Singleton. Объясните, что такое шаблон Singleton, почему при управлении конфигурацией необходимо использовать шаблон Singleton и какие проблемы могут возникнуть, если шаблон Singleton не используется.
 
-4. In Section 7.4, we implemented four `Agent` paradigms in a framework manner.
+4. В разделе 7.4 мы реализовали четыре парадигмы «Агента» в виде фреймворка.
 
-   > <strong>Hint</strong>: This is a practical exercise, hands-on operation is recommended
+> <strong>Подсказка</strong>. Это практическое упражнение, рекомендуется выполнить практическое упражнение.
 
-   - Comparing the `ReActAgent` implemented from scratch in Chapter 4 with the framework-based `ReActAgent` in this chapter, list 3 specific improvements and explain how these improvements enhance code maintainability and extensibility.
-   - `ReflectionAgent` implements an "execute-reflect-optimize" loop. Please extend this implementation by adding a "quality scoring" mechanism: After each reflection, have the `LLM` score the current version's output, and only continue optimization if the score is below a threshold; otherwise, terminate early.
-   - Please design and implement a new `Agent` paradigm called `Tree-of-Thought Agent`, which should inherit from the `Agent` base class and be able to generate multiple possible thinking paths at each step, then select the optimal path to continue.
+   - Сравнивая ReActAgent, реализованный с нуля в главе 4, с ReActAgent на основе платформы в этой главе, перечислите три конкретных улучшения и объясните, как эти улучшения повышают удобство сопровождения и расширяемость кода.
+   - `ReflectionAgent` реализует цикл «выполнение-отражение-оптимизация». Пожалуйста, расширьте эту реализацию, добавив механизм «оценки качества»: после каждого отражения пусть LLM оценивает выходные данные текущей версии и продолжает оптимизацию только в том случае, если оценка ниже порогового значения; в противном случае прекратите досрочно.
+   - Пожалуйста, разработайте и реализуйте новую парадигму «Агента» под названием «Агент с древом мышления», которая должна наследовать базовый класс «Агент» и иметь возможность генерировать несколько возможных путей мышления на каждом этапе, а затем выбирать оптимальный путь для продолжения.
 
-5. In Section 7.5, we built the tool system. Please consider the following questions:
+5. В разделе 7.5 мы создали систему инструментов. Пожалуйста, рассмотрите следующие вопросы:
 
-   - The `BaseTool` class defines an `execute` abstract method that all tools must implement. Please explain why all tools should be forced to implement a unified interface. If a tool needs to return multiple values (such as a search tool returning title, summary, and link), how should it be designed?
-   - Section 7.5.3 implemented tool chains (`ToolChain`). Please design a practical application scenario that requires chaining at least 3 tools and draw the execution flow diagram of the tool chain.
-   - The asynchronous tool executor (`AsyncToolExecutor`) uses a thread pool to execute tools in parallel. Please analyze: Under what circumstances can parallel tool execution bring performance improvements?
+   - Класс BaseTool определяет абстрактный метод выполнения, который должны реализовать все инструменты. Пожалуйста, объясните, почему все инструменты должны иметь единый интерфейс. Если инструменту необходимо возвращать несколько значений (например, инструмент поиска возвращает заголовок, краткое описание и ссылку), как его следует спроектировать?
+   - В разделе 7.5.3 реализованы цепочки инструментов («ToolChain»). Пожалуйста, разработайте практический сценарий приложения, который требует объединения как минимум трех инструментов, и нарисуйте блок-схему выполнения цепочки инструментов.
+   - Асинхронный исполнитель инструмента («AsyncToolExecutor») использует пул потоков для параллельного выполнения инструментов. Пожалуйста, проанализируйте: при каких обстоятельствах параллельное выполнение инструментов может привести к повышению производительности?
 
-6. Framework extensibility is one of the important considerations in design. You now need to extend the `HelloAgents` framework to implement some interesting new features and characteristics.
+6. Расширяемость платформы является одним из важных факторов при проектировании. Теперь вам необходимо расширить структуру HelloAgents, чтобы реализовать некоторые новые интересные функции и характеристики.
 
-   - First, add a "streaming output" feature to `HelloAgents` so that the `Agent` can return intermediate results in real-time when generating responses (similar to the typing effect in the `ChatGPT` user interface). Please design the implementation plan for this feature and explain which classes and methods need to be modified.
-   - Then add a "multi-turn conversation management" feature to the framework that can automatically manage conversation history, support conversation branching and backtracking. How would you design this? What new classes are needed? How to integrate with the existing `Message` system?
-   - Finally, please design a "plugin system" for `HelloAgents` that allows third-party developers to extend framework functionality through plugins (such as adding new `Agent` types, new tool types, etc.) without modifying the framework's core code. Draw the architecture diagram of the plugin system and explain the key interfaces.
+   - Во-первых, добавьте функцию «потокового вывода» в «HelloAgents», чтобы «Агент» мог возвращать промежуточные результаты в режиме реального времени при генерации ответов (аналогично эффекту ввода в пользовательском интерфейсе «ChatGPT»). Разработайте план реализации этой функции и объясните, какие классы и методы необходимо изменить.
+   - Затем добавьте в платформу функцию «многоэтапного управления разговорами», которая может автоматически управлять историей разговоров, поддерживать ветвления разговоров и возврат к ним. Как бы вы это спроектировали? Какие новые классы необходимы? Как интегрироваться с существующей системой «Сообщение»?
+   - Наконец, разработайте «систему плагинов» для «HelloAgents», которая позволит сторонним разработчикам расширять функциональность платформы с помощью плагинов (например, добавлять новые типы «Агентов», новые типы инструментов и т. д.) без изменения основного кода платформы. Нарисуйте архитектурную схему системы плагинов и объясните ключевые интерфейсы.
 

@@ -1,45 +1,45 @@
-# Chapter 8 Memory and Retrieval
+# Глава 8. Память и поиск
 
-In previous chapters, we built the basic architecture of the HelloAgents framework, implementing various agent paradigms and tool systems. However, our framework still lacks a critical capability: **memory**. If an agent cannot remember previous interactions or learn from historical experiences, its performance will be greatly limited in continuous conversations or complex tasks.
+В предыдущих главах мы построили базовую архитектуру платформы HelloAgents, реализовав различные парадигмы агентов и системы инструментов. Однако нашему фреймворку по-прежнему не хватает важнейшей возможности: **памяти**. Если агент не может помнить предыдущие взаимодействия или учиться на историческом опыте, его производительность будет сильно ограничена в непрерывных разговорах или сложных задачах.
 
-This chapter will add two core capabilities to HelloAgents based on the framework built in Chapter 7: **Memory System** and **Retrieval-Augmented Generation (RAG)**. We will adopt a "framework extension + knowledge popularization" approach, deeply understanding the theoretical foundations of Memory and RAG during the construction process, and ultimately implementing an agent system with complete memory and knowledge retrieval capabilities.
+В этой главе в HelloAgents будут добавлены две основные возможности на основе платформы, созданной в главе 7: **Система памяти** и **Поколение с расширенным поиском (RAG)**. Мы примем подход «расширение структуры + популяризация знаний», глубоко понимая теоретические основы памяти и RAG в процессе построения и, в конечном итоге, внедряя агентную систему с полными возможностями памяти и извлечения знаний.
 
 
-## 8.1 From Cognitive Science to Agent Memory
+## 8.1 От когнитивной науки к памяти агента
 
-### 8.1.1 Inspiration from Human Memory Systems
+### 8.1.1 Вдохновение от систем человеческой памяти
 
-Before building an agent's memory system, let's first understand from a cognitive science perspective how humans process and store information. Human memory is a multi-level cognitive system that not only stores information but also classifies and organizes information based on importance, time, and context. Cognitive psychology provides a classic theoretical framework for understanding the structure and processes of memory<sup>[1]</sup>, as shown in Figure 8.1.
+Прежде чем создавать систему памяти агента, давайте сначала поймем с точки зрения когнитивной науки, как люди обрабатывают и хранят информацию. Человеческая память — это многоуровневая когнитивная система, которая не только хранит информацию, но также классифицирует и систематизирует информацию на основе важности, времени и контекста. Когнитивная психология предоставляет классическую теоретическую основу для понимания структуры и процессов памяти<sup>[1]</sup>, как показано на рис. 8.1.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-1.png" alt="Human Memory System Structure" width="85%"/>
-  <p>Figure 8.1 Hierarchical Structure of Human Memory System</p>
+  <p>Рисунок 8.1. Иерархическая структура системы памяти человека.</p>
 </div>
 
-According to cognitive psychology research, human memory can be divided into the following levels:
+Согласно исследованиям когнитивной психологии, человеческую память можно разделить на следующие уровни:
 
-1. **Sensory Memory**: Very short duration (0.5-3 seconds), huge capacity, responsible for temporarily storing all information received by the senses
-2. **Working Memory**: Short duration (15-30 seconds), limited capacity (7±2 items), responsible for information processing in current tasks
-3. **Long-term Memory**: Long duration (can last a lifetime), almost unlimited capacity, further divided into:
-   - **Procedural Memory**: Skills and habits (such as riding a bicycle)
-   - **Declarative Memory**: Knowledge that can be expressed in language, further divided into:
-     - **Semantic Memory**: General knowledge and concepts (such as "Paris is the capital of France")
-     - **Episodic Memory**: Personal experiences and events (such as "yesterday's meeting content")
+1. **Сенсорная память**: очень короткая продолжительность (0,5–3 секунды), огромная емкость, отвечающая за временное хранение всей информации, полученной органами чувств.
+2. **Рабочая память**: кратковременная (15–30 секунд), ограниченная емкость (7±2 элемента), отвечает за обработку информации в текущих задачах.
+3. **Долговременная память**: Длительная продолжительность (может длиться всю жизнь), почти неограниченная емкость, далее делится на:
+   - **Процедурная память**: навыки и привычки (например, езда на велосипеде).
+   - **Декларативная память**: Знания, которые можно выразить на языке, которые далее делятся на:
+     - **Семантическая память**: общие знания и понятия (например, «Париж — столица Франции»).
+     - **Эпизодические воспоминания**: личный опыт и события (например, «содержание вчерашней встречи»).
 
-### 8.1.2 Why Agents Need Memory and RAG
+### 8.1.2 Зачем агентам нужна память и RAG
 
-Drawing on the design of human memory systems, we can understand why agents also need similar memory capabilities. An important characteristic of human intelligence is the ability to remember past experiences, learn from them, and apply these experiences to new situations. Similarly, a truly intelligent agent also needs memory capabilities. For LLM-based agents, they typically face two fundamental limitations: **forgetting of conversation state** and **limitations of built-in knowledge**.
+Опираясь на устройство систем человеческой памяти, мы можем понять, почему агентам также нужны аналогичные возможности памяти. Важной характеристикой человеческого интеллекта является способность запоминать прошлый опыт, учиться на нем и применять этот опыт в новых ситуациях. Точно так же по-настоящему интеллектуальному агенту также необходимы возможности памяти. Агенты, использующие LLM, обычно сталкиваются с двумя фундаментальными ограничениями: **забывание состояния разговора** и **ограничения встроенных знаний**.
 
-(1) Limitation 1: Conversation Forgetting Due to Statelessness
+(1) Ограничение 1: забывание разговора из-за безгражданства
 
-Current large language models, although powerful, are designed to be **stateless**. This means that each user request (or API call) is an independent, unrelated computation. The model itself does not automatically "remember" the content of the previous conversation. This brings several problems:
+Современные модели больших языков, хотя и мощные, разработаны так, чтобы быть **апатридами**. Это означает, что каждый пользовательский запрос (или вызов API) представляет собой независимое, несвязанное вычисление. Сама модель не «запоминает» автоматически содержание предыдущего разговора. Это приносит несколько проблем:
 
-1. **Context Loss**: In long conversations, important early information may be lost due to context window limitations
-2. **Lack of Personalization**: The agent cannot remember user preferences, habits, or specific needs
-3. **Limited Learning Ability**: Cannot learn and improve from past successes or failures
-4. **Consistency Issues**: May provide contradictory answers in multi-turn conversations
+1. **Потеря контекста**. При длительных разговорах важная информация может быть потеряна из-за ограничений контекстного окна.
+2. **Отсутствие персонализации**: агент не может запомнить предпочтения, привычки или конкретные потребности пользователя.
+3. **Ограниченная способность к обучению**: Невозможно учиться и совершенствоваться на основе прошлых успехов или неудач.
+4. **Проблемы с последовательностью**: могут давать противоречивые ответы в многоходовых беседах.
 
-Let's understand this problem through a specific example:
+Давайте разберемся в этой проблеме на конкретном примере:
 
 ```python
 # How to use Agent from Chapter 7
@@ -57,31 +57,31 @@ response2 = agent.run("Do you remember my learning progress?")
 print(response2)  # "Sorry, I don't know your learning progress..."
 ```
 
-Note that the `SimpleAgent` from Chapter 7 temporarily stores the current dialogue in `_history` within the same instance, so consecutive turns in the same process and instance can carry recent context. However, this history is only a temporary message list. It is not persisted across sessions and does not support long-term retrieval, forgetting, or consolidation.
+Обратите внимание, что`SimpleAgent`из главы 7 временно сохраняет текущий диалог в`_history`внутри одного и того же экземпляра, поэтому последовательные ходы в одном и том же процессе и экземпляре могут нести недавний контекст. Однако эта история представляет собой лишь временный список сообщений. Он не сохраняется между сеансами и не поддерживает долгосрочное извлечение, забывание или консолидацию.
 
-To solve this problem, our framework needs to introduce a memory system.
+Чтобы решить эту проблему, в нашу структуру необходимо ввести систему памяти.
 
-(2) Limitation 2: Limitations of Model's Built-in Knowledge
+(2) Ограничение 2: ограничения встроенных знаний модели.
 
-Besides forgetting conversation history, another core limitation of LLMs is that their knowledge is **static and limited**. This knowledge comes entirely from their training data, bringing a series of problems:
+Помимо забывания истории разговоров, еще одним основным ограничением студентов LLM является то, что их знания **статичны и ограничены**. Эти знания полностью основаны на данных их обучения, что приводит к ряду проблем:
 
-1. **Knowledge Timeliness**: Large models have a training data cutoff date and cannot access the latest information
-2. **Domain-Specific Knowledge**: General models may lack sufficient depth in specific domains
-3. **Factual Accuracy**: Reduce model hallucinations through retrieval verification
-4. **Explainability**: Provide information sources to enhance answer credibility
+1. **Своевременность знаний**: для крупных моделей указана дата окончания сбора обучающих данных, и они не могут получить доступ к самой последней информации.
+2. **Знания, специфичные для предметной области**: общим моделям может не хватать достаточной глубины в конкретных областях.
+3. **Фактическая точность**: Уменьшите галлюцинации модели за счет проверки поиска.
+4. **Объяснимость**: предоставьте источники информации, чтобы повысить достоверность ответа.
 
-To overcome this limitation, RAG technology emerged. Its core idea is to retrieve the most relevant information from an external knowledge base (such as documents, databases, APIs) before the model generates an answer, and provide this information as context to the model.
+Чтобы преодолеть это ограничение, появилась технология RAG. Его основная идея — получить наиболее релевантную информацию из внешней базы знаний (например, документов, баз данных, API) до того, как модель сгенерирует ответ, и предоставить эту информацию в качестве контекста модели.
 
-### 8.1.3 Memory and RAG System Architecture Design
+### 8.1.3 Проектирование архитектуры системы памяти и RAG
 
-Based on the framework foundation established in Chapter 7 and inspiration from cognitive science, we designed a layered memory and RAG system architecture, as shown in Figure 8.2. This architecture not only draws on the hierarchical structure of human memory systems but also fully considers the scalability of engineering implementation. In implementation, we design memory and RAG as two independent tools: `memory_tool` is responsible for storing and maintaining interaction information during conversations, while `rag_tool` is responsible for retrieving relevant information from user-provided knowledge bases as context and can automatically store important retrieval results in the memory system.
+Основываясь на основе структуры, заложенной в главе 7, и вдохновении когнитивной науки, мы разработали многоуровневую архитектуру системы памяти и RAG, как показано на рисунке 8.2. Эта архитектура не только опирается на иерархическую структуру систем человеческой памяти, но также полностью учитывает масштабируемость инженерной реализации. При реализации мы проектируем память и RAG как два независимых инструмента:`memory_tool`отвечает за хранение и поддержание информации о взаимодействии во время разговоров, в то время как`rag_tool`отвечает за извлечение соответствующей информации из пользовательских баз знаний в качестве контекста и может автоматически сохранять важные результаты поиска в системе памяти.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-2.png" alt="HelloAgents Memory and RAG System Architecture" width="95%"/>
-  <p>Figure 8.2 Overall Architecture of HelloAgents Memory and RAG System</p>
+  <p>Рисунок 8.2 Общая архитектура памяти HelloAgents и системы RAG</p>
 </div>
 
-The memory system adopts a four-layer architecture design:
+Система памяти имеет четырехуровневую архитектуру:
 
 ```
 HelloAgents Memory System
@@ -105,7 +105,7 @@ HelloAgents Memory System
     └── TFIDFEmbedding - TFIDF embedding (lightweight fallback)
 ```
 
-The RAG system focuses on acquiring and utilizing external knowledge:
+Система RAG фокусируется на приобретении и использовании внешних знаний:
 
 ```
 HelloAgents RAG System
@@ -123,9 +123,9 @@ HelloAgents RAG System
     └── LLM-Enhanced Generation - Accurate Q&A based on context
 ```
 
-### 8.1.4 Learning Objectives and Quick Experience
+### 8.1.4 Цели обучения и быстрый опыт
 
-Let's first look at the core learning content of Chapter 8:
+Давайте сначала посмотрим на основное содержание обучения главы 8:
 
 ```
 hello-agents/
@@ -152,9 +152,9 @@ hello-agents/
 └──
 ```
 
-**Quick Start: Installing the HelloAgents Framework**
+**Быстрое начало: установка HelloAgents Framework**
 
-To allow readers to quickly experience the complete functionality of this chapter, we provide a directly installable Python package. You can install the version corresponding to this chapter with the following commands:
+Чтобы читатели могли быстро освоить всю функциональность этой главы, мы предоставляем устанавливаемый непосредственно пакет Python. Вы можете установить версию, соответствующую этой главе, с помощью следующих команд:
 
 ```bash
 # If you encounter model unavailability in version 0.2.0, please refer to issue#320 or switch to version 0.2.9 for testing.
@@ -163,7 +163,7 @@ python -m spacy download zh_core_web_sm
 python -m spacy download en_core_web_sm
 ```
 
-In addition, you need to configure the graph database, vector database, LLM, and Embedding solution API in `.env`. In the tutorial, Qdrant is used for the vector database, Neo4J for the graph database, and Bailian platform is preferred for Embedding. If no API is available, you can switch to a local deployment model solution.
+Кроме того, вам необходимо настроить базу данных графов, базу данных векторов, LLM и API решения для внедрения в`.env`. В руководстве Qdrant используется для векторной базы данных, Neo4J для графовой базы данных, а платформа Bailian предпочтительна для встраивания. Если API недоступен, вы можете переключиться на решение модели локального развертывания.
 
 ```bash
 # ================================
@@ -212,14 +212,14 @@ EMBED_API_KEY=
 EMBED_BASE_URL=
 ```
 
-Learning in this chapter can be done in two ways:
+Обучение в этой главе можно проводить двумя способами:
 
-1. **Experiential Learning**: Directly install the framework using `pip`, run example code, and quickly experience various functions
-2. **Deep Learning**: Follow the chapter content, implement each component from scratch, and deeply understand the framework's design philosophy and implementation details
+1. **Экспериментальное обучение**: установите платформу напрямую с помощью pip, запустите пример кода и быстро освойте различные функции.
+2. **Глубокое обучение**: следуйте содержанию главы, реализуйте каждый компонент с нуля и глубоко поймите философию проектирования платформы и детали реализации.
 
-We recommend adopting a "experience first, then implement" learning path. In this chapter, we provide complete test files. You can rewrite core functions and run tests to verify whether your implementation is correct.
+Мы рекомендуем выбрать путь обучения «сначала опыт, а затем внедрение». В этой главе мы предоставляем полные тестовые файлы. Вы можете переписать основные функции и запустить тесты, чтобы проверить правильность вашей реализации.
 
-Following the design principles established in Chapter 7, we encapsulate memory and RAG capabilities as standard tools rather than creating new Agent classes. Before starting, let's spend 30 seconds experiencing building an agent with memory and RAG capabilities using Hello-agents!
+Следуя принципам проектирования, установленным в главе 7, мы инкапсулируем память и возможности RAG как стандартные инструменты, а не создаем новые классы агентов. Прежде чем начать, давайте потратим 30 секунд на создание агента с памятью и возможностями RAG с помощью Hello-агентов!
 
 ```python
 # Configure the LLM API in .env in the same folder
@@ -255,7 +255,7 @@ response = agent.run("Hello! Please remember my name is Zhang San, I am a Python
 print(response)
 ```
 
-If everything is configured correctly, you can see the following content:
+Если все настроено правильно, вы увидите следующее содержимое:
 
 ```bash
 [OK] SQLite database tables and indexes created
@@ -282,45 +282,45 @@ INFO:hello_agents.memory.storage.qdrant_store:✅ Using existing Qdrant collecti
 Hello, Zhang San! Nice to meet you. As a Python developer, you must be passionate about programming. If you have any technical questions or need to discuss Python-related topics, feel free to reach out to me anytime. I'll do my best to help you. Is there anything I can help you with right now?
 ```
 
-## 8.2 Memory System: Giving Agents Memory
+## 8.2 Система памяти: предоставление агентам памяти
 
-### 8.2.1 Memory System Workflow
+### 8.2.1 Рабочий процесс системы памяти
 
-Before entering the code implementation phase, we need to first define the workflow of the memory system. This workflow references the memory model in cognitive science and maps each cognitive stage to specific technical components and operations. Understanding this mapping relationship will help us with subsequent code implementation.
+Прежде чем перейти к этапу реализации кода, нам необходимо сначала определить рабочий процесс системы памяти. Этот рабочий процесс ссылается на модель памяти в когнитивной науке и сопоставляет каждый когнитивный этап с конкретными техническими компонентами и операциями. Понимание этой взаимосвязи отображения поможет нам в последующей реализации кода.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-3.png" alt="Memory Formation Process" width="90%"/>
-  <p>Figure 8.3 Cognitive Process of Memory Formation</p>
+  <p>Рисунок 8.3 Когнитивный процесс формирования памяти</p>
 </div>
 
-As shown in Figure 8.3, according to cognitive science research, the formation of human memory goes through the following stages:
+Как показано на рисунке 8.3, согласно исследованиям когнитивной науки, формирование памяти человека проходит следующие этапы:
 
-1. **Encoding**: Converting perceived information into a storable form
-2. **Storage**: Saving encoded information in the memory system
-3. **Retrieval**: Extracting relevant information from memory as needed
-4. **Consolidation**: Converting short-term memory into long-term memory
-5. **Forgetting**: Deleting unimportant or outdated information
+1. **Кодирование**: преобразование воспринимаемой информации в сохраняемую форму.
+2. **Хранение**: Сохранение закодированной информации в системе памяти.
+3. **Извлечение**: извлечение соответствующей информации из памяти по мере необходимости.
+4. **Консолидация**: преобразование кратковременной памяти в долговременную.
+5. **Забывание**: удаление неважной или устаревшей информации.
 
-Based on this inspiration, we designed a complete memory system for HelloAgents. Its core idea is to mimic how the human brain processes different types of information, dividing memory into multiple specialized modules and establishing an intelligent management mechanism. Figure 8.4 shows in detail the workflow of this system, including key links such as memory addition, retrieval, consolidation, and forgetting.
+Основываясь на этом вдохновении, мы разработали полную систему памяти для HelloAgents. Его основная идея состоит в том, чтобы имитировать то, как человеческий мозг обрабатывает различные типы информации, разделяя память на несколько специализированных модулей и создавая интеллектуальный механизм управления. На рисунке 8.4 подробно показан рабочий процесс этой системы, включая ключевые ссылки, такие как добавление памяти, извлечение, консолидация и забывание.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-4.png" alt="Memory System Workflow" width="95%"/>
-  <p>Figure 8.4 Complete Workflow of HelloAgents Memory System</p>
+  <p>Рис. 8.4 Полный рабочий процесс системы памяти HelloAgents</p>
 </div>
 
-Our memory system consists of four different types of memory modules, each optimized for specific application scenarios and lifecycles:
+Наша система памяти состоит из четырех различных типов модулей памяти, каждый из которых оптимизирован для конкретных сценариев применения и жизненного цикла:
 
-First is **Working Memory**, which plays the role of the agent's "short-term memory," mainly used to store context information of the current conversation. To ensure high-speed access and response, its capacity is intentionally limited (for example, 50 items by default), and its lifecycle is bound to a single session, automatically clearing after the session ends.
+Во-первых, это **Рабочая память**, которая играет роль «краткосрочной памяти» агента и в основном используется для хранения контекстной информации текущего разговора. Для обеспечения высокоскоростного доступа и ответа его емкость намеренно ограничена (например, 50 элементов по умолчанию), а его жизненный цикл привязан к одному сеансу, автоматически очищающемуся после завершения сеанса.
 
-Second is **Episodic Memory**, which is responsible for long-term storage of specific interaction events and the agent's learning experiences. Unlike working memory, episodic memory contains rich contextual information and supports retrospective retrieval by time series or topic, serving as the foundation for the agent to "review" and learn from past experiences.
+Во-вторых, это **Эпизодическая память**, которая отвечает за долговременное хранение конкретных событий взаимодействия и опыта обучения агента. В отличие от рабочей памяти, эпизодическая память содержит богатую контекстную информацию и поддерживает ретроспективный поиск по временным рядам или темам, служа основой для «обзора» агента и изучения прошлого опыта.
 
-Corresponding to specific events is **Semantic Memory**, which stores more abstract knowledge, concepts, and rules. For example, user preferences learned through conversations, instructions that need to be followed long-term, or domain knowledge points are all suitable for storage here. This part of memory has high persistence and importance and is the core for the agent to form a "knowledge system" and perform associative reasoning.
+Конкретным событиям соответствует **Семантическая память**, которая хранит более абстрактные знания, понятия и правила. Например, для хранения здесь подходят пользовательские предпочтения, полученные в ходе разговоров, инструкции, которым необходимо следовать в течение длительного времени, или точки знания домена. Эта часть памяти имеет высокую стойкость и важность и является ядром для агента для формирования «системы знаний» и выполнения ассоциативных рассуждений.
 
-Finally, to interact with increasingly rich multimedia, we introduced **Perceptual Memory**. This module specifically handles multimodal information such as images and audio and supports cross-modal retrieval. Its lifecycle is dynamically managed based on the importance of information and available storage space.
+Наконец, чтобы взаимодействовать со все более богатыми мультимедийными возможностями, мы представили **Перцептивную память**. Этот модуль специально обрабатывает мультимодальную информацию, такую ​​как изображения и аудио, и поддерживает кросс-модальный поиск. Его жизненный цикл динамически управляется в зависимости от важности информации и доступного места для хранения.
 
-### 8.2.2 Quick Experience: Get Started with Memory Features in 30 Seconds
+### 8.2.2 Быстрый опыт: начните работу с функциями памяти за 30 секунд
 
-Before diving into implementation details, let's quickly experience the basic functions of the memory system:
+Прежде чем углубиться в детали реализации, давайте быстро ознакомимся с основными функциями системы памяти:
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM, ToolRegistry
@@ -362,9 +362,9 @@ result = memory_tool.run("summary")
 print(result)
 ```
 
-### 8.2.3 MemoryTool Detailed Explanation
+### 8.2.3 Подробное объяснение MemoryTool
 
-Now let's adopt a top-down approach, starting from the specific operations supported by MemoryTool and gradually delving into the underlying implementation. MemoryTool, as the unified interface of the memory system, follows the architectural pattern of "unified entry, distributed processing":
+Теперь давайте применим подход «сверху вниз», начиная с конкретных операций, поддерживаемых MemoryTool, и постепенно углубляясь в базовую реализацию. MemoryTool, как унифицированный интерфейс системы памяти, следует архитектурной схеме «унифицированный вход, распределенная обработка»:
 
 ````python
 def execute(self, action: str, **kwargs) -> str:
@@ -391,11 +391,11 @@ def execute(self, action: str, **kwargs) -> str:
     # ... other operations
 ````
 
-This unified `execute` interface design simplifies the Agent's calling method. The specific operation is specified through the `action` parameter, and `**kwargs` allows each operation to have different parameter requirements. Here we will list several important operations:
+Это единое`execute`дизайн интерфейса упрощает метод вызова агента. Конкретная операция указывается через`action`параметр, и`**kwargs`позволяет каждой операции иметь разные требования к параметрам. Здесь мы перечислим несколько важных операций:
 
-(1) Operation 1: add
+(1) Операция 1: добавить
 
-The `add` operation is the foundation of the memory system. It simulates the process of the human brain encoding perceived information into memory. In implementation, we not only need to store memory content but also add rich contextual information to each memory. This information will play an important role in subsequent retrieval and management.
+-`add`Операция является основой системы памяти. Он имитирует процесс кодирования воспринимаемой информации человеческим мозгом в память. При реализации нам нужно не только хранить содержимое памяти, но и добавлять в каждую память богатую контекстную информацию. Эта информация будет играть важную роль в последующем поиске и управлении.
 
 ````python
 def _add_memory(
@@ -439,9 +439,9 @@ def _add_memory(
         return f"❌ Failed to add memory: {str(e)}"
 ````
 
-This mainly implements three key tasks: automatic management of session IDs (ensuring each memory has a clear session attribution), intelligent processing of multimodal data (automatically inferring file types and saving related metadata), and automatic supplementation of contextual information (adding timestamps and session information to each memory). Among them, the `importance` parameter (default 0.5) is used to mark the importance level of memory, with a value range of 0.0-1.0. This mechanism simulates the human brain's assessment of the importance of different information. This design allows the Agent to automatically distinguish conversations from different time periods and provide rich contextual information for subsequent retrieval and management.
+Это в основном реализует три ключевые задачи: автоматическое управление идентификаторами сеансов (обеспечение того, чтобы каждая память имела четкую атрибуцию сеанса), интеллектуальная обработка мультимодальных данных (автоматическое определение типов файлов и сохранение связанных метаданных) и автоматическое дополнение контекстной информации (добавление временных меток и информации о сеансе в каждую память). Среди них,`importance`Параметр (по умолчанию 0,5) используется для обозначения уровня важности памяти в диапазоне значений 0,0–1,0. Этот механизм имитирует оценку человеческим мозгом важности различной информации. Такая конструкция позволяет агенту автоматически различать разговоры из разных периодов времени и предоставлять обширную контекстную информацию для последующего поиска и управления.
 
-For each memory type, we provide different usage examples:
+Для каждого типа памяти мы приводим разные примеры использования:
 
 ```python
 # 1. Working Memory - Temporary information, limited capacity
@@ -478,9 +478,9 @@ memory_tool.run("add",
 )
 ```
 
-(2) Operation 2: search
+(2) Операция 2: поиск
 
-The `search` operation is the core function of the memory system. It needs to quickly find the most relevant content to the query among a large number of memories. It involves multiple steps such as semantic understanding, relevance calculation, and result sorting.
+-`search`Операция является основной функцией системы памяти. Ему необходимо быстро найти наиболее релевантный запросу контент среди большого количества воспоминаний. Он включает в себя несколько этапов, таких как семантическое понимание, расчет релевантности и сортировка результатов.
 
 ````python
 def _search_memory(
@@ -530,7 +530,7 @@ def _search_memory(
         return f"❌ Failed to search memory: {str(e)}"
 ````
 
-The search operation is designed to support both singular and plural parameter forms (`memory_type` and `memory_types`), allowing users to express their needs in the most natural way. Among them, the `min_importance` parameter (default 0.1) is used to filter low-quality memories. For the use of the search function, you can refer to this example:
+Операция поиска предназначена для поддержки форм параметров как в единственном, так и во множественном числе (`memory_type`и`memory_types`), позволяя пользователям выражать свои потребности наиболее естественным образом. Среди них`min_importance`(по умолчанию 0.1) используется для фильтрации памяти низкого качества. Для использования функции поиска вы можете обратиться к следующему примеру:
 
 ```python
 # Basic search
@@ -551,9 +551,9 @@ result = memory_tool.execute("search",
 )
 ```
 
-(3) Operation 3: forget
+(3) Операция 3: забудьте
 
-The forgetting mechanism is the most cognitively scientific feature. It simulates the human brain's selective forgetting process and supports three strategies: importance-based (deleting unimportant memories), time-based (deleting outdated memories), and capacity-based (deleting the least important memories when storage approaches the limit).
+Механизм забывания является наиболее когнитивно-научной особенностью. Он имитирует процесс выборочного забывания человеческого мозга и поддерживает три стратегии: на основе важности (удаление неважных воспоминаний), на основе времени (удаление устаревших воспоминаний) и на основе емкости (удаление наименее важных воспоминаний, когда объем памяти приближается к пределу).
 
 ````python
 def _forget(self, strategy: str = "importance_based", threshold: float = 0.1, max_age_days: int = 30) -> str:
@@ -569,7 +569,7 @@ def _forget(self, strategy: str = "importance_based", threshold: float = 0.1, ma
         return f"❌ Failed to forget memories: {str(e)}"
 ````
 
-**Usage of three forgetting strategies:**
+**Использование трёх стратегий забывания:**
 
 ```python
 # 1. Importance-based forgetting - Delete memories below importance threshold
@@ -591,7 +591,7 @@ memory_tool.execute("forget",
 )
 ```
 
-(4) Operation 4: consolidate
+(4) Операция 4: консолидация
 
 ````python
 def _consolidate(self, from_type: str = "working", to_type: str = "episodic", importance_threshold: float = 0.7) -> str:
@@ -607,9 +607,9 @@ def _consolidate(self, from_type: str = "working", to_type: str = "episodic", im
         return f"❌ Failed to consolidate memories: {str(e)}"
 ````
 
-The consolidate operation draws on the concept of memory consolidation in neuroscience, simulating the process of the human brain converting short-term memory into long-term memory. The default setting is to convert working memories with importance exceeding 0.7 into episodic memories. This threshold ensures that only truly important information is preserved long-term. The entire process is automated; users do not need to manually select specific memories. The system intelligently identifies memories that meet the criteria and performs type conversion.
+Операция консолидации основана на концепции консолидации памяти в нейробиологии, моделирующей процесс преобразования человеческим мозгом кратковременной памяти в долговременную. По умолчанию рабочие воспоминания с важностью, превышающей 0,7, преобразуются в эпизодические воспоминания. Этот порог гарантирует, что только действительно важная информация сохранится в долгосрочной перспективе. Весь процесс автоматизирован; пользователям не нужно вручную выбирать определенные воспоминания. Система интеллектуально идентифицирует воспоминания, соответствующие критериям, и выполняет преобразование типов.
 
-**Usage examples of memory consolidation:**
+**Примеры использования консолидации памяти:**
 
 ```python
 # Convert important working memories to episodic memories
@@ -627,13 +627,13 @@ memory_tool.execute("consolidate",
 )
 ```
 
-Through the collaboration of these core operations, MemoryTool builds a complete memory lifecycle management system. From memory creation, retrieval, summarization to forgetting, consolidation, and management, it forms a closed-loop intelligent memory management system, giving the Agent truly human-like memory capabilities.
+Благодаря сотрудничеству этих основных операций MemoryTool создает полную систему управления жизненным циклом памяти. От создания памяти, извлечения, обобщения до забывания, консолидации и управления — она образует замкнутую интеллектуальную систему управления памятью, предоставляющую агенту возможности памяти, по-настоящему человеческие.
 
-### 8.2.4 MemoryManager Detailed Explanation
+### 8.2.4 Подробное объяснение MemoryManager
 
-After understanding the interface design of MemoryTool, let's delve into the underlying implementation to see how MemoryTool collaborates with MemoryManager. This layered design embodies the separation of concerns principle in software engineering. MemoryTool focuses on user interface and parameter processing, while MemoryManager is responsible for core memory management logic.
+После понимания дизайна интерфейса MemoryTool давайте углубимся в основную реализацию, чтобы увидеть, как MemoryTool сотрудничает с MemoryManager. Эта многоуровневая конструкция воплощает принцип разделения проблем в разработке программного обеспечения. MemoryTool фокусируется на пользовательском интерфейсе и обработке параметров, в то время как MemoryManager отвечает за основную логику управления памятью.
 
-MemoryTool creates a MemoryManager instance during initialization and enables different types of memory modules based on configuration. This design allows users to choose which memory types to enable based on specific needs, ensuring functional completeness while avoiding unnecessary resource consumption.
+MemoryTool создает экземпляр MemoryManager во время инициализации и включает различные типы модулей памяти в зависимости от конфигурации. Такая конструкция позволяет пользователям выбирать, какие типы памяти включать в зависимости от конкретных потребностей, обеспечивая функциональную полноту и избегая ненужного потребления ресурсов.
 
 ````python
 class MemoryTool(Tool):
@@ -664,7 +664,7 @@ class MemoryTool(Tool):
         )
 ````
 
-MemoryManager, as the core coordinator of the memory system, is responsible for managing different types of memory modules and providing a unified operation interface.
+MemoryManager, являясь основным координатором системы памяти, отвечает за управление различными типами модулей памяти и обеспечивает единый рабочий интерфейс.
 
 ````python
 class MemoryManager:
@@ -702,15 +702,15 @@ class MemoryManager:
             self.memory_types['perceptual'] = PerceptualMemory(self.config, self.store)
 ````
 
-### 8.2.5 Four Types of Memory
+### 8.2.5 Четыре типа памяти
 
-Now let's delve into the specific implementation of the four memory types. Each memory type has its unique characteristics and application scenarios:
+Теперь давайте углубимся в конкретную реализацию четырех типов памяти. Каждый тип памяти имеет свои уникальные характеристики и сценарии применения:
 
-(1) Working Memory
+(1) Рабочая память
 
-Working memory is the most active part of the memory system. It is responsible for storing temporary information in the current conversation session. The design focus of working memory is on fast access and automatic cleanup, which ensures the system's response speed and resource efficiency.
+Рабочая память — наиболее активная часть системы памяти. Он отвечает за хранение временной информации в текущем сеансе разговора. При проектировании рабочей памяти основное внимание уделяется быстрому доступу и автоматической очистке, что обеспечивает скорость отклика системы и эффективность использования ресурсов.
 
-Working memory adopts a pure in-memory storage solution, combined with a TTL (Time To Live) mechanism for automatic cleanup. The advantage of this design is extremely fast access speed, but it also means that the content of working memory will be lost after system restart. This characteristic perfectly fits the positioning of working memory: storing temporary and volatile information.
+Рабочая память представляет собой чистое решение для хранения данных в оперативной памяти в сочетании с механизмом TTL (Time To Live) для автоматической очистки. Преимуществом этой конструкции является чрезвычайно высокая скорость доступа, но это также означает, что содержимое рабочей памяти будет потеряно после перезагрузки системы. Эта характеристика идеально соответствует позиционированию рабочей памяти: хранению временной и энергозависимой информации.
 
 ````python
 class WorkingMemory:
@@ -762,11 +762,11 @@ class WorkingMemory:
         return [memory for _, memory in scored_memories[:limit]]
 ````
 
-Working memory retrieval adopts a hybrid retrieval strategy. It first attempts to use TF-IDF vectorization for semantic retrieval, and if that fails, it falls back to keyword matching. This design ensures reliable retrieval services in various environments. The scoring algorithm combines semantic similarity, time decay, and importance weight. The final score formula is: `(similarity × time decay) × (0.8 + importance × 0.4)`.
+При извлечении из рабочей памяти используется гибридная стратегия извлечения. Сначала он пытается использовать векторизацию TF-IDF для семантического поиска, а если это не удается, он возвращается к сопоставлению ключевых слов. Такая конструкция обеспечивает надежные услуги поиска в различных средах. Алгоритм оценки сочетает в себе семантическое сходство, затухание во времени и вес важности. Окончательная формула оценки:`(similarity × time decay) × (0.8 + importance × 0.4)`.
 
-(2) Episodic Memory
+(2) Эпизодическая память
 
-Episodic memory is responsible for storing specific events and experiences. Its design focus is on maintaining the integrity of events and temporal sequence relationships. Episodic memory adopts a hybrid storage solution of SQLite + Qdrant. SQLite is responsible for storing structured data and complex queries, while Qdrant is responsible for efficient vector retrieval.
+Эпизодическая память отвечает за хранение конкретных событий и переживаний. Его дизайн направлен на поддержание целостности событий и отношений временной последовательности. В эпизодической памяти используется гибридное решение хранения SQLite + Qdrant. SQLite отвечает за хранение структурированных данных и сложных запросов, а Qdrant отвечает за эффективный векторный поиск.
 
 ````python
 class EpisodicMemory:
@@ -836,11 +836,11 @@ class EpisodicMemory:
         return base_relevance * importance_weight
 ````
 
-The retrieval implementation of episodic memory demonstrates a complex multi-factor scoring mechanism. It not only considers semantic similarity but also incorporates temporal recency considerations, ultimately adjusted by importance weight. The scoring formula is: `(vector similarity × 0.8 + temporal recency × 0.2) × (0.8 + importance × 0.4)`, ensuring that retrieval results are both semantically and temporally relevant.
+Реализация извлечения эпизодической памяти демонстрирует сложный многофакторный механизм оценки. Он не только учитывает семантическое сходство, но также учитывает временную новизну, в конечном итоге скорректированную по весу важности. Формула подсчета очков:`(vector similarity × 0.8 + temporal recency × 0.2) × (0.8 + importance × 0.4)`, гарантируя, что результаты поиска релевантны как семантически, так и во времени.
 
-(3) Semantic Memory
+(3) Семантическая память
 
-Semantic memory is the most complex part of the memory system. It is responsible for storing abstract concepts, rules, and knowledge. The design focus of semantic memory is on structured representation of knowledge and intelligent reasoning capabilities. Semantic memory adopts a hybrid architecture of Neo4j graph database and Qdrant vector database. This design allows the system to perform both fast semantic retrieval and complex relational reasoning using knowledge graphs.
+Семантическая память – самая сложная часть системы памяти. Он отвечает за хранение абстрактных понятий, правил и знаний. При проектировании семантической памяти основное внимание уделяется структурированному представлению знаний и возможностям интеллектуального рассуждения. Семантическая память использует гибридную архитектуру графовой базы данных Neo4j и векторной базы данных Qdrant. Такая конструкция позволяет системе выполнять как быстрый семантический поиск, так и сложные реляционные рассуждения с использованием графов знаний.
 
 ````python
 class SemanticMemory(BaseMemory):
@@ -871,7 +871,7 @@ class SemanticMemory(BaseMemory):
         self.nlp = self._init_nlp()
 ````
 
-The addition process of semantic memory embodies the complete workflow of knowledge graph construction. The system not only stores memory content but also automatically extracts entities and relationships to build structured knowledge representations:
+Процесс добавления семантической памяти воплощает в себе полный рабочий процесс построения графа знаний. Система не только хранит содержимое памяти, но также автоматически извлекает сущности и связи для построения структурированных представлений знаний:
 
 ```python
 def add(self, memory_item: MemoryItem) -> str:
@@ -905,7 +905,7 @@ def add(self, memory_item: MemoryItem) -> str:
     )
 ```
 
-The retrieval of semantic memory implements a hybrid search strategy, combining the semantic understanding capability of vector retrieval and the relational reasoning capability of graph retrieval:
+Извлечение семантической памяти реализует гибридную стратегию поиска, сочетающую в себе возможности семантического понимания векторного поиска и возможности реляционного рассуждения поиска графов:
 
 ```python
 def retrieve(self, query: str, limit: int = 5, **kwargs) -> List[MemoryItem]:
@@ -924,7 +924,7 @@ def retrieve(self, query: str, limit: int = 5, **kwargs) -> List[MemoryItem]:
     return combined_results[:limit]
 ```
 
-The hybrid ranking algorithm adopts a multi-factor scoring mechanism:
+Гибридный алгоритм ранжирования использует механизм многофакторной оценки:
 
 ```python
 def _combine_and_rank_results(self, vector_results, graph_results, query, limit):
@@ -976,15 +976,15 @@ def _combine_and_rank_results(self, vector_results, graph_results, query, limit)
     return sorted_results[:limit]
 ```
 
-The scoring formula for semantic memory is: `(vector similarity × 0.7 + graph similarity × 0.3) × (0.8 + importance × 0.4)`. The core idea of this design is:
+Формула оценки семантической памяти:`(vector similarity × 0.7 + graph similarity × 0.3) × (0.8 + importance × 0.4)`. Основная идея этого дизайна:
 
-- **Vector retrieval weight (0.7)**: Semantic similarity is the main factor, ensuring retrieval results are semantically related to the query
-- **Graph retrieval weight (0.3)**: Relational reasoning as a supplement, discovering implicit associations between concepts
-- **Importance weight range [0.8, 1.2]**: Avoids excessive influence of importance on similarity ranking, maintaining retrieval accuracy
+- **Вес векторного поиска (0,7)**: Семантическое сходство является основным фактором, гарантирующим семантическое отношение результатов поиска к запросу.
+- **Вес получения графа (0,3)**: Реляционное рассуждение как дополнение, обнаруживающее неявные связи между понятиями.
+- **Диапазон весов важности [0,8, 1,2]**: позволяет избежать чрезмерного влияния важности на ранжирование сходства, сохраняя точность поиска.
 
-(4) Perceptual Memory
+(4) Перцептивная память
 
-Perceptual memory supports storage and retrieval of data in multiple modalities such as text, images, and audio. It adopts a modality-separated storage strategy, creating independent vector collections for data of different modalities. This design avoids dimension mismatch problems while ensuring retrieval accuracy:
+Перцептивная память поддерживает хранение и извлечение данных в различных модальностях, таких как текст, изображения и аудио. Он использует стратегию хранения с разделением модальностей, создавая независимые векторные коллекции для данных разных модальностей. Такая конструкция позволяет избежать проблем несоответствия размеров, обеспечивая при этом точность поиска:
 
 ````python
 class PerceptualMemory(BaseMemory):
@@ -1022,7 +1022,7 @@ class PerceptualMemory(BaseMemory):
         }
 ````
 
-Perceptual memory retrieval supports both same-modality and cross-modality modes. Same-modality retrieval uses specialized encoders for precise matching, while cross-modality retrieval requires more complex semantic alignment mechanisms:
+Перцептивное извлечение памяти поддерживает как одномодальный, так и кросс-модальный режимы. Одномодальный поиск использует специализированные кодеры для точного сопоставления, тогда как кросс-модальный поиск требует более сложных механизмов семантического выравнивания:
 
 ```python
 def retrieve(self, query: str, limit: int = 5, **kwargs) -> List[MemoryItem]:
@@ -1068,7 +1068,7 @@ def retrieve(self, query: str, limit: int = 5, **kwargs) -> List[MemoryItem]:
     return [item for _, item in results[:limit]]
 ```
 
-The scoring formula for perceptual memory is: `(vector similarity × 0.8 + temporal recency × 0.2) × (0.8 + importance × 0.4)`. The scoring mechanism of perceptual memory also supports cross-modal retrieval, achieving semantic alignment of different modality data such as text, images, and audio through a unified vector space. When performing cross-modal retrieval, the system automatically adjusts scoring weights to ensure diversity and accuracy of retrieval results. Additionally, the temporal recency calculation in perceptual memory adopts an exponential decay model:
+Формула оценки перцептивной памяти:`(vector similarity × 0.8 + temporal recency × 0.2) × (0.8 + importance × 0.4)`. Механизм оценки перцептивной памяти также поддерживает кросс-модальный поиск, обеспечивая семантическое выравнивание данных различной модальности, таких как текст, изображения и аудио, через единое векторное пространство. При выполнении кросс-модального поиска система автоматически корректирует веса оценок, чтобы обеспечить разнообразие и точность результатов поиска. Кроме того, расчет временной новизны в перцептивной памяти использует модель экспоненциального затухания:
 
 ```python
 def _calculate_recency_score(self, timestamp: str) -> float:
@@ -1087,48 +1087,48 @@ def _calculate_recency_score(self, timestamp: str) -> float:
         return 0.5  # Default medium score
 ```
 
-This time decay model simulates the forgetting curve in human memory, ensuring that the perceptual memory system can prioritize retrieval of temporally more relevant memory content.
+Эта модель временного затухания имитирует кривую забывания в человеческой памяти, гарантируя, что система перцептивной памяти может расставить приоритеты в извлечении более актуального во времени содержимого памяти.
 
-## 8.3 RAG System: Knowledge Retrieval Enhancement
+## 8.3 Система RAG: улучшение поиска знаний
 
-### 8.3.1 RAG Fundamentals
+### 8.3.1 Основы RAG
 
-Before diving into the RAG system implementation of HelloAgents, let's first understand the basic concepts, development history, and core principles of RAG technology. Since this text is not created based on RAG as a foundation, we will only quickly review the relevant concepts here to better understand the technical choices and innovations in system design.
+Прежде чем погрузиться в реализацию HelloAgents в системе RAG, давайте сначала разберемся с основными концепциями, историей развития и основными принципами технологии RAG. Поскольку этот текст создан не на основе RAG, мы лишь кратко рассмотрим здесь соответствующие концепции, чтобы лучше понять технические решения и инновации в проектировании систем.
 
-(1) What is RAG?
+(1) Что такое РАГ?
 
-Retrieval-Augmented Generation (RAG) is a technology that combines information retrieval and text generation. Its core idea is: before generating an answer, first retrieve relevant information from an external knowledge base, then provide the retrieved information as context to the large language model, thereby generating more accurate and reliable answers.
+Поисково-дополненная генерация (RAG) — это технология, сочетающая поиск информации и генерацию текста. Его основная идея такова: прежде чем генерировать ответ, сначала извлеките соответствующую информацию из внешней базы знаний, затем предоставьте полученную информацию в качестве контекста для большой языковой модели, тем самым генерируя более точные и надежные ответы.
 
-Therefore, Retrieval-Augmented Generation can be broken down into three words. **Retrieval** refers to querying relevant content from the knowledge base; **Augmented** means integrating retrieval results into prompts to assist model generation; **Generation** outputs answers that combine accuracy and transparency.
+Таким образом, фразу «Поисковая дополненная генерация» можно разбить на три слова. **Извлечение** означает запрос соответствующего контента из базы знаний; **Дополненный** означает интеграцию результатов поиска в подсказки для облегчения создания модели; **Генерация** выводит ответы, сочетающие точность и прозрачность.
 
-(2) Basic Workflow
+(2) Основной рабочий процесс
 
-A complete RAG application workflow is mainly divided into two core stages. In the **data preparation stage**, the system builds external knowledge into a retrievable database through **data extraction**, **text segmentation**, and **vectorization**. Subsequently, in the **application stage**, the system responds to user **queries**, **retrieves** relevant information from the database, **injects it into the prompt**, and finally drives the large language model to **generate answers**.
+Полный рабочий процесс приложения RAG в основном разделен на два основных этапа. На **этапе подготовки данных** система объединяет внешние знания в извлекаемую базу данных посредством **извлечения данных**, **сегментации текста** и **векторизации**. Впоследствии, на **этапе** приложения**, система отвечает на **запросы** пользователя, **извлекает** соответствующую информацию из базы данных, **вводит ее в подсказку** и, наконец, управляет большой языковой моделью для **генерации ответов**.
 
-(3) Development History
+(3) История развития
 
-First stage: Naive RAG (2020-2021). This is the embryonic stage of RAG technology, with a direct and simple process, commonly referred to as the "Retrieve-Read" mode. **Retrieval method**: Mainly relies on traditional keyword matching algorithms such as `TF-IDF` or `BM25`. These methods calculate term frequency and document frequency to evaluate relevance, with good literal matching effects, but difficulty understanding semantic similarity. **Generation mode**: Directly concatenates retrieved document content into the prompt context without processing, then sends it to the generation model.
+Первый этап: Наивная РАГ (2020-2021). Это зачаточная стадия технологии RAG с прямым и простым процессом, обычно называемым режимом «Извлечение-Чтение». **Метод поиска**: в основном опирается на традиционные алгоритмы сопоставления ключевых слов, такие как`TF-IDF`или`BM25`. Эти методы рассчитывают частоту терминов и частоту документов для оценки релевантности, обеспечивая хороший эффект буквального соответствия, но затрудняя понимание семантического сходства. **Режим генерации**: содержимое полученного документа напрямую объединяется с контекстом приглашения без обработки, а затем отправляется в модель генерации.
 
-Second stage: Advanced RAG (2022-2023). With the maturity of vector databases and text embedding technology, RAG entered a rapid development stage. Researchers and developers introduced a large number of optimization techniques in various stages of "retrieval" and "generation". **Retrieval method**: Shifted to semantic retrieval based on **dense embedding**. By converting text into high-dimensional vectors, the model can understand and match semantic similarity, not just keywords. **Generation mode**: Introduced many optimization techniques, such as query rewriting, document chunking, reranking, etc.
+Второй этап: Advanced RAG (2022-2023 гг.). С развитием векторных баз данных и технологий встраивания текста RAG вступила в стадию быстрого развития. Исследователи и разработчики внедрили большое количество методов оптимизации на различных этапах «извлечения» и «генерации». **Метод поиска**: переход к семантическому поиску на основе **плотного внедрения**. Преобразуя текст в многомерные векторы, модель может понимать и сопоставлять семантическое сходство, а не только ключевые слова. **Режим генерации**: добавлено множество методов оптимизации, таких как переписывание запросов, разбиение документов на фрагменты, изменение ранжирования и т. д.
 
-Third stage: Modular RAG (2023-present). Building on advanced RAG, modern RAG systems further develop toward modularization, automation, and intelligence. Various parts of the system are designed as pluggable, composable independent modules to adapt to more diverse and complex application scenarios. **Retrieval methods**: Such as hybrid retrieval, multi-query expansion, hypothetical document embedding, etc. **Generation modes**: Chain-of-thought reasoning, self-reflection and correction, etc.
+Третий этап: Модульная ВЕТОШЬ (2023-настоящее время). Опираясь на передовые системы ТРЯПКИ, современные системы ТРЯПКИ продолжают развиваться в направлении модульности, автоматизации и интеллекта. Различные части системы разработаны как подключаемые, компонуемые независимые модули для адаптации к более разнообразным и сложным сценариям применения. ** Методы поиска **: такие как гибридный поиск, расширение с несколькими запросами, гипотетическое встраивание документов и т. д. ** Режимы генерации **: логическое мышление, саморефлексия и коррекция и т. д.
 
-### 8.3.2 RAG System Working Principle
+### 8.3.2 Принцип работы системы RAG
 
-Before diving into implementation details, we can use a flowchart to outline the complete workflow of HelloAgents' RAG system:
+Прежде чем углубиться в детали реализации, мы можем использовать блок-схему, чтобы обрисовать полный рабочий процесс системы RAG HelloAgents:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-5.png" alt="RAG System Core Principle" width="85%"/>
-  <p>Figure 8.5 Core Working Principle of RAG System</p>
+  <p>Рисунок 8.5 Основной принцип работы системы RAG</p>
 </div>
 
-As shown in Figure 8.5, it demonstrates the two main working modes of the RAG system:
-1. **Data Processing Workflow**: Processing and storing knowledge documents. Here we adopt the tool `Markitdown`, with the design idea of uniformly converting all incoming external knowledge sources into Markdown format for processing.
-2. **Query and Generation Workflow**: Retrieving relevant information based on queries and generating answers.
+Как показано на рисунке 8.5, он демонстрирует два основных режима работы системы RAG:
+1. ** Рабочий процесс обработки данных **: обработка и хранение документов знаний. Здесь мы принимаем инструмент`Markitdown`, с дизайнерской идеей равномерного преобразования всех входящих внешних источников знаний в формат Markdown для обработки.
+2. ** Рабочий процесс запроса и генерации **: получение релевантной информации на основе запросов и генерация ответов.
 
-### 8.3.3 Quick Experience: Get Started with RAG Features in 30 Seconds
+### 8.3.3 Быстрый опыт: начните работу с функциями RAG за 30 секунд
 
-Let's quickly experience the basic functions of the RAG system:
+Давайте быстро ознакомимся с основными функциями системы RAG:
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM, ToolRegistry
@@ -1182,11 +1182,11 @@ result = rag_tool.execute("stats")
 print(result)
 ```
 
-Next, we will delve into the specific implementation of the HelloAgents RAG system.
+Далее мы углубимся в конкретную реализацию Rag-системы HELLOAGENTS.
 
-### 8.3.4 RAG System Architecture Design
+### 8.3.4 Проектирование архитектуры системы RAG
 
-In this section, we adopt a different approach from the memory system explanation. Because `Memory_tool` is a systematic implementation, while RAG in our design is defined as a tool that can be organized as a pipeline. The core architecture of our RAG system can be summarized as a "five-layer seven-step" design pattern:
+В этом разделе мы используем подход, отличный от объяснения системы памяти. Потому что`Memory_tool`— это систематическая реализация, тогда как RAG в нашем проекте определяется как инструмент, который можно организовать в виде конвейера. Базовую архитектуру нашей системы RAG можно резюмировать как «пятиуровневый семиэтапный» шаблон проектирования:
 
 ```
 User Layer: RAGTool unified interface
@@ -1200,7 +1200,7 @@ Storage Layer: Vector database, document storage
 Foundation Layer: Embedding model, LLM, database
 ```
 
-The advantage of this layered design is that each layer can be independently optimized and replaced while maintaining the stability of the overall system. For example, you can easily switch the embedding model from sentence-transformers to Bailian API without affecting the upper-level business logic. Similarly, the processing workflow code is completely reusable, and you can also select the parts you need and put them into your own project. RAGTool serves as the unified entry point of the RAG system, providing a concise API interface.
+Преимущество этой многослойной конструкции заключается в том, что каждый слой может быть независимо оптимизирован и заменен при сохранении стабильности всей системы. Например, вы можете легко переключить модель встраивания с преобразователей предложений на Bailian API, не затрагивая бизнес-логику верхнего уровня. Аналогичным образом, код рабочего процесса обработки является полностью многоразовым, и вы также можете выбрать нужные вам детали и поместить их в свой собственный проект. RAGTool служит единой точкой входа в систему RAG, обеспечивая краткий интерфейс API.
 
 ````python
 class RAGTool(Tool):
@@ -1235,14 +1235,14 @@ class RAGTool(Tool):
         self._pipelines[self.rag_namespace] = default_pipeline
 ````
 
-The entire processing workflow is as follows:
+Весь рабочий процесс обработки выглядит следующим образом:
 ```
 Any format document → MarkItDown conversion → Markdown text → Intelligent chunking → Vectorization → Storage and retrieval
 ```
 
-(1) Multimodal Document Loading
+(1) Мультимодальная загрузка документов
 
-One of the core advantages of the RAG system is its powerful multimodal document processing capability. The system uses MarkItDown as a unified document conversion engine, supporting almost all common document formats. MarkItDown is an open-source universal document conversion tool from Microsoft. It is a core component of the HelloAgents RAG system, responsible for uniformly converting documents of any format into structured Markdown text. Whether the input is PDF, Word, Excel, images, or audio, it will ultimately be converted to standard Markdown format, then enter the unified chunking, vectorization, and storage workflow.
+Одним из основных преимуществ системы RAG является ее мощная мультимодальная возможность обработки документов. Система использует MarkItDown в качестве унифицированного механизма преобразования документов, поддерживающего почти все распространенные форматы документов. MarkItDown - это универсальный инструмент преобразования документов с открытым исходным кодом от Microsoft. Это основной компонент Rag-системы HelloAgents, отвечающий за равномерное преобразование документов любого формата в структурированный текст Markdown. Независимо от того, является ли ввод PDF, Word, Excel, изображения или аудио, он в конечном итоге будет преобразован в стандартный формат Markdown, а затем войдет в унифицированный рабочий процесс фрагментации, векторизации и хранения.
 
 ```python
 def _convert_to_markdown(path: str) -> str:
@@ -1282,11 +1282,11 @@ def _convert_to_markdown(path: str) -> str:
         return _fallback_text_reader(path)
 ```
 
-(2) Intelligent Chunking Strategy
+(2) Интеллектуальная стратегия распределения
 
-After MarkItDown conversion, all documents are unified into standard Markdown format. This provides a structured foundation for subsequent intelligent chunking. HelloAgents implements an intelligent chunking strategy specifically for Markdown format, fully utilizing the structured characteristics of Markdown for precise segmentation.
+После конвертации MarkItDown все документы объединяются в стандартный формат Markdown. Это обеспечивает структурированную основу для последующего интеллектуального разделения на фрагменты. HelloAgents реализует интеллектуальную стратегию фрагментации специально для формата Markdown, полностью используя структурированные характеристики Markdown для точной сегментации.
 
-Markdown structure-aware chunking workflow:
+Рабочий процесс разбиения на фрагменты с учетом структуры Markdown:
 
 ```
 Standard Markdown text → Heading hierarchy parsing → Paragraph semantic segmentation → Token calculation chunking → Overlap strategy optimization → Vectorization preparation
@@ -1295,7 +1295,7 @@ Standard Markdown text → Heading hierarchy parsing → Paragraph semantic segm
    Clear structure     Hierarchy recognition  Integrity guarantee  Retrieval optimization  Context preservation  Similarity matching
 ```
 
-Since all documents have been converted to Markdown format, the system can use Markdown's heading structure (#, ##, ###, etc.) for precise semantic segmentation:
+Поскольку все документы преобразованы в формат Markdown, система может использовать структуру заголовков Markdown (#, ##, ### и т. д.) для точной семантической сегментации:
 
 ```python
 def _split_paragraphs_with_headings(text: str) -> List[Dict]:
@@ -1352,7 +1352,7 @@ def _split_paragraphs_with_headings(text: str) -> List[Dict]:
     return paragraphs
 ```
 
-Based on Markdown paragraph segmentation, the system further performs intelligent chunking based on token count. Since the input is already structured Markdown text, the system can more precisely control chunk boundaries, ensuring that each chunk is both suitable for vectorization processing and maintains the integrity of the Markdown structure:
+На основе сегментации абзацев Markdown система дополнительно выполняет интеллектуальное разбиение на блоки на основе количества токенов. Поскольку входные данные уже представляют собой структурированный текст Markdown, система может более точно контролировать границы фрагментов, гарантируя, что каждый фрагмент подходит для обработки векторизации и сохраняет целостность структуры Markdown:
 
 ```python
 def _chunk_paragraphs(paragraphs: List[Dict], chunk_tokens: int, overlap_tokens: int) -> List[Dict]:
@@ -1417,7 +1417,7 @@ def _chunk_paragraphs(paragraphs: List[Dict], chunk_tokens: int, overlap_tokens:
     return chunks
 ```
 
-At the same time, to be compatible with different languages, the system implements a token estimation algorithm for Chinese-English mixed text, which is crucial for accurately controlling chunk size:
+В то же время, для совместимости с разными языками, система реализует алгоритм оценки токенов для смешанного китайско-английского текста, что имеет решающее значение для точного контроля размера фрагмента:
 
 ```python
 def _approx_token_len(text: str) -> int:
@@ -1442,9 +1442,9 @@ def _is_cjk(ch: str) -> bool:
     )
 ```
 
-(3) Unified Embedding and Vector Storage
+(3) Унифицированное встраивание и векторное хранилище
 
-The embedding model is the core of the RAG system. It is responsible for converting text into high-dimensional vectors, enabling computers to understand and compare semantic similarity of text. The retrieval capability of the RAG system largely depends on the quality of the embedding model and the efficiency of vector storage. HelloAgents implements a unified embedding interface. For demonstration purposes, we use the Bailian API here. If not yet configured, you can switch to the local `all-MiniLM-L6-v2` model. If both solutions are not supported, the TF-IDF algorithm is also configured as a fallback. In actual use, you can replace it with your desired model or API, or try to extend the framework content~
+Модель встраивания является ядром системы RAG. Он отвечает за преобразование текста в многомерные векторы, позволяя компьютерам понимать и сравнивать семантическое сходство текста. Возможность извлечения системы RAG во многом зависит от качества модели встраивания и эффективности векторного хранения. HelloAgents реализует унифицированный интерфейс встраивания. В демонстрационных целях мы используем здесь API Bailian. Если вы еще не настроены, вы можете переключиться на локальный`all-MiniLM-L6-v2`модель. Если оба решения не поддерживаются, алгоритм TF-IDF также настраивается как запасной вариант. При фактическом использовании вы можете заменить его желаемой моделью или API или попытаться расширить содержимое фреймворка~
 
 ```python
 def index_chunks(
@@ -1523,15 +1523,15 @@ def index_chunks(
         print(f"[RAG] Embedding progress: {min(i+batch_size, len(processed_texts))}/{len(processed_texts)}")
 ```
 
-### 8.3.5 Advanced Retrieval Strategies
+### 8.3.5 Расширенные стратегии поиска
 
-The retrieval capability of the RAG system is its core competitiveness. In practical applications, there may be wording differences between user queries and actual content in documents, resulting in relevant documents not being retrieved. To solve this problem, HelloAgents implements three complementary advanced retrieval strategies: Multi-Query Expansion (MQE), Hypothetical Document Embeddings (HyDE), and a unified extended retrieval framework.
+Возможности поиска информации системы RAG являются ее основной конкурентоспособностью. В практических приложениях между запросами пользователей и фактическим содержимым документов могут возникать различия в формулировках, в результате чего соответствующие документы не извлекаются. Чтобы решить эту проблему, HelloAgents реализует три взаимодополняющие расширенные стратегии поиска: расширение нескольких запросов (MQE), встраивание гипотетических документов (HyDE) и унифицированную структуру расширенного поиска.
 
-(1) Multi-Query Expansion (MQE)
+(1) Расширение нескольких запросов (MQE)
 
-Multi-Query Expansion (MQE) is a technique that improves retrieval recall by generating semantically equivalent diverse queries. The core insight of this method is: the same question can have multiple different expressions, and different expressions may match different relevant documents. For example, "how to learn Python" can be expanded to "Python beginner tutorial", "Python learning methods", "Python programming guide", and other queries. By executing these expanded queries in parallel and merging the results, the system can cover a wider range of relevant documents, avoiding missing important information due to wording differences.
+Расширение нескольких запросов (MQE) — это метод, который улучшает извлечение данных за счет создания семантически эквивалентных разнообразных запросов. Основная идея этого метода заключается в следующем: один и тот же вопрос может иметь несколько разных выражений, и разные выражения могут соответствовать разным релевантным документам. Например, «как изучить Python» можно расширить до «Учебник по Python для начинающих», «Методы обучения Python», «Руководство по программированию на Python» и другие запросы. Выполняя эти расширенные запросы параллельно и объединяя результаты, система может охватить более широкий круг соответствующих документов, избегая пропуска важной информации из-за различий в формулировках.
 
-The advantage of MQE is that it can automatically understand multiple possible meanings of user queries, especially effective for ambiguous queries or professional terminology queries. The system uses LLM to generate expanded queries, ensuring diversity and semantic relevance of expansions:
+Преимущество MQE заключается в том, что он может автоматически понимать множество возможных значений пользовательских запросов, что особенно эффективно для неоднозначных запросов или запросов профессиональной терминологии. Система использует LLM для генерации расширенных запросов, обеспечивая разнообразие и смысловую релевантность расширений:
 
 ```python
 def _prompt_mqe(query: str, n: int) -> List[str]:
@@ -1551,11 +1551,11 @@ def _prompt_mqe(query: str, n: int) -> List[str]:
         return [query]
 ```
 
-(2) Hypothetical Document Embeddings (HyDE)
+(2) Встраивание гипотетических документов (HyDE)
 
-Hypothetical Document Embeddings (HyDE) is an innovative retrieval technique. Its core idea is "use answers to find answers". Traditional retrieval methods use questions to match documents, but there is often a difference in the distribution of questions and answers in semantic space—questions are usually interrogative sentences, while document content is declarative sentences. HyDE has the LLM first generate a hypothetical answer paragraph, then uses this answer paragraph to retrieve real documents, thereby narrowing the semantic gap between queries and documents.
+Встраивание гипотетических документов (HyDE) — это инновационный метод поиска. Его основная идея — «используйте ответы, чтобы найти ответы». Традиционные методы поиска используют вопросы для сопоставления документов, но часто существует разница в распределении вопросов и ответов в семантическом пространстве: вопросы обычно представляют собой вопросительные предложения, а содержание документа — повествовательные предложения. HyDE заставляет LLM сначала генерировать гипотетический параграф ответа, а затем использовать этот параграф ответа для извлечения реальных документов, тем самым сокращая семантический разрыв между запросами и документами.
 
-The advantage of this method is that hypothetical answers are closer to real answers in semantic space, thus enabling more accurate matching to relevant documents. Even if the content of the hypothetical answer is not completely correct, the key terms, concepts, and expression styles it contains can effectively guide the retrieval system to find the correct documents. Especially for professional domain queries, HyDE can generate hypothetical documents containing domain terminology, significantly improving retrieval accuracy:
+Преимущество этого метода в том, что гипотетические ответы ближе к реальным ответам в семантическом пространстве, что позволяет более точно сопоставить их с соответствующими документами. Даже если содержание гипотетического ответа не совсем правильно, содержащиеся в нем ключевые термины, понятия и стили выражения могут эффективно помочь поисковой системе найти правильные документы. HyDE может генерировать гипотетические документы, содержащие терминологию предметной области, специально для профессиональных доменных запросов, что значительно повышает точность поиска:
 
 ```python
 def _prompt_hyde(query: str) -> Optional[str]:
@@ -1572,11 +1572,11 @@ def _prompt_hyde(query: str) -> Optional[str]:
         return None
 ```
 
-(3) Extended Retrieval Framework
+(3) Расширенная структура поиска
 
-HelloAgents integrates the two strategies of MQE and HyDE into a unified extended retrieval framework. The system allows users to choose which strategies to enable based on specific scenarios through the `enable_mqe` and `enable_hyde` parameters: for scenarios requiring high recall, both strategies can be enabled simultaneously; for performance-sensitive scenarios, only basic retrieval can be used.
+HelloAgents объединяет две стратегии MQE и HyDE в единую расширенную структуру поиска. Система позволяет пользователям выбирать, какие стратегии активировать на основе конкретных сценариев через`enable_mqe`и`enable_hyde`параметры: для сценариев, требующих высокой полноты, обе стратегии могут быть включены одновременно; для сценариев, чувствительных к производительности, можно использовать только базовый поиск.
 
-The core mechanism of extended retrieval is a three-step "expand-retrieve-merge" workflow. First, the system generates multiple expanded queries based on the original query (including diverse queries generated by MQE and hypothetical documents generated by HyDE); then, it executes vector retrieval in parallel for each expanded query to obtain a candidate document pool; finally, it merges all results through deduplication and score sorting, returning the most relevant top-k documents. The ingenuity of this design is that it expands the candidate pool through the `candidate_pool_multiplier` parameter (default is 4), ensuring sufficient candidate documents for screening, while avoiding returning duplicate content through intelligent deduplication.
+Основным механизмом расширенного поиска является трехэтапный рабочий процесс «расширение-извлечение-объединение». Во-первых, система генерирует несколько расширенных запросов на основе исходного запроса (включая разнообразные запросы, созданные MQE, и гипотетические документы, созданные HyDE); затем он параллельно выполняет поиск векторов для каждого расширенного запроса, чтобы получить пул документов-кандидатов; наконец, он объединяет все результаты посредством дедупликации и сортировки оценок, возвращая наиболее релевантные документы из списка top-k. Изобретательность этого проекта в том, что он расширяет пул кандидатов за счет`candidate_pool_multiplier`параметр (по умолчанию — 4), обеспечивающий достаточное количество документов-кандидатов для проверки, избегая при этом возврата дублированного контента посредством интеллектуальной дедупликации.
 
 ```python
 def search_vectors_expanded(
@@ -1652,48 +1652,48 @@ def search_vectors_expanded(
     return merged[:top_k]
 ```
 
-In practical applications, the combined use of these three strategies works best. MQE excels at handling wording diversity issues, HyDE excels at handling semantic gap issues, and the unified framework ensures result quality and diversity. For general queries, it is recommended to enable MQE; for professional domain queries, it is recommended to enable both MQE and HyDE simultaneously; for performance-sensitive scenarios, only basic retrieval or only MQE can be used.
+В практических приложениях лучше всего работает совместное использование этих трех стратегий. MQE превосходно справляется с проблемами разнообразия формулировок, HyDE превосходно справляется с проблемами семантических разрывов, а унифицированная структура обеспечивает качество и разнообразие результатов. Для общих запросов рекомендуется включить MQE; для профессиональных доменных запросов рекомендуется одновременно включить MQE и HyDE; для сценариев, чувствительных к производительности, можно использовать только базовое извлечение или только MQE.
 
-Of course, there are many other interesting methods. This is just an appropriate extension introduction for everyone. In actual usage scenarios, you also need to try to find solutions suitable for the problem.
+Конечно, есть много других интересных методов. Это просто подходящее введение в расширение для всех. В реальных сценариях использования вам также необходимо попытаться найти решения, подходящие для проблемы.
 
-## 8.4 Building an Intelligent Document Q&A Assistant
+## 8.4 Создание интеллектуального помощника по вопросам и ответам на документы
 
-In the previous sections, we detailed the design and implementation of HelloAgents' memory system and RAG system. Now, let's demonstrate through a complete practical case how to organically combine these two systems to build an intelligent document Q&A assistant.
+В предыдущих разделах мы подробно описали проектирование и реализацию системы памяти HelloAgents и системы RAG. Теперь давайте на полном практическом примере продемонстрируем, как органично объединить эти две системы для создания интеллектуального помощника по вопросам и ответам на документы.
 
-### 8.4.1 Case Background and Objectives
+### 8.4.1 Предыстория дела и цели
 
-In actual work, we often need to process a large number of technical documents, research papers, product manuals, and other PDF files. Traditional document reading methods are inefficient, making it difficult to quickly locate key information, let alone establish associations between knowledge.
+В реальной работе нам часто приходится обрабатывать большое количество технических документов, исследовательских работ, руководств по продуктам и других файлов PDF. Традиционные методы чтения документов неэффективны, что затрудняет быстрый поиск ключевой информации, не говоря уже о установлении связей между знаниями.
 
-This case will use the public beta PDF document `Happy-LLM-0727.pdf` from Datawhale's another hands-on large model tutorial Happy-LLM as an example to build a **Gradio-based Web application**, demonstrating how to use RAGTool and MemoryTool to build a complete interactive learning assistant. The PDF can be obtained from this [link](https://github.com/datawhalechina/happy-llm/releases/download/v1.0.1/Happy-LLM-0727.pdf).
+В этом случае будет использоваться общедоступный PDF-документ бета-версии.`Happy-LLM-0727.pdf`из другого практического руководства Datawhale по большим моделям Happy-LLM в качестве примера создания **веб-приложения на основе Gradio**, демонстрирующего, как использовать RAGTool и MemoryTool для создания полноценного интерактивного помощника по обучению. PDF-файл можно получить по этой [ссылка](https://github.com/datawhalechina/happy-llm/releases/download/v1.0.1/Happy-LLM-0727.pdf).
 
-We hope to implement the following functions:
+Мы надеемся реализовать следующие функции:
 
-1. **Intelligent Document Processing**: Use MarkItDown to achieve unified conversion from PDF to Markdown, intelligent chunking strategy based on Markdown structure, efficient vectorization and index construction
+1. **Интеллектуальная обработка документов**: используйте MarkItDown для унифицированного преобразования PDF в Markdown, интеллектуальную стратегию фрагментирования на основе структуры Markdown, эффективную векторизацию и построение индексов.
 
-2. **Advanced Retrieval Q&A**: Multi-Query Expansion (MQE) to improve recall, Hypothetical Document Embeddings (HyDE) to improve retrieval accuracy, context-aware intelligent Q&A
+2. **Расширенные вопросы и ответы при поиске**: расширение нескольких запросов (MQE) для улучшения отзыва, встраивание гипотетических документов (HyDE) для повышения точности поиска, интеллектуальные вопросы и ответы с учетом контекста.
 
-3. **Multi-level Memory Management**: Working memory manages current learning tasks and context, episodic memory records learning events and query history, semantic memory stores conceptual knowledge and understanding, perceptual memory processes document features and multimodal information
+3. **Многоуровневое управление памятью**: рабочая память управляет текущими учебными задачами и контекстом, эпизодическая память записывает учебные события и историю запросов, семантическая память хранит концептуальные знания и понимание, перцептивная память обрабатывает особенности документов и мультимодальную информацию.
 
-4. **Personalized Learning Support**: Personalized recommendations based on learning history, memory consolidation and selective forgetting, learning report generation and progress tracking
+4. **Персонализированная поддержка обучения**: Персонализированные рекомендации на основе истории обучения, консолидации памяти и выборочного забывания, создания отчетов об обучении и отслеживания прогресса.
 
-To more clearly demonstrate the workflow of the entire system, Figure 8.6 shows the relationships and data flow between the five steps. The five steps form a complete closed loop: Step 1 records information from processed PDF documents to the memory system, Step 2's retrieval results are also recorded to the memory system, Step 3 demonstrates the complete functions of the memory system (add, retrieve, consolidate, forget), Step 4 integrates RAG and Memory to provide intelligent routing, and Step 5 collects all statistical information to generate learning reports.
+Чтобы более наглядно продемонстрировать рабочий процесс всей системы, на рисунке 8.6 показаны взаимосвязи и поток данных между пятью этапами. Пять шагов образуют полный замкнутый цикл: Шаг 1 записывает информацию из обработанных PDF-документов в систему памяти, Результаты поиска на Шаге 2 также записываются в систему памяти, Шаг 3 демонстрирует все функции системы памяти (добавление, извлечение, консолидация, забывание), Шаг 4 объединяет RAG и память для обеспечения интеллектуальной маршрутизации, а Шаг 5 собирает всю статистическую информацию для создания отчетов об обучении.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-6.png" alt="" width="85%"/>
-  <p>Figure 8.6 Five-step Execution Workflow of Intelligent Q&A Assistant</p>
+  <p>Рисунок 8.6. Пятиэтапный рабочий процесс интеллектуального помощника по вопросам и ответам.</p>
 </div>
 
-Next, we will demonstrate how to implement this Web application. The entire application is divided into three core parts:
+Далее мы продемонстрируем, как реализовать это веб-приложение. Все приложение разделено на три основные части:
 
-1. **Core Assistant Class (PDFLearningAssistant)**: Encapsulates the calling logic of RAGTool and MemoryTool
-2. **Gradio Web Interface**: Provides a friendly user interaction interface, this part can refer to the example code for learning
-3. **Other Core Functions**: Note recording, learning review, statistics viewing, and report generation
+1. **Класс основного помощника (PDFLearningAssistant)**: инкапсулирует логику вызова RAGTool и MemoryTool.
+2. **Веб-интерфейс Gradio**: обеспечивает удобный интерфейс взаимодействия с пользователем. Для обучения в этой части можно обратиться к примеру кода.
+3. **Другие основные функции**: запись заметок, обзор обучения, просмотр статистики и создание отчетов.
 
-### 8.4.2 Implementation of Core Assistant Class
+### 8.4.2 Реализация класса Core Assistant
 
-First, we implement the core assistant class `PDFLearningAssistant`, which encapsulates the calling logic of RAGTool and MemoryTool.
+Сначала мы реализуем основной класс помощника`PDFLearningAssistant`, который инкапсулирует логику вызова RAGTool и MemoryTool.
 
-(1) Class Initialization
+(1) Инициализация класса
 
 ```python
 class PDFLearningAssistant:
@@ -1724,17 +1724,17 @@ class PDFLearningAssistant:
         self.current_document = None
 ```
 
-In this initialization process, we made several key design decisions:
+В этом процессе инициализации мы приняли несколько ключевых проектных решений:
 
-**MemoryTool Initialization**: Implements user-level memory isolation through the `user_id` parameter. Learning memories of different users are completely independent, and each user has their own working memory, episodic memory, semantic memory, and perceptual memory space.
+**Инициализация MemoryTool**: реализует изоляцию памяти на уровне пользователя посредством`user_id`параметр. Воспоминания об обучении разных пользователей полностью независимы, и каждый пользователь имеет свою собственную рабочую память, эпизодическую память, семантическую память и пространство перцептивной памяти.
 
-**RAGTool Initialization**: Implements knowledge base namespace isolation through the `rag_namespace` parameter. Using `f"pdf_{user_id}"` as the namespace, each user has their own independent PDF knowledge base.
+**Инициализация RAGTool**: реализует изоляцию пространства имен базы знаний посредством`rag_namespace`параметр. С использованием`f"pdf_{user_id}"`В качестве пространства имен каждый пользователь имеет собственную независимую базу знаний в формате PDF.
 
-**Session Management**: `session_id` is used to track the complete process of a single learning session, facilitating subsequent learning journey review and analysis.
+Управление сессиями`session_id`используется для отслеживания всего процесса одного учебного занятия, облегчая последующий обзор и анализ процесса обучения.
 
-**Statistical Information**: The `stats` dictionary records key learning metrics for generating learning reports.
+**Статистическая информация**:`stats`словарь записывает ключевые показатели обучения для создания отчетов об обучении.
 
-(2) Loading PDF Documents
+(2) Загрузка PDF-документов
 
 ```python
 def load_document(self, pdf_path: str) -> Dict[str, Any]:
@@ -1787,7 +1787,7 @@ def load_document(self, pdf_path: str) -> Dict[str, Any]:
         }
 ```
 
-We can complete PDF processing with just one line of code:
+Мы можем завершить обработку PDF с помощью всего одной строки кода:
 
 ```python
 result = self.rag_tool.execute(
@@ -1798,14 +1798,14 @@ result = self.rag_tool.execute(
 )
 ```
 
-This call triggers the complete processing workflow of RAGTool (MarkItDown conversion, enhanced processing, intelligent chunking, vectorization storage). These internal details have been introduced in detail in Section 8.3. We only need to focus on:
+Этот вызов запускает полный рабочий процесс обработки RAGTool (преобразование MarkItDown, расширенная обработка, интеллектуальное разбиение на части, векторизация хранилища). Эти внутренние детали были подробно представлены в разделе 8.3. Нам нужно сосредоточиться только на:
 
-- **Operation Type**: `"add_document"` - Add document to knowledge base
-- **File Path**: `file_path` - Path to the PDF file
-- **Chunking Parameters**: `chunk_size=1000, chunk_overlap=200` - Control text chunking
-- **Return Result**: Dictionary containing processing status and statistical information
+- ** Тип операции **: `"add_document"` - Добавить документ в базу знаний
+- **Путь к файлу**: `file_path` — путь к PDF-файлу.
+- **Параметры фрагментации**: `chunk_size=1000, chunk_overlap=200` — управление фрагментированием текста.
+- ** Результат возврата **: словарь, содержащий статус обработки и статистическую информацию
 
-After the document is successfully loaded, we use MemoryTool to record it to episodic memory:
+После успешной загрузки документа используем MemoryTool для записи его в эпизодическую память:
 
 ```python
 self.memory_tool.execute(
@@ -1818,16 +1818,16 @@ self.memory_tool.execute(
 )
 ```
 
-**Why use episodic memory?** Because this is a specific, timestamped event, suitable for recording with episodic memory. The `session_id` parameter associates this event with the current learning session, facilitating subsequent review of the learning journey.
+**Зачем использовать эпизодическую память?** Потому что это определенное событие с временной меткой, подходящее для записи с эпизодической памятью.`session_id`Параметр связывает это событие с текущим сеансом обучения, облегчая последующий обзор процесса обучения.
 
-This memory record lays the foundation for subsequent personalized services:
+Эта запись памяти закладывает основу для последующих персонализированных услуг:
 
-- User asks "What documents have I loaded before?" → Retrieve from episodic memory
-- System can track user's learning journey and document usage
+- Пользователь спрашивает: «Какие документы я загружал раньше?" → Извлечь из эпизодической памяти
+- Система может отслеживать учебный процесс пользователя и использование документов
 
-### 8.4.3 Intelligent Q&A Function
+### 8.4.3 Интеллектуальная функция вопросов и ответов
 
-After the document is loaded, users can ask questions about the document. We implement an `ask` method to handle user questions:
+После загрузки документа пользователи могут задавать вопросы о документе. Мы реализуем`ask`метод обработки пользовательских вопросов:
 
 ```python
 def ask(self, question: str, use_advanced_search: bool = True) -> str:
@@ -1877,9 +1877,9 @@ def ask(self, question: str, use_advanced_search: bool = True) -> str:
     return answer
 ```
 
-When we call `self.rag_tool.execute("ask", ...)`, RAGTool internally executes the following advanced retrieval workflow:
+Когда мы звоним`self.rag_tool.execute("ask", ...)`, RAGTool внутренне выполняет следующий расширенный рабочий процесс извлечения:
 
-1. **Multi-Query Expansion (MQE)**:
+1. **Расширение нескольких запросов (MQE)**:
 
    ```python
    # Generate diverse queries
@@ -1890,18 +1890,18 @@ When we call `self.rag_tool.execute("ask", ...)`, RAGTool internally executes th
    # - "What does LLM mean?"
    ```
 
-   MQE generates semantically equivalent but differently expressed queries through LLM, understanding user intent from multiple angles, improving recall by 30%-50%.
+MQE генерирует семантически эквивалентные, но по-разному выраженные запросы с помощью LLM, понимая намерения пользователя с разных точек зрения и улучшая запоминаемость на 30–50%.
 
-2. **Hypothetical Document Embeddings (HyDE)**:
+2. **Гипотетические вложения документов (HyDE)**:
 
-   - Generate hypothetical answer documents, bridging the semantic gap between queries and documents
-   - Use vectors of hypothetical answers for retrieval
+   - Создавайте гипотетические документы ответов, устраняя семантический разрыв между запросами и документами.
+   - Используйте векторы гипотетических ответов для поиска.
 
-The internal implementation of these advanced retrieval techniques has been introduced in detail in Section 8.3.5.
+Внутренняя реализация этих передовых методов поиска подробно описана в разделе 8.3.5.
 
-### 8.4.4 Other Core Functions
+### 8.4.4 Другие основные функции
 
-In addition to loading documents and intelligent Q&A, we also need to implement functions such as note recording, learning review, statistics viewing, and report generation:
+Помимо загрузки документов и интеллектуальных вопросов и ответов, нам также необходимо реализовать такие функции, как запись заметок, обзор обучения, просмотр статистики и создание отчетов:
 
 ```python
 def add_note(self, content: str, concept: Optional[str] = None):
@@ -1967,117 +1967,117 @@ def generate_report(self, save_to_file: bool = True) -> Dict[str, Any]:
     return report
 ```
 
-These methods respectively implement:
+Эти методы соответственно реализуют:
 
-- **add_note**: Save learning notes to semantic memory
-- **recall**: Retrieve learning journey from memory system
-- **get_stats**: Get statistical information of current session
-- **generate_report**: Generate detailed learning report and save as JSON file
+- **add_note**: сохранение учебных заметок в семантической памяти.
+- **recall**: Извлеките учебный процесс из системы памяти.
+- **get_stats**: Получить статистическую информацию о текущем сеансе.
+- **generate_report**: создать подробный отчет об обучении и сохранить его в формате JSON.
 
-### 8.4.5 Running Effect Demonstration
+### 8.4.5 Демонстрация эффекта бега
 
-Next is the running effect demonstration. As shown in Figure 8.7, after entering the main page, you need to first initialize the assistant, which is to load our database, model, API and other loading operations. Then pass in the PDF document and click to load the document.
+Далее следует демонстрация эффекта бега. Как показано на рисунке 8.7, после входа на главную страницу необходимо сначала инициализировать помощника, который должен загрузить нашу базу данных, модель, API и другие операции загрузки. Затем передайте PDF-документ и нажмите, чтобы загрузить документ.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-7.png" alt="" width="85%"/>
-  <p>Figure 8.7 Q&A Assistant Main Page</p>
+  <p>Рисунок 8.7. Главная страница помощника по вопросам и ответам</p>
 </div>
 
-The first function is intelligent Q&A, which can retrieve based on uploaded documents and return reference sources and similarity calculations of related materials. This is a demonstration of RAG tool capabilities, as shown in Figure 8.8.
+Первая функция — это интеллектуальные вопросы и ответы, которые можно получать на основе загруженных документов, возвращать справочные источники и рассчитывать сходство связанных материалов. Это демонстрация возможностей инструмента RAG, как показано на рисунке 8.8.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-8.png" alt="" width="85%"/>
-  <p>Figure 8.8 Q&A Assistant Main Page</p>
+  <p>Рисунок 8.8. Главная страница помощника по вопросам и ответам</p>
 </div>
 
-The second function is learning notes. As shown in Figure 8.9, you can select related concepts and write note content. This part uses Memory tool and will store your personal notes in the database for easy statistics and subsequent return of overall learning reports.
+Вторая функция — изучение конспектов. Как показано на рисунке 8.9, вы можете выбирать связанные понятия и писать содержание примечаний. Эта часть использует инструмент «Память» и сохраняет ваши личные заметки в базе данных для удобной статистики и последующего возврата общих отчетов об обучении.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-9.png" alt="" width="85%"/>
-  <p>Figure 8.9 Q&A Assistant Main Page</p>
+  <p>Рисунок 8.9. Главная страница помощника по вопросам и ответам</p>
 </div>
 
-Finally, there are statistics on learning progress and report generation. As shown in Figure 8.10, we can see the number of documents loaded, number of questions asked, and number of notes during the use of the assistant. Finally, our Q&A results and notes are organized into a JSON document and returned.
+Наконец, есть статистика прогресса обучения и формирование отчетов. Как показано на рисунке 8.10, мы можем видеть количество загруженных документов, количество заданных вопросов и количество заметок во время использования помощника. Наконец, наши результаты и заметки вопросов и ответов организуются в документ JSON и возвращаются.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-10.png" alt="" width="85%"/>
-  <p>Figure 8.10 Q&A Assistant Main Page</p>
+  <p>Рисунок 8.10. Главная страница помощника по вопросам и ответам</p>
 </div>
 
-Through this Q&A assistant case, we demonstrated how to use RAGTool and MemoryTool to build a complete **Web-based intelligent document Q&A system**. The complete code can be found in `code/chapter8/11_Q&A_Assistant.py`. After starting, visit `http://localhost:7860` to use this intelligent learning assistant.
+В этом примере помощника по вопросам и ответам мы продемонстрировали, как использовать RAGTool и MemoryTool для создания полноценной **интеллектуальной веб-системы вопросов и ответов для документов**. Полный код можно найти в`code/chapter8/11_Q&A_Assistant.py`. После запуска посетите`http://localhost:7860`использовать этого интеллектуального помощника по обучению.
 
-Readers are advised to run this case personally, experience the capabilities of RAG and Memory, and expand and customize on this basis to build intelligent applications that meet their own needs!
+Читателям рекомендуется лично выполнить этот кейс, испытать возможности RAG и Memory, а также расширять и настраивать их на этой основе для создания интеллектуальных приложений, отвечающих их собственным потребностям!
 
-## 8.5 Chapter Summary and Outlook
+## 8.5 Краткое содержание главы и перспективы
 
-In this chapter, we successfully added two core capabilities to the HelloAgents framework: the memory system and the RAG system.
+В этой главе мы успешно добавили в структуру HelloAgents две основные возможности: систему памяти и систему RAG.
 
-For readers who wish to deeply learn and apply the content of this chapter, we provide the following suggestions:
+Для читателей, желающих глубоко изучить и применить содержание этой главы, мы даем следующие предложения:
 
-1. From zero to one, design a basic memory module by hand and gradually iterate to add more complex features.
+1. От нуля до единицы: вручную спроектируйте базовый модуль памяти и постепенно добавляйте более сложные функции.
 
-2. Try and evaluate different embedding models and retrieval strategies in projects to find the optimal solution for specific tasks.
+2. Попробуйте оценить различные модели внедрения и стратегии поиска в проектах, чтобы найти оптимальное решение для конкретных задач.
 
-3. Apply the learned memory and RAG systems to a real personal project, testing and improving capabilities in practice.
+3. Примените изученную память и систему RAG к реальному личному проекту, проверяя и улучшая возможности на практике.
 
-Advanced Exploration
+Расширенное исследование
 
-1. Track and study cutting-edge memory and RAG repositories, learning excellent implementations.
-2. Explore the possibility of applying RAG architecture to multimodal (text + image) or cross-modal scenarios.
-3. Participate in the HelloAgents open-source project, contributing your ideas and code.
+1. Отслеживайте и изучайте новейшие репозитории памяти и RAG, изучая отличные реализации.
+2. Изучите возможность применения архитектуры RAG к мультимодальным (текст + изображение) или кросс-модальным сценариям.
+3. Участвуйте в проекте с открытым исходным кодом HelloAgents, делясь своими идеями и кодом.
 
-Through the study of this chapter, you have not only mastered the implementation technology of Memory and RAG systems, but more importantly, understood how to transform cognitive science theory into practical engineering solutions. This interdisciplinary way of thinking will lay a solid foundation for your further development in the AI field.
+Изучая эту главу, вы не только освоили технологию реализации систем памяти и RAG, но, что более важно, поняли, как преобразовать теорию когнитивной науки в практические инженерные решения. Этот междисциплинарный образ мышления заложит прочную основу для вашего дальнейшего развития в области искусственного интеллекта.
 
-Finally, let's summarize the complete knowledge system of this chapter through a mind map, as shown in Figure 8.11:
+Наконец, давайте обобщим всю систему знаний этой главы с помощью карты связей, как показано на рис. 8.11:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/8-figures/8-11.png" alt="" width="85%"/>
-  <p>Figure 8.11 Hello-agents Chapter 8 Knowledge Summary</p>
+  <p>Рисунок 8.11. Hello-агенты. Глава 8. Сводка знаний.</p>
 </div>
 
-This chapter demonstrated the capabilities of the HelloAgents framework's memory system and RAG technology. We successfully built a truly "intelligent" learning assistant. This architecture can be easily extended to other application scenarios, such as customer service, technical support, personal assistants, and other fields.
+В этой главе были продемонстрированы возможности системы памяти платформы HelloAgents и технологии RAG. Мы успешно создали по-настоящему «умного» помощника по обучению. Эту архитектуру можно легко расширить на другие сценарии применения, такие как обслуживание клиентов, техническая поддержка, личные помощники и другие области.
 
-In the next chapter, we will continue to explore how to further improve the dialogue quality and user experience of agents through context engineering. Stay tuned!
+В следующей главе мы продолжим изучать способы дальнейшего улучшения качества диалога и пользовательского опыта агентов с помощью контекстной инженерии. Следите за обновлениями!
 
-## Exercises
+## Упражнения
 
-> **Note**: Some exercises do not have standard answers. The focus is on cultivating learners' comprehensive understanding and practical ability of memory systems and RAG technology.
+> **Примечание**. Для некоторых упражнений нет стандартных ответов. Основное внимание уделяется развитию у учащихся всестороннего понимания и практических способностей систем памяти и технологии RAG.
 
-1. This chapter introduced four memory types: working memory, episodic memory, semantic memory, and perceptual memory. Please analyze:
+1. В этой главе были представлены четыре типа памяти: рабочая память, эпизодическая память, семантическая память и перцептивная память. Пожалуйста, проанализируйте:
 
-   - In Section 8.2.5, each memory type has a unique scoring formula. Please compare the scoring mechanisms of episodic memory and semantic memory, and explain why episodic memory emphasizes "temporal recency" more (weight 0.2), while semantic memory emphasizes "graph retrieval" more (weight 0.3)?
-   - If you were to design a "personal health management assistant" (needs to record user's diet, exercise, sleep data, and provide health advice), how would you combine these four memory types? Please design specific application scenarios for each memory type.
-   - Working memory uses a TTL (Time To Live) mechanism to automatically clean expired data. Please think: under what circumstances should important working memories be "consolidated" into long-term memory? How to design an automatic consolidation trigger condition?
+   - В разделе 8.2.5 каждый тип памяти имеет уникальную формулу оценки. Пожалуйста, сравните механизмы оценки эпизодической памяти и семантической памяти и объясните, почему эпизодическая память больше подчеркивает «временную новизну» (вес 0,2), тогда как семантическая память больше подчеркивает «извлечение графа» (вес 0,3)?
+   - Если бы вам нужно было создать «личного помощника по управлению здоровьем» (который должен записывать данные о диете, физических упражнениях, сне пользователя и давать советы по здоровью), как бы вы объединили эти четыре типа памяти? Разработайте конкретные сценарии применения для каждого типа памяти.
+   - Рабочая память использует механизм TTL (Time To Live) для автоматической очистки просроченных данных. Подумайте, при каких обстоятельствах важные рабочие воспоминания должны «консолидироваться» в долговременную память? Как разработать условие запуска автоматической консолидации?
 
-2. In the RAG system in Section 8.3, we use MarkItDown to uniformly convert various format documents to Markdown. Please think deeply:
+2. В системе RAG, описанной в разделе 8.3, мы используем MarkItDown для единообразного преобразования документов различных форматов в Markdown. Пожалуйста, подумайте хорошенько:
 
-   > **Note**: This is a hands-on practice question, actual operation is recommended
+> **Примечание * *: Это практический вопрос, рекомендуется фактическая работа
 
-   - The current intelligent chunking strategy is based on Markdown heading hierarchy (#, ##, ###) for segmentation. If processing documents without clear heading structure (such as novels, legal provisions), how should the chunking strategy be optimized? Please try to implement a chunking algorithm based on "semantic boundaries".
-   - Section 8.3.5 introduced two advanced retrieval strategies: MQE (Multi-Query Expansion) and HyDE (Hypothetical Document Embeddings). Please select a practical scenario (such as technical document Q&A, medical knowledge retrieval), compare the effect differences of basic retrieval, MQE, and HyDE, and analyze their respective applicable scenarios.
-   - The retrieval quality of the RAG system largely depends on the choice of embedding model. Please compare the three embedding solutions mentioned in this chapter (Bailian API, local Transformer, TF-IDF) from the dimensions of accuracy, speed, cost, offline deployment, etc., and provide selection recommendations.
+   - Текущая стратегия интеллектуального разбиения на части основана на иерархии заголовков Markdown (#, ##, ###) для сегментации. Если обработка документов без четкой структуры заголовков (например, новеллы, правовые положения), как оптимизировать стратегию группирования? Попробуйте реализовать алгоритм чанкинга на основе «семантических границ».
+   - В разделе 8.3.5 представлены две расширенные стратегии поиска: MQE (расширение нескольких запросов) и HyDE (встраивание гипотетических документов). Выберите практический сценарий (например, вопросы и ответы по техническим документам, поиск медицинских знаний), сравните различия в эффектах базового поиска, MQE и HyDE и проанализируйте соответствующие применимые сценарии.
+   - Качество извлечения системы ТРЯПКИ во многом зависит от выбора модели встраивания. Пожалуйста, сравните три решения по внедрению, упомянутые в этой главе (Bailian API, локальный трансформатор, TF-IDF), с точки зрения точности, скорости, стоимости, автономного развертывания и т. д., и предоставьте рекомендации по выбору.
 
-3. The "forgetting" mechanism of the memory system is an important design that simulates human cognition. Based on the MemoryTool in Section 8.2.3, please complete the following extended practice:
+3. Механизм «забывания» системы памяти — важная конструкция, имитирующая человеческое познание. На основе MemoryTool из раздела 8.2.3 выполните следующую расширенную практику:
 
-   > **Note**: This is a hands-on practice question, actual operation is recommended
+> **Примечание * *: Это практический вопрос, рекомендуется фактическая работа
 
-   - Currently, three forgetting strategies are provided: importance-based, time-based, and capacity-based. Please design and implement an "intelligent forgetting" strategy that comprehensively considers importance, access frequency, time decay, and other factors, using weighted scoring to decide which memories should be forgotten.
-   - In long-running agent systems, the memory database may accumulate a large amount of data. Please design a "memory archiving" mechanism: transfer long-unused but potentially valuable memories to cold storage, and restore them when needed. How should this mechanism be integrated with the existing four memory types?
-   - Think: If the agent needs to "forget" certain sensitive information (such as user privacy data), is it sufficient to just delete it from the database? In the case of using vector databases and graph databases, how to ensure data is completely cleared?
+   - В настоящее время предусмотрены три стратегии забывания: основанная на важности, основанная на времени и основанная на потенциале. Пожалуйста, разработайте и внедрите стратегию «интеллектуального забывания», которая всесторонне учитывает важность, частоту доступа, распад времени и другие факторы, используя взвешенную оценку, чтобы решить, какие воспоминания следует забыть.
+   - В долго работающих агентских системах база данных памяти может накапливать большой объем данных. Пожалуйста, разработайте механизм «архивирования памяти»: переносите давно неиспользуемые, но потенциально ценные воспоминания в холодное хранилище и восстанавливайте их при необходимости. Как этот механизм следует интегрировать с существующими четырьмя типами памяти?
+   - Подумайте: если агенту необходимо «забыть» определенную конфиденциальную информацию (например, данные о конфиденциальности пользователя), достаточно ли просто удалить ее из базы данных? Как обеспечить полную очистку данных в случае использования векторных и графовых баз данных?
 
-4. In the "Intelligent Learning Assistant" case in Section 8.4, we combined MemoryTool and RAGTool. Please analyze in depth:
+4. В случае «Интеллектуального помощника по обучению» в разделе 8.4 мы объединили MemoryTool и RAGTool. Пожалуйста, проанализируйте подробно:
 
-   - The `ask_question()` method in the case uses both RAG retrieval and memory retrieval. Please analyze: under what circumstances should RAG be prioritized? Under what circumstances should Memory be prioritized? How to design an "intelligent routing" mechanism to automatically select the most appropriate retrieval method?
-   - The current learning report (`generate_report()`) only contains statistical information. Please extend this function and design a more intelligent learning report generator: able to analyze user's learning trajectory, identify knowledge blind spots, and recommend next learning content. Which memory types and retrieval strategies are needed for this?
-   - Suppose you want to deploy this learning assistant as a multi-user Web service, where each user has independent memory and knowledge base. Please design a data isolation solution: how to implement user-level data isolation in Qdrant and Neo4j? How to optimize retrieval performance in multi-user scenarios?
+   - Метод `ask_question()` в данном случае использует как извлечение RAG, так и извлечение памяти. Пожалуйста, проанализируйте: при каких обстоятельствах следует отдавать приоритет RAG? При каких обстоятельствах Память должна быть приоритетной? Как спроектировать механизм «интеллектуальной маршрутизации» для автоматического выбора наиболее подходящего метода извлечения?
+   - Текущий отчет об обучении (`generate_report()`) содержит только статистическую информацию. Пожалуйста, расширьте эту функцию и разработайте более интеллектуальный генератор отчетов об обучении: способный анализировать траекторию обучения пользователя, выявлять слепые зоны знаний и рекомендовать следующий учебный контент. Какие типы памяти и стратегии извлечения необходимы для этого?
+   - Предположим, вы хотите развернуть этот помощник по обучению как многопользовательский веб-сервис, где каждый пользователь имеет независимую память и базу знаний. Пожалуйста, разработайте решение для изоляции данных: как реализовать изоляцию данных на уровне пользователя в Qdrant и Neo4j? Как оптимизировать производительность поиска в многопользовательских сценариях?
 
-5. Semantic memory uses Neo4j graph database to store knowledge graphs. Please think:
+5. Семантическая память использует базу данных графов Neo4j для хранения графов знаний. Пожалуйста, подумайте:
 
-   - In the semantic memory implementation in Section 8.2.5, the system automatically extracts entities and relationships to build knowledge graphs. Please analyze: how accurate is this automatic extraction? Under what circumstances might incorrect entities or relationships be extracted? How to design a "knowledge graph quality assessment" mechanism?
-   - An important advantage of knowledge graphs is supporting complex relational reasoning. Please design a query scenario that fully utilizes Neo4j's graph query capabilities (such as multi-hop relationships, path finding) to accomplish tasks that pure vector retrieval cannot complete.
-   - Compare the "vector retrieval + graph retrieval" hybrid strategy of semantic memory with pure vector retrieval: in what types of queries can graph retrieval bring significant performance improvements? Please illustrate with specific examples.
+   - В реализации семантической памяти, описанной в разделе 8.2.5, система автоматически извлекает сущности и отношения для построения графов знаний. Проанализируйте, пожалуйста: насколько точно это автоматическое извлечение? При каких обстоятельствах могут быть извлечены неправильные сущности или отношения? Как разработать механизм «оценки качества графа знаний»?
+   - Важным преимуществом графов знаний является поддержка сложных реляционных рассуждений. Пожалуйста, разработайте сценарий запроса, который полностью использует возможности запросов графов Neo4j (такие как многопрыжковые связи, поиск пути) для выполнения задач, которые не может выполнить чистый векторный поиск.
+   - Сравните гибридную стратегию семантической памяти «поиск векторов + поиск по графам» с чистым векторным поиском: в каких типах запросов поиск по графу может привести к значительному повышению производительности? Проиллюстрируйте, пожалуйста, конкретными примерами.
 
-## References
+## Ссылки
 
-[1] Atkinson, R. C., & Shiffrin, R. M. (1968). Human memory: A proposed system and its control processes. In *Psychology of learning and motivation* (Vol. 2, pp. 89-195). Academic press.
+[1] Аткинсон Р.К. и Шиффрин Р.М. (1968). Человеческая память: предлагаемая система и процессы ее управления. В *Психологии обучения и мотивации* (Том 2, стр. 89-195). Академическая пресса.
 

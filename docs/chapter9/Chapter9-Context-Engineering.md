@@ -1,150 +1,150 @@
-# Chapter 9 Context Engineering
+# Глава 9. Инженерия контекста
 
-In previous chapters, we have introduced memory systems and RAG for agents. However, to enable agents to stably "think" and "act" in real complex scenarios, memory and retrieval alone are not enough—we need an engineering methodology to continuously and systematically construct appropriate "context" for the model. This is the theme of this chapter: Context Engineering. It focuses on "how to assemble and optimize input context in a reusable, measurable, and evolvable way before each model call", thereby improving correctness, robustness, and efficiency<sup>[1][2]</sup>.
+В предыдущих главах мы представили системы памяти и RAG для агентов. Однако, чтобы агенты могли стабильно «думать» и «действовать» в реальных сложных сценариях, одних только памяти и извлечения недостаточно — нам нужна инженерная методология, позволяющая непрерывно и систематически создавать соответствующий «контекст» для модели. Это тема этой главы: Контекстная инженерия. Основное внимание уделяется тому, «как собирать и оптимизировать входной контекст многоразовым, измеримым и развиваемым способом перед каждым вызовом модели», тем самым повышая правильность, надежность и эффективность<sup>[1][2]</sup>.
 
-To enable readers to quickly experience the complete functionality of this chapter, we provide a directly installable Python package. You can install the version corresponding to this chapter with the following command:
+Чтобы читатели могли быстро освоить всю функциональность этой главы, мы предоставляем устанавливаемый непосредственно пакет Python. Вы можете установить версию, соответствующую этой главе, с помощью следующей команды:
 
 ```bash
 pip install "hello-agents[all]==0.2.8"
 ```
 
-This chapter mainly introduces the core concepts and practices of context engineering, and adds a context builder and two supporting tools to the HelloAgents framework:
+В этой главе в основном представлены основные концепции и методы разработки контекста, а также добавлен построитель контекста и два вспомогательных инструмента в среду HelloAgents:
 
-- **ContextBuilder** (`hello_agents/context/builder.py`): Context builder that implements the GSSC (Gather-Select-Structure-Compress) pipeline, providing a unified context management interface
-- **NoteTool** (`hello_agents/tools/builtin/note_tool.py`): Structured note tool that supports persistent memory management for agents
-- **TerminalTool** (`hello_agents/tools/builtin/terminal_tool.py`): Terminal tool that supports file system operations and just-in-time context retrieval for agents
+- **ContextBuilder** (`hello_agents/context/builder.py`): построитель контекста, реализующий конвейер GSSC (Gather-Select-Structure-Compress), предоставляющий унифицированный интерфейс управления контекстом.
+- **NoteTool** (`hello_agents/tools/builtin/note_tool.py`): инструмент структурированных заметок, поддерживающий управление постоянной памятью для агентов.
+- **TerminalTool** (`hello_agents/tools/builtin/terminal_tool.py`): инструмент терминала, который поддерживает операции с файловой системой и своевременное получение контекста для агентов.
 
-These components together constitute a complete context engineering solution, which is key to implementing long-term task management and agentic search, and will be introduced in detail in subsequent sections.
+Вместе эти компоненты составляют комплексное решение для контекстной инженерии, которое является ключом к реализации долгосрочного управления задачами и агентного поиска и будет подробно представлено в последующих разделах.
 
-In addition to installing the framework, you also need to configure the LLM API in `.env`. The examples in this chapter mainly use large language models for context management and intelligent decision-making.
+Помимо установки фреймворка, вам также необходимо настроить LLM API в`.env`. В примерах в этой главе в основном используются большие языковые модели для управления контекстом и интеллектуального принятия решений.
 
-After configuration is complete, you can start the learning journey of this chapter!
+После завершения настройки вы можете начать изучение этой главы!
 
-## 9.1 What is Context Engineering
+## 9.1 Что такое контекстная инженерия
 
-After years of Prompt Engineering becoming the focus of applied AI, a new term has come to the forefront: **Context Engineering**. Today, building systems with language models is no longer just about finding the right phrasing and wording in prompts, but about answering a more macro question: **What kind of context configuration is most likely to make the model produce the behavior we expect?**
+После многих лет, когда оперативное проектирование стало в центре внимания прикладного ИИ, на первый план вышел новый термин: **Контекстная инженерия**. Сегодня построение систем с использованием языковых моделей — это уже не просто поиск правильных формулировок в подсказках, а ответ на более макроэкономический вопрос: **Какая конфигурация контекста с наибольшей вероятностью заставит модель вести себя так, как мы ожидаем?**
 
-The so-called "context" refers to the set of tokens included when sampling a large language model (LLM). The engineering problem at hand is to **optimize the utility of these tokens** under the inherent constraints of the LLM, in order to stably obtain expected results. To effectively harness LLMs, it is often necessary to "think in context"—that is: at any call, examine the overall state visible to the LLM and predict the behavior this state might induce.
+Так называемый «контекст» относится к набору токенов, включенных при выборке большой языковой модели (LLM). Техническая проблема заключается в том, чтобы «оптимизировать полезность этих токенов** в соответствии с ограничениями, присущими LLM, чтобы стабильно получать ожидаемые результаты». Чтобы эффективно использовать LLM, часто необходимо «думать в контексте», то есть: при каждом вызове проверять общее состояние, видимое LLM, и прогнозировать поведение, которое это состояние может вызвать.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/9-figures/9-1.webp" alt="" width="85%"/>
-  <p>Figure 9.1 Prompt engineering vs Context engineering</p>
+  <p>Рисунок 9.1. Быстрое проектирование и контекстное проектирование</p>
 </div>
 
-This section will explore the emerging context engineering and provide a refined mental model for building **controllable and effective** agents.
+В этом разделе будут рассмотрены новые возможности контекстной инженерии и представлена ​​усовершенствованная ментальная модель для создания **управляемых и эффективных** агентов.
 
-**Context Engineering vs. Prompt Engineering**
+**Контекстное проектирование против оперативного проектирования**
 
-As shown in Figure 9.1, from the perspective of leading model vendors, context engineering is the natural evolution of prompt engineering. Prompt engineering focuses on how to write and organize LLM instructions to obtain better results (such as system prompt writing and structured strategies); while context engineering is **how to plan and maintain the "optimal information set (tokens)" during the inference stage**, which includes not only the prompt itself, but also all other information that will enter the context window.
+Как показано на рисунке 9.1, с точки зрения ведущих поставщиков моделей, контекстная инженерия является естественным развитием оперативного проектирования. Оперативное проектирование фокусируется на том, как писать и организовывать инструкции LLM для получения лучших результатов (например, написание системных подсказок и структурированные стратегии); в то время как контекстная инженерия — это **как планировать и поддерживать «оптимальный набор информации (токены)» на этапе вывода**, который включает в себя не только само приглашение, но и всю другую информацию, которая попадет в окно контекста.
 
-In the early stages of LLM engineering, prompts were often the main work, because most use cases (except daily chat) required fine-tuned prompt optimization for single-turn classification or text generation. As the name suggests, the core of prompt engineering is "how to write effective prompts", especially system prompts. However, as we begin to engineer stronger agents that work over longer time spans and across multiple inference rounds, we need strategies that can manage the **entire context state**—including system instructions, tools, MCP (Model Context Protocol), external data, message history, etc.
+На ранних этапах разработки LLM подсказки часто были основной работой, поскольку большинство случаев использования (кроме ежедневного чата) требовали тонкой оптимизации подсказок для одноходовой классификации или генерации текста. Как следует из названия, суть разработки подсказок заключается в том, «как писать эффективные подсказки», особенно системные подсказки. Однако по мере того, как мы начинаем создавать более сильные агенты, которые работают в течение более длительных периодов времени и в нескольких раундах вывода, нам нужны стратегии, которые могут управлять **всем состоянием контекста**, включая системные инструкции, инструменты, MCP (протокол контекста модели), внешние данные, историю сообщений и т. д.
 
-An agent running in a loop will continuously generate data that may be relevant to the next round of inference. This information must be **periodically refined**. Therefore, the "art and technique" of context engineering lies in **identifying which content should enter the limited context window** from the continuously expanding "candidate information universe".
+Агент, работающий в цикле, будет постоянно генерировать данные, которые могут иметь отношение к следующему раунду вывода. Эта информация должна **периодически уточняться**. Таким образом, «искусство и техника» контекстной инженерии заключается в «определении того, какой контент должен войти в ограниченное контекстное окно» из постоянно расширяющейся «вселенной информации-кандидата».
 
-## 9.2 Why Context Engineering is Important
+## 9.2 Почему важна контекстная инженерия
 
-Although models are getting faster and can handle larger data scales, we observe that: like humans, LLMs will "wander" or "get confused" at a certain point. Needle-in-a-haystack benchmarks reveal a phenomenon: **context rot**—as the number of tokens in the context window increases, the model's ability to accurately recall information from the context actually decreases.
+Хотя модели становятся быстрее и могут обрабатывать большие объемы данных, мы наблюдаем, что: как и люди, LLM в определенный момент «блуждают» или «запутываются». Тесты «иголки в стоге сена» выявили феномен: **гниение контекста** — по мере увеличения количества токенов в контекстном окне способность модели точно извлекать информацию из контекста фактически снижается.
 
-Different models may have smoother degradation curves, but this characteristic appears in almost all models. Therefore, **context must be viewed as a limited resource with diminishing marginal returns**. Just as humans have limited working memory capacity, LLMs also have an "attention budget". Each new token consumes part of this budget, so we need to be more careful about which tokens should be provided to the LLM.
+Разные модели могут иметь более плавные кривые деградации, но эта характеристика проявляется практически во всех моделях. Следовательно, **контекст следует рассматривать как ограниченный ресурс с уменьшающейся предельной отдачей**. Точно так же, как люди имеют ограниченный объем рабочей памяти, у LLM также есть «бюджет внимания». Каждый новый токен потребляет часть этого бюджета, поэтому нам нужно более внимательно относиться к тому, какие токены следует предоставлять LLM.
 
-This scarcity is not accidental, but stems from the architectural constraints of LLMs. Transformers allow each token to establish associations with **all** tokens in the context, theoretically forming \(n^2\) pairwise attention relationships. As the context length grows, the model's ability to model these pairwise relationships is "stretched thin", naturally creating tension between "context scale" and "attention concentration". In addition, the model's attention patterns come from the training data distribution—short sequences are usually more common than long sequences, so the model has less experience with "full-context dependencies" and fewer specialized parameters.
+Этот дефицит не случаен, а обусловлен архитектурными ограничениями программ LLM. Трансформеры позволяют каждому токену устанавливать ассоциации со **всеми** токенами в контексте, теоретически образуя \(n^2\) парные отношения внимания. По мере увеличения длины контекста способность модели моделировать эти парные отношения «растягивается», что естественным образом создает напряжение между «масштабом контекста» и «концентрацией внимания». Кроме того, шаблоны внимания модели обусловлены распределением обучающих данных — короткие последовательности обычно встречаются чаще, чем длинные, поэтому у модели меньше опыта работы с «полноконтекстными зависимостями» и меньше специализированных параметров.
 
-Techniques such as position encoding interpolation can allow models to "adapt" to sequences longer than during training at inference time, but at the cost of some precision in understanding token positions. Overall, these factors together form a **performance gradient** rather than a "cliff-like" collapse: models are still powerful in long contexts, but compared to short contexts, their precision in information retrieval and long-range reasoning will decline.
+Такие методы, как интерполяция кодирования положения, могут позволить моделям «адаптироваться» к последовательностям, более длительным, чем во время обучения во время вывода, но за счет некоторой точности в понимании положений токенов. В целом, эти факторы вместе образуют **градиент производительности**, а не «обрывной» коллапс: модели по-прежнему эффективны в длительных контекстах, но по сравнению с короткими контекстами их точность в поиске информации и долгосрочном рассуждении снизится.
 
-Based on the above reality, **conscious context engineering** becomes a necessity for building robust agents.
+Учитывая вышеизложенное, **сознательная контекстная инженерия** становится необходимостью для создания надежных агентов.
 
-### 9.2.1 The "Anatomy" of Effective Context
+### 9.2.1 «Анатомия» эффективного контекста
 
-Under the constraint of "limited attention budget", the goal of excellent context engineering is: **maximize the probability of obtaining expected results with as few but high signal density tokens as possible**. In practice, we recommend engineering around the following components:
+В условиях «ограниченного бюджета внимания» цель отличной контекстной инженерии состоит в следующем: **максимизировать вероятность получения ожидаемых результатов с как можно меньшим количеством токенов, но с высокой плотностью сигнала**. На практике мы рекомендуем проектировать с учетом следующих компонентов:
 
-- **System Prompt**: Clear and straightforward language, with information hierarchy at "just right" height. Common pitfalls at two extremes:
-  - Over-hardcoding: Writing complex, fragile if-else logic in prompts, with high long-term maintenance costs and fragility.
-  - Too vague: Only providing macro goals and generalized guidance, lacking **specific signals** for expected output or assuming incorrect "shared context".
-  It is recommended to organize prompts into sections (such as <background_information>, <instructions>, tool guidance, output description, etc.), separated by XML/Markdown. Regardless of format, the pursuit is the **"minimum necessary information set" that can fully outline expected behavior** ("minimum" does not equal "shortest"). First run with the best model on the minimum prompt, then add clear instructions and examples based on failure modes.
+- **Системная подсказка**: ясный и понятный язык с иерархией информации на «правильной» высоте. Распространенные ошибки в двух крайностях:
+  - Чрезмерное кодирование: написание сложной, хрупкой логики if-else в подсказках с высокими долгосрочными затратами на обслуживание и хрупкостью.
+  - Слишком расплывчато: предоставляются только макроцели и общие рекомендации, отсутствуют **конкретные сигналы** для ожидаемых результатов или предполагается неправильный «общий контекст».
+  Рекомендуется организовывать подсказки в разделы (например, <background_information>, <instructions>, руководство по инструменту, описание вывода и т. д.), разделенные XML/Markdown. Независимо от формата, поиск представляет собой **"минимально необходимый набор информации", который может полностью описать ожидаемое поведение** ("минимум" не равен "самый короткий"). Сначала запустите лучшую модель с минимальным запросом, затем добавьте четкие инструкции и примеры, основанные на режимах сбоя.
 
-- **Tools**: Tools define the contract between the agent and the information/action space, and must promote efficiency: they must return **token-friendly** information while encouraging efficient agent behavior. Tools should:
-  - Have single responsibilities with low overlap, clear interface semantics;
-  - Be robust to errors;
-  - Have clear and unambiguous parameter descriptions, fully leveraging the model's strengths in expression and reasoning.
-  A common failure mode is "bloated tool sets": fuzzy functional boundaries, making the decision of "which tool to use" itself ambiguous. **If human engineers can't tell which tool to use, don't expect agents to do better**. Carefully identifying a "Minimum Viable Tool Set (MVTS)" can often significantly improve stability and maintainability in long-term interactions.
+- **Инструменты**: инструменты определяют контракт между агентом и информационным пространством/пространством действий и должны способствовать эффективности: они должны возвращать **удобную для токенов** информацию, одновременно поощряя эффективное поведение агента. Инструменты должны:
+  - Иметь единые обязанности с низким дублированием, четкой семантикой интерфейса;
+  - быть устойчивым к ошибкам;
+  - Иметь четкие и недвусмысленные описания параметров, полностью используя сильные стороны модели в выражениях и рассуждениях.
+  Распространенным типом сбоя является «раздутый набор инструментов»: нечеткие функциональные границы, что делает решение «какой инструмент использовать» само по себе неоднозначным. **Если инженеры-люди не могут определить, какой инструмент использовать, не ждите, что агенты справятся с задачей лучше**. Тщательное определение «Минимально жизнеспособного набора инструментов (MVTS)» часто может значительно улучшить стабильность и удобство обслуживания при долгосрочном взаимодействии.
 
-- **Few-shot Examples**: Always recommend providing examples, but don't recommend stuffing "all boundary conditions" into prompts. Please carefully select a set of **diverse and typical** examples that directly portray "expected behavior". For LLMs, **good examples are worth a thousand words**.
+- **Несколько примеров**. Всегда рекомендуется приводить примеры, но не рекомендуется вставлять в подсказки «все граничные условия». Пожалуйста, внимательно выберите набор **разнообразных и типичных** примеров, которые непосредственно описывают «ожидаемое поведение». Для студентов магистратуры **хорошие примеры стоят тысячи слов**.
 
-The overall guiding principle is: **sufficient but compact information**. As shown in Figure 9.2, this is dynamic retrieval entering runtime.
+Общий руководящий принцип: **достаточная, но компактная информация**. Как показано на рисунке 9.2, это динамическое извлечение, входящее во время выполнения.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/9-figures/9-2.webp" alt="" width="85%"/>
-  <p>Figure 9.2 Calibrating the system prompt</p>
+  <p>Рисунок 9.2 Калибровка системного приглашения</p>
 </div>
 
-### 9.2.2 Context Retrieval and Agentic Search
+### 9.2.2 Получение контекста и агентный поиск
 
-A concise definition: **Agent = LLM autonomously calling tools in a loop**. As the capabilities of underlying models increase, the autonomy level of agents can be improved: they can more independently explore complex problem spaces and recover from errors.
+Краткое определение: **Агент = LLM, автономно вызывающий инструменты в цикле**. По мере увеличения возможностей базовых моделей уровень автономии агентов может быть повышен: они смогут более независимо исследовать сложные проблемные области и восстанавливаться после ошибок.
 
-Engineering practice is gradually transitioning from "one-time retrieval before inference (embedding retrieval)" to "**Just-in-time (JIT) context**". The latter no longer preloads all relevant data, but maintains **lightweight references** (file paths, storage queries, URLs, etc.), dynamically loading required data through tools at runtime. This allows the model to write targeted queries, cache necessary results, and analyze large volumes of data with commands like <code>head</code>/<code>tail</code>—without stuffing entire data blocks into context at once. Its cognitive pattern is closer to humans: we don't memorize all information, but use external indexes like file systems, inboxes, bookmarks to extract on demand.
+Инженерная практика постепенно переходит от «одноразового извлечения перед выводом (встраивание извлечения)» к «**контексту JIT»**. Последний больше не предварительно загружает все необходимые данные, но поддерживает **облегченные ссылки** (пути к файлам, запросы к хранилищу, URL-адреса и т. д.), динамически загружая необходимые данные с помощью инструментов во время выполнения. Это позволяет модели писать целевые запросы, кэшировать необходимые результаты и анализировать большие объемы данных с помощью таких команд, как <code>head</code>/<code>tail</code>, не помещая в контекст сразу целые блоки данных. Его когнитивная модель ближе к человеку: мы не запоминаем всю информацию, а используем внешние индексы, такие как файловые системы, почтовые ящики, закладки, для извлечения по требованию.
 
-In addition to storage efficiency, **metadata of references** itself can help refine behavior: directory hierarchy, naming conventions, timestamps, etc., all implicitly convey "purpose and timeliness". For example, <code>tests/test_utils.py</code> and <code>src/core/test_utils.py</code> have different semantic implications.
+Помимо эффективности хранения, **метаданные ссылок** сами по себе могут помочь улучшить поведение: иерархия каталогов, соглашения об именах, временные метки и т. д. — все это неявно передает «цель и своевременность». Например, <code>tests/test_utils.py</code> и <code>src/core/test_utils.py</code> имеют разное семантическое значение.
 
-Allowing agents to autonomously navigate and retrieve also enables **progressive disclosure**: each interaction step generates new context, which in turn guides the next decision—file size hints at complexity, naming hints at purpose, timestamps hint at relevance. Agents can build understanding layer by layer, keeping only the "currently necessary subset" in working memory, and using "note-taking" for supplementary persistence, thereby maintaining focus rather than being "dragged down by comprehensiveness".
+Разрешение агентам самостоятельно перемещаться и извлекать информацию также обеспечивает **прогрессивное раскрытие**: каждый шаг взаимодействия генерирует новый контекст, который, в свою очередь, определяет следующее решение: размер файла указывает на сложность, наименование указывает на цель, временные метки указывают на релевантность. Агенты могут строить понимание слой за слоем, сохраняя в рабочей памяти только «необходимое на данный момент подмножество» и используя «ведение заметок» для дополнительной устойчивости, тем самым сохраняя концентрацию, а не «увлекаясь полнотой».
 
-The trade-off is: runtime exploration is often slower than pre-computed retrieval, and requires "opinionated" engineering design to ensure the model has the right tools and heuristics. Without guidance, agents may misuse tools, chase dead ends, or miss key information, causing context waste.
+Компромисс таков: исследование во время выполнения часто происходит медленнее, чем предварительно вычисленное извлечение, и требует «самоуверенного» инженерного проектирования, чтобы гарантировать, что модель имеет правильные инструменты и эвристики. Без руководства агенты могут неправильно использовать инструменты, заходить в тупик или пропускать ключевую информацию, что приводит к потере контекста.
 
-In many scenarios, a **hybrid strategy** is more effective: preload a small amount of "high-value" context to ensure speed, then allow agents to continue autonomous exploration on demand. The choice of boundaries depends on task dynamics and timeliness requirements. In engineering, you can preload files like "project convention descriptions (such as README/guides)", while providing primitives like <code>glob</code>, <code>grep</code>, allowing agents to retrieve specific files just-in-time, thereby bypassing the sunk costs of outdated indexes and complex syntax trees.
+Во многих сценариях **гибридная стратегия** более эффективна: предварительно загружайте небольшое количество «важного» контекста для обеспечения скорости, а затем позволяйте агентам продолжать автономное исследование по требованию. Выбор границ зависит от динамики задачи и требований к своевременности. В разработке вы можете предварительно загружать файлы, такие как «описания соглашений проекта (например, README/руководства)», предоставляя при этом примитивы, такие как <code>glob</code>, <code>grep</code>, что позволяет агентам получать определенные файлы точно в срок, тем самым обходя невозвратные затраты на устаревшие индексы и сложные синтаксические деревья.
 
-### 9.2.3 Context Engineering for Long-Horizon Tasks
+### 9.2.3 Контекстная инженерия для долгосрочных задач
 
-Long-horizon tasks require agents to maintain coherence, context consistency, and goal orientation in action sequences that exceed the context window. For example, large codebase migrations, systematic research spanning hours. Expecting to infinitely increase the context window cannot cure the problems of "context pollution" and relevance degradation, so engineering methods directly facing these constraints are needed: **Compaction**, **Structured note-taking**, and **Sub-agent architectures**.
+Задачи с длительным горизонтом требуют от агентов поддержания согласованности, согласованности контекста и ориентации на цели в последовательностях действий, выходящих за рамки контекстного окна. Например, большие миграции кодовой базы, систематические исследования, занимающие несколько часов. Ожидание бесконечного увеличения контекстного окна не может решить проблемы «загрязнения контекста» и деградации релевантности, поэтому необходимы инженерные методы, непосредственно устраняющие эти ограничения: **Сжатие**, **Структурированное ведение заметок** и **Субагентные архитектуры**.
 
-- **Compaction**
-  - Definition: When a conversation approaches the context limit, perform high-fidelity summarization and restart a new context window with the summary to maintain long-range coherence.
-  - Practice: Have the model compress and retain architectural decisions, unresolved defects, implementation details, discarding repetitive tool outputs and noise; the new window carries the compressed summary + a few recent highly relevant artifacts (such as "recently accessed files").
-  - Tuning suggestions: First optimize **recall** (ensure no key information is missed), then optimize **precision** (remove redundant content); a safe "light-touch" compression is to clean up "tool calls and results in deep history".
+- **Уплотнение**
+  - Определение: когда разговор приближается к пределу контекста, выполните высокоточное суммирование и перезапустите новое окно контекста со сводкой, чтобы сохранить согласованность на большом расстоянии.
+  - Практика: сжимайте модель и сохраняйте архитектурные решения, неустраненные дефекты, детали реализации, отбрасывая повторяющиеся выходные данные инструмента и шум; новое окно содержит сжатую сводку + несколько недавних весьма важных артефактов (например, «недавно использованные файлы»).
+  - Рекомендации по настройке: сначала оптимизируйте **запоминание** (убедитесь, что не пропущена ключевая информация), затем оптимизируйте **точность** (удаление избыточного контента); безопасное сжатие «легким касанием» предназначено для очистки «вызовов инструментов и результатов в глубокой истории».
 
-- **Structured note-taking**
-  - Definition: Also called "agent memory". Agents write key information to **persistent storage outside the context** at fixed frequencies, pulling it back on demand in subsequent stages.
-  - Value: Maintain persistent state and dependencies with extremely low context overhead. For example, maintaining TODO lists, project NOTES.md, indexes of key conclusions/dependencies/blockers, maintaining progress and consistency across dozens of tool calls and multiple context resets.
-  - Note: Equally effective in non-coding scenarios (such as long-term strategic tasks, goal management and statistical counting in games/simulations). Combined with <code>MemoryTool</code> from Chapter 8, file-based/vector-based external memory can be easily implemented and retrieved at runtime.
+- **Структурированное ведение заметок**
+  - Определение: Также называется «памятью агента». Агенты записывают ключевую информацию в **постоянное хранилище вне контекста** с фиксированной частотой, извлекая ее обратно по требованию на последующих этапах.
+  - Ценность: поддержание постоянного состояния и зависимостей с чрезвычайно низкими затратами на контекст. Например, ведение списков TODO, проекта NOTES.md, индексов ключевых выводов/зависимостей/блокировщиков, поддержание прогресса и согласованности между десятками вызовов инструментов и множественными сбросами контекста.
+  - Примечание. Одинаково эффективно в сценариях, не связанных с кодированием (таких как долгосрочные стратегические задачи, управление целями и статистический подсчет в играх/симуляциях). В сочетании с <code>MemoryTool</code> из главы 8 можно легко реализовать внешнюю память на основе файлов или векторов и извлекать ее во время выполнения.
 
-- **Sub-agent architectures**
-  - Idea: The main agent is responsible for high-level planning and synthesis, while multiple specialized sub-agents each dig deep, call tools, and explore in "clean context windows", finally only returning **condensed summaries** (typically 1,000–2,000 tokens).
-  - Benefits: Achieve separation of concerns. Complex search contexts remain internal to sub-agents, while the main agent focuses on integration and reasoning; suitable for complex research/analysis tasks requiring parallel exploration.
-  - Experience: Public multi-agent research systems show that this pattern has significant advantages over single-agent baselines in complex research tasks.
+- **Архитектура субагента**
+  - Идея: главный агент отвечает за высокоуровневое планирование и синтез, в то время как каждый из нескольких специализированных субагентов копает глубже, вызывает инструменты и исследует «окна чистого контекста», в конечном итоге возвращая только **сокращенные сводки** (обычно 1000–2000 токенов).
+  - Преимущества: Достичь разделения задач. Сложные контексты поиска остаются внутренними для субагентов, в то время как основной агент фокусируется на интеграции и рассуждениях; подходит для сложных задач исследования/анализа, требующих параллельного исследования.
+  - Опыт: общедоступные многоагентные исследовательские системы показывают, что этот шаблон имеет значительные преимущества по сравнению с базовыми моделями с одним агентом в сложных исследовательских задачах.
 
-Method trade-offs can follow these rules of thumb:
+Компромиссы методов могут следовать следующим практическим правилам:
 
-- **Compaction**: Suitable for tasks requiring long conversation continuity, emphasizing context "relay".
-- **Structured note-taking**: Suitable for iterative development and research with milestones/phased results.
-- **Sub-agent architectures**: Suitable for complex research and analysis that can benefit from parallel exploration.
+- **Сжатие**: подходит для задач, требующих длительной непрерывности разговора, с акцентом на «ретрансляцию контекста».
+- **Структурированное ведение заметок**: подходит для итеративной разработки и исследований с указанием этапов/поэтапных результатов.
+- **Архитектура субагентов**: подходит для комплексных исследований и анализа, для которых может быть полезно параллельное исследование.
 
-Even as model capabilities continue to improve, "maintaining coherence and focus in long interactions" remains a core challenge in building robust agents. Careful and systematic context engineering will maintain its key value in the long term.
+Несмотря на то, что возможности моделей продолжают улучшаться, «поддержание согласованности и сосредоточенности в длительных взаимодействиях» остается основной проблемой в создании надежных агентов. Тщательная и систематическая контекстная инженерия сохранит свою ключевую ценность в долгосрочной перспективе.
 
-## 9.3 Practice in Hello-Agents: ContextBuilder
+## 9.3 Практика в Hello-Agents: ContextBuilder
 
-This section will detail the context engineering practice in the HelloAgents framework. We will gradually demonstrate how to build a production-grade context management system from design motivation, core data structures, implementation details to complete cases. The design philosophy of ContextBuilder is "simple and efficient", removing unnecessary complexity, uniformly selecting based on "relevance + recency" scores, conforming to the engineering orientation of Agent modularity and maintainability.
+В этом разделе подробно описывается практика контекстной инженерии в среде HelloAgents. Мы постепенно продемонстрируем, как построить систему управления контекстом промышленного уровня, начиная с мотивации проектирования, основных структур данных, деталей реализации и заканчивая завершением кейсов. Философия проектирования ContextBuilder «проста и эффективна», устраняет ненужную сложность, обеспечивает единый выбор на основе оценок «релевантность + новизна», что соответствует инженерной ориентации модульности и удобства обслуживания агента.
 
-### 9.3.1 Design Motivation and Goals
+### 9.3.1 Мотивация и цели дизайна
 
-Before building ContextBuilder, we first need to clarify its design goals and core value. An excellent context management system should solve the following key problems:
+Прежде чем создавать ContextBuilder, нам сначала необходимо уточнить цели его разработки и основную ценность. Отличная система управления контекстом должна решать следующие ключевые проблемы:
 
-1. **Unified Entry**: Abstract "Gather-Select-Structure-Compress" as a reusable pipeline, reducing repetitive template code in Agent implementations. This unified interface design allows developers to avoid repeatedly writing context management logic in each Agent.
+1. **Унифицированный ввод**: абстракция «Сбор-Выбор-Структура-Сжатие» в виде многоразового конвейера, позволяющая сократить повторяющийся код шаблона в реализациях агента. Этот унифицированный дизайн интерфейса позволяет разработчикам избежать повторного написания логики управления контекстом в каждом агенте.
 
-2. **Stable Form**: Output a context template with a fixed skeleton, facilitating debugging, A/B testing, and evaluation. We adopted a sectioned template structure:
-   - `[Role & Policies]`: Clarify the Agent's role positioning and behavioral guidelines
-   - `[Task]`: The specific task currently to be completed
-   - `[State]`: The Agent's current state and context information
-   - `[Evidence]`: Evidence information retrieved from external knowledge bases
-   - `[Context]`: Historical dialogue and related memories
-   - `[Output]`: Expected output format and requirements
+2. **Стабильная форма**. Вывод шаблона контекста с фиксированным скелетом, облегчающий отладку, A/B-тестирование и оценку. Мы приняли секционированную структуру шаблона:
+   - `[Роль и политика]`: уточните позиционирование роли агента и рекомендации по поведению.
+   - `[Task]`: конкретная задача, которую необходимо выполнить в данный момент.
+   - `[State]`: текущее состояние агента и контекстная информация.
+   - `[Доказательства]`: доказательная информация, полученная из внешних баз знаний.
+   - `[Контекст]`: Исторический диалог и связанные с ним воспоминания
+   - `[Вывод]`: ожидаемый формат вывода и требования.
 
-3. **Budget Guardian**: Retain high-value information as much as possible within the token budget, providing fallback compression strategies for over-limit contexts. This ensures that even in scenarios with huge amounts of information, the system can run stably.
+3. **Budget Guardian**: максимально сохраняйте ценную информацию в рамках бюджета токена, обеспечивая резервные стратегии сжатия для контекстов превышения лимита. Это гарантирует, что даже в сценариях с огромными объемами информации система сможет работать стабильно.
 
-4. **Minimum Rules**: Do not introduce classification dimensions such as source/priority to avoid complexity growth. Practice shows that a simple scoring mechanism based on relevance and recency is effective enough in most scenarios.
+4. **Минимальные правила**: не вводите такие параметры классификации, как источник/приоритет, чтобы избежать роста сложности. Практика показывает, что простой механизм оценки, основанный на релевантности и новизне, достаточно эффективен в большинстве сценариев.
 
-### 9.3.2 Core Data Structures
+### 9.3.2 Базовые структуры данных
 
-The implementation of ContextBuilder relies on two core data structures that define the system's configuration and information units.
+Реализация ContextBuilder опирается на две основные структуры данных, которые определяют конфигурацию системы и информационные блоки.
 
-(1) ContextPacket: Candidate Information Package
+(1) ContextPacket: пакет информации о кандидате
 
 ```python
 from dataclasses import dataclass
@@ -176,9 +176,9 @@ class ContextPacket:
         self.relevance_score = max(0.0, min(1.0, self.relevance_score))
 ```
 
-`ContextPacket` is the basic unit of information in the system. Each candidate information is encapsulated as a ContextPacket, containing core attributes such as content, timestamp, token count, and relevance score. This unified data structure simplifies subsequent selection and sorting logic.
+`ContextPacket`является основной единицей информации в системе. Информация о каждом кандидате инкапсулируется как ContextPacket, содержащий основные атрибуты, такие как контент, временная метка, количество токенов и оценка релевантности. Эта унифицированная структура данных упрощает последующую логику выбора и сортировки.
 
-(2) ContextConfig: Configuration Management
+(2) ContextConfig: Управление конфигурацией
 
 ```python
 @dataclass
@@ -208,15 +208,15 @@ class ContextConfig:
             "recency_weight + relevance_weight must equal 1.0"
 ```
 
-`ContextConfig` encapsulates all configurable parameters, making system behavior flexibly adjustable. Particularly noteworthy is the `reserve_ratio` parameter, which ensures that key information such as system instructions always has sufficient space and will not be squeezed out by other information.
+`ContextConfig`инкапсулирует все настраиваемые параметры, делая поведение системы гибко настраиваемым. Особого внимания заслуживает`reserve_ratio`параметр, который гарантирует, что ключевая информация, такая как системные инструкции, всегда будет иметь достаточно места и не будет вытеснена другой информацией.
 
-### 9.3.3 GSSC Pipeline Detailed Explanation
+### 9.3.3 Подробное объяснение конвейера GSSC
 
-The core of ContextBuilder is the GSSC (Gather-Select-Structure-Compress) pipeline, which decomposes the context building process into four clear stages. Let's dive into the implementation details of each stage.
+Ядром ContextBuilder является конвейер GSSC (Gather-Select-Structure-Compress), который разбивает процесс построения контекста на четыре четких этапа. Давайте углубимся в детали реализации каждого этапа.
 
-(1) Gather: Multi-source Information Collection
+(1) Сбор: сбор информации из нескольких источников.
 
-The first stage is to collect candidate information from multiple sources. The key to this stage is fault tolerance and flexibility.
+Первый этап – сбор информации о кандидате из нескольких источников. Ключом к этому этапу является отказоустойчивость и гибкость.
 
 ```python
 def _gather(
@@ -299,15 +299,15 @@ def _gather(
     return packets
 ```
 
-This implementation demonstrates several important design considerations:
+Эта реализация демонстрирует несколько важных конструктивных соображений:
 
-- **Fault Tolerance Mechanism**: Each external data source call is wrapped in try-except, ensuring that failure of a single source does not affect the overall process
-- **Priority Handling**: System instructions are marked as high priority, ensuring they are always retained
-- **History Limitation**: Conversation history only keeps the most recent entries, avoiding the context window being occupied by historical information
+- **Механизм отказоустойчивости**: каждый вызов внешнего источника данных обертывается в try-Exception, гарантируя, что сбой одного источника не повлияет на весь процесс.
+- **Приоритетная обработка**: системные инструкции помечаются как высокоприоритетные, что гарантирует их постоянное сохранение.
+- **Ограничение истории**: в истории разговоров сохраняются только самые последние записи, поэтому контекстное окно не занято исторической информацией.
 
-(2) Select: Intelligent Information Selection
+(2) Выберите: интеллектуальный выбор информации.
 
-The second stage is to score and select candidate information based on relevance and recency. This is the core of the entire pipeline and directly determines the quality of the final context.
+Второй этап заключается в оценке и выборе информации о кандидате на основе релевантности и актуальности. Это ядро ​​всего пайплайна и напрямую определяет качество конечного контекста.
 
 ```python
 def _select(
@@ -424,15 +424,15 @@ def _calculate_recency(self, timestamp: datetime) -> float:
     return max(0.1, min(1.0, recency_score))  # Limit to [0.1, 1.0] range
 ```
 
-The core algorithm of the selection stage embodies several important engineering considerations:
+Основной алгоритм этапа выбора учитывает несколько важных инженерных соображений:
 
-- **Scoring Mechanism**: Uses weighted combination of relevance and recency, with configurable weights
-- **Greedy Algorithm**: Fills from high to low score, ensuring selection of the most valuable information within limited budget
-- **Filtering Mechanism**: Filters low-quality information through the `min_relevance` parameter
+- **Механизм оценки**: использует взвешенную комбинацию релевантности и новизны с настраиваемыми весами.
+- **Жадный алгоритм**: заполняет баллы от высокого к низкому, обеспечивая отбор наиболее ценной информации в рамках ограниченного бюджета.
+- **Механизм фильтрации**: фильтрует некачественную информацию с помощью параметра min_relevance.
 
-(3) Structure: Structured Output
+(3) Структура: структурированный вывод
 
-The third stage is to organize selected information into a structured context template.
+Третий этап — организовать выбранную информацию в структурированный шаблон контекста.
 
 ```python
 def _structure(self, selected_packets: List[ContextPacket], user_query: str) -> str:
@@ -484,15 +484,15 @@ def _structure(self, selected_packets: List[ContextPacket], user_query: str) -> 
     return "\n\n".join(sections)
 ```
 
-The structuring stage organizes scattered information packages into clear sections. This design has several advantages:
+На этапе структурирования разрозненные информационные пакеты объединяются в четкие разделы. Такая конструкция имеет ряд преимуществ:
 
-- **Readability**: Clear sections make it easier for both humans and models to understand the context structure
-- **Debuggability**: Problem localization is easier, can quickly identify which area has problematic information
-- **Extensibility**: Adding new information sources only requires creating new sections
+- **Удобочитаемость**: четкие разделы облегчают понимание структуры контекста как людьми, так и моделями.
+- **Возможность отладки**: проще локализовать проблему, можно быстро определить, в какой области содержится проблемная информация.
+- **Расширяемость**: для добавления новых источников информации требуется только создание новых разделов.
 
-(4) Compress: Fallback Compression
+(4) Сжатие: резервное сжатие
 
-The fourth stage is to compress over-limit contexts.
+Четвертый этап — сжатие контекстов, превышающих лимит.
 
 ```python
 def _compress(self, context: str, max_tokens: int) -> str:
@@ -573,13 +573,13 @@ def _count_tokens(self, text: str) -> int:
     return int(chinese_chars + english_words * 1.3)
 ```
 
-The design of the compression stage embodies the principle of "maintaining structural integrity". Even when the token budget is tight, it tries to retain key information from each section.
+В конструкции ступени сжатия реализован принцип «сохранения структурной целостности». Даже когда бюджет токена ограничен, он пытается сохранить ключевую информацию из каждого раздела.
 
-### 9.3.4 Complete Usage Example
+### 9.3.4 Полный пример использования
 
-Now let's demonstrate how to use ContextBuilder in actual projects through a complete example.
+Теперь давайте на полном примере продемонстрируем, как использовать ContextBuilder в реальных проектах.
 
-(1) Basic Usage
+(1) Основное использование
 
 ```python
 from hello_agents.context import ContextBuilder, ContextConfig
@@ -642,9 +642,9 @@ print(context)
 print("=" * 80)
 ```
 
-(2) Running Effect Demonstration
+(2) Демонстрация эффекта работы
 
-After running the above code, you will see the following structured context output:
+После запуска приведенного выше кода вы увидите следующий структурированный контекстный вывод:
 
 ```
 ================================================================================
@@ -677,17 +677,17 @@ Please provide accurate, evidence-based answers based on the above information.
 ================================================================================
 ```
 
-This structured context contains all necessary information:
+Этот структурированный контекст содержит всю необходимую информацию:
 
-- **[Role & Policies]**: Clarifies the AI's role and answer requirements
-- **[Task]**: Clearly expresses the user's question
-- **[Evidence]**: Relevant knowledge retrieved from the RAG system
-- **[Context]**: Conversation history and related memories, providing sufficient background information
-- **[Output]**: Guides the LLM on how to organize the answer
+- **[Роль и политика]**: поясняет роль ИИ и требования к ответам.
+- **[Задание]**: четко выражает вопрос пользователя.
+- **[Доказательства]**: Соответствующие знания, полученные из системы RAG
+- **[Контекст]**: история разговоров и связанные с ними воспоминания, предоставляющие достаточную справочную информацию.
+- **[Вывод]**: помогает LLM организовать ответ.
 
-(3) Integration with Agent
+(3) Интеграция с агентом
 
-Finally, let's demonstrate how to integrate ContextBuilder into an Agent:
+Наконец, давайте продемонстрируем, как интегрировать ContextBuilder в агент:
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM, ToolRegistry
@@ -763,53 +763,53 @@ response = agent.run("How to optimize Pandas memory usage?")
 print(response)
 ```
 
-Through this approach, ContextBuilder becomes the "context management brain" of the Agent, automatically handling information collection, filtering, and organization, allowing the Agent to always reason and generate under optimal context.
+Благодаря такому подходу ContextBuilder становится «мозгом управления контекстом» агента, автоматически осуществляющим сбор, фильтрацию и организацию информации, что позволяет агенту всегда рассуждать и генерировать данные в оптимальном контексте.
 
-### 9.3.5 Best Practices and Optimization Recommendations
+### 9.3.5 Лучшие практики и рекомендации по оптимизации
 
-When actually applying ContextBuilder, the following best practices are worth noting:
+При фактическом применении ContextBuilder стоит отметить следующие рекомендации:
 
-1. **Dynamically adjust token budget**: Dynamically adjust `max_tokens` based on task complexity, use smaller budgets for simple tasks, increase budgets for complex tasks.
+1. **Динамическая настройка бюджета токенов**: динамически настраивайте `max_tokens` в зависимости от сложности задачи, используйте меньшие бюджеты для простых задач, увеличивайте бюджеты для сложных задач.
 
-2. **Relevance calculation optimization**: In production environments, replace simple keyword overlap with vector similarity calculation to improve retrieval quality.
+2. **Оптимизация расчета релевантности**. В производственных средах замените простое перекрытие ключевых слов расчетом векторного сходства, чтобы улучшить качество поиска.
 
-3. **Caching mechanism**: For unchanging system instructions and knowledge base content, implement caching mechanisms to avoid repeated calculations.
+3. **Механизм кэширования**. Чтобы сохранить неизменяемые системные инструкции и содержимое базы знаний, внедрите механизмы кэширования, чтобы избежать повторных вычислений.
 
-4. **Monitoring and logging**: Record statistical information for each context build (number of selected information, token usage rate, etc.) for subsequent optimization.
+4. **Мониторинг и журналирование**: записывайте статистическую информацию для каждой сборки контекста (количество выбранной информации, скорость использования токена и т. д.) для последующей оптимизации.
 
-5. **A/B testing**: For key parameters (such as relevance weight, recency weight), find optimal configuration through A/B testing.
+5. **A/B-тестирование**. Для ключевых параметров (таких как вес релевантности и вес недавности) найдите оптимальную конфигурацию с помощью A/B-тестирования.
 
-## 9.4 NoteTool: Structured Notes
+## 9.4 NoteTool: структурированные заметки
 
-NoteTool is a structured external memory component provided for "long-horizon tasks". It uses Markdown files as carriers, with YAML front matter in the header to record key information, and the body to record status, conclusions, blockers, and action items. This design combines human readability, version control friendliness, and ease of re-injecting into context, making it an important tool for building long-horizon agents.
+NoteTool — это структурированный компонент внешней памяти, предназначенный для «долгосрочных задач». В качестве носителей он использует файлы Markdown, с заголовком YAML для записи ключевой информации и телом для записи статуса, выводов, блокировщиков и элементов действий. Этот дизайн сочетает в себе удобочитаемость, удобство управления версиями и простоту повторного внедрения в контекст, что делает его важным инструментом для создания долгосрочных агентов.
 
-### 9.4.1 Design Philosophy and Application Scenarios
+### 9.4.1 Философия проектирования и сценарии применения
 
-Before diving into implementation details, let's first understand the design philosophy and typical application scenarios of NoteTool.
+Прежде чем углубляться в детали реализации, давайте сначала разберемся с философией проектирования и типичными сценариями применения NoteTool.
 
-(1) Why do we need NoteTool?
+(1) Зачем нам нужен NoteTool?
 
-In Chapter 8, we introduced MemoryTool, which provides powerful memory management capabilities. However, MemoryTool mainly focuses on **conversational memory**—short-term working memory, episodic memory, and semantic memory. For **project-based tasks** that require long-term tracking and structured management, we need a lighter, more human-friendly recording method.
+В главе 8 мы представили MemoryTool, который предоставляет мощные возможности управления памятью. Однако MemoryTool в основном фокусируется на **разговорной памяти** — кратковременной рабочей памяти, эпизодической памяти и семантической памяти. Для **проектных задач**, требующих долгосрочного отслеживания и структурированного управления, нам нужен более простой и удобный для человека метод записи.
 
-NoteTool fills this gap by providing:
+NoteTool заполняет этот пробел, предоставляя:
 
-- **Structured recording**: Uses Markdown + YAML format, suitable for both machine parsing and human reading and editing
-- **Version friendly**: Plain text format, naturally supports version control systems like Git
-- **Low overhead**: No complex database operations required, suitable for lightweight state tracking
-- **Flexible categorization**: Flexibly organize notes through `type` and `tags`, supporting multi-dimensional retrieval
+- **Структурированная запись**: используется формат Markdown + YAML, подходящий как для машинного анализа, так и для чтения и редактирования человеком.
+- **Поддержка версий**: обычный текстовый формат, естественно поддерживает системы контроля версий, такие как Git.
+- **Низкие накладные расходы**: нет необходимости в сложных операциях с базой данных, подходит для легкого отслеживания состояния
+- **Гибкая категоризация**: гибко упорядочивайте заметки по типам и тегам, поддерживая многомерный поиск.
 
-(2) Typical Application Scenarios
+(2) Типичные сценарии применения
 
-NoteTool is particularly suitable for the following scenarios:
+NoteTool особенно подходит для следующих сценариев:
 
-**Scenario 1: Long-term Project Tracking**
+**Сценарий 1: Долгосрочное отслеживание проектов**
 
-Imagine an agent is assisting with a large codebase refactoring task, which may take days or even weeks. NoteTool can record:
+Представьте себе, что агент помогает выполнить большую задачу по рефакторингу кодовой базы, которая может занять дни или даже недели. NoteTool может записывать:
 
-- `task_state`: Current stage task status and progress
-- `conclusion`: Key conclusions after each stage ends
-- `blocker`: Problems and blocking points encountered
-- `action`: Next action plan
+- `task_state`: статус и прогресс задачи текущего этапа.
+- «заключение»: ключевые выводы после завершения каждого этапа.
+- `blocker`: обнаруженные проблемы и точки блокировки.
+- `действие`: Следующий план действий
 
 ```python
 # Record task status
@@ -831,17 +831,17 @@ notes.run({
 })
 ```
 
-**Scenario 2: Research Task Management**
+**Сценарий 2: Управление исследовательскими задачами**
 
-An intelligent research assistant conducting literature review can use NoteTool to record:
+Интеллектуальный научный сотрудник, проводящий обзор литературы, может использовать NoteTool для записи:
 
-- Core viewpoints of each paper (`conclusion`)
-- Topics to be investigated in depth (`action`)
-- Important references (`reference`)
+- Основные точки зрения каждой статьи («заключение»)
+- Темы, требующие углубленного изучения («действия»)
+- Важные ссылки («ссылка»)
 
-**Scenario 3: Cooperation with ContextBuilder**
+**Сценарий 3: Сотрудничество с ContextBuilder**
 
-Before each round of dialogue, the Agent can retrieve relevant notes through `search` or `list` operations and inject them into the context:
+Перед каждым раундом диалога агент может получить соответствующие заметки через`search`или`list`операции и внедрить их в контекст:
 
 ```python
 # In Agent's run method
@@ -872,13 +872,13 @@ def run(self, user_input: str) -> str:
     )
 ```
 
-### 9.4.2 Storage Format Detailed Explanation
+### 9.4.2 Подробное объяснение формата хранения
 
-NoteTool adopts a hybrid format of Markdown + YAML, which balances structure and readability.
+NoteTool использует гибридный формат Markdown + YAML, который обеспечивает баланс структуры и читабельности.
 
-(1) Note File Format
+(1) Формат файла примечания
 
-Each note is an independent `.md` file with the following format:
+Каждая нота является независимой`.md`файл следующего формата:
 
 ```markdown
 ---
@@ -912,15 +912,15 @@ Completed refactoring of data model layer, main changes include:
 3. Increase integration test coverage to 85%
 ```
 
-Advantages of this format:
+Преимущества этого формата:
 
-- **YAML metadata**: Machine-parsable, supports precise field extraction and retrieval
-- **Markdown body**: Human-readable, supports rich formatting (headings, lists, code blocks, etc.)
-- **Filename as ID**: Simplifies management, each note's filename is its unique identifier
+- **Метаданные YAML**: машинный анализ, поддержка точного извлечения и извлечения полей.
+- **Тело Markdown**: удобочитаемое, поддерживает расширенное форматирование (заголовки, списки, блоки кода и т. д.).
+- **Имя файла как идентификатор**: упрощает управление: имя файла каждой заметки является ее уникальным идентификатором.
 
-(2) Index File
+(2) Индексный файл
 
-NoteTool maintains a `notes_index.json` file for quick retrieval and management of notes:
+NoteTool поддерживает`notes_index.json`файл для быстрого поиска и управления заметками:
 
 ```json
 {
@@ -936,17 +936,17 @@ NoteTool maintains a `notes_index.json` file for quick retrieval and management 
 }
 ```
 
-The role of this index file:
+Роль этого индексного файла:
 
-- **Quick retrieval**: No need to open each file, search directly from the index
-- **Metadata management**: Centrally manage metadata for all notes
-- **Integrity check**: Can detect missing or corrupted files
+- **Быстрый поиск**: не нужно открывать каждый файл, поиск прямо по индексу.
+- **Управление метаданными**: централизованное управление метаданными для всех заметок.
+- **Проверка целостности**: позволяет обнаружить отсутствующие или поврежденные файлы.
 
-### 9.4.3 Core Operations Detailed Explanation
+### 9.4.3 Подробное объяснение основных операций
 
-NoteTool provides seven core operations covering the complete lifecycle management of notes.
+NoteTool предоставляет семь основных операций, охватывающих полное управление жизненным циклом заметок.
 
-(1) create: Create Note
+(1) создать: Создать заметку
 
 ```python
 def _create_note(
@@ -1009,7 +1009,7 @@ def _build_markdown(self, metadata: Dict, content: str) -> str:
     return f"---\n{yaml_header}---\n\n{content}"
 ```
 
-Usage example:
+Пример использования:
 
 ```python
 from hello_agents.tools import NoteTool
@@ -1031,7 +1031,7 @@ Refactor business logic layer""",
 print(f"✅ Note created successfully, ID: {note_id}")
 ```
 
-(2) read: Read Note
+(2) читать: Прочитать примечание
 
 ```python
 def _read_note(self, note_id: str) -> Dict:
@@ -1080,7 +1080,7 @@ def _parse_markdown(self, raw_content: str) -> Tuple[Dict, str]:
     return metadata, content
 ```
 
-(3) update: Update Note
+(3) обновление: обновление примечания
 
 ```python
 def _update_note(
@@ -1139,7 +1139,7 @@ def _update_note(
     return f"✅ Note updated: {metadata['title']}"
 ```
 
-(4) search: Search Notes
+(4) поиск: Поиск по заметкам
 
 ```python
 def _search_notes(
@@ -1200,7 +1200,7 @@ def _search_notes(
     return results[:limit]
 ```
 
-(5) list: List Notes
+(5) список: Список примечаний
 
 ```python
 def _list_notes(
@@ -1240,7 +1240,7 @@ def _list_notes(
     return results[:limit]
 ```
 
-(6) summary: Note Summary
+(6) резюме: Краткое описание примечаний
 
 ```python
 def _summary(self) -> Dict[str, Any]:
@@ -1279,7 +1279,7 @@ def _summary(self) -> Dict[str, Any]:
     }
 ```
 
-(7) delete: Delete Note
+(7) удалить: Удалить заметку
 
 ```python
 def _delete_note(self, note_id: str) -> str:
@@ -1307,20 +1307,20 @@ def _delete_note(self, note_id: str) -> str:
     return f"✅ Note deleted: {title}"
 ```
 
-### 9.4.4 Deep Integration with ContextBuilder
+### 9.4.4 Глубокая интеграция с ContextBuilder
 
-The true power of NoteTool lies in its combined use with ContextBuilder. Let's demonstrate this integration through a complete case study.
+Истинная сила NoteTool заключается в его совместном использовании с ContextBuilder. Давайте продемонстрируем эту интеграцию на примере полного тематического исследования.
 
-(1) Scenario Setup
+(1) Настройка сценария
 
-Suppose we are building a long-term project assistant that needs to:
+Предположим, мы создаем помощника по долгосрочному проекту, которому необходимо:
 
-1. Record phased progress of the project
-2. Track pending issues
-3. Automatically review relevant notes during each conversation
-4. Provide coherent recommendations based on historical notes
+1. Запись поэтапного хода проекта
+2. Отслеживайте нерешенные проблемы
+3. Автоматически просматривайте соответствующие заметки во время каждого разговора.
+4. Предоставлять последовательные рекомендации, основанные на исторических заметках.
 
-(2) Implementation Example
+(2) Пример реализации
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -1499,7 +1499,7 @@ summary = assistant.note_tool.run({"action": "summary"})
 print(summary)
 ```
 
-(3) Running Effect Demonstration
+(3) Демонстрация эффекта бега
 
 ```bash
 [ContextBuilder] Collected 8 candidate information packages
@@ -1545,52 +1545,52 @@ I will mark this issue as a blocker and recommend prioritizing its resolution.
 }
 ```
 
-### 9.4.5 Best Practices
+### 9.4.5 Лучшие практики
 
-When actually using NoteTool, the following best practices can help you build more powerful long-horizon agents:
+При фактическом использовании NoteTool следующие рекомендации помогут вам создать более мощные долгосрочные агенты:
 
-1. **Reasonable note classification**:
-   - `task_state`: Record phased progress and status
-   - `conclusion`: Record important conclusions and findings
-   - `blocker`: Record blocking issues, highest priority
-   - `action`: Record next action plans
-   - `reference`: Record important reference materials
+1. **Разумная классификация заметок**:
+   - `task_state`: запись поэтапного прогресса и статуса.
+   - `заключение`: запишите важные выводы и заключения.
+   - `blocker`: проблемы с блокировкой записи, наивысший приоритет.
+   - `action`: Запишите следующие планы действий.
+   - `ссылка`: записывайте важные справочные материалы.
 
-2. **Regular cleanup and archiving**:
-   - For resolved blockers, update to conclusion
-   - For outdated actions, delete or update promptly
-   - Use tags for version management, such as `["v1.0", "completed"]`
+2. **Регулярная очистка и архивирование**:
+   - Для устраненных блокировщиков обновите до завершения
+   - Если действия устарели, немедленно удалите или обновите их.
+   - Используйте теги для управления версиями, например `["v1.0", "completed"]`
 
-3. **Cooperation with ContextBuilder**:
-   - Retrieve relevant notes before each round of dialogue
-   - Set different relevance scores based on note type (blocker > action > conclusion)
-   - Limit number of notes to avoid context overload
+3. **Сотрудничество с ContextBuilder**:
+   - Получайте соответствующие заметки перед каждым раундом диалога.
+   - Установите разные оценки релевантности в зависимости от типа заметки (блокировщик > действие > заключение).
+   - Ограничьте количество заметок, чтобы избежать перегрузки контекста.
 
-4. **Human-machine collaboration**:
-   - Notes are in human-readable Markdown format, supporting manual editing
-   - Use Git for version control to track note evolution
-   - At key stages, manually review notes generated by Agent
+4. **Взаимодействие человека и машины**:
+   - Заметки представлены в удобочитаемом формате Markdown, поддерживающем ручное редактирование.
+   - Используйте Git для контроля версий, чтобы отслеживать развитие заметок.
+   - На ключевых этапах вручную просматривайте заметки, созданные агентом
 
-5. **Automated workflow**:
-   - Regularly generate note summary reports
-   - Automatically generate project progress documents based on notes
-   - Synchronize note content to other systems (such as Notion, Confluence)
+5. **Автоматизированный рабочий процесс**:
+   - Регулярно создавать сводные отчеты о заметках
+   - Автоматически создавать документы о ходе проекта на основе заметок
+   - Синхронизировать содержимое заметок с другими системами (такими как Notion, Confluence)
 
-## 9.5 TerminalTool: Instant File System Access
+## 9.5 TerminalTool: мгновенный доступ к файловой системе
 
-In previous chapters, we introduced MemoryTool and RAGTool, which provide conversational memory and knowledge retrieval capabilities respectively. However, in many practical scenarios, agents need **instant access and exploration of the file system**—viewing log files, analyzing codebase structure, retrieving configuration files, etc. This is where TerminalTool comes in.
+В предыдущих главах мы представили MemoryTool и RAGTool, которые обеспечивают возможности разговорной памяти и извлечения знаний соответственно. Однако во многих практических сценариях агентам требуется **мгновенный доступ и исследование файловой системы** — просмотр файлов журналов, анализ структуры кодовой базы, получение файлов конфигурации и т. д. Именно здесь на помощь приходит TerminalTool.
 
-TerminalTool provides agents with **secure command-line execution capability**, supporting common file system and text processing commands, while ensuring system security through multi-layer security mechanisms. This design implements the "Just-in-time (JIT) context" concept mentioned in Section 9.2.2—agents don't need to preload all files, but explore and retrieve on demand.
+TerminalTool предоставляет агентам **возможность безопасного выполнения из командной строки**, поддерживает общие команды файловой системы и обработки текста, обеспечивая при этом безопасность системы с помощью многоуровневых механизмов безопасности. Эта конструкция реализует концепцию «контекста точно в срок (JIT)», упомянутую в разделе 9.2.2 — агентам не нужно предварительно загружать все файлы, но они должны исследовать и извлекать их по требованию.
 
-### 9.5.1 Design Philosophy and Security Mechanisms
+### 9.5.1 Философия проектирования и механизмы безопасности
 
-(1) Why do we need TerminalTool?
+(1) Зачем нам нужен TerminalTool?
 
-When building long-horizon agents, we often encounter the following scenarios:
+При создании долгосрочных агентов мы часто сталкиваемся со следующими сценариями:
 
-**Scenario 1: Codebase Exploration**
+**Сценарий 1: Исследование кодовой базы**
 
-A development assistant needs to help users understand the structure of a large codebase:
+Помощник по разработке должен помочь пользователям понять структуру большой базы кода:
 
 ```python
 # Traditional approach: Pre-index all files (high cost, may be outdated)
@@ -1602,9 +1602,9 @@ terminal.run({"command": "grep -r 'class UserService' ."})  # Precise location
 terminal.run({"command": "head -n 50 src/services/user.py"})  # View on demand
 ```
 
-**Scenario 2: Log File Analysis**
+**Сценарий 2: Анализ файла журнала**
 
-An operations assistant needs to analyze application logs:
+Помощнику по эксплуатации необходимо проанализировать журналы приложений:
 
 ```python
 # Check log file size
@@ -1617,9 +1617,9 @@ terminal.run({"command": "tail -n 100 /var/log/app.log | grep ERROR"})
 terminal.run({"command": "grep ERROR /var/log/app.log | cut -d':' -f3 | sort | uniq -c"})
 ```
 
-**Scenario 3: Data File Preview**
+**Сценарий 3: Предварительный просмотр файла данных**
 
-A data analysis assistant needs to quickly understand the structure of data files:
+Помощнику по анализу данных необходимо быстро понять структуру файлов данных:
 
 ```python
 # View first few lines of CSV file
@@ -1632,15 +1632,15 @@ terminal.run({"command": "wc -l data/*.csv"})
 terminal.run({"command": "head -n 1 data/sales.csv | tr ',' '\n'"})
 ```
 
-The common characteristic of these scenarios is: **need real-time, lightweight file system access, rather than pre-indexing and vectorization**. TerminalTool is designed precisely for this "exploratory" workflow.
+Общая характеристика этих сценариев: **требуется облегченный доступ к файловой системе в реальном времени, а не предварительная индексация и векторизация**. TerminalTool предназначен именно для такого «исследовательского» рабочего процесса.
 
-(2) Security Mechanism Detailed Explanation
+(2) Подробное объяснение механизма безопасности
 
-Allowing agents to execute commands is a powerful but dangerous capability. TerminalTool ensures system security through multi-layer security mechanisms:
+Разрешение агентам выполнять команды — мощная, но опасная возможность. TerminalTool обеспечивает безопасность системы с помощью многоуровневых механизмов безопасности:
 
-**First Layer: Command Whitelist**
+**Первый уровень: Белый список команд**
 
-Only allow safe read-only commands, completely prohibit any operations that may modify the system:
+Разрешить только безопасные команды только для чтения и полностью запретить любые операции, которые могут изменить систему:
 
 ```python
 ALLOWED_COMMANDS = {
@@ -1661,7 +1661,7 @@ ALLOWED_COMMANDS = {
 }
 ```
 
-If the agent attempts to execute commands outside the whitelist, it will be immediately rejected:
+Если агент попытается выполнить команду вне белого списка, она будет немедленно отклонена:
 
 ```python
 terminal.run({"command": "rm -rf /"})
@@ -1669,9 +1669,9 @@ terminal.run({"command": "rm -rf /"})
 # Allowed commands: cat, cd, cut, dir, du, ...
 ```
 
-**Second Layer: Working Directory Restriction (Sandbox)**
+**Второй уровень: ограничение рабочих каталогов (песочница)**
 
-TerminalTool can only access the specified working directory and its subdirectories, cannot access other parts of the system:
+TerminalTool может получить доступ только к указанному рабочему каталогу и его подкаталогам, но не может получить доступ к другим частям системы:
 
 ```python
 # Specify working directory during initialization
@@ -1687,11 +1687,11 @@ terminal.run({"command": "cat /etc/passwd"})  # ❌ Not allowed to access paths 
 terminal.run({"command": "cd ../../../etc"})  # ❌ Not allowed to access paths outside working directory
 ```
 
-This sandbox mechanism ensures that even if the agent's behavior is abnormal, it cannot affect other parts of the system.
+Этот механизм песочницы гарантирует, что даже если поведение агента является ненормальным, оно не сможет повлиять на другие части системы.
 
-**Third Layer: Timeout Control**
+**Третий уровень: контроль тайм-аута**
 
-Each command has an execution time limit to prevent infinite loops or resource exhaustion:
+Каждая команда имеет ограничение по времени выполнения, чтобы предотвратить бесконечные циклы или истощение ресурсов:
 
 ```python
 terminal = TerminalTool(
@@ -1704,9 +1704,9 @@ terminal.run({"command": "find / -name '*.log'"})
 # ❌ Command execution timeout (exceeded 30 seconds)
 ```
 
-**Fourth Layer: Output Size Limit**
+**Четвертый уровень: ограничение размера вывода**
 
-Limit the size of command output to prevent memory overflow:
+Ограничьте размер вывода команды, чтобы предотвратить переполнение памяти:
 
 ```python
 terminal = TerminalTool(
@@ -1720,15 +1720,15 @@ terminal.run({"command": "cat huge_file.log"})
 # ⚠️ Output truncated (exceeded 10485760 bytes)
 ```
 
-Through these four layers of security mechanisms, TerminalTool provides powerful capabilities while maximizing system security.
+Благодаря этим четырем уровням механизмов безопасности TerminalTool предоставляет мощные возможности, одновременно обеспечивая максимальную безопасность системы.
 
-### 9.5.2 Core Functionality Detailed Explanation
+### 9.5.2 Подробное объяснение основных функций
 
-The implementation of TerminalTool focuses on two core functions: command execution and directory navigation.
+Реализация TerminalTool фокусируется на двух основных функциях: выполнении команд и навигации по каталогам.
 
-(1) Command Execution
+(1) Выполнение команды
 
-The core `_execute_command` method is responsible for actually executing commands:
+Ядро`_execute_command`метод отвечает за фактическое выполнение команд:
 
 ```python
 def _execute_command(self, command: str) -> str:
@@ -1767,16 +1767,16 @@ def _execute_command(self, command: str) -> str:
         return f"❌ Command execution failed: {e}"
 ```
 
-Key points of this implementation:
+Ключевые моменты этой реализации:
 
-- **Current directory awareness**: Use `cwd` parameter to execute commands in the correct directory
-- **Error handling**: Capture and merge standard error, provide complete diagnostic information
-- **Return code check**: Non-zero return codes are marked as warnings
-- **Fault-tolerant design**: Timeouts and exceptions are handled properly, won't cause agent to crash
+- **Информация о текущем каталоге**: используйте параметр cwd для выполнения команд в правильном каталоге.
+- **Обработка ошибок**: фиксируйте и объединяйте стандартные ошибки, предоставляйте полную диагностическую информацию.
+- **Проверка кода возврата**: ненулевые коды возврата помечаются как предупреждения.
+- **Отказоустойчивая конструкция**: тайм-ауты и исключения обрабатываются правильно, не приводят к сбою агента.
 
-(2) Directory Navigation
+(2) Навигация по каталогам
 
-Special handling of the `cd` command supports agent navigation in the file system:
+Специальное обращение с`cd`команда поддерживает навигацию агента по файловой системе:
 
 ```python
 def _handle_cd(self, parts: List[str]) -> str:
@@ -1818,7 +1818,7 @@ def _handle_cd(self, parts: List[str]) -> str:
     return f"✅ Switched to directory: {self.current_dir}"
 ```
 
-This design supports agents in multi-step file system exploration:
+Эта конструкция поддерживает агентов в многоэтапном исследовании файловой системы:
 
 ```python
 # Step 1: View project structure
@@ -1834,13 +1834,13 @@ terminal.run({"command": "find . -name '*service*.py'"})
 terminal.run({"command": "cat user_service.py"})
 ```
 
-### 9.5.3 Typical Usage Patterns
+### 9.5.3 Типичные шаблоны использования
 
-TerminalTool supports various common file system operation patterns.
+TerminalTool поддерживает различные общие шаблоны работы файловой системы.
 
-(1) Exploratory Navigation
+(1) Исследовательская навигация
 
-Agents can explore codebases step by step like human developers:
+Агенты могут шаг за шагом исследовать кодовые базы, как разработчики-люди:
 
 ```python
 from hello_agents.tools import TerminalTool
@@ -1867,9 +1867,9 @@ print(terminal.run({"command": "tree"}))
 print(terminal.run({"command": "grep -r 'def process' ."}))
 ```
 
-(2) Data File Analysis
+(2) Анализ файла данных
 
-Quickly understand the structure and content of data files:
+Быстро разобраться в структуре и содержимом файлов данных:
 
 ```python
 terminal = TerminalTool(workspace="./data")
@@ -1901,9 +1901,9 @@ print(terminal.run({"command": "tail -n +2 sales_2024.csv | cut -d',' -f2 | sort
 """
 ```
 
-(3) Log File Analysis
+(3) Анализ файла журнала
 
-Real-time analysis of application logs, quickly locate issues:
+Анализ журналов приложений в режиме реального времени позволяет быстро обнаруживать проблемы:
 
 ```python
 terminal = TerminalTool(workspace="/var/log")
@@ -1924,9 +1924,9 @@ print(terminal.run({"command": "grep ERROR app.log | awk '{print $4}' | sort | u
 print(terminal.run({"command": "grep '2024-01-19 15:' app.log | tail -n 20"}))
 ```
 
-(4) Codebase Analysis
+(4) Анализ кодовой базы
 
-Assist code review and understanding:
+Помогите просмотреть и понять код:
 
 ```python
 terminal = TerminalTool(workspace="./codebase")
@@ -1944,13 +1944,13 @@ print(terminal.run({"command": "grep -rn 'def process_data' --include='*.py'"}))
 print(terminal.run({"command": "sed -n '/def process_data/,/^def /p' src/processor.py | head -n -1"}))
 ```
 
-### 9.5.4 Collaboration with Other Tools
+### 9.5.4 Сотрудничество с другими инструментами
 
-The true power of TerminalTool lies in its collaborative use with MemoryTool, NoteTool, and ContextBuilder.
+Истинная сила TerminalTool заключается в его совместном использовании с MemoryTool, NoteTool и ContextBuilder.
 
-(1) Collaboration with MemoryTool
+(1) Сотрудничество с MemoryTool
 
-Information discovered by TerminalTool can be stored in the memory system:
+Информация, обнаруженная TerminalTool, может храниться в системе памяти:
 
 ```python
 # Use TerminalTool to discover project structure
@@ -1966,9 +1966,9 @@ memory_tool.run({
 })
 ```
 
-(2) Collaboration with NoteTool
+(2) Сотрудничество с NoteTool
 
-Important discoveries can be recorded as structured notes:
+Важные открытия можно записывать в виде структурированных заметок:
 
 ```python
 # Discover a performance bottleneck
@@ -1978,15 +1978,15 @@ log_analysis = terminal.run({"command": "grep 'slow query' app.log | tail -n 10"
 note_tool.run({
     "action": "create",
     "title": "Database Slow Query Issue",
-    "content": f"## Problem Description\nFound multiple slow queries affecting system performance\n\n## Log Analysis\n```\n{log_analysis}\n```\n\n## Next Steps\n1. Analyze slow query SQL\n2. Add indexes\n3. Optimize query logic",
+    "content": f"## Problem Description\nFound multiple slow queries affecting system performance\n\n## Log Analysis\n```\n{log_anaанализ}\n```\n\n## Next Steps\n1. Analyze slow query SQL\n2. Add indexes\n3. Optimize query logic",
     "note_type": "blocker",
     "tags": ["performance", "database"]
 })
 ```
 
-(3) Collaboration with ContextBuilder
+(3) Сотрудничество с ContextBuilder
 
-TerminalTool output can be part of the context:
+Вывод TerminalTool может быть частью контекста:
 
 ```python
 # Explore codebase
@@ -2021,37 +2021,37 @@ context = context_builder.build(
 )
 ```
 
-## 9.6 Long-Horizon Agent in Practice: Codebase Maintenance Assistant
+## 9.6 Агент дальнего горизонта на практике: помощник по обслуживанию кодовой базы
 
-Now, let's integrate ContextBuilder, NoteTool, and TerminalTool to build a complete long-horizon agent—**Codebase Maintenance Assistant**. This assistant can:
+Теперь давайте интегрируем ContextBuilder, NoteTool и TerminalTool, чтобы создать полноценный долгосрочный агент — **Помощник по обслуживанию кодовой базы**. Этот помощник может:
 
-1. Explore and understand codebase structure
-2. Record discovered issues and improvement points
-3. Track long-term refactoring tasks
-4. Maintain coherence under context window limitations
+1. Изучите и поймите структуру кодовой базы
+2. Записывайте обнаруженные проблемы и точки улучшения.
+3. Отслеживайте долгосрочные задачи рефакторинга
+4. Поддерживать согласованность в условиях ограничений контекстного окна.
 
-### 9.6.1 Scenario Setup and Requirements Analysis
+### 9.6.1 Настройка сценария и анализ требований
 
-**Business Scenario**
+**Бизнес-сценарий**
 
-Suppose we are maintaining a medium-sized Python web application. This codebase contains about 50 Python files, built with the Flask framework, covering data models, business logic, API interfaces, and other modules, while also having some technical debt that needs to be gradually cleaned up. In this scenario, we need an intelligent assistant to help us explore the codebase, understand project structure, dependencies, and code style; identify issues in the code, such as code duplication, excessive complexity, lack of tests, etc.; track task progress, record to-do items, completed work, and encountered blockers; and provide coherent refactoring recommendations based on historical context.
+Предположим, мы поддерживаем веб-приложение Python среднего размера. Эта база кода содержит около 50 файлов Python, созданных с помощью платформы Flask и охватывающих модели данных, бизнес-логику, интерфейсы API и другие модули, а также имеет некоторый технический долг, который необходимо постепенно устранять. В этом сценарии нам нужен интеллектуальный помощник, который поможет нам изучить базу кода, понять структуру проекта, зависимости и стиль кода; выявлять проблемы в коде, такие как дублирование кода, чрезмерная сложность, отсутствие тестов и т. д.; отслеживать ход выполнения задач, записывать задачи, выполненную работу и встреченные блокировщики; и предоставлять последовательные рекомендации по рефакторингу, основанные на историческом контексте.
 
-**Challenges and Solutions**
+**Проблемы и решения**
 
-This scenario faces several typical long-horizon task challenges. First is the problem of information exceeding the context window—the entire codebase may contain tens of thousands of lines of code, which cannot be placed in the context window all at once. We solve this by using TerminalTool for instant, on-demand code exploration, viewing specific files only when needed. Second is the cross-session state management challenge—refactoring tasks may last for days and need to maintain progress across multiple sessions. We address this by using NoteTool to record phased progress, to-do items, and key decisions. Finally, there's the issue of context quality and relevance—each conversation needs to review relevant historical information but cannot be overwhelmed by irrelevant information. We use ContextBuilder to intelligently filter and organize context, ensuring high signal density.
+Этот сценарий сталкивается с несколькими типичными проблемами долгосрочных задач. Во-первых, это проблема информации, выходящей за пределы контекстного окна: вся кодовая база может содержать десятки тысяч строк кода, которые невозможно поместить в контекстное окно сразу. Мы решаем эту проблему, используя TerminalTool для мгновенного исследования кода по требованию, просматривая определенные файлы только при необходимости. Во-вторых, это проблема управления состоянием между сеансами: задачи рефакторинга могут длиться несколько дней, и необходимо поддерживать прогресс на протяжении нескольких сеансов. Мы решаем эту проблему, используя NoteTool для записи поэтапного прогресса, задач и ключевых решений. Наконец, существует проблема качества и актуальности контекста: каждый разговор должен рассматривать соответствующую историческую информацию, но не должен быть перегружен нерелевантной информацией. Мы используем ContextBuilder для интеллектуальной фильтрации и организации контекста, обеспечивая высокую плотность сигнала.
 
-### 9.6.2 System Architecture Design
+### 9.6.2 Проектирование архитектуры системы
 
-Our codebase maintenance assistant adopts a three-layer architecture, as shown in Figure 9.3:
+Наш помощник по обслуживанию кодовой базы использует трехуровневую архитектуру, как показано на рисунке 9.3:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/9-figures/9-3.png" alt="" width="85%"/>
-  <p>Figure 9.3 Three-layer architecture of codebase maintenance assistant</p>
+  <p>Рисунок 9.3 Трехуровневая архитектура помощника по обслуживанию кодовой базы</p>
 </div>
 
-### 9.6.3 Core Implementation
+### 9.6.3 Основная реализация
 
-Now let's implement the core class of this system:
+Теперь давайте реализуем основной класс этой системы:
 
 ```python
 from typing import Dict, Any, List, Optional
@@ -2459,9 +2459,9 @@ You should:
         return report
 ```
 
-### 9.6.4 Complete Usage Example
+### 9.6.4 Полный пример использования
 
-Now let's demonstrate the workflow of this long-horizon agent through a complete usage scenario:
+Теперь давайте продемонстрируем рабочий процесс этого долгосрочного агента на примере полного сценария использования:
 
 ```python
 # ========== Initialize Assistant ==========
@@ -2730,83 +2730,83 @@ print(json.dumps(report, indent=2, ensure_ascii=False))
 """
 ```
 
-### 9.6.5 Running Effect Analysis
+### 9.6.5 Анализ влияния бега
 
-Through this complete case study, we can see several key characteristics of long-horizon agents. First is cross-session coherence—the agent maintains task coherence across multiple days and sessions through NoteTool. Issues explored on day one are automatically considered during day two analysis, day three planning can synthesize all discoveries from the previous two days, and the complete history is preserved when checking a week later. Second is intelligent context management—ContextBuilder ensures high-quality context for each conversation, automatically gathering relevant notes (especially blocker types), dynamically adjusting preprocessing strategies based on conversation mode, and selecting the most relevant information within the token budget.
+Благодаря этому полному тематическому исследованию мы можем увидеть несколько ключевых характеристик долгосрочных агентов. Во-первых, это межсессионная согласованность: агент поддерживает согласованность задач на протяжении нескольких дней и сеансов с помощью NoteTool. Проблемы, исследованные в первый день, автоматически учитываются в ходе анализа второго дня, планирование третьего дня может синтезировать все открытия, сделанные за предыдущие два дня, а полная история сохраняется при проверке неделю спустя. Во-вторых, это интеллектуальное управление контекстом: ContextBuilder обеспечивает высококачественный контекст для каждого разговора, автоматически собирая соответствующие заметки (особенно типы блокировщиков), динамически корректируя стратегии предварительной обработки в зависимости от режима разговора и выбирая наиболее релевантную информацию в рамках бюджета токена.
 
-The third characteristic is instant file system access—TerminalTool supports flexible code exploration without needing to pre-index the entire codebase, can view specific file content instantly, and supports complex text processing (grep, awk, etc.). Fourth is automated knowledge management—the system automatically manages discovered knowledge, automatically creating blocker notes when issues are found, automatically creating action notes when discussing plans, and automatically storing key information in the memory system. Finally is human-machine collaboration—this system supports flexible human-machine collaboration modes, where agents can automatically complete exploration and analysis, humans can intervene and guide through the note system, and supports manually creating detailed planning notes.
+Третьей характеристикой является мгновенный доступ к файловой системе: TerminalTool поддерживает гибкое исследование кода без необходимости предварительной индексации всей кодовой базы, может мгновенно просматривать содержимое определенного файла и поддерживает сложную обработку текста (grep, awk и т. д.). В-четвертых, это автоматизированное управление знаниями: система автоматически управляет обнаруженными знаниями, автоматически создавая блокирующие заметки при обнаружении проблем, автоматически создавая заметки о действиях при обсуждении планов и автоматически сохраняя ключевую информацию в системе памяти. Наконец, это сотрудничество человека и машины — эта система поддерживает гибкие режимы сотрудничества человека и машины, в которых агенты могут автоматически выполнять исследование и анализ, люди могут вмешиваться и направлять систему заметок, а также поддерживает ручное создание подробных заметок по планированию.
 
-This basic framework can be further extended, such as integrating RAGTool to build vector indexes for codebases combined with semantic retrieval, splitting into specialized explorers, analyzers, and planners to implement multi-agent collaboration, integrating testing tools to automatically verify refactoring results, executing git commands through TerminalTool to track code changes, or building visual interfaces using Gradio/Streamlit.
+Эта базовая структура может быть дополнительно расширена, например, за счет интеграции RAGTool для создания векторных индексов для кодовых баз в сочетании с семантическим поиском, разделения на специализированные проводники, анализаторы и планировщики для реализации многоагентного сотрудничества, интеграции инструментов тестирования для автоматической проверки результатов рефакторинга, выполнения команд git через TerminalTool для отслеживания изменений кода или создания визуальных интерфейсов с использованием Gradio/Streamlit.
 
-## 9.7 Chapter Summary
+## 9.7 Краткое содержание главы
 
-In this chapter, we deeply explored the theoretical foundations and engineering practices of context engineering:
+В этой главе мы глубоко изучили теоретические основы и инженерные практики контекстной инженерии:
 
-### Theoretical Level
+### Теоретический уровень
 
-1. **Essence of Context Engineering**: Evolution from "prompt engineering" to "context engineering", the core is managing limited attention budget
-2. **Context Rot**: Understanding performance degradation brought by long contexts, recognizing context as a scarce resource
-3. **Three Major Strategies**: Compaction, structured note-taking, sub-agent architectures
+1. **Суть контекстной инженерии**: Эволюция от «быстрой разработки» к «контекстной разработке», ядром которой является управление ограниченным бюджетом внимания.
+2. **Разрушение контекста**: понимание снижения производительности, вызванное длинными контекстами, признание контекста дефицитным ресурсом.
+3. **Три основные стратегии**: уплотнение, структурированное ведение заметок, субагентная архитектура.
 
-### Engineering Practice
+### Инженерная практика
 
-1. **ContextBuilder**: Implements GSSC pipeline, provides unified context management interface
-2. **NoteTool**: Hybrid format of Markdown+YAML, supports structured long-term memory
-3. **TerminalTool**: Secure command-line tool, supports instant file system access
-4. **Long-Horizon Agent**: Integrates three major tools, builds cross-session codebase maintenance assistant
+1. **ContextBuilder**: реализует конвейер GSSC, предоставляет унифицированный интерфейс управления контекстом.
+2. **NoteTool**: гибридный формат Markdown+YAML, поддерживает структурированную долговременную память.
+3. **TerminalTool**: безопасный инструмент командной строки, поддерживает мгновенный доступ к файловой системе.
+4. **Агент дальнего горизонта**: объединяет три основных инструмента и создает помощник по межсессионному обслуживанию кодовой базы.
 
-### Core Takeaways
+### Основные выводы
 
-- **Layered Design**: Instant access (TerminalTool) + session memory (MemoryTool) + persistent notes (NoteTool)
-- **Intelligent Filtering**: Scoring mechanism based on relevance and recency
-- **Security First**: Multi-layer security mechanisms ensure system stability
-- **Human-Machine Collaboration**: Balance between automation and controllability
+- **Многоуровневый дизайн**: мгновенный доступ (TerminalTool) + сессионная память (MemoryTool) + постоянные заметки (NoteTool).
+- **Интеллектуальная фильтрация**: механизм оценки на основе релевантности и новизны.
+- **Безопасность прежде всего**: многоуровневые механизмы безопасности обеспечивают стабильность системы.
+- **Взаимодействие человека и машины**: баланс между автоматизацией и управляемостью
 
-Through this chapter's learning, you have not only mastered the core technologies of context engineering, but more importantly, understood how to build agent systems that can maintain coherence and effectiveness over long time spans. These skills will become an important foundation for you to build production-level agent applications.
+Изучая эту главу, вы не только освоили основные технологии контекстной инженерии, но, что более важно, поняли, как создавать агентные системы, способные поддерживать согласованность и эффективность в течение длительных периодов времени. Эти навыки станут важной основой для создания приложений-агентов производственного уровня.
 
-In the next chapter, we will explore agent communication protocols and learn how to enable agents to interact more broadly with the external world.
+В следующей главе мы изучим протоколы связи агентов и узнаем, как дать возможность агентам более широко взаимодействовать с внешним миром.
 
-## Exercises
+## Упражнения
 
-> **Note**: Some exercises do not have standard answers. The focus is on cultivating learners' comprehensive understanding and practical ability in context engineering and long-horizon task management.
+> **Примечание**. Для некоторых упражнений нет стандартных ответов. Основное внимание уделяется развитию у учащихся всестороннего понимания и практических способностей в области контекстной инженерии и управления долгосрочными задачами.
 
-1. This chapter introduced the difference between context engineering and prompt engineering. Please analyze:
+1. В этой главе была представлена ​​разница между контекстной инженерией и оперативной разработкой. Пожалуйста, проанализируйте:
 
-   - Section 9.1 mentioned "context must be viewed as a limited resource with diminishing marginal returns". Please explain what the "context rot" phenomenon is? Why do we still need to carefully manage context even when models support 100K or even 200K context windows?
-   - Suppose you want to build a "code review assistant" that needs to analyze a codebase containing 50 files. Please compare two strategies: (1) Load all file content into context at once; (2) Use JIT (Just-in-time) context, retrieving files on demand through tools. Analyze the advantages, disadvantages, and applicable scenarios of each.
-   - Section 9.2.1 mentioned two extreme pitfalls of system prompts: "over-hardcoding" and "too vague". Please give a practical example of each and explain how to find the right balance.
+   - В разделе 9.1 упоминается, что «контекст следует рассматривать как ограниченный ресурс с уменьшающейся предельной отдачей». Объясните, пожалуйста, что такое феномен «гниения контекста»? Почему нам по-прежнему необходимо тщательно управлять контекстом, даже если модели поддерживают контекстные окна размером 100 или даже 200 КБ?
+   - Предположим, вы хотите создать «помощник по проверке кода», которому необходимо проанализировать базу кода, содержащую 50 файлов. Сравните две стратегии: (1) Одновременная загрузка всего содержимого файла в контекст; (2) Используйте контекст JIT (точно в срок), получая файлы по требованию с помощью инструментов. Проанализируйте преимущества, недостатки и применимые сценарии каждого из них.
+   - В разделе 9.2.1 упоминались две крайние опасности системных подсказок: «чрезмерное кодирование» и «слишком расплывчатое кодирование». Пожалуйста, приведите практический пример каждого из них и объясните, как найти правильный баланс.
 
-2. The GSSC (Gather-Select-Structure-Compress) pipeline is the core technology of this chapter. Please think deeply:
+2. Конвейер GSSC (Gather-Select-Structure-Compress) является основной технологией этой главы. Пожалуйста, подумайте хорошенько:
 
-   > **Note**: This is a hands-on practice question, actual operation is recommended
+> **Примечание**: это практический вопрос, рекомендуется использовать в реальных условиях.
 
-   - In the ContextBuilder implementation in Section 9.3, the four stages each have different responsibilities. Please analyze: If a certain stage fails (such as the Select stage selecting irrelevant information, or the Compress stage over-compressing leading to information loss), what impact will it have on the final agent performance?
-   - Based on the code in Section 9.3.4, add a "context quality assessment" function to ContextBuilder: After each context build, automatically evaluate the information density, relevance, and completeness of the context, and provide optimization suggestions.
-   - The "compression" stage in the GSSC pipeline uses LLM for intelligent summarization. Please think: Under what circumstances might simple truncation or sliding window strategies be more appropriate than LLM summarization? Design a hybrid compression strategy that combines the advantages of multiple compression methods.
+   - В реализации ContextBuilder, описанной в разделе 9.3, каждый из четырех этапов имеет разные обязанности. Пожалуйста, проанализируйте: если на определенном этапе произойдет сбой (например, на этапе выбора выбрана ненужная информация или на этапе сжатия произойдет чрезмерное сжатие, приводящее к потере информации), какое влияние это окажет на конечную производительность агента?
+   - На основе кода из раздела 9.3.4 добавьте в ContextBuilder функцию «оценки качества контекста»: после каждой сборки контекста автоматически оценивайте плотность информации, релевантность и полноту контекста и предоставляйте предложения по оптимизации.
+   - На этапе «сжатия» в конвейере GSSC для интеллектуального суммирования используется LLM. Пожалуйста, подумайте: при каких обстоятельствах простые стратегии усечения или скользящего окна могут быть более подходящими, чем обобщение LLM? Разработайте гибридную стратегию сжатия, сочетающую в себе преимущества нескольких методов сжатия.
 
-3. NoteTool and TerminalTool are key tools supporting long-horizon tasks. Based on Sections 9.4 and 9.5, please complete the following extension practices:
+3. NoteTool и TerminalTool — ключевые инструменты, поддерживающие долгосрочные задачи. На основании разделов 9.4 и 9.5 выполните следующие действия по расширению:
 
-   > **Note**: This is a hands-on practice question, actual operation is recommended
+> **Примечание**: это практический вопрос, рекомендуется использовать в реальных условиях.
 
-   - NoteTool uses a hierarchical note system (project notes, task notes, temporary notes). Please design an "automatic note organization" mechanism: When temporary notes accumulate to a certain number, the agent can automatically analyze these notes, promote important information to task notes or project notes, and clean up redundant content.
-   - TerminalTool provides file system operation capabilities, but Section 9.5.2 emphasizes security design. Please analyze: Are the current security mechanisms (path validation, command whitelist, permission check) sufficient? If the agent needs to access sensitive files or execute dangerous operations, how should a "human-machine collaborative approval" process be designed?
-   - Combining NoteTool and TerminalTool, design an "intelligent code refactoring assistant": Can analyze codebase structure, record refactoring plans, execute refactoring operations step by step, and track progress and encountered problems in notes. Please draw a complete workflow diagram.
+   - NoteTool использует иерархическую систему заметок (заметки по проекту, заметки по задачам, временные заметки). Пожалуйста, разработайте механизм «автоматической организации заметок»: когда временные заметки накапливаются до определенного количества, агент может автоматически анализировать эти заметки, добавлять важную информацию в заметки к задачам или заметкам по проекту и очищать избыточный контент.
+   - TerminalTool предоставляет возможности работы с файловой системой, но в разделе 9.5.2 особое внимание уделяется обеспечению безопасности. Пожалуйста, проанализируйте: достаточны ли текущие механизмы безопасности (проверка пути, белый список команд, проверка разрешений)? Если агенту необходимо получить доступ к конфиденциальным файлам или выполнить опасные операции, как следует разработать процесс «совместного утверждения человека и машины»?
+   - Объединив NoteTool и TerminalTool, создайте «интеллектуального помощника по рефакторингу кода»: он может анализировать структуру кодовой базы, записывать планы рефакторинга, выполнять операции рефакторинга шаг за шагом, а также отслеживать прогресс и возникающие проблемы в заметках. Нарисуйте, пожалуйста, полную схему рабочего процесса.
 
-4. In the "long-horizon task management" case in Section 9.6, we saw the value of context engineering in practical applications. Please analyze in depth:
+4. В случае «управления долгосрочными задачами» в разделе 9.6 мы увидели ценность контекстной инженерии в практических приложениях. Пожалуйста, проанализируйте внимательно:
 
-   - The case uses a "layered context management" strategy: instant access (TerminalTool) + session memory (MemoryTool) + persistent notes (NoteTool). Please analyze: How should these three layers coordinate? What information should be placed in which layer? How to avoid information redundancy and inconsistency?
-   - Suppose an interruption occurs during task execution (such as system crash, network disconnection), the agent needs to recover state from notes and continue execution. Please design a "resume from breakpoint" mechanism: How to record sufficient state information in notes? How to verify that the recovered state is correct?
-   - Long-horizon tasks often involve parallel or serial execution of multiple subtasks. Please design a "task dependency management" system: Can express dependency relationships between tasks (such as "Task B must be executed after Task A is completed"), and automatically schedule task execution order. How should this system integrate with NoteTool?
+   - В корпусе используется стратегия «многоуровневого управления контекстом»: мгновенный доступ (TerminalTool) + сессионная память (MemoryTool) + постоянные заметки (NoteTool). Пожалуйста, проанализируйте: как должны координироваться эти три слоя? Какую информацию следует разместить в каком слое? Как избежать избыточности и противоречивости информации?
+   - Предположим, во время выполнения задачи происходит прерывание (например, сбой системы, отключение сети), агенту необходимо восстановить состояние по заметкам и продолжить выполнение. Пожалуйста, разработайте механизм «возобновления с точки останова»: как записать достаточную информацию о состоянии в примечаниях? Как проверить правильность восстановленного состояния?
+   - Задачи с длительным горизонтом часто предполагают параллельное или последовательное выполнение нескольких подзадач. Разработайте систему «управления зависимостями задач»: можно выражать отношения зависимости между задачами (например, «Задача B должна быть выполнена после завершения задачи A») и автоматически планировать порядок выполнения задач. Как эта система должна интегрироваться с NoteTool?
 
-5. This chapter repeatedly mentioned the concept of "progressive disclosure". Please think:
+5. В этой главе неоднократно упоминалась концепция «постепенного раскрытия информации». Пожалуйста, подумайте:
 
-   - In Section 9.2.2, progressive disclosure is described as "each interaction step produces new context, which in turn guides the next decision". Please design a specific application scenario (such as academic paper writing, complex problem debugging), demonstrating how progressive disclosure helps agents complete tasks more efficiently.
-   - A potential risk of progressive disclosure is "inefficient exploration": The agent may waste time on unimportant details or miss key information. Please design an "exploration guidance" mechanism: Through heuristic rules or metacognitive strategies, help the agent make smarter decisions about "what to explore next".
-   - Compare "progressive disclosure" with traditional "load all context at once": In what types of tasks does the former have obvious advantages? In what types of tasks might the latter be more appropriate? Please provide at least 3 examples of different types of tasks.
+   - В разделе 9.2.2 постепенное раскрытие описывается как «каждый шаг взаимодействия создает новый контекст, который, в свою очередь, определяет следующее решение». Пожалуйста, разработайте конкретный сценарий применения (например, написание научных работ, отладка сложных проблем), демонстрирующий, как постепенное раскрытие информации помогает агентам более эффективно выполнять задачи.
+   - Потенциальным риском постепенного раскрытия информации является «неэффективное исследование»: агент может тратить время на неважные детали или упускать ключевую информацию. Пожалуйста, разработайте механизм «руководства по исследованию»: с помощью эвристических правил или метакогнитивных стратегий помогите агенту принимать более разумные решения о том, «что исследовать дальше».
+   - Сравните «прогрессивное раскрытие» с традиционным «загружать весь контекст сразу»: в каких типах задач первое имеет очевидные преимущества? В каких типах задач последний может быть более уместным? Приведите не менее 3 примеров различных типов задач.
 
-## References
+## Ссылки
 
-[1] Anthropic. Effective Context Engineering for AI Agents. `https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents`
+[1] Антропная. Эффективная контекстная инженерия для ИИ-агентов.`https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents`
 
-[2] David Kim. Context-Engineering (GitHub). `https://github.com/davidkimai/Context-Engineering`
+[2] Дэвид Ким. Контекстная инженерия (GitHub).`https://github.com/davidkimai/Context-Engineering`
 

@@ -24,44 +24,44 @@ class ReportingService:
 
         tasks_block = []
         for task in state.todo_items:
-            summary_block = task.summary or "暂无可用信息"
-            sources_block = task.sources_summary or "暂无来源"
+            summary_block = task.summary or "Информации пока нет"
+            sources_block = task.sources_summary or "Источника пока нет"
             tasks_block.append(
-                f"### 任务 {task.id}: {task.title}\n"
-                f"- 任务目标：{task.intent}\n"
-                f"- 检索查询：{task.query}\n"
-                f"- 执行状态：{task.status}\n"
-                f"- 任务总结：\n{summary_block}\n"
-                f"- 来源概览：\n{sources_block}\n"
+                f"### Задача {task.id}: {task.title}\n"
+                f"-Цель задачи: {task.intent}\n"
+                f"- Поисковый запрос: {task.query}\n"
+                f"- Статус выполнения: {task.status}\n"
+                f"- Сводка задачи:\n{summary_block}\n"
+                f"- Обзор источника:\n{sources_block}\n"
             )
 
         note_references = []
         for task in state.todo_items:
             if task.note_id:
                 note_references.append(
-                    f"- 任务 {task.id}《{task.title}》：note_id={task.note_id}"
+                    f"– Задача {task.id}《{task.title}》: note_id={task.note_id}"
                 )
 
-        notes_section = "\n".join(note_references) if note_references else "- 暂无可用任务笔记"
+        notes_section = "\n".join(note_references) if note_references else "- Пока нет доступных заметок о задачах"
 
         read_template = json.dumps({"action": "read", "note_id": "<note_id>"}, ensure_ascii=False)
         create_conclusion_template = json.dumps(
             {
                 "action": "create",
-                "title": f"研究报告：{state.research_topic}",
+                "title": f"Отчет об исследовании: {state.research_topic}",
                 "note_type": "conclusion",
                 "tags": ["deep_research", "report"],
-                "content": "请在此沉淀最终报告要点",
+                "content": "Пожалуйста, суммируйте ключевые моменты итогового отчета здесь.",
             },
             ensure_ascii=False,
         )
 
         prompt = (
-            f"研究主题：{state.research_topic}\n"
-            f"任务概览：\n{''.join(tasks_block)}\n"
-            f"可用任务笔记：\n{notes_section}\n"
-            f"请针对每条任务笔记使用格式：[TOOL_CALL:note:{read_template}] 读取内容，整合所有信息后撰写报告。\n"
-            f"如需输出汇总结论，可追加调用：[TOOL_CALL:note:{create_conclusion_template}] 保存报告要点。"
+            f"Тема исследования: {state.research_topic}\n"
+            f"Обзор задачи:\n{''.join(tasks_block)}\n"
+            f"Доступные заметки к задачам:\n{notes_section}\n"
+            f"Используйте формат для каждого примечания к задаче: [TOOL_CALL:note:{read_template}], чтобы прочитать содержимое, объединить всю информацию и написать отчет. \п"
+            f"Если вам нужно вывести сводные выводы, вы можете дополнительно вызвать: [TOOL_CALL:note:{create_conclusion_template}], чтобы сохранить основные моменты отчета."
         )
 
         response = self._agent.run(prompt)
@@ -73,5 +73,5 @@ class ReportingService:
 
         report_text = strip_tool_calls(report_text).strip()
 
-        return report_text or "报告生成失败，请检查输入。"
+        return report_text or "Не удалось создать отчет. Проверьте введенные данные."
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-代码示例 09: 四种记忆类型深度解析
-详细展示WorkingMemory、EpisodicMemory、SemanticMemory、PerceptualMemory的实现特点
+Пример кода 09: Углубленный анализ четырех типов памяти
+Подробное отображение особенностей реализации WorkMemory, EpisodicMemory, SemanticMemory и PerceptualMemory.
 """
 
 from dotenv import load_dotenv
@@ -15,17 +15,17 @@ from typing import List, Dict, Any, Optional
 from hello_agents.tools import MemoryTool
 
 class MemoryTypesDeepDive:
-    """四种记忆类型深度解析演示类"""
+    """Демонстрационный класс углубленного анализа четырех типов памяти"""
     
     def __init__(self):
         self.setup_memory_systems()
     
     def setup_memory_systems(self):
-        """设置不同的记忆系统"""
-        print("🧠 四种记忆类型深度解析")
+        """Настройка различных систем памяти"""
+        print("🧠 Углубленный анализ четырех типов памяти")
         print("=" * 60)
         
-        # 创建专门的记忆工具实例
+        # Создание специализированных экземпляров инструмента памяти.
         self.working_memory_tool = MemoryTool(
             user_id="working_memory_user",
             memory_types=["working"]
@@ -46,63 +46,63 @@ class MemoryTypesDeepDive:
             memory_types=["perceptual"]
         )
         
-        print("✅ 四种记忆系统初始化完成")
+        print("✅ Четыре системы памяти инициализированы")
     
     def demonstrate_working_memory(self):
-        """演示工作记忆的特点"""
-        print("\n💭 工作记忆 (Working Memory) 深度解析")
+        """Продемонстрировать характеристики рабочей памяти."""
+        print("\n💭 Углубленный анализ рабочей памяти")
         print("-" * 60)
         
-        print("🔍 工作记忆特点:")
-        print("• ⚡ 访问速度极快（纯内存存储）")
-        print("• 📏 容量有限（默认50条记忆）")
-        print("• ⏰ 自动过期（TTL机制）")
-        print("• 🔄 适合临时信息存储")
+        print("🔍Особенности рабочей памяти:")
+        print("• ⚡ Чрезвычайно быстрый доступ (чистая память)")
+        print("• 📏 Ограниченная емкость (по умолчанию 50 ячеек памяти)")
+        print("• ⏰ Автоматический срок действия (механизм TTL)")
+        print("• 🔄 Подходит для временного хранения информации")
         
-        # 演示容量限制
-        print(f"\n1. 容量限制演示:")
-        print("添加大量临时记忆，观察容量管理...")
+        # Ограничение емкости демо-версии
+        print(f"\n1. Демонстрация ограничения мощности:")
+        print("Добавьте много временной памяти, наблюдайте за управлением емкостью...")
         
         for i in range(8):
-            content = f"临时工作记忆 {i+1}: 当前正在处理任务步骤 {i+1}"
+            content = f"Временная рабочая память {i+1}: шаг задачи {i+1} в данный момент обрабатывается."
             result = self.working_memory_tool.run({"action":"add",
                                                     "content":content,
                                                     "memory_type":"working",
                                                     "importance":0.3 + (i * 0.1),
                                                     "task_step":i+1})
-            print(f"  添加记忆 {i+1}: {result}")
+            print(f"  Добавить память {i+1}: {result}")
         
-        # 检查当前状态
+        # Проверить текущий статус
         stats = self.working_memory_tool.run({"action":"stats"})
-        print(f"\n当前工作记忆状态: {stats}")
+        print(f"\nТекущий статус рабочей памяти: {stats}")
         
-        # 演示TTL机制
-        print(f"\n2. TTL（生存时间）机制演示:")
+        # Продемонстрировать механизм TTL
+        print(f"\n2. Демонстрация механизма TTL (время жизни):")
         
-        # 添加一些带时间戳的记忆
+        # Добавьте немного воспоминаний с временными метками
         current_time = datetime.now()
         
-        # 模拟不同时间的记忆
+        # Имитация воспоминаний в разное время
         time_memories = [
-            ("刚刚的想法", 0, 0.8),
-            ("5分钟前的任务", 5, 0.6),
-            ("10分钟前的提醒", 10, 0.4),
-            ("很久以前的笔记", 30, 0.2)
+            ("Просто подумал", 0, 0.8),
+            ("Задача 5 минут назад", 5, 0.6),
+            ("Напоминание 10 минут назад", 10, 0.4),
+            ("Заметки, сделанные давным-давно", 30, 0.2)
         ]
         
         for content, minutes_ago, importance in time_memories:
-            # 这里我们模拟时间差异
+            # Здесь мы моделируем разницу во времени
             result = self.working_memory_tool.run({"action":"add",
                                                     "content":content,
                                                     "memory_type":"working",
                                                     "importance":importance,
                                                     "simulated_age_minutes":minutes_ago})
-            print(f"  添加记忆: {content} (模拟 {minutes_ago} 分钟前)")
+            print(f"  Добавить память: {content} (смоделировано {minutes_ago} минуты назад)")
         
-        # 演示快速检索
-        print(f"\n3. 快速检索演示:")
+        # Демо быстрого поиска
+        print(f"\ n3. Демо быстрого поиска:")
         
-        search_queries = ["任务", "想法", "提醒"]
+        search_queries = ["Задача", "идея", "напоминать"]
         
         for query in search_queries:
             start_time = time.time()
@@ -111,74 +111,74 @@ class MemoryTypesDeepDive:
                                                      "memory_type":"working",
                                                      "limit":3})
             search_time = time.time() - start_time
-            print(f"  查询 '{query}': {search_time:.4f}秒")
-            print(f"    结果: {results[:100]}...")
+            print(f"  Запрос «{query}»: {search_time:.4f} секунд.")
+            print(f"    Результаты: {results[:100]}...")
         
-        # 演示自动清理
-        print(f"\n4. 自动清理机制:")
+        # Демонстрационная автоматическая очистка
+        print(f"\n4. Автоматический механизм очистки:")
         
-        # 获取清理前的统计
+        # Получите статистику перед чисткой
         before_stats = self.working_memory_tool.run({"action":"stats"})
-        print(f"清理前: {before_stats}")
+        print(f"Перед очисткой: {before_stats}")
         
-        # 触发清理（通过遗忘低重要性记忆）
+        # Запустить очистку (путем забывания неважных воспоминаний)
         forget_result = self.working_memory_tool.run({"action":"forget",
                                                        "strategy":"importance_based",
                                                        "threshold":0.4})
-        print(f"清理结果: {forget_result}")
+        print(f"Чистый результат: {forget_result}")
         
-        # 获取清理后的统计
+        # Получить очищенную статистику
         after_stats = self.working_memory_tool.run({"action":"stats"})
-        print(f"清理后: {after_stats}")
+        print(f"После очистки: {after_stats}")
     
     def demonstrate_episodic_memory(self):
-        """演示情景记忆的特点"""
-        print("\n📖 情景记忆 (Episodic Memory) 深度解析")
+        """Продемонстрировать особенности эпизодической памяти."""
+        print("\n📖Углубленный анализ эпизодической памяти")
         print("-" * 60)
         
-        print("🔍 情景记忆特点:")
-        print("• 📅 完整的时间序列记录")
-        print("• 🎭 丰富的上下文信息")
-        print("• 🔗 支持记忆链条构建")
-        print("• 💾 持久化存储")
+        print("🔍Особенности эпизодической памяти:")
+        print("• 📅 Полная запись временных рядов")
+        print("• 🎭 Богатая контекстная информация")
+        print("• 🔗 Поддержка построения цепочки памяти")
+        print("• 💾 Постоянное хранение")
         
-        # 演示完整事件记录
-        print(f"\n1. 完整事件记录演示:")
+        # Демонстрация полной записи события
+        print(f"\n1. Полная демонстрация записи события:")
         
-        # 模拟一个完整的学习会话
+        # Имитация полного сеанса обучения
         learning_session = [
             {
-                "content": "开始学习Python机器学习",
-                "context": "学习开始",
-                "location": "家里书房",
-                "mood": "专注",
+                "content": "Начните изучать машинное обучение Python",
+                "context": "Обучение начинается",
+                "location": "Учебная комната дома",
+                "mood": "фокус",
                 "importance": 0.7
             },
             {
-                "content": "学习了线性回归的数学原理",
-                "context": "理论学习",
-                "chapter": "第3章",
-                "difficulty": "中等",
+                "content": "Изучили математические принципы линейной регрессии.",
+                "context": "теоретическое исследование",
+                "chapter": "Глава 3",
+                "difficulty": "середина",
                 "importance": 0.8
             },
             {
-                "content": "实现了第一个线性回归模型",
-                "context": "实践编程",
+                "content": "Реализована первая модель линейной регрессии.",
+                "context": "Практическое программирование",
                 "code_lines": 45,
                 "bugs_fixed": 2,
                 "importance": 0.9
             },
             {
-                "content": "完成了课后练习题",
-                "context": "练习巩固",
+                "content": "Выполнил упражнения после занятий.",
+                "context": "Практика консолидации",
                 "exercises_completed": 5,
                 "accuracy": 0.8,
                 "importance": 0.6
             },
             {
-                "content": "总结今天的学习收获",
-                "context": "学习总结",
-                "key_concepts": ["线性回归", "梯度下降", "损失函数"],
+                "content": "Подведите итоги сегодняшнего обучения",
+                "context": "Краткое описание обучения",
+                "key_concepts": ["линейная регрессия", "градиентный спуск", "функция потерь"],
                 "importance": 0.8
             }
         ]
@@ -193,42 +193,42 @@ class MemoryTypesDeepDive:
                                                      "session_id":session_id,
                                                      "sequence_number":i+1,
                                                      **{k: v for k, v in event.items() if k not in ["content", "importance"]}})
-            print(f"  事件 {i+1}: {result}")
+            print(f"  Событие {i+1}: {result}")
         
-        # 演示时间序列检索
-        print(f"\n2. 时间序列检索演示:")
+        # Получение демонстрационного временного ряда
+        print(f"\n2. Демонстрация поиска временных рядов:")
         
-        # 按时间顺序检索
+        # Искать в хронологическом порядке
         timeline_search = self.episodic_memory_tool.run({"action":"search",
-                                                          "query":"学习",
+                                                          "query":"изучать",
                                                           "memory_type":"episodic",
                                                           "limit":10})
-        print(f"学习时间线: {timeline_search}")
+        print(f"График обучения: {timeline_search}")
         
-        # 按会话检索
+        # Поиск по сеансу
         session_search = self.episodic_memory_tool.run({"action":"search",
-                                                         "query":"线性回归",
+                                                         "query":"линейная регрессия",
                                                          "memory_type":"episodic",
                                                          "limit":5})
-        print(f"会话内容: {session_search}")
+        print(f"Содержимое сеанса: {session_search}")
         
-        # 演示上下文丰富性
-        print(f"\n3. 上下文信息演示:")
+        # Демонстрируйте контекстуальное богатство
+        print(f"\n3. Демонстрация контекстной информации:")
         
-        # 添加带有丰富上下文的记忆
+        # Добавьте воспоминания с богатым контекстом
         rich_context_memory = {
-            "content": "参加了AI技术分享会",
+            "content": "Принял участие в сессии по обмену технологиями искусственного интеллекта",
             "event_type": "conference",
-            "location": "北京国际会议中心",
-            "speakers": ["张教授", "李博士", "王工程师"],
-            "topics": ["深度学习", "自然语言处理", "计算机视觉"],
+            "location": "Пекинский международный конференц-центр",
+            "speakers": ["Профессор Чжан", "доктор Ли", "Инженер Ван"],
+            "topics": ["глубокое обучение", "обработка естественного языка", "компьютерное зрение"],
             "attendees_count": 200,
             "duration_hours": 6,
-            "weather": "晴朗",
-            "transportation": "地铁",
+            "weather": "солнечный",
+            "transportation": "метро",
             "networking_contacts": 3,
-            "key_insights": ["Transformer架构的演进", "多模态学习的前景"],
-            "follow_up_actions": ["阅读推荐论文", "尝试新框架"],
+            "key_insights": ["Эволюция архитектуры Transformer", "Перспектива мультимодального обучения"],
+            "follow_up_actions": ["Прочтите рекомендуемые статьи", "Попробуйте новый фреймворк"],
             "satisfaction_rating": 9
         }
         
@@ -237,18 +237,18 @@ class MemoryTypesDeepDive:
                                                          "memory_type":"episodic",
                                                          "importance":0.9,
                                                          **{k: v for k, v in rich_context_memory.items() if k != "content"}})
-        print(f"丰富上下文记忆: {context_result}")
+        print(f"Обогатить контекстную память: {context_result}")
         
-        # 演示记忆链条
-        print(f"\n4. 记忆链条构建:")
+        # Демо цепочка воспоминаний
+        print(f"\n4. Построение цепочки памяти:")
         
-        # 创建相关联的记忆序列
+        # Создайте связанные последовательности памяти
         memory_chain = [
-            ("看到一篇关于GPT的论文", "trigger", None),
-            ("决定深入研究Transformer架构", "decision", "trigger"),
-            ("下载并阅读Attention is All You Need论文", "action", "decision"),
-            ("实现了简化版的自注意力机制", "implementation", "action"),
-            ("在项目中应用了学到的知识", "application", "implementation")
+            ("Видел статью про GPT.", "trigger", None),
+            ("Решил углубиться в архитектуру Трансформера.", "decision", "trigger"),
+            ("Загрузите и прочитайте статью «Внимание – это все, что вам нужно».", "action", "decision"),
+            ("Реализована упрощенная версия механизма самообслуживания.", "implementation", "action"),
+            ("Прикладные знания, полученные в проектах", "application", "implementation")
         ]
         
         chain_memories = {}
@@ -263,63 +263,63 @@ class MemoryTypesDeepDive:
                                                      "parent_memory":parent_id,
                                                      "chain_id":"gpt_learning_chain"})
             
-            # 提取记忆ID（简化处理）
+            # Извлечь идентификатор памяти (упрощенная обработка)
             memory_id = f"{chain_type}_memory"
             chain_memories[chain_type] = memory_id
-            print(f"  链条记忆: {content} (类型: {chain_type})")
+            print(f"  Цепная память: {content} (тип: {chain_type})")
         
-        # 检索整个链条
+        # Получить всю цепочку
         chain_search = self.episodic_memory_tool.run({"action":"search",
                                                         "query":"GPT Transformer",
                                                         "memory_type":"episodic",
                                                         "limit":8})
-        print(f"记忆链条检索: {chain_search}")
+        print(f"Поиск по цепочке памяти: {chain_search}")
     
     def demonstrate_semantic_memory(self):
-        """演示语义记忆的特点"""
-        print("\n🧠 语义记忆 (Semantic Memory) 深度解析")
+        """Продемонстрировать характеристики семантической памяти."""
+        print("\n🧠 Углубленный анализ семантической памяти")
         print("-" * 60)
         
-        print("🔍 语义记忆特点:")
-        print("• 🔗 知识图谱结构化存储")
-        print("• 🎯 概念和关系的抽象表示")
-        print("• 🔍 语义相似度检索")
-        print("• 🧮 支持推理和关联")
+        print("🔍Особенности семантической памяти:")
+        print("• 🔗 Структурированное хранилище графа знаний.")
+        print("• 🎯 Абстрактное представление концепций и отношений.")
+        print("• 🔍 Поиск семантического сходства")
+        print("• 🧮 Поддерживает рассуждения и корреляции")
         
-        # 演示概念存储
-        print(f"\n1. 概念知识存储演示:")
+        # Хранилище демонстрационных концепций
+        print(f"\n1. Демонстрация концепции хранения знаний:")
         
-        # 添加不同类型的概念知识
+        # Добавляйте различные типы концептуальных знаний
         concepts = [
             {
-                "content": "机器学习是人工智能的一个分支，通过算法让计算机从数据中学习模式",
+                "content": "Машинное обучение — это отрасль искусственного интеллекта, которая использует алгоритмы, позволяющие компьютерам изучать закономерности на основе данных.",
                 "concept_type": "definition",
                 "domain": "artificial_intelligence",
-                "keywords": ["机器学习", "人工智能", "算法", "数据", "模式"],
+                "keywords": ["машинное обучение", "ИИ", "алгоритм", "данные", "модель"],
                 "importance": 0.9
             },
             {
-                "content": "监督学习使用标记数据训练模型，包括分类和回归两大类任务",
+                "content": "Обучение с учителем использует размеченные данные для обучения моделей, включая задачи классификации и регрессии.",
                 "concept_type": "category",
                 "domain": "machine_learning",
-                "parent_concept": "机器学习",
-                "subcategories": ["分类", "回归"],
+                "parent_concept": "машинное обучение",
+                "subcategories": ["Классификация", "возвращаться"],
                 "importance": 0.8
             },
             {
-                "content": "梯度下降是一种优化算法，通过迭代更新参数来最小化损失函数",
+                "content": "Градиентный спуск — это алгоритм оптимизации, который минимизирует функцию потерь путем итеративного обновления параметров.",
                 "concept_type": "algorithm",
                 "domain": "optimization",
-                "mathematical_basis": "微积分",
-                "applications": ["神经网络训练", "线性回归"],
+                "mathematical_basis": "Исчисление",
+                "applications": ["Обучение нейронной сети", "линейная регрессия"],
                 "importance": 0.8
             },
             {
-                "content": "过拟合是指模型在训练数据上表现很好，但在新数据上泛化能力差",
+                "content": "Переобучение означает, что модель хорошо работает на обучающих данных, но имеет плохую способность к обобщению новых данных.",
                 "concept_type": "problem",
                 "domain": "machine_learning",
-                "causes": ["模型复杂度过高", "训练数据不足"],
-                "solutions": ["正则化", "交叉验证", "早停"],
+                "causes": ["Сложность модели слишком высока", "Недостаточно данных для обучения"],
+                "solutions": ["регуляризация", "перекрестная проверка", "Остановитесь раньше"],
                 "importance": 0.7
             }
         ]
@@ -330,32 +330,32 @@ class MemoryTypesDeepDive:
                                                      "memory_type":"semantic",
                                                      "importance":concept["importance"],
                                                      **{k: v for k, v in concept.items() if k not in ["content", "importance"]}})
-            print(f"  概念存储: {concept['concept_type']} - {result}")
+            print(f"  Хранилище концепций: {concept['concept_type']} – {result}")
         
-        # 演示关系推理
-        print(f"\n2. 关系推理演示:")
+        # Продемонстрировать реляционное рассуждение
+        print(f"\n2. Демонстрация реляционных рассуждений:")
         
-        # 添加关系知识
+        # Добавьте знания об отношениях
         relationships = [
             {
-                "content": "深度学习是机器学习的子集，使用多层神经网络",
+                "content": "Глубокое обучение — это разновидность машинного обучения, в которой используются многослойные нейронные сети.",
                 "relation_type": "is_subset_of",
-                "subject": "深度学习",
-                "object": "机器学习",
+                "subject": "глубокое обучение",
+                "object": "машинное обучение",
                 "strength": 0.9
             },
             {
-                "content": "卷积神经网络特别适合处理图像数据",
+                "content": "Сверточные нейронные сети особенно подходят для обработки данных изображений.",
                 "relation_type": "suitable_for",
-                "subject": "卷积神经网络",
-                "object": "图像处理",
+                "subject": "сверточная нейронная сеть",
+                "object": "обработка изображений",
                 "strength": 0.8
             },
             {
-                "content": "反向传播算法用于训练神经网络",
+                "content": "Алгоритм обратного распространения ошибки используется для обучения нейронных сетей.",
                 "relation_type": "used_for",
-                "subject": "反向传播",
-                "object": "神经网络训练",
+                "subject": "Обратное распространение ошибки",
+                "object": "Обучение нейронной сети",
                 "strength": 0.9
             }
         ]
@@ -366,16 +366,16 @@ class MemoryTypesDeepDive:
                                                      "memory_type":"semantic",
                                                      "importance":0.8,
                                                      **{k: v for k, v in relation.items() if k != "content"}})
-            print(f"  关系存储: {relation['relation_type']} - {result}")
+            print(f"  Реляционное хранилище: {relation['relation_type']} – {result}")
         
-        # 演示语义检索
-        print(f"\n3. 语义相似度检索:")
+        # Демонстрация семантического поиска
+        print(f"\n3. Поиск семантического сходства:")
         
         semantic_queries = [
-            "什么是人工智能？",
-            "如何防止模型过拟合？",
-            "神经网络的训练方法",
-            "图像识别技术"
+            "Что такое искусственный интеллект?",
+            "Как предотвратить переобучение модели?",
+            "Методы обучения нейронных сетей",
+            "Технология распознавания изображений"
         ]
         
         for query in semantic_queries:
@@ -385,16 +385,16 @@ class MemoryTypesDeepDive:
                                                       "memory_type":"semantic",
                                                       "limit":3})
             search_time = time.time() - start_time
-            print(f"  查询: '{query}' ({search_time:.4f}秒)")
-            print(f"    结果: {results[:150]}...")
+            print(f"  Запрос: '{query}' ({search_time:.4f} секунд)")
+            print(f"    Результаты: {results[:150]}...")
         
-        # 演示知识图谱构建
-        print(f"\n4. 知识图谱构建:")
+        # Продемонстрировать построение графа знаний
+        print(f"\n4. Построение графа знаний:")
         
-        # 添加实体和关系
+        # Добавляйте сущности и отношения
         entities_and_relations = [
             {
-                "content": "TensorFlow是Google开发的深度学习框架",
+                "content": "TensorFlow — это платформа глубокого обучения, разработанная Google.",
                 "entity_type": "framework",
                 "developer": "Google",
                 "domain": "deep_learning",
@@ -402,7 +402,7 @@ class MemoryTypesDeepDive:
                 "year": 2015
             },
             {
-                "content": "PyTorch是Facebook开发的深度学习框架，以动态图著称",
+                "content": "PyTorch — это платформа глубокого обучения, разработанная Facebook и известная своей динамической графикой.",
                 "entity_type": "framework", 
                 "developer": "Facebook",
                 "domain": "deep_learning",
@@ -410,7 +410,7 @@ class MemoryTypesDeepDive:
                 "language": "Python"
             },
             {
-                "content": "BERT是基于Transformer的预训练语言模型",
+                "content": "BERT — это предварительно обученная языковая модель, основанная на Transformer.",
                 "entity_type": "model",
                 "architecture": "Transformer",
                 "task": "natural_language_processing",
@@ -424,29 +424,29 @@ class MemoryTypesDeepDive:
                                                      "memory_type":"semantic",
                                                      "importance":0.8,
                                                      **{k: v for k, v in item.items() if k != "content"}})
-            print(f"  实体关系: {item['entity_type']} - {result}")
+            print(f"  Отношения сущностей: {item['entity_type']} – {result}")
         
-        # 获取语义记忆统计
+        # Получить статистику семантической памяти
         semantic_stats = self.semantic_memory_tool.run({"action":"stats"})
-        print(f"\n语义记忆统计: {semantic_stats}")
+        print(f"\nСтатистика семантической памяти: {semantic_stats}")
     
     def demonstrate_perceptual_memory(self):
-        """演示感知记忆的特点"""
-        print("\n👁️ 感知记忆 (Perceptual Memory) 深度解析")
+        """Продемонстрировать характеристики перцептивной памяти."""
+        print("\n👁️ Углубленный анализ перцептивной памяти")
         print("-" * 60)
         
-        print("🔍 感知记忆特点:")
-        print("• 🎨 多模态数据支持")
-        print("• 🔄 跨模态相似性搜索")
-        print("• 📊 感知数据的语义理解")
-        print("• 🎯 内容生成和检索")
+        print("🔍Особенности перцептивной памяти:")
+        print("• 🎨 Поддержка мультимодальных данных")
+        print("• 🔄 Межмодальный поиск по сходству")
+        print("• 📊 Семантическое понимание сенсорных данных")
+        print("• 🎯 Генерация и поиск контента")
         
-        # 演示文本感知记忆
-        print(f"\n1. 文本感知记忆:")
+        # Память восприятия демо-текста
+        print(f"\n1. Память восприятия текста:")
         
         text_perceptions = [
             {
-                "content": "这是一段优美的诗歌：春江潮水连海平，海上明月共潮生",
+                "content": "Это прекрасное стихотворение: Прилив весенней реки достигает уровня моря, и яркая луна на море поднимается вместе с приливом.",
                 "modality": "text",
                 "genre": "poetry",
                 "emotion": "peaceful",
@@ -454,7 +454,7 @@ class MemoryTypesDeepDive:
                 "aesthetic_value": 0.9
             },
             {
-                "content": "技术文档：API接口返回JSON格式数据，包含状态码和响应体",
+                "content": "Техническая документация: интерфейс API возвращает данные в формате JSON, включая код состояния и тело ответа.",
                 "modality": "text",
                 "genre": "technical",
                 "complexity": "medium",
@@ -469,15 +469,15 @@ class MemoryTypesDeepDive:
                                                        "memory_type":"perceptual",
                                                        "importance":0.7,
                                                        **{k: v for k, v in perception.items() if k != "content"}})
-            print(f"  文本感知: {perception['genre']} - {result}")
+            print(f"  Восприятие текста: {восприятие['жанр']} – {результат}")
         
-        # 演示图像感知记忆（模拟）
-        print(f"\n2. 图像感知记忆（模拟）:")
+        # Демонстрация образной перцептивной памяти (моделирование)
+        print(f"\n2. Память восприятия изображений (моделирование):")
         
-        # 模拟图像数据
+        # Аналоговые данные изображения
         image_perceptions = [
             {
-                "content": "一张美丽的日落风景照片",
+                "content": "Красивое фото закатного пейзажа",
                 "modality": "image",
                 "file_path": "/simulated/sunset.jpg",
                 "scene_type": "landscape",
@@ -487,7 +487,7 @@ class MemoryTypesDeepDive:
                 "quality": "high"
             },
             {
-                "content": "技术架构图展示了微服务系统设计",
+                "content": "Схема технической архитектуры, показывающая проект системы микросервисов",
                 "modality": "image", 
                 "file_path": "/simulated/architecture.png",
                 "diagram_type": "technical",
@@ -503,14 +503,14 @@ class MemoryTypesDeepDive:
                                                        "memory_type":"perceptual",
                                                        "importance":0.8,
                                                        **{k: v for k, v in perception.items() if k != "content"}})
-            print(f"  图像感知: {perception['content']} - {result}")
+            print(f"  Восприятие изображения: {восприятие['content']} – {result}")
         
-        # 演示音频感知记忆（模拟）
-        print(f"\n3. 音频感知记忆（模拟）:")
+        # Демонстрация аудиоперцептивной памяти (симуляция)
+        print(f"\n3. Аудиоперцептивная память (моделирование):")
         
         audio_perceptions = [
             {
-                "content": "一段优美的古典音乐演奏",
+                "content": "Красивое исполнение классической музыки",
                 "modality": "audio",
                 "file_path": "/simulated/classical.mp3",
                 "genre": "classical",
@@ -520,7 +520,7 @@ class MemoryTypesDeepDive:
                 "duration_seconds": 240
             },
             {
-                "content": "技术会议的录音，讨论AI发展趋势",
+                "content": "Записи технических конференций, на которых обсуждаются тенденции развития ИИ",
                 "modality": "audio",
                 "file_path": "/simulated/conference.wav",
                 "content_type": "speech",
@@ -537,16 +537,16 @@ class MemoryTypesDeepDive:
                                                        "memory_type":"perceptual",
                                                        "importance":0.7,
                                                        **{k: v for k, v in perception.items() if k != "content"}})
-            print(f"  音频感知: {perception['content']} - {result}")
+            print(f"  Восприятие звука: {восприятие['content']} – {result}")
         
-        # 演示跨模态检索
-        print(f"\n4. 跨模态检索演示:")
+        # Демонстрация кросс-модального поиска
+        print(f"\n4. Демонстрация кросс-модального поиска:")
         
         cross_modal_queries = [
-            ("美丽的风景", "寻找视觉美感相关内容"),
-            ("技术文档", "查找技术相关的多模态内容"),
-            ("音乐和艺术", "检索艺术相关的感知记忆"),
-            ("会议和讨论", "查找交流相关的内容")
+            ("красивые пейзажи", "Ищу контент, связанный с визуальной красотой."),
+            ("Техническая документация", "Найдите мультимодальный контент, связанный с технологиями"),
+            ("музыка и искусство", "Восстановление воспоминаний, связанных с искусством"),
+            ("встречи и обсуждения", "Найдите контент, связанный с общением")
         ]
         
         for query, description in cross_modal_queries:
@@ -554,58 +554,58 @@ class MemoryTypesDeepDive:
                                                         "query":query,
                                                         "memory_type":"perceptual",
                                                         "limit":3})
-            print(f"  跨模态查询: '{query}' ({description})")
-            print(f"    结果: {results[:120]}...")
+            print(f"  Кросс-модальный запрос: '{query}' ({description})")
+            print(f"    Результаты: {results[:120]}...")
         
-        # 演示感知特征分析
-        print(f"\n5. 感知特征分析:")
+        # Продемонстрировать анализ особенностей восприятия
+        print(f"\n5. Анализ перцептивных особенностей:")
         
-        # 获取感知记忆统计
+        # Получить статистику перцептивной памяти
         perceptual_stats = self.perceptual_memory_tool.run({"action":"stats"})
-        print(f"感知记忆统计: {perceptual_stats}")
+        print(f"Статистика перцептивной памяти: {perceptual_stats}")
         
-        # 分析不同模态的分布
+        # Анализ распределения различных режимов
         modality_analysis = self.perceptual_memory_tool.run({"action":"search",
-                                                              "query":"模态分析",
+                                                              "query":"Модальный анализ",
                                                               "memory_type":"perceptual",
                                                               "limit":10})
-        print(f"模态分布分析: {modality_analysis}")
+        print(f"Анализ модального распределения: {modality_anaлиз}")
     
     def demonstrate_memory_interactions(self):
-        """演示四种记忆类型的交互"""
-        print("\n🔄 四种记忆类型交互演示")
+        """Демонстрирует взаимодействие четырех типов памяти."""
+        print("\n🔄 Интерактивная демонстрация четырех типов памяти")
         print("-" * 60)
         
-        print("🔍 记忆交互模式:")
-        print("• 🔄 工作记忆 → 情景记忆（重要事件固化）")
-        print("• 📚 情景记忆 → 语义记忆（经验抽象化）")
-        print("• 👁️ 感知记忆 → 其他记忆（多模态信息整合）")
-        print("• 🧠 语义记忆 → 工作记忆（知识激活）")
+        print("🔍 Режим взаимодействия с памятью:")
+        print("• 🔄 Рабочая память → Эпизодическая память (закрепление важных событий)")
+        print("• 📚 Эпизодическая память → Семантическая память (абстракция опыта)")
+        print("• 👁️ Перцептивная память → другие воспоминания (мультимодальная интеграция информации)")
+        print("• 🧠Семантическая память → рабочая память (активация знаний)")
         
-        # 模拟一个完整的学习过程
-        print(f"\n完整学习过程模拟:")
+        # Имитировать полный процесс обучения
+        print(f"\nПолное моделирование процесса обучения:")
         
-        # 1. 感知阶段：接收多模态信息
-        print(f"\n1. 感知阶段 - 接收信息:")
+        # 1. Стадия восприятия: получение мультимодальной информации.
+        print(f"\n1. Стадия восприятия – получение информации:")
         
         perceptual_input = self.perceptual_memory_tool.run({"action":"add",
-                                                             "content":"观看了一个关于深度学习的视频教程",
+                                                             "content":"Просмотрен видеоурок по глубокому обучению.",
                                                              "memory_type":"perceptual",
                                                              "importance":0.8,
                                                              "modality":"video",
                                                              "topic":"deep_learning",
                                                              "duration_minutes":45,
                                                              "quality":"high"})
-        print(f"感知记忆: {perceptual_input}")
+        print(f"Перцептивная память: {perceptual_input}")
         
-        # 2. 工作记忆阶段：临时处理和思考
-        print(f"\n2. 工作记忆阶段 - 临时处理:")
+        # 2. Этап рабочей памяти: временная обработка и мышление.
+        print(f"\n2. Этап рабочей памяти – временная обработка:")
         
         working_thoughts = [
-            "理解了卷积神经网络的基本原理",
-            "需要记住反向传播的计算步骤",
-            "想到了之前学过的线性代数知识",
-            "计划实现一个简单的CNN模型"
+            "Понять основные принципы работы сверточных нейронных сетей.",
+            "Необходимо запомнить этапы расчета обратного распространения ошибки.",
+            "Думая о знаниях линейной алгебры, которые я получил раньше",
+            "Планируйте реализацию простой модели CNN."
         ]
         
         for thought in working_thoughts:
@@ -614,34 +614,34 @@ class MemoryTypesDeepDive:
                                                     "memory_type":"working",
                                                     "importance":0.6,
                                                     "processing_stage":"active_thinking"})
-            print(f"  工作记忆: {thought[:30]}... - {result}")
+            print(f"  Рабочая память: {мысль[:30]}... - {результат}")
         
-        # 3. 情景记忆阶段：记录完整学习事件
-        print(f"\n3. 情景记忆阶段 - 事件记录:")
+        # 3. Стадия эпизодической памяти: записывайте полные события обучения.
+        print(f"\n3. Стадия эпизодической памяти – запись событий:")
         
         episodic_event = self.episodic_memory_tool.run({"action":"add",
-                                                         "content":"完成了深度学习视频教程的学习，理解了CNN的核心概念",
+                                                         "content":"Вы завершили видеоурок по глубокому обучению и поняли основные концепции CNN.",
                                                          "memory_type":"episodic",
                                                          "importance":0.9,
                                                          "event_type":"learning_session",
                                                          "duration_minutes":45,
-                                                         "location":"家里",
-                                                         "learning_outcome":"理解CNN原理",
-                                                         "next_action":"实践编程"})
-        print(f"情景记忆: {episodic_event}")
+                                                         "location":"дома",
+                                                         "learning_outcome":"Понимать принципы CNN",
+                                                         "next_action":"Практическое программирование"})
+        print(f"Эпизодическая память: {episodic_event}")
         
-        # 4. 语义记忆阶段：抽象知识存储
-        print(f"\n4. 语义记忆阶段 - 知识抽象:")
+        # 4. Этап семантической памяти: хранение абстрактных знаний.
+        print(f"\n4. Этап семантической памяти – абстракция знаний:")
         
         semantic_knowledge = [
             {
-                "content": "卷积神经网络通过卷积层提取图像特征，适合计算机视觉任务",
+                "content": "Сверточные нейронные сети извлекают особенности изображения через сверточные слои и подходят для задач компьютерного зрения.",
                 "concept": "CNN",
                 "domain": "deep_learning",
                 "application": "computer_vision"
             },
             {
-                "content": "反向传播算法通过链式法则计算梯度，用于更新网络参数",
+                "content": "Алгоритм обратного распространения ошибки вычисляет градиенты с помощью правила цепочки и используется для обновления параметров сети.",
                 "concept": "backpropagation",
                 "domain": "optimization",
                 "mathematical_basis": "chain_rule"
@@ -654,89 +654,89 @@ class MemoryTypesDeepDive:
                                                      "memory_type":"semantic",
                                                      "importance":0.8,
                                                      **{k: v for k, v in knowledge.items() if k != "content"}})
-            print(f"  语义记忆: {knowledge['concept']} - {result}")
+            print(f"  Семантическая память: {знание['концепция']} – {результат}")
         
-        # 5. 记忆整合演示
-        print(f"\n5. 记忆整合演示:")
+        # 5. Демонстрация интеграции памяти
+        print(f"\n5. Демонстрация интеграции памяти:")
         
-        # 从工作记忆整合到情景记忆
+        # От интеграции рабочей памяти к эпизодической памяти
         consolidation_result = self.working_memory_tool.run({"action":"consolidate",
                                                               "from_type":"working",
                                                               "to_type":"episodic",
                                                               "importance_threshold":0.6})
-        print(f"工作记忆整合: {consolidation_result}")
+        print(f"Консолидация рабочей памяти: {consolidation_result}")
         
-        # 跨记忆类型检索
-        print(f"\n6. 跨记忆类型检索:")
+        # Извлечение по типам памяти
+        print(f"\n6. Поиск по типам памяти:")
         
-        query = "深度学习CNN"
+        query = "Глубокое обучение CNN"
         
-        # 在所有记忆类型中搜索
+        # Поиск по всем типам памяти
         memory_tools = [
-            ("工作记忆", self.working_memory_tool),
-            ("情景记忆", self.episodic_memory_tool),
-            ("语义记忆", self.semantic_memory_tool),
-            ("感知记忆", self.perceptual_memory_tool)
+            ("рабочая память", self.working_memory_tool),
+            ("эпизодическая память", self.episodic_memory_tool),
+            ("семантическая память", self.semantic_memory_tool),
+            ("перцептивная память", self.perceptual_memory_tool)
         ]
         
         for memory_name, tool in memory_tools:
             results = tool.run({"action":"search", "query":query, "limit":2})
-            print(f"  {memory_name}检索: {results[:80]}...")
+            print(f"  Извлечение {memory_name}: {results[:80]}...")
         
-        # 获取所有记忆系统的统计
-        print(f"\n7. 系统整体状态:")
+        # Получить статистику для всех систем памяти
+        print(f"\n7. Общее состояние системы:")
         
         for memory_name, tool in memory_tools:
             stats = tool.run({"action":"stats"})
             print(f"  {memory_name}: {stats}")
 
 def main():
-    """主函数"""
-    print("🧠 四种记忆类型深度解析演示")
-    print("详细展示WorkingMemory、EpisodicMemory、SemanticMemory、PerceptualMemory")
+    """основная функция"""
+    print("🧠 Углубленный анализ и демонстрация четырех типов памяти.")
+    print("Подробное отображение рабочей памяти, эпизодической памяти, семантической памяти, перцептивной памяти.")
     print("=" * 80)
     
     try:
         demo = MemoryTypesDeepDive()
         
-        # 1. 工作记忆演示
+        # 1. Демонстрация рабочей памяти
         demo.demonstrate_working_memory()
         
-        # 2. 情景记忆演示
+        # 2. Демонстрация эпизодической памяти
         demo.demonstrate_episodic_memory()
         
-        # 3. 语义记忆演示
+        # 3. Демонстрация семантической памяти
         demo.demonstrate_semantic_memory()
         
-        # 4. 感知记忆演示
+        # 4. Демонстрация перцептивной памяти
         demo.demonstrate_perceptual_memory()
         
-        # 5. 记忆交互演示
+        # 5. Интерактивная демонстрация памяти.
         demo.demonstrate_memory_interactions()
         
         print("\n" + "=" * 80)
-        print("🎉 四种记忆类型深度解析完成！")
+        print("🎉 Завершен углубленный анализ четырех типов памяти!")
         print("=" * 80)
         
-        print("\n✨ 记忆类型特性总结:")
-        print("1. 💭 工作记忆 - 快速临时存储，容量有限，自动过期")
-        print("2. 📖 情景记忆 - 完整事件记录，时间序列，丰富上下文")
-        print("3. 🧠 语义记忆 - 抽象知识存储，概念关系，语义推理")
-        print("4. 👁️ 感知记忆 - 多模态支持，跨模态检索，感知理解")
+        print("\n✨ Сводная информация о характеристиках типов памяти:")
+        print("1. 💭 Рабочая память – быстрое временное хранилище, ограниченная емкость, автоматическое истечение срока действия.")
+        print("2. 📖 Эпизодическая память – полные записи событий, временные ряды, богатый контекст.")
+        print("3. 🧠Семантическая память – хранение абстрактных знаний, концептуальных связей, смысловых рассуждений.")
+        print("4. 👁️ Перцептивная память – мультимодальная поддержка, кросс-модальный поиск, перцептивное понимание.")
         
-        print("\n🔄 记忆交互模式:")
-        print("• 感知 → 工作 → 情景 → 语义（信息处理流程）")
-        print("• 语义 → 工作（知识激活和应用）")
-        print("• 跨类型检索和整合（智能记忆管理）")
+        print("\n🔄 Режим взаимодействия с памятью:")
+        print("• Восприятие → Работа → Ситуация → Семантика (поток обработки информации).")
+        print("• Семантика → Работа (активация и применение знаний)")
+        print("• Поиск и интеграция перекрестного типа (интеллектуальное управление памятью).")
         
-        print("\n💡 设计价值:")
-        print("• 模拟人类认知过程")
-        print("• 支持多层次信息处理")
-        print("• 实现智能记忆管理")
-        print("• 提供丰富的检索能力")
+        print("\n💡 Расчетная стоимость:")
+        print("• Имитировать когнитивные процессы человека")
+        print("• Поддерживает многоуровневую обработку информации.")
+        print("• Внедрить интеллектуальное управление памятью.")
+        print("• Предоставлять широкие возможности поиска.")
         
     except Exception as e:
-        print(f"\n❌ 演示过程中发生错误: {e}")
+        print(f"\n❌ Во время демонстрации произошла ошибка: {e}")
         import traceback
         traceback.print_exc()
 

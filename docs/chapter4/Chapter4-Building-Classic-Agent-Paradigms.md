@@ -1,38 +1,38 @@
-# Chapter 4: Building Classic Agent Paradigms
+# Глава 4. Классические парадигмы агентов
 
-In the previous chapter, we deeply explored large language models as the "brain" of modern agents. We learned about their internal Transformer architecture, methods for interacting with them, and their capability boundaries. Now, it's time to transform this theoretical knowledge into practice and build agents with our own hands.
+В предыдущей главе мы глубоко исследовали большие языковые модели как «мозг» современных агентов. Мы узнали об их внутренней архитектуре Transformer, методах взаимодействия с ними и границах их возможностей. Теперь пришло время применить эти теоретические знания на практике и создать агентов своими руками.
 
-The core capability of a modern agent lies in its ability to connect the reasoning power of large language models with the external world. It can autonomously understand user intent, decompose complex tasks, and achieve goals by calling a series of "tools" such as code interpreters, search engines, and APIs to obtain information and execute operations. However, agents are not omnipotent; they also face challenges from the "hallucination" problem inherent in large models, potential reasoning loops in complex tasks, and incorrect tool usage, which constitute the capability boundaries of agents.
+Основная способность современного агента заключается в его способности связывать мыслительную силу больших языковых моделей с внешним миром. Он может автономно понимать намерения пользователя, разлагать сложные задачи и достигать целей, вызывая ряд «инструментов», таких как интерпретаторы кода, поисковые системы и API, для получения информации и выполнения операций. Однако агенты не всемогущи; они также сталкиваются с проблемами, связанными с проблемой «галлюцинаций», присущей большим моделям, потенциальными цепочками рассуждений в сложных задачах и неправильным использованием инструментов, которые составляют границы возможностей агентов.
 
-To better organize the "thinking" and "acting" processes of agents, the industry has emerged with multiple classic architectural paradigms. In this chapter, we will focus on the three most representative ones and implement them step by step from scratch:
+Чтобы лучше организовать процессы «мышления» и «действия» агентов, в отрасли появилось множество классических архитектурных парадигм. В этой главе мы сосредоточимся на трех наиболее типичных из них и реализуем их шаг за шагом с нуля:
 
-- **ReAct (Reasoning and Acting):** A paradigm that tightly combines "thinking" and "acting," allowing agents to think while doing and dynamically adjust.
-- **Plan-and-Solve:** A "think before you act" paradigm where agents first generate a complete action plan and then strictly execute it.
-- **Reflection:** A paradigm that endows agents with "reflection" capabilities, optimizing results through self-criticism and correction.
+- **ReAct (рассуждение и действие):** парадигма, которая тесно сочетает в себе «мышление» и «действие», позволяя агентам думать во время действий и динамически приспосабливаться.
+- **Планируй и решай**.** Парадигма «думай, прежде чем действовать», при которой агенты сначала создают полный план действий, а затем строго его выполняют.
+- **Рефлексия**. Парадигма, которая наделяет агентов способностью «размышлять», оптимизируя результаты посредством самокритики и исправлений.
 
-After understanding these, you might ask: with many excellent frameworks like LangChain and LlamaIndex already available, why "reinvent the wheel"? The answer lies in the fact that although mature frameworks have significant advantages in engineering efficiency, directly using highly abstracted tools does not help us understand how the underlying design mechanisms work or what benefits they offer. Secondly, this process exposes engineering challenges in projects. Frameworks handle many issues for us, such as parsing model output formats, retrying failed tool calls, and preventing agents from falling into infinite loops. Handling these issues firsthand is the most direct way to cultivate system design capabilities. Finally, and most importantly, mastering design principles allows you to truly transform from a framework "user" to an intelligent application "creator." When standard components cannot meet your complex needs, you will have the ability to deeply customize or even build a completely new agent from scratch.
+Поняв это, вы можете спросить: если уже доступно множество отличных фреймворков, таких как LangChain и LlamaIndex, зачем «изобретать велосипед»? Ответ заключается в том, что, хотя зрелые структуры имеют значительные преимущества в эффективности проектирования, прямое использование высокоабстрагированных инструментов не помогает нам понять, как работают лежащие в основе механизмы проектирования или какие преимущества они предлагают. Во-вторых, этот процесс выявляет инженерные проблемы в проектах. Платформы решают за нас многие проблемы, такие как анализ выходных форматов модели, повторение неудачных вызовов инструментов и предотвращение попадания агентов в бесконечные циклы. Решение этих проблем на собственном опыте — это самый прямой способ развить способности к проектированию систем. Наконец, что наиболее важно, освоение принципов проектирования позволяет вам по-настоящему превратиться из «пользователя» фреймворка в «создателя» интеллектуальных приложений. Если стандартные компоненты не могут удовлетворить ваши сложные потребности, у вас будет возможность глубоко настроить или даже создать совершенно новый агент с нуля.
 
-## 4.1 Environment Preparation and Basic Tool Definition
+## 4.1 Подготовка среды и определение основного инструмента
 
-Before we start building, we need to set up the development environment and define some basic components. This will help us avoid repetitive work and focus more on core logic when implementing different paradigms later.
+Прежде чем мы начнем сборку, нам необходимо настроить среду разработки и определить некоторые основные компоненты. Это поможет нам избежать повторяющейся работы и больше сосредоточиться на основной логике при последующей реализации различных парадигм.
 
-### 4.1.1 Installing Dependencies
+### 4.1.1 Установка зависимостей
 
-The practical part of this book will mainly use the Python language, and Python 3.10 or higher is recommended. First, please ensure you have installed the `openai` library for interacting with large language models, and the `python-dotenv` library for securely managing our API keys.
+В практической части этой книги в основном будет использоваться язык Python, рекомендуется Python 3.10 или выше. Сначала убедитесь, что вы установили`openai`библиотека для взаимодействия с большими языковыми моделями и`python-dotenv`библиотека для безопасного управления нашими ключами API.
 
-Run the following command in your terminal:
+Запустите следующую команду в своем терминале:
 
 ```bash
 pip install openai python-dotenv
 ```
 
-### 4.1.2 Configuring API Keys
+### 4.1.2 Настройка ключей API
 
-To make our code more universal, we will uniformly configure model service-related information (model ID, API key, service address) in environment variables.
+Чтобы сделать код универсальнее, параметры сервиса модели (model ID, API-ключ, адрес сервиса) задаём единообразно через переменные окружения.
 
-1. In your project root directory, create a file named `.env`.
-2. In this file, add the following content. You can point it to OpenAI's official service or any local/third-party service compatible with the OpenAI interface according to your needs.
-3. If you really don't know how to obtain it, you can refer to [Environment Configuration](https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra07-环境配置.md).
+1. В корневом каталоге вашего проекта создайте файл с именем `.env`.
+2. В этот файл добавьте следующее содержимое. Вы можете указать его на официальном сервисе OpenAI или на любом местном/стороннем сервисе, совместимом с интерфейсом OpenAI, в соответствии с вашими потребностями.
+3. Если вы действительно не знаете, как его получить, вы можете обратиться к [Конфигурации среды] (https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra07-环境配置.md).
 
 ```bash
 # .env file
@@ -41,11 +41,11 @@ LLM_MODEL_ID="YOUR-MODEL"
 LLM_BASE_URL="YOUR-URL"
 ```
 
-Our code will automatically load these configurations from this file.
+Наш код автоматически загрузит эти конфигурации из этого файла.
 
-### 4.1.3 Encapsulating Basic LLM Call Functions
+### 4.1.3 Инкапсуляция базовых функций вызова LLM
 
-To make the code structure clearer and more reusable, let's define a dedicated LLM client class. This class will encapsulate all details of interacting with model services, allowing our main logic to focus more on agent construction.
+Чтобы сделать структуру кода более понятной и более пригодной для повторного использования, давайте определим специальный клиентский класс LLM. Этот класс будет инкапсулировать все детали взаимодействия с модельными сервисами, позволяя нашей основной логике больше сосредоточиться на создании агентов.
 
 ```python
 import os
@@ -133,58 +133,58 @@ Quicksort is a very efficient sorting algorithm...
 
 
 
-## 4.2 ReAct
+## 4.2 Реакт
 
-After preparing the LLM client, we will build the first and most classic agent paradigm: **ReAct (Reason + Act)**. ReAct was proposed by Shunyu Yao in 2022<sup>[1]</sup>. Its core idea is to mimic how humans solve problems by explicitly combining **Reasoning** and **Acting** to form a "think-act-observe" loop.
+После подготовки клиента LLM мы построим первую и самую классическую парадигму агента: **ReAct (Причина + Действие)**. ReAct был предложен Шуньюй Яо в ​​2022 году<sup>[1]</sup>. Его основная идея — имитировать то, как люди решают проблемы, путем явного объединения **Рассуждений** и **Действий**, образуя цикл «думай-действуй-наблюдай».
 
-### 4.2.1 ReAct Workflow
+### 4.2.1 Рабочий процесс ReAct
 
-Before ReAct emerged, mainstream methods could be divided into two categories: one is the "pure thinking" type, such as **Chain-of-Thought**, which can guide models to perform complex logical reasoning but cannot interact with the external world and is prone to factual hallucinations; the other is the "pure action" type, where models directly output actions to execute but lack planning and error correction capabilities.
+До появления ReAct основные методы можно было разделить на две категории: одна — это тип «чистого мышления», такой как **Цепочка мыслей**, который может направлять модели для выполнения сложных логических рассуждений, но не может взаимодействовать с внешним миром и склонен к фактическим галлюцинациям; другой — тип «чистого действия», когда модели напрямую выводят действия для выполнения, но им не хватает возможностей планирования и исправления ошибок.
 
-The ingenuity of ReAct lies in recognizing that **thinking and acting are complementary**. Thinking guides action, while action results in turn correct thinking. To this end, the ReAct paradigm uses a special prompt engineering to guide the model so that each step of its output follows a fixed trajectory:
+Гениальность ReAct заключается в признании того, что **мышление и действие дополняют друг друга**. Мышление направляет действие, а действие, в свою очередь, приводит к правильному мышлению. С этой целью парадигма ReAct использует специальную разработку подсказок, которая направляет модель так, чтобы каждый шаг ее результатов следовал фиксированной траектории:
 
-- **Thought (Thinking):** This is the agent's "inner monologue." It analyzes the current situation, decomposes tasks, formulates the next plan, or reflects on the results of the previous step.
-- **Action (Acting):** This is the specific action the agent decides to take, usually calling an external tool, such as `Search['Huawei's latest phone']`.
-- **Observation (Observing):** This is the result returned from the external tool after executing the `Action`, such as a summary of search results or an API return value.
+- **Мысль (Мышление):** Это «внутренний монолог» агента. Он анализирует текущую ситуацию, декомпозирует задачи, формулирует следующий план или размышляет о результатах предыдущего шага.
+- **Действие (действующее):** Это конкретное действие, которое агент решает предпринять, обычно вызывая внешний инструмент, например «Поиск['последний телефон Huawei']».
+- **Наблюдение (Наблюдение):** Это результат, возвращаемый внешним инструментом после выполнения «Действия», например сводка результатов поиска или возвращаемое значение API.
 
-The agent will continuously repeat this **Thought -> Action -> Observation** loop, appending new observation results to the history to form a continuously growing context until it determines in `Thought` that it has found the final answer and then outputs the result. This process forms a powerful synergy: **reasoning makes actions more purposeful, while actions provide factual basis for reasoning.**
+Агент будет постоянно повторять этот цикл **Мысль -> Действие -> Наблюдение**, добавляя новые результаты наблюдения в историю, чтобы сформировать постоянно растущий контекст, пока он не определится в`Thought`что он нашел окончательный ответ и затем выводит результат. Этот процесс образует мощную синергию: **рассуждение делает действия более целенаправленными, а действия обеспечивают фактическую основу для рассуждений.**
 
-We can formally express this process, as shown in Figure 4.1. Specifically, at each time step $t$, the agent's policy (i.e., the large language model $\pi$) generates the current thought $th_t$ and action $a_t$ based on the initial question $q$ and the historical trajectory of all previous "action-observation" steps $((a_1,o_1),\dots,(a_{t-1},o_{t-1}))$:
+Мы можем формально выразить этот процесс, как показано на рисунке 4.1. В частности, на каждом временном шаге $t$ политика агента (т. е. большая языковая модель $\pi$) генерирует текущую мысль $th_t$ и действие $a_t$ на основе исходного вопроса $q$ и исторической траектории всех предыдущих шагов «действия-наблюдения» $((a_1,o_1),\dots,(a_{t-1},o_{t-1}))$:
 
 $$\left(th_t,a_t\right)=\pi\left(q,(a_1,o_1),\ldots,(a_{t-1},o_{t-1})\right)$$
 
-Subsequently, the tool $T$ in the environment executes action $a_t$ and returns a new observation result $o_t$:
+Впоследствии инструмент $T$ в среде выполняет действие $a_t$ и возвращает новый результат наблюдения $o_t$:
 
-$$o_t = T(a_t)$$
+$$o_t = Т(a_t)$$
 
-This loop continues, appending new $(a_t,o_t)$ pairs to the history until the model determines in thought $th_t$ that the task is complete.
+Этот цикл продолжается, добавляя в историю новые пары $(a_t,o_t)$ до тех пор, пока модель мысленно не определит $th_t$, что задача выполнена.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/4-figures/4-1.png" alt="Think-Act-Observe synergistic loop in ReAct paradigm" width="90%"/>
-  <p>Figure 4.1 Think-Act-Observe Synergistic Loop in ReAct Paradigm</p>
+  <p>Рисунок 4.1. Синергический цикл «думай-действуй-наблюдай» в парадигме ReAct</p>
 </div>
 
-This mechanism is particularly suitable for the following scenarios:
+Этот механизм особенно подходит для следующих сценариев:
 
-- **Tasks requiring external knowledge**: Such as querying real-time information (weather, news, stock prices), searching for knowledge in professional domains, etc.
-- **Tasks requiring precise calculations**: Delegating mathematical problems to calculator tools to avoid LLM calculation errors.
-- **Tasks requiring API interaction**: Such as operating databases, calling a service's API to complete specific functions.
+- **Задачи, требующие внешних знаний**: например, запрос информации в реальном времени (погода, новости, цены на акции), поиск знаний в профессиональных областях и т. д.
+- **Задачи, требующие точных расчетов**: делегирование математических задач калькуляторам, чтобы избежать ошибок в расчетах LLM.
+- **Задачи, требующие взаимодействия с API**: например, работа с базами данных, вызов API службы для выполнения определенных функций.
 
-Therefore, we will build a ReAct agent with the capability to **use external tools** to answer questions that large language models cannot directly answer with their own knowledge base alone. For example: "What is Huawei's latest phone? What are its main selling points?" This question requires the agent to understand that it needs to search online, call tools to search for results, and summarize the answer.
+Поэтому мы создадим агент ReAct с возможностью **использовать внешние инструменты** для ответа на вопросы, на которые большие языковые модели не могут напрямую ответить, используя только свою собственную базу знаний. Например: «Какой последний телефон Huawei? Каковы его основные преимущества?» Этот вопрос требует от агента понимания того, что ему необходимо выполнить поиск в Интернете, вызвать инструменты для поиска результатов и обобщить ответ.
 
-### 4.2.2 Tool Definition and Implementation
+### 4.2.2 Определение и реализация инструмента
 
-If large language models are the brain of an agent, then **Tools** are its "hands and feet" for interacting with the external world. To enable the ReAct paradigm to truly solve the problems we set, the agent needs the capability to call external tools.
+Если большие языковые модели — это мозг агента, то **Инструменты** — это его «руки и ноги» для взаимодействия с внешним миром. Чтобы парадигма ReAct действительно могла решить поставленные нами задачи, агенту необходима возможность вызывать внешние инструменты.
 
-For the goal set in this section—answering questions about "Huawei's latest phone"—we need to provide the agent with a web search tool. Here we choose **SerpApi**, which provides structured Google search results through an API and can directly return "answer summary boxes" or precise knowledge graph information.
+Для достижения цели, поставленной в этом разделе — ответить на вопросы о «последнем телефоне Huawei» — нам необходимо предоставить агенту инструмент веб-поиска. Здесь мы выбираем **SerpApi**, который предоставляет структурированные результаты поиска Google через API и может напрямую возвращать «поля со сводкой ответов» или точную информацию о диаграмме знаний.
 
-First, you need to install the library:
+Сначала вам нужно установить библиотеку:
 
 ```bash
 pip install google-search-results
 ```
 
-At the same time, you need to go to the [SerpApi official website](https://serpapi.com/) to register a free account, obtain your API key, and add it to the `.env` file in our project root directory:
+При этом вам необходимо зайти на [официальный сайт SerpApi](https://serpapi.com/), чтобы зарегистрировать бесплатную учетную запись, получить ключ API и добавить его в`.env`файл в корневом каталоге нашего проекта:
 
 ```bash
 # .env file
@@ -192,17 +192,17 @@ At the same time, you need to go to the [SerpApi official website](https://serpa
 SERPAPI_API_KEY="YOUR_SERPAPI_API_KEY"
 ```
 
-Next, we will define and manage this tool through code. We will proceed step by step: first implement the core functionality of the tool, then build a general tool manager.
+Далее мы определим этот инструмент и будем управлять им с помощью кода. Мы будем действовать шаг за шагом: сначала реализуем основные функции инструмента, затем создадим общий менеджер инструментов.
 
-(1) Implementing the Core Logic of the Search Tool
+(1) Реализация основной логики инструмента поиска
 
-A well-defined tool should contain the following three core elements:
+Четко определенный инструмент должен содержать следующие три основных элемента:
 
-1. **Name**: A concise, unique identifier for the agent to call in `Action`, such as `Search`.
-2. **Description**: A clear natural language description explaining the purpose of this tool. **This is the most critical part of the entire mechanism** because the large language model will rely on this description to determine when to use which tool.
-3. **Execution Logic**: The function or method that actually performs the task.
+1. **Имя**: краткий уникальный идентификатор агента, который будет вызываться в «Действии», например «Поиск».
+2. **Описание**: четкое описание на естественном языке, объясняющее назначение этого инструмента. **Это наиболее важная часть всего механизма**, поскольку модель большого языка будет полагаться на это описание, чтобы определить, когда какой инструмент использовать.
+3. **Логика выполнения**: функция или метод, который фактически выполняет задачу.
 
-Our first tool is the `search` function, which receives a query string and then returns search results.
+Наш первый инструмент —`search`функция, которая получает строку запроса и затем возвращает результаты поиска.
 
 ```python
 from serpapi import SerpApiClient
@@ -250,11 +250,11 @@ def search(query: str) -> str:
         return f"Error occurred during search: {e}"
 ```
 
-In the above code, it first checks whether `answer_box` (Google's answer summary box) or `knowledge_graph` (knowledge graph) information exists. If it does, it directly returns these most precise answers. If not, it falls back to returning summaries of the first three regular search results. This "intelligent parsing" can provide higher-quality information input for the LLM.
+В приведенном выше коде сначала проверяется,`answer_box`(окно со сводкой ответов Google) или`knowledge_graph`(граф знаний) информация существует. Если да, то он напрямую возвращает наиболее точные ответы. В противном случае возвращается сводка первых трех результатов обычного поиска. Этот «интеллектуальный анализ» может обеспечить более качественный ввод информации для LLM.
 
-(2) Building a General Tool Executor
+(2) Создание универсального исполнителя инструментов
 
-When an agent needs to use multiple tools (for example, in addition to search, it may also need calculation, database queries, etc.), we need a unified manager to register and dispatch these tools. For this, we create a `ToolExecutor` class.
+Когда агенту необходимо использовать несколько инструментов (например, помимо поиска ему могут понадобиться еще расчеты, запросы к базе данных и т. д.), нам нужен единый менеджер для регистрации и отправки этих инструментов. Для этого мы создаем`ToolExecutor`сорт.
 
 ```python
 from typing import Dict, Any
@@ -292,9 +292,9 @@ class ToolExecutor:
 
 ```
 
-(3) Testing
+(3) Тестирование
 
-Now, we will register the `search` tool in the `ToolExecutor` and simulate a call to verify that the entire process works properly.
+Теперь мы зарегистрируем`search`инструмент в`ToolExecutor`и смоделировать вызов, чтобы убедиться, что весь процесс работает правильно.
 
 ```python
 # --- Tool Initialization and Usage Example ---
@@ -342,17 +342,17 @@ Compare the latest RTX 30 series graphics cards with previous RTX 20 series, GTX
 DRIVE AGX. Powerful in-vehicle computing power for AI-driven intelligent vehicle systems · Clara AGX. AI computing for innovative medical devices and imaging. Gaming and Creation. GeForce. Explore graphics cards, gaming solutions, AI ...
 ```
 
-So far, we have equipped the agent with a `Search` tool that connects to the real-world internet, providing a solid foundation for the subsequent ReAct loop.
+На данный момент мы снабдили агента`Search`инструмент, который подключается к реальному Интернету, обеспечивая прочную основу для последующего цикла ReAct.
 
 
 
-### 4.2.3 Coding Implementation of ReAct Agent
+### 4.2.3 Кодирование реализации агента ReAct
 
-Now, we will assemble all independent components—the LLM client and tool executor—to build a complete ReAct agent. We will encapsulate its core logic through a `ReActAgent` class. For ease of understanding, we will break down the implementation process of this class into the following key parts for explanation.
+Теперь мы соберем все независимые компоненты — клиент LLM и исполнитель инструмента — для создания полноценного агента ReAct. Мы инкапсулируем его основную логику через`ReActAgent`сорт. Для простоты понимания мы разобьем процесс реализации этого класса на следующие ключевые части для объяснения.
 
-(1) System Prompt Design
+(1) Проектирование системы
 
-The prompt is the cornerstone of the entire ReAct mechanism, providing operational instructions for the large language model. We need to carefully design a template that will dynamically insert available tools, user questions, and the interaction history of intermediate steps.
+Подсказка является краеугольным камнем всего механизма ReAct, предоставляя инструкции по работе с большой языковой моделью. Нам необходимо тщательно разработать шаблон, который будет динамически вставлять доступные инструменты, вопросы пользователей и историю взаимодействия на промежуточных шагах.
 
 ```bash
 # ReAct Prompt Template
@@ -376,16 +376,16 @@ History: {history}
 """
 ```
 
-This template defines the specification for interaction between the agent and the LLM:
+Этот шаблон определяет спецификацию взаимодействия между агентом и LLM:
 
-- **Role Definition**: "You are an intelligent assistant capable of calling external tools" sets the LLM's role.
-- **Tool List (`{tools}`)**: Informs the LLM what "hands and feet" it has available.
-- **Format Convention (`Thought`/`Action`)**: This is the most important part, forcing the LLM's output to be structured so we can precisely parse its intent through code.
-- **Dynamic Context (`{question}`/`{history}`)**: Injects the user's original question and continuously accumulated interaction history, allowing the LLM to make decisions based on complete context.
+- **Определение роли**: «Вы умный помощник, способный вызывать внешние инструменты» определяет роль LLM.
+- **Список инструментов (`{tools}`)**: сообщает LLM, какие «руки и ноги» у него есть в наличии.
+- **Соглашение о формате («Мысль»/«Действие»)**: это самая важная часть, заставляющая структурировать выходные данные LLM, чтобы мы могли точно проанализировать его намерения через код.
+- **Динамический контекст (`{question}`/`{history}`)**: добавляет исходный вопрос пользователя и постоянно накапливаемую историю взаимодействия, что позволяет LLM принимать решения на основе полного контекста.
 
-(2) Core Loop Implementation
+(2) Реализация основного цикла
 
-The core of `ReActAgent` is a loop that continuously "formats prompt -> calls LLM -> executes action -> integrates results" until the task is complete or the maximum step limit is reached.
+Ядро`ReActAgent`представляет собой цикл, который непрерывно «форматирует приглашение -> вызывает LLM -> выполняет действие -> интегрирует результаты» до тех пор, пока задача не будет завершена или не будет достигнут максимальный предел шагов.
 
 ```python
 class ReActAgent:
@@ -427,11 +427,11 @@ class ReActAgent:
 
 ```
 
-The `run` method is the entry point of the agent. Its `while` loop constitutes the main body of the ReAct paradigm, and the `max_steps` parameter is an important safety valve to prevent the agent from falling into an infinite loop and exhausting resources.
+The `run`Метод является точкой входа агента. Его`while`цикл составляет основную часть парадигмы ReAct, а`max_steps`Параметр является важным предохранительным клапаном, предотвращающим попадание агента в бесконечный цикл и исчерпание ресурсов.
 
-(3) Output Parser Implementation
+(3) Реализация выходного анализатора
 
-The LLM returns plain text, and we need to precisely extract `Thought` and `Action` from it. This is accomplished through several auxiliary parsing functions, which typically use regular expressions.
+LLM возвращает обычный текст, и нам нужно точно извлечь`Thought`и`Action`от этого. Это достигается с помощью нескольких вспомогательных функций синтаксического анализа, которые обычно используют регулярные выражения.
 
 ```python
 # (These methods are part of the ReActAgent class)
@@ -455,10 +455,10 @@ The LLM returns plain text, and we need to precisely extract `Thought` and `Acti
         return None, None
 ```
 
-- `_parse_output`: Responsible for separating the two main parts `Thought` and `Action` from the LLM's complete response.
-- `_parse_action`: Responsible for further parsing the `Action` string, for example, extracting the tool name `Search` and tool input `Huawei's latest phone` from `Search[Huawei's latest phone]`.
+- `_parse_output`: отвечает за разделение двух основных частей «Мысль» и «Действие» из полного ответа LLM.
+- `_parse_action`: отвечает за дальнейший анализ строки "Действие", например, извлечение имени инструмента "Поиск" и входных данных инструмента "Последний телефон Huawei" из "Поиск [последний телефон Huawei]".
 
-(4) Tool Invocation and Execution
+(4) Вызов и выполнение инструмента
 
 ```python
 # (This logic is inside the while loop of the run method)
@@ -494,11 +494,11 @@ The LLM returns plain text, and we need to precisely extract `Thought` and `Acti
 
 ```
 
-This code is the execution center of `Action`. It first checks whether it's a `Finish` instruction; if so, the process ends. Otherwise, it obtains the corresponding tool function through `tool_executor` and executes it to get the `observation`.
+Этот код является центром выполнения`Action`. Сначала он проверяет, является ли это`Finish`инструкция; если да, то процесс завершается. В противном случае он получает соответствующую функцию инструмента через`tool_executor`и выполняет его, чтобы получить`observation`.
 
-(5) Integration of Observation Results
+(5) Интегрирование результатов наблюдений
 
-The last step, and the key to forming a closed loop, is to add the `Action` itself and the `Observation` after tool execution back to the history, providing new context for the next loop.
+Последний шаг и ключ к формированию замкнутого цикла — добавление`Action`себя и`Observation`после выполнения инструмента возвращается в историю, предоставляя новый контекст для следующего цикла.
 
 ```python
 # (This logic follows tool invocation, at the end of the while loop)
@@ -513,13 +513,13 @@ The last step, and the key to forming a closed loop, is to add the `Action` itse
         return None
 ```
 
-By appending `Observation` to `self.history`, the agent can "see" the results of the previous action when generating the prompt in the next round, and conduct new thinking and planning accordingly.
+Добавив`Observation`к`self.history`, агент может «увидеть» результаты предыдущего действия при создании подсказки в следующем раунде и соответствующим образом провести новое обдумывание и планирование.
 
-(6) Running Instance and Analysis
+(6) Запуск экземпляра и анализ
 
-Combining all the above parts, we get the complete `ReActAgent` class. The complete code running instance can be found in the `code` folder of this book's accompanying code repository.
+Объединив все вышеперечисленные части, мы получаем полную`ReActAgent`сорт. Полный экземпляр выполняемого кода можно найти в`code`папка репозитория сопроводительного кода этой книги.
 
-Below is a real running record:
+Ниже приведен реальный рекорд бега:
 
 ```
 Tool 'Search' registered.
@@ -550,93 +550,93 @@ Action: Finish[According to the latest information, Huawei's latest phones may b
 🎉 Final Answer: According to the latest information, Huawei's latest phones may be HUAWEI Pura 80 Pro+ or HUAWEI Mate 70. Among them, HUAWEI Mate 70's main selling points include top-level photography configuration, full focal length coverage, suitable for professional photography, excellent workmanship, and good outdoor drop resistance. While HUAWEI Pura 80 Pro+ emphasizes pioneer imaging technology.
 ```
 
-From the above output, we can see that the agent clearly demonstrates its chain of thought: it first realizes its knowledge is insufficient and needs to use the search tool; then, it reasons and summarizes based on search results, arriving at the final answer within two steps.
+Из приведенного выше вывода мы видим, что агент четко демонстрирует свою цепочку мыслей: сначала он понимает, что его знаний недостаточно, и ему необходимо использовать инструмент поиска; затем он рассуждает и обобщает результаты поиска, получая окончательный ответ за два шага.
 
-It's worth noting that since the model's knowledge and internet information are constantly updated, your running results may not be exactly the same as this. As of September 8, 2025, when this section was written, the HUAWEI Mate 70 and HUAWEI Pura 80 Pro+ mentioned in search results were indeed Huawei's latest flagship series phones at that time. This fully demonstrates the powerful capability of the ReAct paradigm in handling time-sensitive issues.
+Стоит отметить, что, поскольку знания модели и информация в Интернете постоянно обновляются, результаты вашего бега могут быть не такими, как сейчас. По состоянию на 8 сентября 2025 года, когда был написан этот раздел, HUAWEI Mate 70 и HUAWEI Pura 80 Pro+, упомянутые в результатах поиска, действительно были телефонами последней флагманской серии Huawei на тот момент. Это в полной мере демонстрирует мощные возможности парадигмы ReAct в решении срочных задач.
 
-### 4.2.4 Characteristics, Limitations, and Debugging Techniques of ReAct
+### 4.2.4 Характеристики, ограничения и методы отладки ReAct
 
-By implementing a ReAct agent firsthand, we not only mastered its workflow but should also have a deeper understanding of its internal mechanisms. Any technical paradigm has its highlights and areas for improvement; this section will summarize ReAct.
+Внедрив агент ReAct из первых рук, мы не только освоили его рабочий процесс, но и должны глубже понять его внутренние механизмы. Любая техническая парадигма имеет свои особенности и области для улучшения; в этом разделе будет подведен итог ReAct.
 
-(1) Main Characteristics of ReAct
+(1) Основные характеристики ReAct
 
-1. **High Interpretability**: One of ReAct's greatest advantages is transparency. Through the `Thought` chain, we can clearly see the agent's "mental journey" at each step—why it chose this tool and what it plans to do next. This is crucial for understanding, trusting, and debugging agent behavior.
-2. **Dynamic Planning and Error Correction Capability**: Unlike paradigms that generate complete plans at once, ReAct is "take one step, look one step." It dynamically adjusts subsequent `Thought` and `Action` based on `Observation` obtained from the external world at each step. If the previous search results are unsatisfactory, it can correct the search terms in the next step and try again.
-3. **Tool Synergy Capability**: The ReAct paradigm naturally combines the reasoning capability of large language models with the execution capability of external tools. LLMs are responsible for strategizing (planning and reasoning), tools are responsible for solving specific problems (searching, calculating), and the two work synergistically, breaking through the inherent limitations of single LLMs in knowledge timeliness, computational accuracy, etc.
+1. **Высокая интерпретируемость**. Одним из самых больших преимуществ ReAct является прозрачность. Через цепочку «Мысль» мы можем ясно увидеть «мысленное путешествие» агента на каждом этапе — почему он выбрал этот инструмент и что он планирует делать дальше. Это имеет решающее значение для понимания, доверия и отладки поведения агента.
+2. **Возможность динамического планирования и исправления ошибок**. В отличие от парадигм, которые создают полные планы одновременно, ReAct действует по принципу «сделай один шаг, взгляни на один шаг». Он динамически корректирует последующие «Мысли» и «Действия» на основе «Наблюдений», полученных из внешнего мира на каждом этапе. Если предыдущие результаты поиска неудовлетворительны, можно исправить условия поиска на следующем этапе и повторить попытку.
+3. **Возможность синергии инструментов**: парадигма ReAct естественным образом сочетает в себе возможности рассуждения больших языковых моделей с возможностями выполнения внешних инструментов. LLM отвечают за разработку стратегии (планирование и рассуждение), инструменты отвечают за решение конкретных проблем (поиск, расчет), и оба работают синергетически, преодолевая присущие отдельным LLM ограничения в своевременности знаний, точности вычислений и т. д.
 
-(2) Inherent Limitations of ReAct
+(2) Неотъемлемые ограничения ReAct
 
-1. **Strong Dependence on LLM's Own Capabilities**: The success of the ReAct process highly depends on the comprehensive capabilities of the underlying LLM. If the LLM's logical reasoning ability, instruction-following ability, or formatted output ability is insufficient, it's easy to produce wrong planning in the `Thought` stage or generate instructions that don't conform to the format in the `Action` stage, causing the entire process to be interrupted.
-2. **Execution Efficiency Issues**: Due to its step-by-step nature, completing a task usually requires multiple LLM calls. Each call is accompanied by network latency and computational cost. For complex tasks requiring many steps, this serial "think-act" loop may lead to high total time and cost.
-3. **Prompt Fragility**: The stable operation of the entire mechanism is built on a carefully designed prompt template. Any minor change in the template, even differences in wording, may affect LLM behavior. Additionally, not all models can consistently follow preset formats, increasing uncertainty in practical applications.
-4. **May Fall into Local Optima**: The step-by-step decision-making mode means the agent lacks a global, long-term plan. It may choose a path that seems correct in the short term but is not optimal in the long run due to immediate `Observation`, or even fall into a "spinning in place" loop in some cases.
+1. **Сильная зависимость от собственных возможностей LLM**: Успех процесса ReAct во многом зависит от комплексных возможностей основного LLM. Если способность LLM к логическому рассуждению, способности следовать инструкциям или способности форматированного вывода недостаточна, легко осуществить неправильное планирование на этапе «Мысль» или сгенерировать инструкции, которые не соответствуют формату на этапе «Действие», что приведет к прерыванию всего процесса.
+2. **Проблемы с эффективностью выполнения**. Из-за поэтапного характера выполнения задачи обычно требуется несколько вызовов LLM. Каждый вызов сопровождается задержкой в ​​сети и вычислительными затратами. Для сложных задач, требующих большого количества шагов, этот последовательный цикл «думай-действуй» может привести к увеличению общего времени и затрат.
+3. **Хрупкость подсказок**: Стабильная работа всего механизма построена на тщательно разработанном шаблоне подсказок. Любое незначительное изменение в шаблоне, даже различия в формулировках, может повлиять на поведение LLM. Кроме того, не все модели могут последовательно следовать заданным форматам, что увеличивает неопределенность в практическом применении.
+4. **Может попасть в локальный оптимум**. Пошаговый режим принятия решений означает, что у агента отсутствует глобальный долгосрочный план. Он может выбрать путь, который кажется правильным в краткосрочной перспективе, но неоптимальным в долгосрочной перспективе из-за немедленного «наблюдения», или даже в некоторых случаях попасть в цикл «вращения на месте».
 
-(3) Debugging Techniques
+(3) Методы отладки
 
-When your built ReAct agent behaves unexpectedly, you can debug from the following aspects:
+Если встроенный агент ReAct ведет себя неожиданно, вы можете выполнить отладку по следующим аспектам:
 
-- **Check Complete Prompt**: Before each LLM call, print out the final formatted complete prompt containing all history. This is the most direct way to trace the source of LLM decisions.
-- **Analyze Raw Output**: When output parsing fails (for example, regular expressions didn't match `Action`), be sure to print out the raw, unprocessed text returned by the LLM. This can help you determine whether the LLM didn't follow the format or your parsing logic is wrong.
-- **Verify Tool Input and Output**: Check whether the `tool_input` generated by the agent is in the format expected by the tool function, and also ensure the `observation` returned by the tool is in a format the agent can understand and process.
-- **Adjust Examples in Prompt (Few-shot Prompting)**: If the model frequently makes errors, you can add one or two complete successful "Thought-Action-Observation" cases in the prompt to guide the model to better follow your instructions through examples.
-- **Try Different Models or Parameters**: Switching to a more capable model or adjusting the `temperature` parameter (usually set to 0 to ensure output determinism) can sometimes directly solve the problem.
+- **Проверьте полную подсказку**: перед каждым звонком в LLM распечатывайте окончательную отформатированную полную подсказку, содержащую всю историю. Это самый прямой способ отследить источник решений LLM.
+- **Анализ необработанного вывода**: если синтаксический анализ вывода не удался (например, регулярные выражения не соответствуют «Действию»), обязательно распечатайте необработанный необработанный текст, возвращенный LLM. Это может помочь вам определить, не соответствует ли LLM формату или ваша логика синтаксического анализа неверна.
+- **Проверка входных и выходных данных инструмента**: проверьте, находится ли `tool_input`, сгенерированный агентом, в формате, ожидаемом функцией инструмента, а также убедитесь, что `наблюдение`, возвращаемое инструментом, находится в формате, который агент может понять и обработать.
+- **Корректировка примеров в подсказке (подсказка из нескольких шагов)**: если модель часто допускает ошибки, вы можете добавить в подсказку один или два полных успешных случая «мысль-действие-наблюдение», чтобы помочь модели лучше следовать вашим инструкциям с помощью примеров.
+- **Попробуйте разные модели или параметры**: переключение на более мощную модель или настройку параметра «температура» (обычно установленного на 0, чтобы обеспечить детерминированность выходного сигнала) иногда может напрямую решить проблему.
 
-## 4.3 Plan-and-Solve
+## 4.3 Планирование и решение
 
-After mastering ReAct, this reactive, step-by-step decision-making agent paradigm, we will next explore a method with a very different style but equally powerful: **Plan-and-Solve**. As the name suggests, this paradigm explicitly divides task processing into two stages: **Plan first, then Solve**.
+После освоения ReAct, этой реактивной, пошаговой парадигмы агента, принимающего решения, мы затем рассмотрим метод совершенно другого стиля, но не менее мощный: **Планируй и решай**. Как следует из названия, эта парадигма явно делит обработку задач на два этапа: **Сначала планируй, затем решай**.
 
-If ReAct is like an experienced detective who reasons step by step based on clues at the scene (Observation) and adjusts investigation direction at any time; then Plan-and-Solve is more like an architect who must first draw a complete blueprint (Plan) before starting construction, then strictly build according to the blueprint (Solve). In fact, many large model tools' Agent modes we use now incorporate this design pattern.
+Если ReAct похож на опытного детектива, который шаг за шагом рассуждает на основе улик на месте происшествия (наблюдение) и в любой момент корректирует направление расследования; тогда Plan-and-Solve больше похож на архитектора, который должен сначала нарисовать полный проект (Plan) перед началом строительства, а затем строить строго по чертежу (Solve). Фактически, режимы агента многих инструментов для больших моделей, которые мы используем, теперь включают этот шаблон проектирования.
 
-### 4.3.1 Working Principle of Plan-and-Solve
+### 4.3.1 Принцип работы «Планируй и решай»
 
-Plan-and-Solve Prompting was proposed by Lei Wang in 2023<sup>[2]</sup>. Its core motivation is to solve the problem that chain-of-thought easily "goes off track" when handling multi-step, complex problems.
+Подсказки «Планируй и решай» были предложены Лэй Ваном в 2023 году<sup>[2]</sup>. Его основная мотивация — решить проблему, заключающуюся в том, что цепочка мыслей легко «сбивается с пути» при решении многоэтапных и сложных задач.
 
-Unlike ReAct, which integrates thinking and acting at each step, Plan-and-Solve decouples the entire process into two core stages, as shown in Figure 4.2:
+В отличие от ReAct, который объединяет мышление и действие на каждом этапе, Plan-and-Solve разделяет весь процесс на два основных этапа, как показано на рисунке 4.2:
 
-1. **Planning Phase**: First, the agent receives the user's complete question. Its first task is not to directly solve the problem or call tools, but to **decompose the problem and formulate a clear, step-by-step action plan**. This plan itself is the product of a large language model call.
-2. **Solving Phase**: After obtaining the complete plan, the agent enters the execution phase. It will **strictly execute according to the steps in the plan, one by one**. Each step's execution may be an independent LLM call or processing of the previous step's results, until all steps in the plan are completed and the final answer is obtained.
+1. **Этап планирования**. Сначала агент получает полный вопрос пользователя. Его первая задача — не напрямую решить проблему или вызвать инструменты, а **декомпозировать проблему и сформулировать четкий пошаговый план действий**. Этот план сам по себе является результатом вызова большой языковой модели.
+2. **Этап решения**: после получения полного плана агент переходит к этапу выполнения. Он будет выполняться **строго в соответствии с шагами плана, один за другим**. Выполнение каждого шага может представлять собой независимый вызов LLM или обработку результатов предыдущего шага до тех пор, пока все шаги плана не будут завершены и не будет получен окончательный ответ.
 
-This "plan before acting" strategy enables the agent to maintain higher goal consistency when handling complex tasks requiring long-term planning, avoiding getting lost in intermediate steps.
+Эта стратегия «планируй, прежде чем действовать» позволяет агенту поддерживать более высокую согласованность целей при выполнении сложных задач, требующих долгосрочного планирования, избегая потери на промежуточных шагах.
 
-We can formally express this two-stage process. First, the planning model $\pi_{\text{plan}}$ generates a plan $P = (p_1, p_2, \dots, p_n)$ containing $n$ steps based on the original question $q$:
+Мы можем формально выразить этот двухэтапный процесс. Сначала модель планирования $\pi_{\text{plan}}$ генерирует план $P = (p_1, p_2, \dots, p_n)$, содержащий $n$ шагов, на основе исходного вопроса $q$:
 
 $$
 P = \pi_{\text{plan}}(q)
 $$
 
-Subsequently, in the execution phase, the execution model $\pi_{\text{solve}}$ will complete the steps in the plan one by one. For the $i$-th step, the generation of its solution $s_i$ will depend on the original question $q$, the complete plan $P$, and the execution results of all previous steps $(s_1, \dots, s_{i-1})$:
+Впоследствии, на этапе выполнения, модель выполнения $\pi_{\text{solve}}$ выполнит шаги плана один за другим. Для $i$-го шага построение его решения $s_i$ будет зависеть от исходного вопроса $q$, полного плана $P$ и результатов выполнения всех предыдущих шагов $(s_1, \dots, s_{i-1})$:
 
 $$
 s_i = \pi_{\text{solve}}(q, P, (s_1, \dots, s_{i-1}))
 $$
 
-The final answer is the execution result of the last step $s_n$.
+Окончательный ответ — это результат выполнения последнего шага $s_n$.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/4-figures/4-2.png" alt="Two-stage workflow of Plan-and-Solve paradigm" width="90%"/>
-  <p>Figure 4.2 Two-Stage Workflow of Plan-and-Solve Paradigm</p>
+  <p>Рисунок 4.2 Двухэтапный рабочий процесс парадигмы «планируй и решай»</p>
 </div>
 
-Plan-and-Solve is especially suitable for complex tasks with strong structure that can be clearly decomposed, such as:
+Plan-and-Solve особенно подходит для сложных задач с четкой структурой, которые можно четко разложить, например:
 
-- **Multi-step math word problems**: Need to first list calculation steps, then solve one by one.
-- **Report writing integrating multiple information sources**: Need to first plan the report structure (introduction, data source A, data source B, summary), then fill in content one by one.
-- **Code generation tasks**: Need to first conceive the structure of functions, classes, and modules, then implement one by one.
+- **Многоэтапные математические задачи**: необходимо сначала перечислить этапы расчета, а затем решать их один за другим.
+- **Написание отчета с интеграцией нескольких источников информации**: необходимо сначала спланировать структуру отчета (введение, источник данных A, источник данных B, резюме), а затем заполнять содержимое по одному.
+- **Задачи по генерации кода**: необходимо сначала придумать структуру функций, классов и модулей, а затем реализовать их по одному.
 
-### 4.3.2 Planning Phase
+### 4.3.2 Этап планирования
 
-To highlight the advantages of the Plan-and-Solve paradigm in structured reasoning tasks, we will not use tools but complete a reasoning task through prompt design.
+Чтобы подчеркнуть преимущества парадигмы «Планируй и решай» в задачах структурированного рассуждения, мы не будем использовать инструменты, а выполним задачу рассуждения посредством быстрого проектирования.
 
-The characteristic of this type of task is that the answer cannot be obtained through a single query or calculation; the problem must first be decomposed into a series of logically coherent sub-steps, then solved in order. This precisely leverages Plan-and-Solve's core capability of "plan first, execute later."
+Характерной чертой задач этого типа является то, что ответ невозможно получить с помощью одного запроса или вычисления; проблему необходимо сначала разложить на ряд логически последовательных подэтапов, а затем решить по порядку. Это в точности использует основную возможность Plan-and-Solve: «сначала планируй, потом выполняй».
 
-**Our target problem is:** "A fruit store sold 15 apples on Monday. The number of apples sold on Tuesday was twice that of Monday. The number sold on Wednesday was 5 fewer than Tuesday. How many apples were sold in total over these three days?"
+**Наша целевая задача:** «В понедельник в фруктовом магазине было продано 15 яблок. Во вторник было продано в два раза больше яблок, чем в понедельник. В среду было продано на 5 яблок меньше, чем во вторник. Сколько всего яблок было продано за эти три дня?»
 
-This problem is not particularly difficult for large language models, but it contains a clear logical chain for reference. For some actual logical puzzles, if the large model cannot reason out accurate answers with high quality, you can refer to this design pattern to design your own Agent to complete the task. The agent needs to:
+Эта задача не представляет особой сложности для больших языковых моделей, но содержит четкую логическую цепочку для справки. Для некоторых реальных логических головоломок, если большая модель не может дать точные и качественные ответы, вы можете обратиться к этому шаблону проектирования, чтобы создать собственного агента для выполнения задачи. Агенту необходимо:
 
-1. **Planning Phase**: First, decompose the problem into three independent calculation steps (calculate Tuesday sales, calculate Wednesday sales, calculate total sales).
-2. **Execution Phase**: Then, strictly follow the plan, execute calculations step by step, and use each step's result as input for the next step, finally obtaining the total.
+1. **Этап планирования**. Сначала разбейте задачу на три независимых этапа расчета (расчет продаж во вторник, расчет продаж в среду, расчет общего объема продаж).
+2. **Фаза выполнения**. Затем строго следуйте плану, выполняйте вычисления шаг за шагом и используйте результат каждого шага в качестве входных данных для следующего шага, в конечном итоге получая итоговую сумму.
 
-The goal of the planning phase is to have the large language model receive the original problem and output a clear, step-by-step action plan. This plan must be structured so our code can easily parse and execute it one by one. Therefore, the prompt we design needs to clearly tell the model its role and task and provide an example of the output format.
+Цель этапа планирования — получить от большой языковой модели исходную проблему и выдать четкий пошаговый план действий. Этот план должен быть структурирован так, чтобы наш код мог легко анализировать и выполнять его один за другим. Таким образом, приглашение, которое мы разрабатываем, должно четко указывать модели ее роль и задачу, а также предоставлять пример выходного формата.
 
 ````python
 PLANNER_PROMPT_TEMPLATE = """
@@ -646,19 +646,19 @@ Your output must be a Python list, where each element is a string describing a s
 
 Question: {question}
 
-Please strictly output your plan in the following format, with ```python and ``` as prefix and suffix being necessary:
-```python
-["Step 1", "Step 2", "Step 3", ...]
+Please strictly output your plan in the following format, with ```питон и``` as prefix and suffix being necessary:
+```питон
+["Шаг 1", "Шаг 2", "Шаг 3", ...]
 ```
 """
 ````
 
-This prompt ensures output quality and stability through the following points:
-- **Role Setting**: "Top AI planning expert" activates the model's professional capabilities.
-- **Task Description**: Clearly defines the goal of "decomposing problems."
-- **Format Constraint**: Forces output to be a string in Python list format, which greatly simplifies subsequent code parsing work, making it more stable and reliable than parsing natural language.
+Это приглашение обеспечивает качество и стабильность вывода за счет следующих моментов:
+- **Настройка роли**: «Лучший эксперт по планированию ИИ» активирует профессиональные возможности модели.
+- **Описание задачи**: Четко определяет цель «декомпозиции проблем».
+- **Ограничение формата**: выводит строку в формате списка Python, что значительно упрощает последующую работу по синтаксическому анализу кода, делая его более стабильным и надежным, чем синтаксический анализ естественного языка.
 
-Next, we encapsulate this prompt logic into a `Planner` class, which is also our planner.
+Далее мы инкапсулируем эту логику подсказки в`Planner`class, который также является нашим планировщиком.
 
 ```python
 # Assume the HelloAgentsLLM class in llm_client.py is already defined
@@ -685,8 +685,8 @@ class Planner:
 
         # Parse the list string output by LLM
         try:
-            # Find content between ```python and ```
-            plan_str = response_text.split("```python")[1].split("```")[0].strip()
+            # Find content between ```питон и```
+            plan_str = response_text.split("```питон")[1].split("```")[0].strip()
             # Use ast.literal_eval to safely execute the string and convert it to a Python list
             plan = ast.literal_eval(plan_str)
             return plan if isinstance(plan, list) else []
@@ -699,16 +699,16 @@ class Planner:
             return []
 ```
 
-### 4.3.3 Executor and State Management
+### 4.3.3 Исполнитель и управление состоянием
 
-After the planner (`Planner`) generates a clear action blueprint, we need an executor (`Executor`) to complete the tasks in the plan one by one. The executor is not only responsible for calling the large language model to solve each sub-problem but also plays a crucial role: **state management**. It must record the execution results of each step and provide them as context for subsequent steps, ensuring information flows smoothly throughout the entire task chain.
+После планировщика (`Planner`) генерирует четкий план действий, нам нужен исполнитель (`Executor`) для выполнения задач плана одно за другим. Исполнитель не только отвечает за вызов большой языковой модели для решения каждой подзадачи, но также играет решающую роль: **управление состоянием**. Он должен записывать результаты выполнения каждого шага и предоставлять их в качестве контекста для последующих шагов, обеспечивая плавное движение информации по всей цепочке задач.
 
-The executor's prompt is different from the planner's. Its goal is not to decompose problems but to **focus on solving the current step based on existing context**. Therefore, the prompt needs to include the following key information:
+Подсказка исполнителя отличается от подсказки планировщика. Его цель — не разложить проблемы на составляющие, а **сосредоточиться на решении текущего шага на основе существующего контекста**. Поэтому приглашение должно включать следующую ключевую информацию:
 
-- **Original Question**: Ensure the model always understands the ultimate goal.
-- **Complete Plan**: Let the model understand the current step's position in the entire task.
-- **Historical Steps and Results**: Provide work completed so far as direct input for the current step.
-- **Current Step**: Clearly instruct the model which specific task it needs to solve now.
+- **Оригинальный вопрос**. Убедитесь, что модель всегда понимает конечную цель.
+- **Полный план**: позвольте модели понять положение текущего шага во всей задаче.
+- **Исторические шаги и результаты**: укажите выполненную на данный момент работу в качестве прямых входных данных для текущего шага.
+- **Текущий этап**. Четко проинструктируйте модель, какую конкретную задачу ей необходимо решить сейчас.
 
 ```python
 EXECUTOR_PROMPT_TEMPLATE = """
@@ -732,7 +732,7 @@ Please only output the answer for the "current step":
 """
 ```
 
-We encapsulate the execution logic into the `Executor` class. This class will loop through the plan, call the LLM, and maintain a history (state).
+Мы инкапсулируем логику выполнения в`Executor`сорт. Этот класс будет проходить по плану, вызывать LLM и поддерживать историю (состояние).
 
 ```python
 class Executor:
@@ -771,7 +771,7 @@ class Executor:
         return final_answer
 ```
 
-Now we have separately built the `Planner` responsible for "planning" and the `Executor` responsible for "execution." The last step is to integrate these two components into a unified agent `PlanAndSolveAgent` and give it complete problem-solving capabilities. We will create a main class `PlanAndSolveAgent` whose responsibility is very clear: receive an LLM client, initialize internal planner and executor, and provide a simple `run` method to start the entire process.
+Теперь мы отдельно построили`Planner`ответственный за «планирование» и`Executor`ответственный за «исполнение». Последний шаг — объединить эти два компонента в единый агент.`PlanAndSolveAgent`и предоставить ему полные возможности решения проблем. Мы создадим основной класс`PlanAndSolveAgent`чья ответственность очень ясна: получить клиента LLM, инициализировать внутреннего планировщика и исполнителя и предоставить простой`run`метод для запуска всего процесса.
 
 ```python
 class PlanAndSolveAgent:
@@ -803,11 +803,11 @@ class PlanAndSolveAgent:
         print(f"\n--- Task Completed ---\nFinal Answer: {final_answer}")
 ```
 
-The design of this `PlanAndSolveAgent` class embodies the principle of "composition over inheritance." It doesn't contain complex logic itself but acts as an orchestrator, clearly calling its internal components to complete tasks.
+Дизайн этого`PlanAndSolveAgent`класс воплощает в себе принцип «композиция важнее наследования». Он сам по себе не содержит сложной логики, а выступает в роли оркестратора, четко вызывая свои внутренние компоненты для выполнения задач.
 
-### 4.3.4 Running Instance and Analysis
+### 4.3.4 Запуск экземпляра и анализ
 
-The complete code can also be found in the `code` folder of this book's accompanying code repository; here we only demonstrate the final results.
+Полный код также можно найти в`code`папка репозитория сопроводительного кода этой книги; здесь мы демонстрируем только окончательные результаты.
 
 ````bash
 --- Starting to Process Question ---
@@ -815,12 +815,12 @@ Question: A fruit store sold 15 apples on Monday. The number of apples sold on T
 --- Generating Plan ---
 🧠 Calling xxxx model...
 ✅ Large language model response successful:
-```python
-["Calculate Monday's apple sales: 15", "Calculate Tuesday's apple sales: Monday's quantity × 2 = 15 × 2 = 30", "Calculate Wednesday's apple sales: Tuesday's quantity - 5 = 30 - 5 = 25", "Calculate total sales for three days: Monday + Tuesday + Wednesday = 15 + 30 + 25 = 70"]
+```питон
+["Рассчитать продажи яблок в понедельник: 15", "Рассчитать продажи яблок во вторник: количество в понедельник × 2 = 15 × 2 = 30", "Рассчитать продажи яблок в среду: количество во вторник - 5 = 30 - 5 = 25", "Рассчитать общий объем продаж за три дня: понедельник + вторник + среда = 15 + 30 + 25 = 70"]
 ```
 ✅ Plan Generated:
-```python
-["Calculate Monday's apple sales: 15", "Calculate Tuesday's apple sales: Monday's quantity × 2 = 15 × 2 = 30", "Calculate Wednesday's apple sales: Tuesday's quantity - 5 = 30 - 5 = 25", "Calculate total sales for three days: Monday + Tuesday + Wednesday = 15 + 30 + 25 = 70"]
+```питон
+["Рассчитать продажи яблок в понедельник: 15", "Рассчитать продажи яблок во вторник: количество в понедельник × 2 = 15 × 2 = 30", "Рассчитать продажи яблок в среду: количество во вторник - 5 = 30 - 5 = 25", "Рассчитать общий объем продаж за три дня: понедельник + вторник + среда = 15 + 30 + 25 = 70"]
 ```
 
 --- Executing Plan ---
@@ -853,33 +853,33 @@ Question: A fruit store sold 15 apples on Monday. The number of apples sold on T
 Final Answer: 70
 ````
 
-From the above output log, we can clearly see the workflow of the Plan-and-Solve paradigm:
+Из приведенного выше журнала результатов мы ясно видим рабочий процесс парадигмы «Планируй и решай»:
 
-1. **Planning Phase**: The agent first calls `Planner` and successfully decomposes the complex word problem into a Python list containing four logical steps. This structured plan lays the foundation for subsequent execution.
-2. **Execution Phase**: `Executor` strictly executes step by step according to the generated plan. In each step, it uses historical results as context, ensuring correct information transfer (for example, step 2 correctly uses step 1's result "15", and step 3 also correctly uses step 2's result "30").
-3. **Result**: The entire process is logically clear with explicit steps, and the agent accurately arrives at the correct answer "70".
+1. **Фаза планирования**: агент сначала вызывает «Планировщик» и успешно разлагает сложную задачу на слова в список Python, содержащий четыре логических шага. Этот структурированный план закладывает основу для последующего исполнения.
+2. **Фаза выполнения**: «Исполнитель» строго выполняет шаг за шагом в соответствии с созданным планом. На каждом этапе он использует исторические результаты в качестве контекста, обеспечивая правильную передачу информации (например, шаг 2 правильно использует результат шага 1 «15», а шаг 3 также правильно использует результат шага 2 «30»).
+3. **Результат**: Весь процесс логически понятен и содержит четкие шаги, и агент точно приходит к правильному ответу «70».
 
-## 4.4 Reflection
+## 4.4 Размышления
 
-In the ReAct and Plan-and-Solve paradigms we have already implemented, once the agent completes a task, its workflow ends. However, the initial answers they generate, whether action trajectories or final results, may contain errors or have room for improvement. The core idea of the Reflection mechanism is to introduce a **post-hoc self-correction loop** for the agent, enabling it to review its work, discover deficiencies, and iteratively optimize, just like humans do.
+В парадигмах ReAct и Plan-and-Solve, которые мы уже реализовали, как только агент выполняет задачу, его рабочий процесс завершается. Однако первоначальные ответы, которые они генерируют, будь то траектории действий или конечные результаты, могут содержать ошибки или иметь возможности для улучшения. Основная идея механизма Reflection состоит в том, чтобы ввести для агента **цикл самокоррекции**, позволяющий ему проверять свою работу, выявлять недостатки и итеративно оптимизировать, как это делают люди.
 
-### 4.4.1 Core Idea of Reflection Mechanism
+### 4.4.1 Основная идея механизма отражения
 
-The inspiration for the Reflection mechanism comes from the human learning process: we proofread after completing a first draft and verify after solving a math problem. This idea is embodied in multiple studies, such as the Reflexion framework proposed by Shinn, Noah in 2023<sup>[3]</sup>. Its core workflow can be summarized as a concise three-step loop: **Execute -> Reflect -> Refine**.
+Вдохновением для создания механизма отражения послужил процесс обучения человека: мы проверяем его после завершения первого черновика и проверяем после решения математической задачи. Эта идея воплощена в многочисленных исследованиях, таких как концепция рефлексии, предложенная Шинном и Ноем в 2023 году<sup>[3]</sup>. Его основной рабочий процесс можно резюмировать как краткий трехэтапный цикл: **Выполнить -> Отразить -> Уточнить**.
 
-1. **Execution**: First, the agent attempts to complete the task using familiar methods (such as ReAct or Plan-and-Solve), generating a preliminary solution or action trajectory. This can be seen as a "first draft."
-2. **Reflection**: Next, the agent enters the reflection phase. It calls an independent large language model instance, or one with special prompts, to play the role of a "reviewer." This "reviewer" examines the "first draft" generated in the first step and evaluates it from multiple dimensions, such as:
-   - **Factual Errors**: Is there content that contradicts common sense or known facts?
-   - **Logical Flaws**: Are there inconsistencies or contradictions in the reasoning process?
-   - **Efficiency Issues**: Is there a more direct, more concise path to complete the task?
-   - **Missing Information**: Are some key constraints or aspects of the problem overlooked? Based on the evaluation, it generates structured **Feedback**, pointing out specific problems and improvement suggestions.
-3. **Refinement**: Finally, the agent uses the "first draft" and "feedback" as new context, calls the large language model again, and asks it to revise the first draft based on the feedback content, generating a more complete "revised draft."
+1. **Выполнение**. Сначала агент пытается выполнить задачу, используя знакомые методы (например, ReAct или Plan-and-Solve), генерируя предварительное решение или траекторию действия. Это можно рассматривать как «первый проект».
+2. **Рефлексия**. Затем агент вступает в фазу размышления. Он вызывает независимый экземпляр модели большого языка или экземпляр со специальными подсказками, который играет роль «рецензента». Этот «рецензент» изучает «первый черновик», созданный на первом этапе, и оценивает его по нескольким параметрам, например:
+   - **Фактические ошибки**. Есть ли контент, противоречащий здравому смыслу или известным фактам?
+   - **Логические ошибки**. Есть ли в процессе рассуждения несоответствия или противоречия?
+   - **Проблемы с эффективностью**. Есть ли более прямой и краткий путь выполнения задачи?
+   - **Недостающая информация**. Не упускаются ли из виду некоторые ключевые ограничения или аспекты проблемы? На основе оценки генерируется структурированная **обратная связь**, указывающая на конкретные проблемы и предложения по улучшению.
+3. **Уточнение**. Наконец, агент использует «первый черновик» и «отзыв» в качестве нового контекста, снова вызывает большую языковую модель и просит ее пересмотреть первый черновик на основе содержимого отзыва, создавая более полный «пересмотренный черновик».
 
-As shown in Figure 4.3, this loop can be repeated multiple times until the reflection phase no longer finds new problems or reaches a preset iteration limit. We can formally express this iterative optimization process. Assuming $O_i$ is the output produced by the $i$-th iteration ($O_0$ is the initial output), the reflection model $\pi_{\text{reflect}}$ generates feedback $F_i$ for $O_i$:
+Как показано на рисунке 4.3, этот цикл можно повторять несколько раз, пока на этапе отражения не перестанут обнаруживаться новые проблемы или не будет достигнут заданный предел итераций. Мы можем формально выразить этот итеративный процесс оптимизации. Предполагая, что $O_i$ — это результат $i$-й итерации ($O_0$ — это начальный результат), модель отражения $\pi_{\text{reflect}}$ генерирует обратную связь $F_i$ для $O_i$:
 $$
 F_i = \pi_{\text{reflect}}(\text{Task}, O_i)
 $$
-Subsequently, the refinement model $\pi_{\text{refine}}$ combines the original task, the previous version's output, and feedback to generate a new version's output $O_{i+1}$:
+Впоследствии уточняющая модель $\pi_{\text{refine}}$ объединяет исходную задачу, выходные данные предыдущей версии и обратную связь для создания выходных данных новой версии $O_{i+1}$:
 $$
 O_{i+1} = \pi_{\text{refine}}(\text{Task}, O_i, F_i)
 $$
@@ -888,30 +888,30 @@ $$
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/4-figures/4-3.png" alt="Execute-Reflect-Refine iterative loop in Reflection mechanism" width="70%"/>
-<p>Figure 4.3 Execute-Reflect-Refine Iterative Loop in Reflection Mechanism</p>
+<p>Рисунок 4.3. Итерационный цикл «Выполнение-Отражение-Уточнение» в механизме отражения</p>
 </div>
 
 
 
-Compared to the previous two paradigms, the value of Reflection lies in:
+По сравнению с двумя предыдущими парадигмами ценность Reflection заключается в:
 
-- It provides the agent with an internal error correction loop, making it no longer completely dependent on external tool feedback (ReAct's Observation), thus able to correct higher-level logical and strategic errors.
-- It transforms one-time task execution into a continuous optimization process, significantly improving the final success rate and answer quality for complex tasks.
-- It builds a temporary **"short-term memory"** for the agent. The entire "execute-reflect-refine" trajectory forms a valuable experience record; the agent not only knows the final answer but also remembers how it iterated from a flawed first draft to the final version. Furthermore, this memory system can also be **multimodal**, allowing the agent to reflect on and revise outputs beyond text (such as code, images, etc.), laying the foundation for building more powerful multimodal agents.
+- Он предоставляет агенту внутренний цикл исправления ошибок, что делает его более не полностью зависимым от обратной связи с внешним инструментом (наблюдение ReAct), что дает возможность исправлять логические и стратегические ошибки более высокого уровня.
+- Он превращает выполнение разовых задач в непрерывный процесс оптимизации, значительно повышая конечный показатель успеха и качество ответов на сложные задачи.
+- Он создает временную **"краткосрочную память"** для агента. Вся траектория «выполнить-обдумать-доработать» формирует ценный опыт; агент не только знает окончательный ответ, но и помнит, как он прошел путь от ошибочного первого черновика до окончательной версии. Более того, эта система памяти также может быть **мультимодальной**, позволяя агенту размышлять и пересматривать выходные данные, выходящие за рамки текста (например, код, изображения и т. д.), закладывая основу для создания более мощных мультимодальных агентов.
 
-### 4.4.2 Case Setting and Memory Module Design
+### 4.4.2 Расположение корпуса и конструкция модуля памяти
 
-To embody the Reflection mechanism in practice, we will introduce a memory management mechanism, because reflection usually corresponds to information storage and retrieval. If the context is long enough, having the "reviewer" directly obtain all information and then reflect often introduces a lot of redundant information. In this practical step, we mainly complete **code generation and iterative optimization**.
+Чтобы реализовать механизм Reflection на практике, мы введем механизм управления памятью, поскольку отражение обычно соответствует хранению и поиску информации. Если контекст достаточно длинный, «рецензент» напрямую получает всю информацию, а затем размышляет, что часто приводит к появлению большого количества избыточной информации. На этом практическом этапе мы в основном завершаем **генерацию кода и итеративную оптимизацию**.
 
-The goal task for this step is: "Write a Python function to find all prime numbers between 1 and n."
+Цель этого шага: «Написать функцию Python для поиска всех простых чисел от 1 до n».
 
-This task is an excellent scenario for testing the Reflection mechanism:
+Эта задача — отличный сценарий для тестирования механизма Reflection:
 
-1. **Clear Optimization Path Exists**: The code initially generated by the large language model is likely a simple but inefficient recursive implementation.
-2. **Clear Reflection Points**: Through reflection, problems like "excessively high time complexity" or "redundant calculations" can be discovered.
-3. **Clear Optimization Direction**: Based on feedback, it can be optimized to a more efficient iterative version or a version using the memoization pattern.
+1. **Существует четкий путь оптимизации**. Код, изначально сгенерированный большой языковой моделью, скорее всего, представляет собой простую, но неэффективную рекурсивную реализацию.
+2. **Четкие точки для размышления**. Благодаря размышлению можно обнаружить такие проблемы, как «чрезмерно высокая временная сложность» или «избыточные вычисления».
+3. **Четкое направление оптимизации**. На основе отзывов его можно оптимизировать до более эффективной итеративной версии или версии, использующей шаблон запоминания.
 
-The core of Reflection lies in iteration, and the prerequisite for iteration is the ability to remember previous attempts and received feedback. Therefore, a "short-term memory" module is essential for implementing this paradigm. This memory module will be responsible for storing the complete trajectory of each "execute-reflect" loop.
+Суть Reflection заключается в итерации, а необходимым условием для итерации является способность запоминать предыдущие попытки и полученные отзывы. Поэтому для реализации этой парадигмы необходим модуль «краткосрочной памяти». Этот модуль памяти будет отвечать за хранение полной траектории каждого цикла «выполнение-отражение».
 
 ```python
 from typing import List, Dict, Any, Optional
@@ -963,24 +963,24 @@ class Memory:
         return None
 ```
 
-The design of this `Memory` class is relatively concise, with the main structure as follows:
+Дизайн этого`Memory`Класс относительно краток, его основная структура выглядит следующим образом:
 
-- Uses a list `records` to store each action and reflection in order.
-- The `add_record` method is responsible for adding new entries to memory.
-- The `get_trajectory` method is the core; it "serializes" the memory trajectory into a text segment that can be directly inserted into subsequent prompts, providing complete context for the model's reflection and optimization.
-- `get_last_execution` makes it convenient to obtain the latest "first draft" for reflection.
+- Использует список «записей» для хранения каждого действия и отражения по порядку.
+- Метод `add_record` отвечает за добавление новых записей в память.
+- Метод get_trajectory — это ядро; он «сериализует» траекторию памяти в текстовый сегмент, который можно напрямую вставлять в последующие подсказки, обеспечивая полный контекст для отражения и оптимизации модели.
+- `get_last_execution` позволяет получить последний «первый черновик» для размышления.
 
 
 
-### 4.4.3 Coding Implementation of Reflection Agent
+### 4.4.3 Кодирование реализации агента отражения
 
-With the `Memory` module as a foundation, we can now proceed to build the core logic of `ReflectionAgent`. The entire agent's workflow will revolve around the "execute-reflect-refine" loop we discussed earlier and guide the large language model to play different roles through carefully designed prompts.
+С`Memory`модуль в качестве основы, теперь мы можем приступить к созданию основной логики`ReflectionAgent`. Весь рабочий процесс агента будет вращаться вокруг цикла «выполнить-отразить-уточнить», который мы обсуждали ранее, и направлять большую языковую модель на выполнение различных ролей с помощью тщательно разработанных подсказок.
 
-(1) Prompt Design
+(1) Быстрый дизайн
 
-Unlike previous paradigms, the Reflection mechanism requires multiple prompts for different roles to work together.
+В отличие от предыдущих парадигм, механизм отражения требует нескольких запросов для совместной работы разных ролей.
 
-1. **Initial Execution Prompt**: This is the prompt for the agent's first attempt to solve the problem, with relatively straightforward content, only requiring the model to complete the specified task.
+1. **Приглашение к начальному выполнению**: это приглашение для первой попытки агента решить проблему, с относительно простым содержанием, требующее только от модели выполнения указанной задачи.
 
 ```bash
 INITIAL_PROMPT_TEMPLATE = """
@@ -993,7 +993,7 @@ Please output the code directly without any additional explanations.
 """
 ```
 
-2. **Reflection Prompt**: This prompt is the soul of the Reflection mechanism. It instructs the model to play the role of a "code reviewer," critically analyze the code generated in the previous round, and provide specific, actionable feedback.
+2. **Подсказка к размышлению**: эта подсказка является душой механизма отражения. Он предписывает модели играть роль «ревьюера кода», критически анализировать код, созданный в предыдущем раунде, и предоставлять конкретную, полезную обратную связь.
 
 ````bash
 REFLECT_PROMPT_TEMPLATE = """
@@ -1004,8 +1004,8 @@ Your task is to review the following Python code and focus on finding its main b
 {task}
 
 # Code to Review:
-```python
-{code}
+```питон
+{код}
 ```
 
 Please analyze the time complexity of this code and consider whether there is an <strong>algorithmically superior</strong> solution to significantly improve performance.
@@ -1016,7 +1016,7 @@ Please output your feedback directly without any additional explanations.
 """
 ````
 
-3. **Refinement Prompt**: After receiving feedback, this prompt will guide the model to revise and optimize the original code based on the feedback content.
+3. **Запрос на уточнение**: после получения отзыва этот запрос поможет модели пересмотреть и оптимизировать исходный код на основе содержания отзыва.
 
 ````bash
 
@@ -1037,9 +1037,9 @@ Please output the optimized code directly without any additional explanations.
 """
 ````
 
-(2) Agent Encapsulation and Implementation
+(2) Инкапсуляция и реализация агента
 
-Now, we will integrate this set of prompt logic and the `Memory` module into the `ReflectionAgent` class.
+Теперь мы интегрируем этот набор логики подсказок и`Memory`модуль в`ReflectionAgent`сорт.
 
 ```python
 # Assume llm_client.py and memory.py are already defined
@@ -1099,9 +1099,9 @@ class ReflectionAgent:
 
 ```
 
-### 4.4.4 Running Instance and Analysis
+### 4.4.4 Запуск экземпляра и анализ
 
-The complete code can also be found in the `code` folder of this book's accompanying code repository; here we provide an output instance.
+Полный код также можно найти в`code`папка репозитория сопроводительного кода этой книги; здесь мы предоставляем экземпляр вывода.
 
 ````python
 --- Starting to Process Task ---
@@ -1110,10 +1110,10 @@ Task: Write a Python function to find all prime numbers between 1 and n.
 --- Performing Initial Attempt ---
 🧠 Calling xxxxxx model...
 ✅ Large language model response successful:
-```python
-def find_primes(n):
+```питон
+защита find_primes(n):
     ...
-    return primes
+    возвращать простые числа
 ```
 📝 Memory updated, added an 'execution' record.
 
@@ -1127,20 +1127,20 @@ The current code has a time complexity of O(n * sqrt(n)). While this implementat
 It is recommended to use the Sieve of Eratosthenes algorithm, which has a time complexity of O(n log(log n)) and can significantly improve the efficiency of finding prime numbers.
 
 Improved code as follows:
-```python
-def find_primes(n):
+```питон
+защита find_primes(n):
     ...
-    return primes
+    возвращать простые числа
 ```
 📝 Memory updated, added a 'reflection' record.
 
 -> Performing Refinement...
 🧠 Calling xxxxxx model...
 ✅ Large language model response successful:
-```python
-def find_primes(n):
+```питон
+защита find_primes(n):
     ...
-    return primes
+    возвращать простые числа
 ```
 📝 Memory updated, added an 'execution' record.
 
@@ -1161,150 +1161,150 @@ However, these improvements are not necessary for most application scenarios bec
 
 --- Task Completed ---
 Final Generated Code:
-```python
-def find_primes(n):
+```питон
+защита find_primes(n):
     """
-    Finds all prime numbers between 1 and n using the Sieve of Eratosthenes algorithm.
+    Находит все простые числа от 1 до n, используя алгоритм «Решето Эратосфена».
 
-    :param n: The upper limit of the range to find prime numbers.
-    :return: A list of all prime numbers between 1 and n.
+:param n: Верхний предел диапазона поиска простых чисел.
+    :return: Список всех простых чисел от 1 до n.
     """
-    if n < 2:
-        return []
+    если n < 2:
+        вернуть []
 
-    is_prime = [True] * (n + 1)
-    is_prime[0] = is_prime[1] = False
+is_prime = [Истина] * (n + 1)
+    is_prime[0] = is_prime[1] = ложь
 
-    p = 2
-    while p * p <= n:
-        if is_prime[p]:
-            for i in range(p * p, n + 1, p):
-                is_prime[i] = False
-        p += 1
+р = 2
+    в то время как p * p <= n:
+        если is_prime[p]:
+            для i в диапазоне (p * p, n + 1, p):
+                is_prime[i] = Ложь
+        р += 1
 
-    primes = [num for num in range(2, n + 1) if is_prime[num]]
-    return primes
+простые числа = [число для числа в диапазоне (2, n + 1), если is_prime[num]]
+    возвращать простые числа
 ```
 ````
 
-This running instance demonstrates how the Reflection mechanism drives the agent to perform deep optimization:
+Этот запущенный экземпляр демонстрирует, как механизм отражения заставляет агента выполнять глубокую оптимизацию:
 
-1. **Effective "Criticism" is the Prerequisite for Optimization**: In the first round of reflection, because we used an "extremely strict" and "focused on algorithm efficiency" prompt, the agent was not satisfied with the functionally correct initial code but precisely pointed out its `O(n * sqrt(n))` time complexity bottleneck and proposed algorithm-level improvement suggestions—the Sieve of Eratosthenes.
-2. **Iterative Improvement**: After receiving clear feedback, the agent successfully implemented a more efficient sieve method in the refinement phase, reducing algorithm complexity to `O(n log log n)`, completing the first meaningful self-iteration.
-3. **Convergence and Termination**: In the second round of reflection, facing the already efficient sieve method, the agent demonstrated deeper knowledge. It not only affirmed the current algorithm's efficiency but even mentioned more advanced optimization directions like segmented sieve, but ultimately made the correct judgment of "no improvement needed in general cases." This judgment triggered our termination condition, allowing the optimization process to converge.
+1. **Эффективная «критика» является предпосылкой для оптимизации**: в первом раунде размышлений, поскольку мы использовали «чрезвычайно строгую» и «ориентированную на эффективность алгоритма» подсказку, агент не был удовлетворен функционально правильным исходным кодом, но точно указал на узкое место временной сложности «O(n * sqrt(n))» и предложил предложения по улучшению на уровне алгоритма — решето Эратосфена.
+2. **Итеративное улучшение**: получив четкую обратную связь, агент успешно реализовал более эффективный метод сита на этапе уточнения, уменьшив сложность алгоритма до «O(n log log n)», завершив первую значимую самоитерацию.
+3. **Конвергенция и прекращение**: во втором раунде размышлений, столкнувшись с уже эффективным методом сита, агент продемонстрировал более глубокие знания. Он не только подтвердил эффективность текущего алгоритма, но даже упомянул более продвинутые направления оптимизации, такие как сегментированное сито, но в конечном итоге сделал правильное заключение: «в общих случаях улучшения не требуются». Это решение вызвало наше условие завершения, позволив процессу оптимизации сойтись.
 
-This case fully proves that a well-designed Reflection mechanism's value lies not only in fixing errors but more importantly in **driving solutions to achieve step-wise improvements in quality and efficiency**, making it one of the key technologies for building complex, high-quality agents.
+Этот случай полностью доказывает, что ценность хорошо спроектированного механизма отражения заключается не только в исправлении ошибок, но, что более важно, в **разработке решений для поэтапного улучшения качества и эффективности**, что делает его одной из ключевых технологий для создания сложных, высококачественных агентов.
 
-### 4.4.5 Cost-Benefit Analysis of Reflection Mechanism
+### 4.4.5 Анализ затрат и выгод механизма отражения
 
-Although the Reflection mechanism performs excellently in improving task solution quality, this capability is not without cost. In practical applications, we need to weigh the benefits it brings against the corresponding costs.
+Хотя механизм Reflection отлично работает для повышения качества решения задач, эта возможность не обходится без затрат. В практических приложениях нам необходимо сопоставить выгоды, которые это приносит, с соответствующими затратами.
 
-(1) Main Costs
+(1) Основные затраты
 
-1. **Increased Model Call Overhead**: This is the most direct cost. Each iteration requires at least two additional large language model calls (one for reflection, one for refinement). If iterating multiple rounds, API call costs and computational resource consumption will increase exponentially.
+1. **Увеличенные накладные расходы на вызов модели**: это самые прямые затраты. Каждая итерация требует как минимум двух дополнительных вызовов большой языковой модели (один для отражения, другой для уточнения). При повторении нескольких раундов затраты на вызовы API и потребление вычислительных ресурсов возрастут в геометрической прогрессии.
 
-2. **Significantly Increased Task Latency**: Reflection is a serial process; each round of refinement must wait for the previous round's reflection to complete. This significantly extends the total task time, making it unsuitable for scenarios with high real-time requirements.
+2. **Значительно увеличенная задержка выполнения задач**. Отражение — это последовательный процесс; каждый раунд уточнения должен ждать завершения отражения предыдущего раунда. Это значительно увеличивает общее время выполнения задачи, что делает ее непригодной для сценариев с высокими требованиями к реальному времени.
 
-3. **Increased Prompt Engineering Complexity**: As our case demonstrates, the success of Reflection largely depends on high-quality, targeted prompts. Designing and debugging effective prompts for different stages like "execution," "reflection," and "refinement" requires more development effort.
+3. **Повышенная сложность разработки подсказок**. Как показывает наш случай, успех Reflection во многом зависит от качественных и целенаправленных подсказок. Проектирование и отладка эффективных подсказок для различных этапов, таких как «выполнение», «обдумывание» и «уточнение», требует больше усилий при разработке.
 
-(2) Core Benefits
+(2) Основные преимущества
 
-1. **Leap in Solution Quality**: The greatest benefit is that it can iteratively optimize a "qualified" initial solution into an "excellent" final solution. This improvement from functionally correct to performance-efficient, from rough logic to rigorous logic, is crucial in many critical tasks.
+1. **Скачок в качестве решения**. Самым большим преимуществом является возможность итеративной оптимизации «качественного» начального решения до «отличного» конечного решения. Это улучшение от функциональной корректности к эффективности производительности, от грубой логики к строгой логике имеет решающее значение во многих критически важных задачах.
 
-2. **Enhanced Robustness and Reliability**: Through internal self-correction loops, the agent can discover and fix potential logical flaws, factual errors, or improper boundary case handling in the initial solution, greatly improving the reliability of the final result.
+2. **Повышенная устойчивость и надежность**. Благодаря внутренним циклам самокоррекции агент может обнаруживать и исправлять потенциальные логические ошибки, фактические ошибки или неправильную обработку граничных случаев в первоначальном решении, что значительно повышает надежность конечного результата.
 
-In summary, the Reflection mechanism is a typical "cost for quality" strategy. It is very suitable for scenarios that **have extremely high requirements for the quality, accuracy, and reliability of final results, and have relatively relaxed requirements for task completion real-time performance**. For example:
+Подводя итог, можно сказать, что механизм отражения представляет собой типичную стратегию «цена за качество». Он очень подходит для сценариев, в которых **чрезвычайно высокие требования к качеству, точности и надежности конечных результатов и относительно мягкие требования к производительности выполнения задач в реальном времени**. Например:
 
-- Generating critical business code or technical reports.
-- Conducting complex logical reasoning in scientific research.
-- Decision support systems requiring deep analysis and planning.
+- Создание критического бизнес-кода или технических отчетов.
+- Проведение сложных логических рассуждений в научных исследованиях.
+- Системы поддержки принятия решений, требующие глубокого анализа и планирования.
 
-Conversely, if the application scenario requires quick responses, or a "roughly correct" answer is already sufficient, using lighter ReAct or Plan-and-Solve paradigms may be a more cost-effective choice.
+И наоборот, если сценарий приложения требует быстрых ответов или «приблизительно правильного» ответа уже достаточно, использование более легких парадигм ReAct или Plan-and-Solve может быть более экономичным выбором.
 
-## 4.5 Chapter Summary
+## 4.5 Краткое содержание главы
 
-In this chapter, building on the large language model knowledge mastered in Chapter 3, we coded and implemented three classic industry agent construction paradigms from scratch through "building wheels ourselves": ReAct, Plan-and-Solve, and Reflection. We not only explored their core working principles but also deeply understood their respective advantages, limitations, and applicable scenarios through specific practical cases.
+В этой главе, опираясь на обширные знания языковых моделей, полученные в главе 3, мы закодировали и реализовали с нуля три классические парадигмы построения отраслевых агентов, «создавая колеса самостоятельно»: ReAct, Plan-and-Solve и Reflection. Мы не только изучили их основные принципы работы, но и глубоко поняли их соответствующие преимущества, ограничения и применимые сценарии на конкретных практических примерах.
 
-**Core Knowledge Review:**
+**Обзор основных знаний:**
 
-1. ReAct: We built a ReAct agent that can interact with the external world. Through the dynamic loop of "thought-action-observation," it successfully used search engines to answer real-time questions that its own knowledge base couldn't cover. Its core advantages lie in **environmental adaptability** and **dynamic error correction capability**, making it the first choice for handling exploratory tasks requiring external tool input.
-2. Plan-and-Solve: We implemented a Plan-and-Solve agent that plans first then executes, and used it to solve math word problems requiring multi-step reasoning. It decomposes complex tasks into clear steps, then executes them one by one. Its core advantages lie in **structure** and **stability**, particularly suitable for handling tasks with determined logical paths and intensive internal reasoning.
-3. Reflection (Self-Reflection and Iteration): We built a Reflection agent with self-optimization capabilities. By introducing the "execute-reflect-refine" iterative loop, it successfully optimized an initially inefficient code solution into an algorithmically superior high-performance version. Its core value lies in **significantly improving solution quality**, suitable for scenarios with extremely high requirements for result accuracy and reliability.
+1. ReAct: Мы создали агент ReAct, который может взаимодействовать с внешним миром. Посредством динамического цикла «мысль-действие-наблюдение» компания успешно использовала поисковые системы для ответа на вопросы в режиме реального времени, которые не могла охватить ее собственная база знаний. Его основные преимущества заключаются в **адаптивности к окружающей среде** и **возможности динамического исправления ошибок**, что делает его лучшим выбором для решения исследовательских задач, требующих ввода внешних инструментов.
+2. «Планируй и решай». Мы реализовали агент «Планируй и решай», который сначала планирует, а затем выполняет, и использовали его для решения математических словесных задач, требующих многоэтапного рассуждения. Он разбивает сложные задачи на четкие шаги, а затем выполняет их один за другим. Его основные преимущества заключаются в **структуре** и **стабильности**, что особенно удобно для решения задач с определенными логическими путями и интенсивным внутренним рассуждением.
+3. Отражение (саморефлексия и итерация). Мы создали агент отражения с возможностями самооптимизации. Введя итеративный цикл «выполнить-отразить-уточнить», он успешно оптимизировал изначально неэффективное кодовое решение до алгоритмически превосходной высокопроизводительной версии. Его основная ценность заключается в **значительном улучшении качества решений**, подходящих для сценариев с чрезвычайно высокими требованиями к точности и надежности результатов.
 
-The three paradigms explored in this chapter represent three different strategies for agents to solve problems, as shown in Table 4.1. In practical applications, which one to choose depends on the core requirements of the task:
+Три парадигмы, рассмотренные в этой главе, представляют собой три разные стратегии решения проблем агентами, как показано в таблице 4.1. В практических приложениях выбор зависит от основных требований задачи:
 
 <div align="center">
-<p>Table 4.1 Selection Strategy for Different Agent Loops</p>
+<p>Таблица 4.1. Стратегия выбора для различных агентских циклов</p>
 <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/4-figures/4-4.png" alt="" width="70%"/>
 </div>
 
-At this point, we have mastered the core technologies for building individual agents. To transition knowledge and gain deeper insights into practical applications, in the next section we will explore how to use different low-code platforms and lightweight code solutions for building agents.
+На данный момент мы освоили основные технологии создания отдельных агентов. Чтобы передать знания и получить более глубокое понимание практических приложений, в следующем разделе мы рассмотрим, как использовать различные платформы с низким кодированием и решения с облегченным кодом для создания агентов.
 
-## Exercises
+## Упражнения
 
-> **Note**: Some exercises do not have standard answers; the focus is on cultivating learners' comprehensive understanding and practical ability in agent paradigm design.
+> **Примечание**. Некоторые упражнения не имеют стандартных ответов; основное внимание уделяется развитию у учащихся всестороннего понимания и практических способностей в разработке парадигм агентов.
 
-1. This chapter introduced three classic agent paradigms: `ReAct`, `Plan-and-Solve`, and `Reflection`. Please analyze:
+1. В этой главе были представлены три классические парадигмы агентов: «ReAct», «Plan-and-Solve» и «Reflection». Пожалуйста, проанализируйте:
 
-   - What are the essential differences in how these three paradigms organize "thinking" and "action"?
-   - If you were to design a "smart home control assistant" (needs to control lights, air conditioning, curtains, and other devices, and automatically adjust based on user habits), which paradigm would you choose as the basic architecture? Why?
-   - Can these three paradigms be combined? If so, please try to design a hybrid paradigm agent architecture and explain its applicable scenarios.
+   - Каковы существенные различия в том, как эти три парадигмы организуют «мышление» и «действие»?
+   - Если бы вам пришлось разработать «помощника по управлению умным домом» (который должен управлять освещением, кондиционером, шторами и другими устройствами и автоматически настраиваться в зависимости от привычек пользователя), какую парадигму вы бы выбрали в качестве базовой архитектуры? Почему?
+   - Можно ли объединить эти три парадигмы? Если да, попробуйте спроектировать архитектуру агента гибридной парадигмы и объяснить применимые сценарии ее применения.
 
-2. In the `ReAct` implementation in Section 4.2, we used regular expressions to parse the large language model's output (such as `Thought` and `Action`). Please consider:
+2. В реализации ReAct в разделе 4.2 мы использовали регулярные выражения для анализа выходных данных большой языковой модели (таких как «Мысль» и «Действие»). Пожалуйста, учтите:
 
-   - What potential fragilities exist in the current parsing method? Under what circumstances might it fail?
-   - Besides regular expressions, what are some more robust output parsing solutions?
-   - Try modifying the code in this chapter to use a more reliable output format, and compare the pros and cons of the two approaches.
+   - Какие потенциальные уязвимости существуют в текущем методе синтаксического анализа? При каких обстоятельствах это может потерпеть неудачу?
+   - Помимо регулярных выражений, какие есть более надежные решения для анализа вывода?
+   - Попробуйте изменить код в этой главе, чтобы использовать более надежный формат вывода, и сравните плюсы и минусы двух подходов.
 
-3. Tool invocation is one of the core capabilities of modern agents. Based on the `ToolExecutor` design in Section 4.2.2, please complete the following extension practice:
+3. Вызов инструмента — одна из основных возможностей современных агентов. На основе конструкции ToolExecutor, описанной в разделе 4.2.2, выполните следующее расширение:
 
-   > **Note**: This is a hands-on practice question; it is recommended to actually write code.
+> **Примечание**. Это практический вопрос; рекомендуется писать код.
 
-   - Add a "calculator" tool to the `ReAct` agent so it can handle complex mathematical calculation problems (such as "Calculate the result of `(123 + 456) × 789 / 12 = ?`").
-   - Design and implement a "tool selection failure" handling mechanism: when the agent repeatedly calls the wrong tool or provides wrong parameters, how should the system guide it to correct?
-   - Consider: If the number of callable tools increases to 50 or even 100, will the current tool description method still work effectively? From an engineering perspective, how can we optimize the organization and retrieval mechanism of tools when the number of callable tools significantly increases with business needs?
+   - Добавьте к агенту ReAct инструмент «калькулятор», чтобы он мог решать сложные математические задачи (например, «Вычислить результат `(123 + 456) × 789/12 = ?`»).
+   - Разработайте и внедрите механизм обработки «ошибки выбора инструмента»: когда агент неоднократно вызывает неправильный инструмент или предоставляет неверные параметры, как система должна направить его на исправление?
+   - Подумайте: если количество вызываемых инструментов увеличится до 50 или даже 100, будет ли текущий метод описания инструментов по-прежнему работать эффективно? С инженерной точки зрения, как мы можем оптимизировать организацию и механизм поиска инструментов, когда количество вызываемых инструментов значительно увеличивается вместе с потребностями бизнеса?
 
-4. The `Plan-and-Solve` paradigm decomposes tasks into two stages: "planning" and "execution." Please analyze in depth:
+4. Парадигма «Планируй и решай» разбивает задачи на два этапа: «планирование» и «исполнение». Пожалуйста, проанализируйте внимательно:
 
-   - In the implementation in Section 4.3, the plan generated in the planning phase is "static" (generated once, not modifiable). If during execution it is found that a certain step cannot be completed or the result does not meet expectations, how should a "dynamic replanning" mechanism be designed?
-   - Compare `Plan-and-Solve` with `ReAct`: When handling a task like "booking a business trip from Beijing to Shanghai (including flights, hotels, car rental)," which paradigm is more suitable? Why?
-   - Try designing a "hierarchical planning" system: first generate a high-level abstract plan, then generate detailed sub-plans for each high-level step. What advantages does this design have?
+   - В реализации, описанной в разделе 4.3, план, созданный на этапе планирования, является «статическим» (создается один раз и не подлежит изменению). Если в ходе выполнения обнаруживается, что определенный шаг не может быть выполнен или результат не соответствует ожиданиям, как следует спроектировать механизм «динамического перепланирования»?
+   - Сравните «Планируй и решай» с «ReAct»: при решении такой задачи, как «бронирование деловой поездки из Пекина в Шанхай (включая авиабилеты, отели, аренду автомобиля)», какая парадигма больше подходит? Почему?
+   - Попробуйте разработать систему «иерархического планирования»: сначала создайте абстрактный план высокого уровня, затем создайте подробные подпланы для каждого шага высокого уровня. Какие преимущества имеет данная конструкция?
 
-5. The `Reflection` mechanism improves output quality through the "execute-reflect-refine" loop. Please consider:
+5. Механизм Reflection улучшает качество вывода за счет цикла «выполнить-отразить-уточнить». Пожалуйста, учтите:
 
-   - In the code generation case in Section 4.4, the same model is used for different stages. If two different models are used (for example, using a more powerful model for reflection and a faster model for execution), what impact would it have?
-   - The termination condition for the `Reflection` mechanism is "feedback contains **no improvement needed**" or "maximum iteration count reached." Is this design reasonable? Can a more intelligent termination condition be designed?
-   - Suppose you want to build an "academic paper writing assistant" that can generate drafts and continuously optimize paper content. Please design a multi-dimensional Reflection mechanism that reflects and improves from multiple perspectives such as paragraph logic, method innovation, language expression, and citation standards.
+   - В случае генерации кода в разделе 4.4 одна и та же модель используется на разных этапах. Если используются две разные модели (например, более мощная модель для отражения и более быстрая модель для выполнения), какое влияние это окажет?
+   - Условием завершения работы механизма Reflection является «отзыв содержит **улучшение не требуется**» или «достигнуто максимальное количество итераций». Разумна ли такая конструкция? Можно ли разработать более разумное условие завершения?
+   - Предположим, вы хотите создать «помощника по написанию академических статей», который может создавать черновики и постоянно оптимизировать содержание статьи. Пожалуйста, разработайте многомерный механизм отражения, который отражает и улучшается с разных точек зрения, таких как логика абзацев, инновации методов, языковое выражение и стандарты цитирования.
 
-6. Prompt engineering is a key technology affecting the final effect of agents. This chapter demonstrated multiple carefully designed prompt templates. Please analyze:
+6. Оперативная разработка — ключевая технология, влияющая на конечный эффект агентов. В этой главе было продемонстрировано несколько тщательно разработанных шаблонов подсказок. Пожалуйста, проанализируйте:
 
-   - Compare the `ReAct` prompt in Section 4.2.3 and the `Plan-and-Solve` prompt in Section 4.3.2; they obviously have significant differences in structural design. How do these differences serve the core logic of their respective paradigms?
-   - In the `Reflection` prompt in Section 4.4.3, we used a role setting like "you are an extremely strict code review expert." Try modifying this role setting (such as changing it to "you are an open-source project maintainer who values code readability"), observe the changes in output results, and summarize the impact of role settings on agent behavior.
-   - Adding `few-shot` examples to prompts can often significantly improve the model's ability to follow specific formats. Please try adding `few-shot` examples to one of the agents in this chapter and compare the effects.
+   - Сравните подсказку «ReAct» в разделе 4.2.3 и подсказку «Планируй и решай» в разделе 4.3.2; они, очевидно, имеют существенные различия в конструктивном исполнении. Как эти различия служат основной логике соответствующих парадигм?
+   - В подсказке `Reflection` в разделе 4.4.3 мы использовали такой параметр роли, как «вы чрезвычайно строгий эксперт по проверке кода». Попробуйте изменить этот параметр роли (например, изменив его на «вы являетесь специалистом по сопровождению проекта с открытым исходным кодом, который ценит читаемость кода»), наблюдайте за изменениями в выходных результатах и ​​суммируйте влияние параметров роли на поведение агента.
+   - Добавление к подсказкам «несколько примеров» часто может значительно улучшить способность модели следовать определенным форматам. Пожалуйста, попробуйте добавить примеры «несколько раз» к одному из агентов в этой главе и сравните эффекты.
 
-7. An e-commerce startup now hopes to use a "customer service agent" to replace human customer service for cost reduction and efficiency improvement. It needs to have the following functions:
+7. Стартап в сфере электронной коммерции теперь надеется использовать «агента по обслуживанию клиентов», который заменит человеческое обслуживание клиентов для снижения затрат и повышения эффективности. Он должен иметь следующие функции:
 
-   a. Understand the user's refund request reason
+а. Узнайте причину запроса пользователя на возврат средств.
 
-   b. Query the user's order information and logistics status
+б. Запросить информацию о заказе пользователя и статус логистики.
 
-   c. Intelligently judge whether the refund should be approved based on company policy
+в. Разумно определить, следует ли утверждать возврат средств, исходя из политики компании.
 
-   d. Generate a proper reply email and send it to the user's email
+д. Создайте правильное ответное письмо и отправьте его на электронную почту пользователя.
 
-   e. If the judgment decision is somewhat controversial (self-confidence is below a threshold), be able to self-reflect and provide more prudent suggestions
+е. Если решение является несколько спорным (уверенность в себе ниже порогового значения), будьте в состоянии поразмышлять над собой и дать более разумные предложения.
 
-   As the product manager of this product:
-   - Which paradigm (or combination of paradigms) from this chapter would you choose as the core architecture of the system?
-   - What tools does this system need? Please list at least 3 tools and their functional descriptions.
-   - How to design prompts to ensure that the agent's decisions both align with company interests and maintain a friendly attitude toward users?
-   - What risks and challenges might this product face after launch? How can these risks be reduced through technical means?
+Как менеджер по продукту этого продукта:
+   - Какую парадигму (или комбинацию парадигм) из этой главы вы бы выбрали в качестве базовой архитектуры системы?
+   - Какие инструменты нужны этой системе? Пожалуйста, перечислите как минимум 3 инструмента и их функциональные описания.
+   - Как составить подсказки, чтобы решения агента не только соответствовали интересам компании, но и сохраняли дружелюбное отношение к пользователям?
+   - С какими рисками и проблемами может столкнуться этот продукт после запуска? Как можно снизить эти риски с помощью технических средств?
 
-## References
+## Ссылки
 
-[1] Yao S, Zhao J, Yu D, et al. React: Synergizing reasoning and acting in language models[C]//International Conference on Learning Representations (ICLR). 2023.
+[1] Яо С., Чжао Дж., Ю Д. и др. React: Синергия рассуждений и действий в языковых моделях[C] // Международная конференция по обучающим представлениям (ICLR). 2023.
 
-[2] Wang L, Xu W, Lan Y, et al. Plan-and-solve prompting: Improving zero-shot chain-of-thought reasoning by large language models[J]. arXiv preprint arXiv:2305.04091, 2023.
+[2] Ван Л., Сюй В., Лан Ю. и др. Подсказки «планируй и решай»: улучшение нулевой цепочки мыслей с помощью больших языковых моделей[J]. Препринт arXiv arXiv:2305.04091, 2023.
 
-[3] Shinn N, Cassano F, Gopinath A, et al. Reflexion: Language agents with verbal reinforcement learning[J]. Advances in Neural Information Processing Systems, 2023, 36: 8634-8652.
+[3] Шинн Н., Кассано Ф., Гопинатх А. и др. Рефлексия: языковые агенты с обучением вербальному подкреплению [J]. Достижения в области нейронных систем обработки информации, 2023, 36: 8634-8652.
 

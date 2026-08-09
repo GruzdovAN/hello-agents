@@ -1,31 +1,31 @@
 # Weather MCP Server
 
-真实天气查询 MCP 服务器，基于 HelloAgents 框架开发。
+MCP-сервер запроса реальной погоды, разработанный на основе платформы HelloAgents.
 
-## 功能特性
+## Функции
 
-- 🌤️ 实时天气查询
-- 🌍 支持12个中国主要城市
-- 🔄 使用 wttr.in API（无需密钥）
-- 🚀 基于 HelloAgents 框架
+- 🌤️ Запрос погоды в режиме реального времени
+- 🌍 Поддерживает 12 крупных городов Китая
+- 🔄 Используйте API wttr.in (ключ не требуется)
+- 🚀 На основе платформы HelloAgents.
 
-## 安装
+## Установить
 
 ```bash
 pip install hello-agents requests
 ```
 
-## 使用方法
+## Как использовать
 
-### 直接运行
+### Запускать напрямую
 
 ```bash
 python server.py
 ```
 
-### 在 Claude Desktop 中使用
+### Используется в Claude Desktop
 
-编辑 `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) 或 `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+Отредактируйте `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) или `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
@@ -38,39 +38,37 @@ python server.py
 }
 ```
 
-### 在 HelloAgents 中使用
+### Используется в HelloAgents
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
 from hello_agents.tools import MCPTool
 
-agent = SimpleAgent(name="天气助手", llm=HelloAgentsLLM())
+agent = SimpleAgent(name="Помощник погоды", llm=HelloAgentsLLM())
 weather_tool = MCPTool(server_command=["python", "server.py"])
 agent.add_tool(weather_tool)
 
-response = agent.run("北京今天天气怎么样？")
+response = Agent.run("Какая сегодня погода в Пекине?")
 ```
 
-## API 工具
+## Инструменты API
 
 ### get_weather
 
-获取指定城市的当前天气。
+Получить текущую погоду для указанного города.
 
-**参数：**
-- `city` (string): 城市名称（支持中文和英文）
+**Параметры:**
+- `city` (строка): название города (поддерживается китайский и английский языки).
 
-**示例：**
-```json
+**Пример:**```json
 {
-  "city": "北京"
+  «город»: «Пекин»
 }
 ```
 
-**返回：**
-```json
+**возвращаться:**```json
 {
-  "city": "北京",
+  «город»: «Пекин»,
   "temperature": 10.0,
   "feels_like": 9.0,
   "humidity": 94,
@@ -83,22 +81,20 @@ response = agent.run("北京今天天气怎么样？")
 
 ### list_supported_cities
 
-列出所有支持的中文城市。
+Список всех поддерживаемых китайских городов.
 
-**返回：**
-```json
+**возвращаться:**```json
 {
-  "cities": ["北京", "上海", "广州", "深圳", "杭州", "成都", "重庆", "武汉", "西安", "南京", "天津", "苏州"],
+  "города": ["Пекин", "Шанхай", "Гуанчжоу", "Шэньчжэнь", "Ханчжоу", "Чэнду", "Чунцин", "Ухань", "Сиань", "Нанкин", "Тяньцзинь", "Сучжоу"],
   "count": 12
 }
 ```
 
 ### get_server_info
 
-获取服务器信息。
+Получите информацию о сервере.
 
-**返回：**
-```json
+**возвращаться:**```json
 {
   "name": "Weather MCP Server",
   "version": "1.0.0",
@@ -106,17 +102,17 @@ response = agent.run("北京今天天气怎么样？")
 }
 ```
 
-## 支持的城市
+## Поддерживаемые города
 
-北京、上海、广州、深圳、杭州、成都、重庆、武汉、西安、南京、天津、苏州
+Пекин, Шанхай, Гуанчжоу, Шэньчжэнь, Ханчжоу, Чэнду, Чунцин, Ухань, Сиань, Нанкин, Тяньцзинь, Сучжоу
 
-也支持使用英文城市名查询全球任意城市。
+Он также поддерживает использование названий городов на английском языке для запроса любого города в мире.
 
-## 许可证
+## Лицензия
 
 MIT License
 
-## 作者
+## автор
 
 HelloAgents Team
 

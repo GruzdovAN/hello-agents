@@ -1,22 +1,22 @@
 # my_main.py
 from dotenv import load_dotenv
-from my_llm import MyLLM # 注意：这里导入我们自己的类
+from my_llm import MyLLM # Примечание. Импортируйте сюда наш собственный класс.
 
-# 加载环境变量
+# Загрузить переменные среды
 load_dotenv()
 
-# 实例化我们重写的客户端，并指定provider
+# Создайте экземпляр нашего переписанного клиента и укажите поставщика
 llm = MyLLM(provider="modelscope") 
 
-# 准备消息
-messages = [{"role": "user", "content": "你好，请介绍一下你自己。"}]
+# Подготовить сообщение
+messages = [{"role": "user", "content": "Здравствуйте, представьтесь, пожалуйста."}]
 
-# 发起调用，think等方法都已从父类继承，无需重写
+# Initiate call, think и другие методы унаследованы от родительского класса и не требуют переписывания.
 response_stream = llm.think(messages)
 
-# 打印响应
+# Распечатать ответ
 print("ModelScope Response:")
 for chunk in response_stream:
-    # chunk在my_llm库中已经打印过一遍，这里只需要pass即可
+    # Чанк был напечатан один раз в библиотеке my_llm. Вам нужно только пройти здесь.
     # print(chunk, end="", flush=True)
     pass

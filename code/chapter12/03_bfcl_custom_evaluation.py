@@ -1,61 +1,61 @@
 """
-第十二章示例3：BFCL自定义评估
+Глава 12. Пример 3. Пользовательская оценка BFCL
 
-对应文档：12.2.5 在HelloAgents中实现BFCL评估 - 方式3
+Соответствующий документ: 12.2.5 Реализация оценки BFCL в HelloAgents – метод 3
 
-这个示例展示如何使用底层组件进行自定义评估流程。
-适合需要自定义评估流程的场景。
+В этом примере показано, как использовать низкоуровневые компоненты для пользовательского процесса оценки.
+Подходит для сценариев, где требуется индивидуальный процесс оценки.
 """
 
 from hello_agents import SimpleAgent, HelloAgentsLLM
 from hello_agents.evaluation import BFCLDataset, BFCLEvaluator
 
-# 1. 创建智能体
+# 1. Создайте агента
 llm = HelloAgentsLLM()
 agent = SimpleAgent(name="TestAgent", llm=llm)
 
-# 2. 加载数据集
+# 2. Загрузите набор данных
 dataset = BFCLDataset(
     bfcl_data_dir="./temp_gorilla/berkeley-function-call-leaderboard/bfcl_eval/data",
     category="simple_python"
 )
 data = dataset.load()
 
-print(f"✅ 加载了 {len(data)} 个测试样本")
+print(f"✅ {len(data)} загружены тестовые образцы")
 
-# 3. 创建评估器
+# 3. Создайте оценщика
 evaluator = BFCLEvaluator(
     dataset=dataset,
     category="simple_python"
 )
 
-# 4. 运行评估
+# 4. Запустите оценку
 results = evaluator.evaluate(
     agent=agent,
-    max_samples=5  # 只评估5个样本
+    max_samples=5  # Оцените только 5 образцов
 )
 
-# 5. 查看详细结果
-print(f"\n评估结果:")
-print(f"总样本数: {results['total_samples']}")
-print(f"正确样本数: {results['correct_samples']}")
-print(f"准确率: {results['overall_accuracy']:.2%}")
+# 5. Просмотр подробных результатов
+print(f"\nРезультаты оценки:")
+print(f"Общее количество образцов: {results['total_samples']}")
+print(f"Количество правильных образцов: {results['correct_samples']}")
+print(f"Точность: {results['overall_accuracy']:.2%}")
 
-# 6. 查看每个样本的详细结果
-print(f"\n详细结果:")
+# 6. Просмотрите подробные результаты для каждого образца.
+print(f"\nПодробные результаты:")
 for detail in results['detailed_results']:
-    print(f"样本 {detail['sample_id']}:")
-    print(f"  问题: {detail['question'][:50]}...")
-    print(f"  预测: {detail['predicted']}")
-    print(f"  正确答案: {detail['expected']}")
-    print(f"  结果: {'✅ 正确' if detail['success'] else '❌ 错误'}")
+    print(f"Пример {detail['sample_id']}:")
+    print(f"  Вопрос: {подробнее['question'][:50]}...")
+    print(f"  Прогноз: {подробнее['predicted']}")
+    print(f"  Правильный ответ: {подробно['ожидается']}")
+    print(f"  Результат: {'Правильно', если подробно['успех'] иначе '❌ Ошибка'}")
     print()
 
-# 7. 导出结果
+# 7. Экспорт результатов
 evaluator.export_results(
     results,
     output_file="./evaluation_results/bfcl_custom_result.json"
 )
 
-print("✅ 结果已导出到 ./evaluation_results/bfcl_custom_result.json")
+print("✅ Результаты экспортированы в ./evaluation_results/bfcl_custom_result.json.")
 

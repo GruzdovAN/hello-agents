@@ -1,4 +1,4 @@
-"""NPC状态管理器 - 定时批量更新NPC对话"""
+"""Менеджер статуса NPC — регулярные пакетные обновления разговоров с NPC."""
 
 import asyncio
 from datetime import datetime
@@ -6,51 +6,51 @@ from typing import Dict, Optional
 from batch_generator import get_batch_generator
 
 class NPCStateManager:
-    """NPC状态管理器
+    """Менеджер статуса NPC
     
-    功能:
-    1. 定时批量生成NPC对话(降低API成本)
-    2. 缓存当前NPC状态
-    3. 提供状态查询接口
+    Функция:
+    1. Генерируйте разговоры с NPC в пакетном режиме через регулярные промежутки времени (сократите затраты на API).
+    2. Кэшировать текущий статус NPC.
+    3. Предоставьте интерфейс запроса статуса.
     """
     
     def __init__(self, update_interval: int = 30):
-        """初始化状态管理器
+        """Инициализировать государственный менеджер
         
-        Args:
-            update_interval: 更新间隔(秒),默认30秒
+        Аргументы:
+            update_interval: интервал обновления (в секундах), по умолчанию 30 секунд.
         """
         self.update_interval = update_interval
         self.batch_generator = get_batch_generator()
         
-        # 当前状态
+        # Текущий статус
         self.current_dialogues: Dict[str, str] = {}
         self.last_update: Optional[datetime] = None
         self.next_update_time: Optional[datetime] = None
         
-        # 后台任务
+        # Фоновые задачи
         self._update_task: Optional[asyncio.Task] = None
         self._running = False
         
-        print(f"📊 NPC状态管理器初始化完成 (更新间隔: {update_interval}秒)")
+        print(f"📊 Инициализация менеджера статуса NPC завершена (интервал обновления: {update_interval} секунд)")
     
     async def start(self):
-        """启动后台更新任务"""
+        """Запустить задачу фонового обновления"""
         if self._running:
-            print("⚠️  状态管理器已在运行")
+            print("⚠️ Стат-менеджер уже запущен")
             return
         
         self._running = True
-        print("🚀 启动NPC状态自动更新...")
+        print("🚀 Запустить автоматическое обновление статуса NPC...")
         
-        # 立即执行一次更新
+        # Выполните обновление сейчас
         await self._update_npc_states()
         
-        # 启动定时更新任务
+        # Запустить задачу запланированного обновления
         self._update_task = asyncio.create_task(self._auto_update_loop())
     
     async def stop(self):
-        """停止后台更新任务"""
+        """Остановить задачи фонового обновления"""
         if not self._running:
             return
         
@@ -63,10 +63,10 @@ class NPCStateManager:
             except asyncio.CancelledError:
                 pass
         
-        print("🛑 NPC状态自动更新已停止")
+        print("🛑 Автоматическое обновление статуса NPC остановлено.")
     
     async def _auto_update_loop(self):
-        """自动更新循环"""
+        """цикл автоматического обновления"""
         while self._running:
             try:
                 await asyncio.sleep(self.update_interval)
@@ -74,33 +74,33 @@ class NPCStateManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                print(f"❌ 自动更新失败: {e}")
-                # 继续运行,不中断
+                print(f"❌ Не удалось выполнить автоматическое обновление: {e}")
+                # Продолжайте работать без перерыва
     
     async def _update_npc_states(self):
-        """更新NPC状态"""
+        """Обновить статус NPC"""
         try:
-            print(f"\n🔄 [{datetime.now().strftime('%H:%M:%S')}] 开始批量更新NPC对话...")
+            print(f"\n🔄 [{datetime.now().strftime('%H:%M:%S')}] Начать пакетное обновление разговоров с NPC...")
             
-            # 批量生成对话
+            # Генерируйте разговоры в пакетном режиме
             new_dialogues = self.batch_generator.generate_batch_dialogues()
             
-            # 更新状态
+            # обновить статус
             self.current_dialogues = new_dialogues
             self.last_update = datetime.now()
             self.next_update_time = datetime.now()
             
-            # 打印更新结果
-            print("📝 NPC对话已更新:")
+            # Распечатать результаты обновления
+            print("📝 Обновлены диалоги NPC:")
             for npc_name, dialogue in new_dialogues.items():
                 print(f"   - {npc_name}: {dialogue}")
             
         except Exception as e:
-            print(f"❌ 更新NPC状态失败: {e}")
+            print(f"❌ Не удалось обновить статус NPC: {e}.")
     
     def get_current_state(self) -> Dict:
-        """获取当前状态"""
-        # 计算下次更新倒计时
+        """Получить текущий статус"""
+        # Рассчитать обратный отсчет до следующего обновления
         if self.last_update:
             elapsed = (datetime.now() - self.last_update).total_seconds()
             next_update_in = max(0, int(self.update_interval - elapsed))
@@ -114,19 +114,19 @@ class NPCStateManager:
         }
     
     def get_npc_dialogue(self, npc_name: str) -> Optional[str]:
-        """获取指定NPC的当前对话"""
+        """Получить текущий разговор указанного NPC"""
         return self.current_dialogues.get(npc_name)
     
     async def force_update(self):
-        """强制立即更新"""
-        print("⚡ 强制更新NPC状态...")
+        """Принудительное немедленное обновление"""
+        print("⚡ Принудительное обновление статуса NPC...")
         await self._update_npc_states()
 
-# 全局单例
+# Глобальный синглтон
 _state_manager = None
 
 def get_state_manager(update_interval: int = 30) -> NPCStateManager:
-    """获取状态管理器单例"""
+    """Получить синглтон менеджера состояний"""
     global _state_manager
     if _state_manager is None:
         _state_manager = NPCStateManager(update_interval)

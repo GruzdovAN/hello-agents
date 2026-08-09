@@ -1,32 +1,32 @@
-"""实时查看对话日志"""
+"""Просматривайте журналы разговоров в режиме реального времени"""
 
 import os
 import time
 from pathlib import Path
 from datetime import datetime
 
-# 日志目录
+# Каталог журналов
 LOGS_DIR = Path(__file__).parent / "logs"
 today = datetime.now().strftime("%Y-%m-%d")
 LOG_FILE = LOGS_DIR / f"dialogue_{today}.log"
 
 def tail_log_file(filename, interval=1):
-    """实时查看日志文件 (类似tail -f)"""
+    """Просмотр файлов журналов в реальном времени (аналогично Tail -f)"""
     
     print("\n" + "="*60)
-    print(f"📝 实时查看对话日志")
-    print(f"📂 日志文件: {filename}")
+    print(f"📝 Просматривайте журналы разговоров в режиме реального времени")
+    print(f"📂 Файл журнала: {имя файла}")
     print("="*60)
-    print("\n按 Ctrl+C 停止查看\n")
+    print("\nНажмите Ctrl+C, чтобы остановить просмотр\n")
     
-    # 如果文件不存在,等待创建
+    # Если файл не существует, дождитесь создания
     while not filename.exists():
-        print(f"⏳ 等待日志文件创建: {filename}")
+        print(f"⏳ Ожидание создания файла журнала: {filename}")
         time.sleep(interval)
     
-    # 打开文件
+    # открыть файл
     with open(filename, 'r', encoding='utf-8') as f:
-        # 移动到文件末尾
+        # Перейти в конец файла
         f.seek(0, 2)
         
         try:
@@ -37,18 +37,18 @@ def tail_log_file(filename, interval=1):
                 else:
                     time.sleep(interval)
         except KeyboardInterrupt:
-            print("\n\n✅ 停止查看日志")
+            print("\n\n ✅ Прекратить просмотр журналов")
 
 def view_full_log(filename):
-    """查看完整日志"""
+    """Посмотреть полный журнал"""
     
     print("\n" + "="*60)
-    print(f"📝 查看完整对话日志")
-    print(f"📂 日志文件: {filename}")
+    print(f"📝 Посмотреть полный журнал разговоров")
+    print(f"📂 Файл журнала: {имя файла}")
     print("="*60 + "\n")
     
     if not filename.exists():
-        print(f"❌ 日志文件不存在: {filename}")
+        print(f"❌ Файл журнала не существует: {имя файла}.")
         return
     
     with open(filename, 'r', encoding='utf-8') as f:
@@ -56,25 +56,25 @@ def view_full_log(filename):
         print(content)
     
     print("\n" + "="*60)
-    print("✅ 日志查看完成")
+    print("✅ Просмотр журнала завершен")
     print("="*60 + "\n")
 
 def list_log_files():
-    """列出所有日志文件"""
+    """Список всех файлов журналов"""
     
     print("\n" + "="*60)
-    print(f"📂 日志文件列表")
-    print(f"📁 目录: {LOGS_DIR}")
+    print(f"📂 Список файлов журнала")
+    print(f"📁 Каталог: {LOGS_DIR}")
     print("="*60 + "\n")
     
     if not LOGS_DIR.exists():
-        print("❌ 日志目录不存在")
+        print("❌ Каталог журналов не существует.")
         return
     
     log_files = sorted(LOGS_DIR.glob("dialogue_*.log"), reverse=True)
     
     if not log_files:
-        print("📭 暂无日志文件")
+        print("📭 Файлов журналов пока нет.")
         return
     
     for i, log_file in enumerate(log_files, 1):
@@ -82,8 +82,8 @@ def list_log_files():
         size_kb = size / 1024
         mtime = datetime.fromtimestamp(log_file.stat().st_mtime)
         print(f"{i}. {log_file.name}")
-        print(f"   大小: {size_kb:.2f} KB")
-        print(f"   修改时间: {mtime.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"   Размер: {size_kb:.2f} КБ.")
+        print(f"   Время модификации: {mtime.strftime('%Y-%m-%d %H:%M:%S')}")
         print()
 
 if __name__ == "__main__":
@@ -93,21 +93,21 @@ if __name__ == "__main__":
         command = sys.argv[1]
         
         if command == "tail":
-            # 实时查看
+            # Просмотр в реальном времени
             tail_log_file(LOG_FILE)
         elif command == "view":
-            # 查看完整日志
+            # Посмотреть полный журнал
             view_full_log(LOG_FILE)
         elif command == "list":
-            # 列出所有日志
+            # Список всех журналов
             list_log_files()
         else:
-            print(f"❌ 未知命令: {command}")
-            print("\n使用方法:")
-            print("  python view_logs.py tail   # 实时查看日志")
-            print("  python view_logs.py view   # 查看完整日志")
-            print("  python view_logs.py list   # 列出所有日志文件")
+            print(f"❌ Неизвестная команда: {команда}")
+            print("\nИспользование:")
+            print("  python view_logs.py Tail # Просмотр журналов в реальном времени")
+            print("  python view_logs.py view # Просмотр полного журнала")
+            print("  python view_logs.py list # Список всех файлов журналов")
     else:
-        # 默认实时查看
+        # Представление в реальном времени по умолчанию
         tail_log_file(LOG_FILE)
 

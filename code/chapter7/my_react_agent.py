@@ -1,29 +1,29 @@
-MY_REACT_PROMPT = """你是一个具备推理和行动能力的AI助手。你可以通过思考分析问题，然后调用合适的工具来获取信息，最终给出准确的答案。
+MY_REACT_PROMPT = """Вы — помощник искусственного интеллекта, обладающий способностями к рассуждению и действию. Вы можете обдумать и проанализировать проблему, затем использовать соответствующие инструменты для получения информации и, наконец, дать точный ответ.
 
-## 可用工具
-{tools}
+## Доступные инструменты
+{инструменты}
 
-## 工作流程
-请严格按照以下格式进行回应，每次只能执行一个步骤：
+## Рабочий процесс
+Пожалуйста, отвечайте строго в следующем формате, делая только один шаг за раз:
 
-Thought: 你的思考过程，用于分析问题、拆解任务和规划下一步行动。
-Action: 你决定采取的行动，必须是以下格式之一：
-- `{{tool_name}}[{{tool_input}}]` - 调用指定工具
-- `Finish[最终答案]` - 当你有足够信息给出最终答案时
+Мысль: ваш мыслительный процесс для анализа проблем, разбиения задач и планирования следующих шагов.
+Действие: Действие, которое вы решите предпринять, должно быть в одном из следующих форматов:
+- `{{tool_name}}[{{tool_input}}]` - вызвать указанный инструмент
+- `Завершить[окончательный ответ]` - когда у вас достаточно информации, чтобы дать окончательный ответ.
 
-## 重要提醒
-1. 每次回应必须包含Thought和Action两部分
-2. 工具调用的格式必须严格遵循：工具名[参数]
-3. 只有当你确信有足够信息回答问题时，才使用Finish
-4. 如果工具返回的信息不够，继续使用其他工具或相同工具的不同参数
+## Важное напоминание
+1. Каждый ответ должен состоять из двух частей: Мысли и Действия.
+2. Строго соблюдать формат вызова инструмента: имя инструмента [параметр]
+3. Используйте «Готово» только в том случае, если вы уверены, что у вас достаточно информации для ответа на вопрос.
+4. Если информации, возвращаемой инструментом, недостаточно, продолжайте использовать другие инструменты или другие параметры того же инструмента.
 
-## 当前任务
-**Question:** {question}
+## Текущая задача
+**Вопрос:** {вопрос}
 
-## 执行历史
-{history}
+## История выполнения
+{история}
 
-现在开始你的推理和行动：
+Теперь приступайте к рассуждениям и действиям:
 """
 
 import re
@@ -32,7 +32,7 @@ from hello_agents import ReActAgent, HelloAgentsLLM, Config, Message, ToolRegist
 
 class MyReActAgent(ReActAgent):
     """
-    重写的ReAct Agent - 推理与行动结合的智能体
+    Переписанный ReAct Agent — агент, сочетающий рассуждения и действия.
     """
 
     def __init__(
@@ -50,20 +50,20 @@ class MyReActAgent(ReActAgent):
         self.max_steps = max_steps
         self.current_history: List[str] = []
         self.prompt_template = custom_prompt if custom_prompt else MY_REACT_PROMPT
-        print(f"✅ {name} 初始化完成，最大步数: {max_steps}")
+        print(f"✅ Инициализация {name} завершена, максимальное количество шагов: {max_steps}")
 
     def run(self, input_text: str, **kwargs) -> str:
-        """运行ReAct Agent"""
+        """Запустите агент ReAct"""
         self.current_history = []
         current_step = 0
 
-        print(f"\n🤖 {self.name} 开始处理问题: {input_text}")
+        print(f"\n🤖 {self.name} Начать обработку проблемы: {input_text}")
 
         while current_step < self.max_steps:
             current_step += 1
-            print(f"\n--- 第 {current_step} 步 ---")
+            print(f"\n---Шаг {current_step} ---")
 
-            # 1. 构建提示词
+            # 1. Составьте слова-подсказки
             tools_desc = self.tool_registry.get_tools_description()
             history_str = "\n".join(self.current_history)
             prompt = self.prompt_template.format(
@@ -72,29 +72,29 @@ class MyReActAgent(ReActAgent):
                 history=history_str
             )
 
-            # 2. 调用LLM
+            # 2. Позвоните в LLM
             messages = [{"role": "user", "content": prompt}]
             response_text = self.llm.invoke(messages, **kwargs)
 
-            # 3. 解析输出
+            # 3. Анализ вывода
             thought, action = self._parse_output(response_text)
 
-            # 4. 检查完成条件
+            # 4. Проверьте условия завершения
             if action and action.startswith("Finish"):
                 final_answer = self._parse_action_input(action)
                 self.add_message(Message(input_text, "user"))
                 self.add_message(Message(final_answer, "assistant"))
                 return final_answer
 
-            # 5. 执行工具调用
+            # 5. Выполнить вызов инструмента
             if action:
                 tool_name, tool_input = self._parse_action(action)
                 observation = self.tool_registry.execute_tool(tool_name, tool_input)
                 self.current_history.append(f"Action: {action}")
                 self.current_history.append(f"Observation: {observation}")
 
-        # 达到最大步数
-        final_answer = "抱歉，我无法在限定步数内完成这个任务。"
+        # Достигнуто максимальное количество шагов.
+        final_answer = "Извините, я не могу выполнить эту задачу за ограниченное количество шагов."
         self.add_message(Message(input_text, "user"))
         self.add_message(Message(final_answer, "assistant"))
         return final_answer

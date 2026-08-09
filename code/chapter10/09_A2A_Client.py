@@ -1,21 +1,21 @@
 """
-10.3.3 使用 HelloAgents A2A 工具
-（2）创建A2A Agent客户端
+10.3.3 Использование инструмента HelloAgents A2A
+(2) Создайте клиент агента A2A.
 """
 
 from hello_agents.protocols import A2AClient
 import time
 
-# 等待服务器启动
+# Подождите, пока сервер запустится
 time.sleep(1)
 
-# 创建客户端连接到研究员Agent
+# Создайте клиент для подключения к агенту исследователя.
 client = A2AClient("http://localhost:5000")
 
-# 发送研究请求
-response = client.execute_skill("research", "research AI在医疗领域的应用")
-print(f"收到响应：{response.get('result')}")
+# Отправить запрос на исследование
+response = client.execute_skill("research", "Исследуйте приложения ИИ в медицинской сфере")
+print(f"Получен ответ: {response.get('result')}")
 
-# 输出：
-# 收到响应：{'topic': 'AI在医疗领域的应用', 'findings': '关于AI在医疗领域的应用的研究结果...', 'sources': ['来源1', '来源2', '来源3']}
+# Выход:
+# Получен ответ: {'topic': 'Применение ИИ в медицинской сфере', 'выводы': 'Результаты исследований по применению ИИ в медицинской сфере...', 'источники': ['Источник 1', 'Источник 2', 'Источник 3']}
 

@@ -1,35 +1,35 @@
 from hello_agents.tools import MCPTool
 
-# 1. Memory Transport - 内存传输（用于测试）
-# 不指定任何参数，使用内置演示服务器
+# 1. Memory Transport — перенос памяти (для тестирования)
+# Без указания каких-либо параметров используйте встроенный демонстрационный сервер
 mcp_tool = MCPTool()
 
-# 2. Stdio Transport - 标准输入输出传输（本地开发）
-# 使用命令列表启动本地服务器
+# 2. Stdio Transport — стандартная передача ввода и вывода (локальная разработка)
+# Запустите локальный сервер, используя список команд
 mcp_tool = MCPTool(server_command=["python", "examples/mcp_example_server.py"])
 
-# 3. Stdio Transport with Args - 带参数的命令传输
-# 可以传递额外参数
+# 3. Stdio Transport с Args — передача команды с параметрами
+# Дополнительные параметры могут быть переданы
 mcp_tool = MCPTool(server_command=["python", "examples/mcp_example_server.py", "--debug"])
 
-# 4. Stdio Transport - 社区服务器（npx方式）
-# 使用npx启动社区MCP服务器
+# 4. Stdio Transport — Сервер сообщества (режим npx)
+# Запустите сервер MCP сообщества, используя npx
 mcp_tool = MCPTool(server_command=["npx", "-y", "@modelcontextprotocol/server-filesystem", "."])
 
 # 5. HTTP/SSE/StreamableHTTP Transport
-# 注意：MCPTool主要用于Stdio和Memory传输
-# 对于HTTP/SSE等远程传输，建议直接使用MCPClient
+# Примечание. MCPTool в основном используется для передачи данных из Stdio и памяти.
+# Для удаленной передачи, например HTTP/SSE, рекомендуется напрямую использовать MCPClient.
 
 from hello_agents.tools import MCPTool
 
-# 使用内置演示服务器（Memory传输）
+# Использовать встроенный сервер презентаций (передача из памяти)
 mcp_tool = MCPTool()
 
-# 列出可用工具
+# Список доступных инструментов
 result = mcp_tool.run({"action": "list_tools"})
 print(result)
 
-# 调用工具
+# Инструмент вызова
 result = mcp_tool.run({
     "action": "call_tool",
     "tool_name": "add",
@@ -39,17 +39,17 @@ print(result)
 
 from hello_agents.tools import MCPTool
 
-# 方式1：使用自定义Python服务器
+# Способ 1: использовать собственный сервер Python
 mcp_tool = MCPTool(server_command=["python", "my_mcp_server.py"])
 
-# 方式2：使用社区服务器（文件系统）
+# Способ 2. Использование сервера сообщества (файловой системы)
 mcp_tool = MCPTool(server_command=["npx", "-y", "@modelcontextprotocol/server-filesystem", "."])
 
-# 列出工具
+# Список инструментов
 result = mcp_tool.run({"action": "list_tools"})
 print(result)
 
-# 调用工具
+# Инструмент вызова
 result = mcp_tool.run({
     "action": "call_tool",
     "tool_name": "read_file",
@@ -58,27 +58,27 @@ result = mcp_tool.run({
 print(result)
 
 
-# 注意：MCPTool 主要用于 Stdio 和 Memory 传输
-# 对于 HTTP/SSE 等远程传输，建议使用底层的 MCPClient
+# Примечание. MCPTool в основном используется для передачи Stdio и памяти.
+# Для удаленных передач, таких как HTTP/SSE, рекомендуется использовать базовый MCPClient.
 
 import asyncio
 from hello_agents.protocols.mcp.client import MCPClient
 
 async def test_http_transport():
-    # 连接到远程 HTTP MCP 服务器
+    # Подключитесь к удаленному серверу HTTP MCP.
     client = MCPClient("http://api.example.com/mcp")
 
     async with client:
-        # 获取服务器信息
+        # Получить информацию о сервере
         tools = await client.list_tools()
-        print(f"远程服务器工具: {len(tools)} 个")
+        print(f"Инструменты удаленного сервера: {len(tools)}")
 
-        # 调用远程工具
+        # Вызов удаленного инструмента
         result = await client.call_tool("process_data", {
             "data": "Hello, World!",
             "operation": "uppercase"
         })
-        print(f"远程处理结果: {result}")
+        print(f"Результат удаленной обработки: {result}")
 
-# 注意：需要实际的 HTTP MCP 服务器
+# ПРИМЕЧАНИЕ. Требуется реальный сервер HTTP MCP.
 # asyncio.run(test_http_transport())

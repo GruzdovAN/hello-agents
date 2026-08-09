@@ -1,12 +1,12 @@
 """
-项目主入口文件
+Основной входной файл проекта
 """
 
 from datetime import datetime
 
 
 def main():
-    """主函数"""
+    """основная функция"""
     print(f"Application started at {datetime.now()}")
     print("Hello from the project!")
 

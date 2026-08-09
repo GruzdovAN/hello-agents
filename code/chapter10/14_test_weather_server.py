@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""测试天气查询 MCP 服务器"""
+"""Тестовый сервер MCP запроса погоды"""
 
 import asyncio
 import json
@@ -13,28 +13,28 @@ async def test_weather_server():
 
     try:
         async with client:
-            # 测试1: 获取服务器信息
+            # Тест 1. Получите информацию о сервере
             info = json.loads(await client.call_tool("get_server_info", {}))
-            print(f"服务器: {info['name']} v{info['version']}")
+            print(f"Сервер: {info['name']} v{info['version']}")
 
-            # 测试2: 列出支持的城市
+            # Тест 2. Список поддерживаемых городов.
             cities = json.loads(await client.call_tool("list_supported_cities", {}))
-            print(f"支持城市: {cities['count']} 个")
+            print(f"Поддерживаемые города: {cities['count']}")
 
-            # 测试3: 查询北京天气
-            weather = json.loads(await client.call_tool("get_weather", {"city": "北京"}))
+            # Тест 3: Проверьте погоду в Пекине
+            weather = json.loads(await client.call_tool("get_weather", {"city": "Пекин"}))
             if "error" not in weather:
-                print(f"\n北京天气: {weather['temperature']}°C, {weather['condition']}")
+                print(f"\nПогода в Пекине: {weather['temperature']}°C, {weather['condition']}")
 
-            # 测试4: 查询深圳天气
-            weather = json.loads(await client.call_tool("get_weather", {"city": "深圳"}))
+            # Тест 4: Проверьте погоду в Шэньчжэне
+            weather = json.loads(await client.call_tool("get_weather", {"city": "Шэньчжэнь"}))
             if "error" not in weather:
-                print(f"深圳天气: {weather['temperature']}°C, {weather['condition']}")
+                print(f"Погода в Шэньчжэне: {weather['temperature']}°C, {weather['condition']}")
 
-            print("\n✅ 所有测试完成！")
+            print("\n✅ Все тесты пройдены!")
 
     except Exception as e:
-        print(f"❌ 测试失败: {e}")
+        print(f"❌ Тест не пройден: {e}")
 
 
 if __name__ == "__main__":

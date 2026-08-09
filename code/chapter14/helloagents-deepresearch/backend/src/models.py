@@ -9,7 +9,7 @@ from typing_extensions import Annotated
 
 @dataclass(kw_only=True)
 class TodoItem:
-    """单个待办任务项。"""
+    """Один элемент задачи."""
 
     id: int
     title: str
@@ -45,7 +45,7 @@ class SummaryStateInput:
 
 @dataclass(kw_only=True)
 class SummaryStateOutput:
-    running_summary: str = field(default=None)  # Backward-compatible文本
+    running_summary: str = field(default=None)  # Обратная совместимость текста
     report_markdown: Optional[str] = field(default=None)
     todo_items: List[TodoItem] = field(default_factory=list)
 

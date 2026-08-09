@@ -1,16 +1,16 @@
-# Chapter 11 Agentic-RL
+# Глава 11. Agentic-RL
 
-## 11.1 From LLM Training to Agentic RL
+## 11.1 От обучения LLM к агентскому RL
 
-In previous chapters, we implemented various agent paradigms and communication protocols. However, when agents handle more complex tasks, they perform poorly, naturally raising questions: **How can we make agents have stronger reasoning capabilities? How can we make agents learn to use tools better? How can we make agents capable of self-improvement?**
+В предыдущих главах мы реализовали различные парадигмы агентов и протоколы связи. Однако когда агенты справляются с более сложными задачами, они работают хуже, что, естественно, вызывает вопросы: **Как мы можем сделать так, чтобы у агентов были более сильные способности к рассуждению? Как мы можем заставить агентов научиться лучше использовать инструменты? Как мы можем сделать агентов способными к самосовершенствованию?**
 
-This is precisely the core problem that Agentic RL (agent training based on reinforcement learning) aims to solve. This chapter will introduce reinforcement learning training capabilities to the HelloAgents framework, enabling you to train agents with advanced capabilities such as reasoning and tool use. We will start from the basics of LLM training and gradually delve into practical techniques such as Supervised Fine-Tuning (SFT) and Group Relative Policy Optimization (GRPO), ultimately building a complete agent training pipeline.
+Это именно основная проблема, которую стремится решить Agentic RL (обучение агентов на основе обучения с подкреплением). В этой главе будут представлены возможности обучения с подкреплением в платформе HelloAgents, что позволит вам обучать агентов расширенным возможностям, таким как рассуждение и использование инструментов. Мы начнем с основ обучения LLM и постепенно углубимся в практические методы, такие как контролируемая точная настройка (SFT) и оптимизация групповой относительной политики (GRPO), в конечном итоге создав полный конвейер обучения агентов.
 
-### 11.1.1 From Reinforcement Learning to Agentic RL
+### 11.1.1 От обучения с подкреплением к агентному RL
 
-In Section 2.4.2 of Chapter 2, we introduced agents based on reinforcement learning. Reinforcement Learning (RL) is a learning paradigm focused on solving sequential decision-making problems. It learns how to maximize long-term rewards through direct interaction between agents and the environment, learning through "trial and error".
+В разделе 2.4.2 главы 2 мы представили агентов, основанных на обучении с подкреплением. Обучение с подкреплением (RL) — это парадигма обучения, ориентированная на решение последовательных задач принятия решений. Он учится максимизировать долгосрочное вознаграждение за счет прямого взаимодействия между агентами и окружающей средой, обучаясь методом «проб и ошибок».
 
-Now, let's apply this framework to LLM agents. Consider a mathematical problem-solving agent that needs to answer questions like this:
+Теперь давайте применим эту структуру к агентам LLM. Рассмотрим агента, решающего математические задачи, который должен отвечать на такие вопросы:
 
 ```
 Question: Janet's ducks lay 16 eggs per day. She eats three for breakfast
@@ -19,151 +19,151 @@ She sells the remainder at the farmers' market daily for $2 per fresh
 duck egg. How much in dollars does she make every day at the farmers' market?
 ```
 
-This problem requires multi-step reasoning: first calculate the number of eggs Janet has left each day (16 - 3 - 4 = 9), then calculate her income (9 × 2 = 18). We can map this task to the reinforcement learning framework:
+Эта задача требует многоэтапного рассуждения: сначала подсчитайте количество яиц, которые Джанет оставляет каждый день (16 – 3 – 4 = 9), затем вычислите ее доход (9 × 2 = 18). Мы можем сопоставить эту задачу со структурой обучения с подкреплением:
 
-- **Agent**: LLM-based reasoning system
-- **Environment**: Mathematical problems and verification system
-- **State**: Current problem description and existing reasoning steps
-- **Action**: Generate next reasoning step or final answer
-- **Reward**: Whether the answer is correct (correct +1, incorrect 0)
+- **Агент**: система рассуждений на основе LLM.
+- **Окружающая среда**: Математические задачи и система проверки.
+- **Состояние**: описание текущей проблемы и существующие этапы обоснования.
+- **Действие**: создайте следующий шаг рассуждения или окончательный ответ.
+- **Награда**: правильный ли ответ (правильный +1, неправильный 0).
 
-Traditional supervised learning methods have three core limitations: first, data quality completely determines training quality, and models can only imitate training data, making it difficult to surpass; second, lack of exploration ability, only passively learning paths provided by humans; third, difficulty optimizing long-term goals, unable to precisely optimize intermediate processes of multi-step reasoning.
+Традиционные методы обучения с учителем имеют три основных ограничения: во-первых, качество данных полностью определяет качество обучения, а модели могут только имитировать данные обучения, что затрудняет их превзойти; во-вторых, отсутствие исследовательских способностей, только пассивное изучение путей, предложенных людьми; в-третьих, трудности с оптимизацией долгосрочных целей, неспособность точно оптимизировать промежуточные процессы многоэтапного рассуждения.
 
-Reinforcement learning provides new possibilities. By allowing agents to autonomously generate multiple candidate answers and receive rewards based on correctness, they can learn which reasoning paths are better, which steps are critical, and even discover better problem-solving methods than human annotations<sup>[8]</sup>. This is the core idea of Agentic RL: treating LLM as a learnable policy, embedding it in the agent's perception-decision-execution loop, and optimizing multi-step task performance through reinforcement learning.
+Обучение с подкреплением открывает новые возможности. Позволив агентам самостоятельно генерировать несколько вариантов ответов и получать вознаграждение в зависимости от правильности, они могут узнать, какие пути рассуждения лучше, какие шаги имеют решающее значение, и даже обнаружить более эффективные методы решения проблем, чем человеческие аннотации<sup>[8]</sup>. В этом заключается основная идея Agentic RL: рассматривать LLM как обучаемую политику, встраивать ее в цикл восприятия-решения-исполнения агента и оптимизировать выполнение многоэтапных задач посредством обучения с подкреплением.
 
-### 11.1.2 LLM Training Landscape
+### 11.1.2 Условия обучения LLM
 
-Before diving into Agentic RL, we need to first understand the complete process of LLM training. The birth of a powerful LLM (such as GPT, Claude, Qwen) typically goes through two main stages: Pretraining and Post-training. As shown in Figure 11.1, these two stages constitute the complete evolutionary path of LLM from "language model" to "conversational assistant".
+Прежде чем погрузиться в Agentic RL, нам необходимо сначала понять весь процесс обучения LLM. Рождение мощного LLM (например, GPT, Claude, Qwen) обычно проходит два основных этапа: предварительное обучение и постобучение. Как показано на рисунке 11.1, эти два этапа составляют полный путь эволюции LLM от «языковой модели» к «разговорному помощнику».
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-1.png" alt="" width="85%"/>
-  <p>Figure 11.1 LLM Training Landscape</p>
+  <p>Рисунок 11.1. Ландшафт обучения LLM</p>
 </div>
 
-**Pretraining Stage** is the first stage of LLM training, with the goal of making the model learn basic language patterns and world knowledge. This stage uses massive amounts of text data (usually TB-level) and trains the model through self-supervised learning, where the training signal is constructed from the text itself, such as predicting the next word from the previous context. The most common pretraining task is Causal Language Modeling, also known as Next Token Prediction.
+**Этап предварительной подготовки** — это первый этап обучения LLM, цель которого — научить модель базовым языковым моделям и знаниям мира. На этом этапе используются огромные объемы текстовых данных (обычно на уровне TB) и обучается модель посредством самостоятельного обучения, при котором обучающий сигнал создается на основе самого текста, например, прогнозируя следующее слово из предыдущего контекста. Наиболее распространенной задачей предварительного обучения является моделирование причинного языка, также известное как прогнозирование следующего токена.
 
-Given a text sequence $x_1, x_2, ..., x_t$, the model needs to predict the next word $x_{t+1}$:
+Учитывая текстовую последовательность $x_1, x_2, ..., x_t$, модели необходимо предсказать следующее слово $x_{t+1}$:
 
 $$
 \mathcal{L}_{\text{pretrain}} = -\sum_{t=1}^{T} \log P(x_t | x_1, x_2, ..., x_{t-1}; \theta)
 $$
 
-Where $\theta$ is the model parameters, $P(x_t | x_1, ..., x_{t-1}; \theta)$ is the probability distribution of the next word predicted by the model, and the goal is to minimize negative log-likelihood, i.e., maximize the probability of predicting the correct word. For example, given the text "The cat sat on the", the model needs to predict that the next word is most likely "mat". Through training on massive amounts of text, the model gradually learns grammar rules (what word sequences are legal), semantic knowledge (relationships between words), world knowledge (factual information about the world), and basic reasoning abilities.
+Где $\theta$ — параметры модели, $P(x_t | x_1, ..., x_{t-1}; \theta)$ — распределение вероятностей следующего слова, предсказанного моделью, а цель — минимизировать отрицательное логарифмическое правдоподобие, т. е. максимизировать вероятность предсказания правильного слова. Например, учитывая текст «Кот сидел на», модели необходимо предсказать, что следующим словом, скорее всего, будет «коврик». Посредством обучения на больших объемах текста модель постепенно изучает грамматические правила (какие последовательности слов являются допустимыми), семантические знания (отношения между словами), знания о мире (фактическая информация о мире) и базовые способности к рассуждению.
 
-The characteristics of the pretraining stage are: massive data volume, high computational cost, learning general language understanding and generation capabilities, and using self-supervised objectives constructed from unlabeled text rather than manually labeled task data.
+Характеристики этапа предварительного обучения: огромный объем данных, высокие вычислительные затраты, изучение общего понимания языка и возможности генерации, а также использование целей с самоконтролем, созданных на основе немаркированного текста, а не данных задач, помеченных вручную.
 
-**Post-training Stage** aims to address the shortcomings of pretrained models. Although pretrained models have powerful language capabilities, they are just "next word prediction" models and don't know how to follow human instructions, generate helpful, harmless, and honest answers, refuse inappropriate requests, and interact with humans in a conversational manner. The post-training stage aims to solve these problems and align the model with human preferences and values.
+**Этап после обучения** направлен на устранение недостатков предварительно обученных моделей. Хотя предварительно обученные модели обладают мощными языковыми возможностями, они представляют собой всего лишь модели «предсказания следующего слова» и не умеют следовать человеческим инструкциям, генерировать полезные, безобидные и честные ответы, отклонять неуместные запросы и взаимодействовать с людьми в разговорной манере. Этап после обучения направлен на решение этих проблем и согласование модели с человеческими предпочтениями и ценностями.
 
-Post-training typically includes three steps. The first step is **Supervised Fine-Tuning (SFT)**<sup>[15]</sup>, with the goal of making the model learn to follow instructions and dialogue formats. Training data consists of (prompt, completion) pairs, and the training objective is similar to pretraining, still maximizing the probability of correct output:
+Пост-тренинг обычно включает в себя три этапа. Первым шагом является **Точная настройка с учителем (SFT)**<sup>[15]</sup>, целью которой является научить модель следовать инструкциям и форматам диалога. Данные обучения состоят из пар (приглашение, завершение), а цель обучения аналогична предварительному обучению, но при этом максимизирует вероятность правильного вывода:
 
 $$
 \mathcal{L}_{\text{SFT}} = -\sum_{i=1}^{N} \log P(y_i | x_i; \theta)
 $$
 
-Where $x_i$ is the input prompt, $y_i$ is the expected output, and $N$ is the number of training samples. SFT characteristics are: smaller data volume, requires manual annotation, quick results, mainly learning task formats and basic capabilities.
+Где $x_i$ — приглашение ввода, $y_i$ — ожидаемый результат, а $N$ — количество обучающих выборок. Характеристики SFT: меньший объем данных, требуется ручное аннотирование, быстрые результаты, в основном форматы обучающих задач и базовые возможности.
 
-The second step is **Reward Modeling (RM)**. Although SFT models can follow instructions, the quality of generated answers varies. We need a way to evaluate answer quality, which is the role of the reward model<sup>[13,14]</sup>. Reward model training data consists of preference comparison data, containing two answers to the same question, one better (chosen) and one worse (rejected). The reward model training objective is to learn human preferences:
+Второй шаг — **Моделирование вознаграждения (RM)**. Хотя модели SFT могут следовать инструкциям, качество генерируемых ответов варьируется. Нам нужен способ оценки качества ответов, в чем и состоит роль модели вознаграждения<sup>[13,14]</sup>. Данные обучения модели вознаграждения состоят из данных сравнения предпочтений, содержащих два ответа на один и тот же вопрос: один лучше (выбран), а другой хуже (отклонен). Целью обучения модели вознаграждения является изучение предпочтений человека:
 
 $$
 \mathcal{L}_{\text{RM}} = -\mathbb{E}_{(x, y_w, y_l)} [\log \sigma(r_\phi(x, y_w) - r_\phi(x, y_l))]
 $$
 
-Where $r_\phi(x, y)$ is the reward model, input is (prompt, answer) pair, output is quality score; $y_w$ is the better answer (chosen), $y_l$ is the worse answer (rejected), $\sigma$ is the sigmoid function, and the goal is to make the reward model give higher scores to better answers.
+Где $r_\phi(x, y)$ — модель вознаграждения, входные данные — пара (подсказка, ответ), выходные данные — показатель качества; $y_w$ — лучший ответ (выбран), $y_l$ — худший ответ (отклонен), $\sigma$ — сигмовидная функция, и цель состоит в том, чтобы модель вознаграждения давала более высокие оценки лучшим ответам.
 
-The third step is **Reinforcement Learning Fine-tuning**. With the reward model, we can use reinforcement learning to optimize the language model to generate higher quality answers. The most classic algorithm is PPO (Proximal Policy Optimization)<sup>[1]</sup>, with the training objective:
+Третий шаг — **Точная настройка обучения с подкреплением**. С помощью модели вознаграждения мы можем использовать обучение с подкреплением, чтобы оптимизировать языковую модель и генерировать ответы более высокого качества. Самым классическим алгоритмом является PPO (оптимизация проксимальной политики)<sup>[1]</sup>, цель обучения которого:
 
 $$
 J_{\text{PPO}} = \mathbb{E}_{x, y \sim \pi_\theta} [r_\phi(x, y)] - \beta \cdot D_{KL}(\pi_\theta || \pi_{\text{ref}})
 $$
 
-Where $\pi_\theta$ is the current policy, i.e., the language model, $\pi_{\text{ref}}$ is the reference policy, which in this scenario can be the SFT model, $r_\phi(x, y)$ is the reward model score, $D_{KL}$ is KL divergence, aimed at preventing the model from deviating too far, and $\beta$ is the balance coefficient. The meaning of this objective function is: maximize reward while not deviating too far from the original model.
+Где $\pi_\theta$ — текущая политика, т. е. языковая модель, $\pi_{\text{ref}}$ — эталонная политика, которая в этом сценарии может быть моделью SFT, $r_\phi(x, y)$ — оценка модели вознаграждения, $D_{KL}$ — расхождение KL, направленное на предотвращение слишком сильного отклонения модели, а $\beta$ — коэффициент баланса. Смысл этой целевой функции заключается в следующем: максимизировать вознаграждение, не отклоняясь слишком далеко от исходной модели.
 
-Traditional RLHF (Reinforcement Learning from Human Feedback)<sup>[5]</sup> requires a large amount of manual preference data annotation, which is costly. To reduce costs, researchers proposed RLAIF (Reinforcement Learning from AI Feedback)<sup>[7]</sup>, using powerful AI models (such as GPT-4) to replace human annotators. The RLAIF workflow is: use SFT model to generate multiple candidate answers, use powerful AI model to score and rank answers, use AI scores to train reward model, use reward model for reinforcement learning. Experiments show that RLAIF's effectiveness is close to or even exceeds RLHF, while costs are significantly reduced<sup>[11]</sup>.
+Традиционный RLHF (обучение с подкреплением на основе обратной связи с человеком)<sup>[5]</sup> требует большого объема аннотаций данных о предпочтениях вручную, что требует больших затрат. Чтобы сократить расходы, исследователи предложили RLAIF (Reinforcement Learning from AI Feedback)<sup>[7]</sup>, используя мощные модели ИИ (такие как GPT-4) вместо людей-аннотаторов. Рабочий процесс RLAIF заключается в следующем: использовать модель SFT для генерации ответов нескольких кандидатов, использовать мощную модель искусственного интеллекта для оценки и ранжирования ответов, использовать оценки искусственного интеллекта для обучения модели вознаграждения, использовать модель вознаграждения для обучения с подкреплением. Эксперименты показывают, что эффективность RLAIF близка к RLHF или даже превосходит ее, а затраты значительно снижаются<sup>[11]</sup>.
 
-### 11.1.3 Core Philosophy of Agentic RL
+### 11.1.3 Основная философия агентного RL
 
-After understanding the basic training process of LLM, let's look at the difference between Agentic RL and traditional training methods. Traditional post-training (which we call PBRFT: Preference-Based Reinforcement Fine-Tuning) mainly focuses on optimizing single-turn dialogue quality: given a user question, the model generates an answer, then receives a reward based on answer quality. This approach is suitable for optimizing conversational assistants, but for agent tasks requiring multi-step reasoning, tool use, and long-term planning, it falls short.
+Поняв базовый процесс обучения LLM, давайте посмотрим на разницу между Agentic RL и традиционными методами обучения. Традиционное пост-обучение (которое мы называем PBRFT: точная настройка подкрепления на основе предпочтений) в основном фокусируется на оптимизации качества одноходового диалога: по заданному пользователем вопросу модель генерирует ответ, а затем получает вознаграждение в зависимости от качества ответа. Этот подход подходит для оптимизации диалоговых помощников, но для задач агента, требующих многоэтапного рассуждения, использования инструментов и долгосрочного планирования, он не подходит.
 
-**Agentic RL** is a new paradigm that treats LLM as a learnable policy embedded in a sequential decision-making loop. In this framework, agents need to interact with the external world in dynamic environments, execute multi-step actions to complete complex tasks, obtain intermediate feedback to guide subsequent decisions, and optimize long-term cumulative rewards rather than single-step rewards.
+**Agentic RL** — это новая парадигма, которая рассматривает LLM как обучаемую политику, встроенную в последовательный цикл принятия решений. В этой структуре агентам необходимо взаимодействовать с внешним миром в динамичных средах, выполнять многоэтапные действия для выполнения сложных задач, получать промежуточную обратную связь для руководства последующими решениями и оптимизировать долгосрочные совокупные вознаграждения, а не одношаговые вознаграждения.
 
-Let's understand this difference through a specific example. In the PBRFT scenario, a user asks "Please explain what reinforcement learning is", the model generates a complete answer, then scores directly based on answer quality. In the Agentic RL scenario, a user requests "Help me analyze the code quality of this GitHub repository", the agent needs to go through multiple steps: first call GitHub API to get repository information, successfully obtain repository structure and file list, get +0.1 reward; then read main code files, successfully obtain code content, get +0.1 reward; then analyze code quality reasonably, get +0.2 reward; finally generate analysis report with high quality, get +0.6 reward. Total reward is the accumulation of all steps: 1.0.
+Давайте разберемся в этой разнице на конкретном примере. В сценарии PBRFT пользователь спрашивает: «Пожалуйста, объясните, что такое обучение с подкреплением», модель генерирует полный ответ, а затем выставляет оценки непосредственно на основе качества ответа. В сценарии Agentic RL пользователь запрашивает «Помогите мне проанализировать качество кода этого репозитория GitHub», агенту необходимо выполнить несколько шагов: сначала вызвать API GitHub, чтобы получить информацию о репозитории, успешно получить структуру репозитория и список файлов, получить вознаграждение +0,1; затем прочитайте файлы основного кода, успешно получите содержимое кода и получите награду +0,1; затем разумно проанализируйте качество кода, получите вознаграждение +0,2; наконец сгенерируйте качественный аналитический отчет, получите награду +0,6. Общая награда представляет собой сумму всех шагов: 1.0.
 
-As can be seen, key features of Agentic RL are multi-step interaction, each action changes environment state, each step can receive feedback, and optimizing overall task completion quality.
+Как видно, ключевыми особенностями Agentic RL являются многоэтапное взаимодействие, каждое действие меняет состояние среды, каждый шаг может получать обратную связь и оптимизация общего качества выполнения задач.
 
-Reinforcement learning is commonly formalized with the Markov Decision Process (MDP) framework. An MDP is defined by a five-tuple $(S, A, P, R, \gamma)$: state space $S$, action space $A$, state transition function $P(s'|s,a)$, reward function $R(s,a)$, and discount factor $\gamma$. The table below compares PBRFT and Agentic RL from the MDP perspective.
+Обучение с подкреплением обычно формализуется с помощью структуры процесса принятия решений Маркова (MDP). MDP определяется пятью кортежами $(S, A, P, R, \gamma)$: пространством состояний $S$, пространством действий $A$, функцией перехода состояний $P(s'|s,a)$, функцией вознаграждения $R(s,a)$ и коэффициентом дисконтирования $\gamma$. В таблице ниже сравниваются PBRFT и Agentic RL с точки зрения MDP.
 
 <div align="center">
-  <p>Table 11.1 Comparison of PBRFT and Agentic RL</p>
+  <p>Таблица 11.1 Сравнение PBRFT и Agentic RL</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-1.png" alt="" width="85%"/>
 </div>
 
-In terms of state, PBRFT's state $s_0$ consists only of user prompts, time span $T=1$ (single step), state doesn't change, can be represented as $s_0 = \text{prompt}$. While Agentic RL's state $s_t$ contains historical observations and context, time span $T \gg 1$ (multi-step), state evolves with actions, can be represented as $s_t = (\text{prompt}, o_1, o_2, ..., o_t)$, where $o_t$ is the observation at step $t$ (such as tool return results, environment feedback, etc.).
+С точки зрения состояния, состояние PBRFT $s_0$ состоит только из пользовательских подсказок, временной интервал $T=1$ (один шаг), состояние не меняется, может быть представлено как $s_0 = \text{prompt}$. В то время как состояние Agentic RL $s_t$ содержит исторические наблюдения и контекст, временной интервал $T \gg 1$ (многошаговый), состояние развивается в зависимости от действий, может быть представлено как $s_t = (\text{prompt}, o_1, o_2, ..., o_t)$, где $o_t$ — это наблюдение на шаге $t$ (например, результаты возврата инструмента, обратная связь от среды и т. д.).
 
-In terms of action, PBRFT's action space only has text generation, single action type, represented as $a = y \sim \pi_\theta(y|s_0)$. While Agentic RL's action space includes text generation, tool invocation, environment operations, and other types, represented as $a_t \in \{a_t^{\text{text}}, a_t^{\text{tool}}\}$, for example $a_t^{\text{text}}$ is generating thinking process or answer, $a_t^{\text{tool}}$ is calling calculator, search engine, and other tools.
+С точки зрения действия, пространство действий PBRFT имеет только генерацию текста, один тип действия, представленный как $a = y \sim \pi_\theta(y|s_0)$. В то время как пространство действий Agentic RL включает генерацию текста, вызов инструментов, операции со средой и другие типы, представленные как $a_t \in \{a_t^{\text{text}}, a_t^{\text{tool}}\}$, например $a_t^{\text{text}}$ генерирует мыслительный процесс или ответ, $a_t^{\text{tool}}$ вызывает калькулятор, поисковую систему и другие инструменты.
 
-In terms of transition function, PBRFT has no state transition, represented as $P(s'|s,a) = \delta(s' - s_{\text{terminal}})$. While Agentic RL's state changes dynamically based on actions and environment, represented as $s_{t+1} \sim P(s_{t+1}|s_t, a_t)$, for example after calling search tool, state will include search results.
+С точки зрения функции перехода, PBRFT не имеет перехода состояний, представленного как $P(s'|s,a) = \delta(s' - s_{\text{terminal}})$. Хотя состояние Agentic RL динамически меняется в зависимости от действий и окружающей среды, представленное как $s_{t+1} \sim P(s_{t+1}|s_t, a_t)$, например, после вызова инструмента поиска, состояние будет включать результаты поиска.
 
-In terms of reward, PBRFT only has single-step reward $r(s_0, a)$, only given at task end, represented as $R_{\text{PBRFT}} = r(s_0, y)$, usually given by reward model: $r(s_0, y) = r_\phi(s_0, y)$. While Agentic RL has multi-step rewards $r(s_t, a_t)$, can give partial rewards at intermediate steps, represented as:
+С точки зрения вознаграждения, PBRFT имеет только одноэтапное вознаграждение $r(s_0, a)$, предоставляемое только в конце задачи и представленное как $R_{\text{PBRFT}} = r(s_0, y)$, обычно даваемое моделью вознаграждения: $r(s_0, y) = r_\phi(s_0, y)$. Хотя Agentic RL имеет многоэтапные вознаграждения $r(s_t, a_t)$, он может давать частичные вознаграждения на промежуточных этапах, представленные как:
 
 $$
 R_{\text{Agentic}} = \sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 $$
 
-Where $\gamma \in [0,1]$ is the discount factor, $r(s_t, a_t)$ can be sparse reward (only given at task completion, such as correct answer +1), dense reward (given at each step, such as successful tool call +0.1), or a combination of both.
+Где $\gamma \in [0,1]$ — это коэффициент дисконтирования, $r(s_t, a_t)$ может быть разреженным вознаграждением (выдается только при завершении задачи, например, правильный ответ +1), плотным вознаграждением (выдается на каждом этапе, например, успешный вызов инструмента +0,1) или комбинацией того и другого.
 
-In terms of objective function, PBRFT maximizes single-step expected reward:
+С точки зрения целевой функции, PBRFT максимизирует ожидаемое вознаграждение за один шаг:
 
 $$
 J_{\text{PBRFT}}(\theta) = \mathbb{E}_{s_0, y \sim \pi_\theta} [r(s_0, y)]
 $$
 
-While Agentic RL maximizes cumulative discounted reward:
+В то время как Agentic RL максимизирует совокупное вознаграждение со скидкой:
 
 $$
 J_{\text{Agentic}}(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]
 $$
 
-Where $\tau = (s_0, a_0, s_1, a_1, ..., s_T)$ is the complete trajectory.
+Где $\tau = (s_0, a_0, s_1, a_1, ..., s_T)$ — полная траектория.
 
-This transformation is not just a difference in technical details, but a fundamental shift in thinking. PBRFT thinking focuses on "how to make the model generate better single answers", optimizing answer quality, focusing on language expression, making single-step decisions. While Agentic RL thinking focuses on "how to make agents complete complex tasks", optimizing task completion, focusing on action strategies, making multi-step planning. This transformation enables LLM to evolve from "conversational assistant" to "autonomous agent", capable of actively seeking information, knowing when and how to use external tools, willing to execute seemingly "detour" intermediate steps for the ultimate goal, and learning from mistakes.
+Эта трансформация — это не просто разница в технических деталях, а фундаментальный сдвиг в мышлении. Мышление PBRFT фокусируется на том, «как заставить модель генерировать более качественные отдельные ответы», оптимизируя качество ответов, сосредотачиваясь на языковом выражении, принимая одноэтапные решения. В то время как агентное RL-мышление фокусируется на том, «как заставить агентов выполнять сложные задачи», оптимизируя выполнение задач, сосредотачиваясь на стратегиях действий, делая многоэтапное планирование. Эта трансформация позволяет LLM превратиться из «разговорного помощника» в «автономного агента», способного активно искать информацию, знающего, когда и как использовать внешние инструменты, готового выполнять, казалось бы, «обходные» промежуточные шаги для достижения конечной цели и учиться на ошибках.
 
-Agentic RL aims to endow LLM agents with six core capabilities, as shown in Figure 11.2.
+Цель Agentic RL — наделить агентов LLM шестью основными возможностями, как показано на рисунке 11.2.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-2.png" alt="" width="85%"/>
-  <p>Figure 11.2 Six Core Capabilities of Agentic RL</p>
+  <p>Рисунок 11.2 Шесть основных возможностей агентного RL</p>
 </div>
 
-**Reasoning** refers to the process of logically deriving conclusions from given information, which is the core capability of agents. Traditional CoT prompting methods rely on few-shot examples with limited generalization ability; SFT can only imitate reasoning patterns in training data, making it difficult to innovate. The advantage of reinforcement learning is learning effective reasoning strategies through trial and error, discovering reasoning paths not in training data, learning when deep thinking is needed and when quick answers are possible. Reasoning tasks can be modeled as sequential decision problems. Given question $q$, the agent needs to generate reasoning chain $c = (c_1, c_2, ..., c_n)$ and final answer $a$. The reward function is typically designed as $r(q, c, a) = 1$ if $a = a^*$ else $0$, with training objective $\max_\theta \mathbb{E}_{q, (c,a) \sim \pi_\theta} [r(q, c, a)]$. Through this approach, the model learns to generate high-quality reasoning chains, not just memorize answers.
+**Рассуждение** относится к процессу логического вывода выводов из предоставленной информации, что является основной способностью агентов. Традиционные методы подсказки ЦТ основаны на нескольких примерах с ограниченной способностью к обобщению; SFT может лишь имитировать модели рассуждений в обучающих данных, что затрудняет внедрение инноваций. Преимущество обучения с подкреплением заключается в изучении эффективных стратегий рассуждения методом проб и ошибок, обнаружении путей рассуждения, которых нет в обучающих данных, обучении, когда необходимо глубокое мышление и когда возможны быстрые ответы. Задачи рассуждения можно смоделировать как задачи последовательного решения. Учитывая вопрос $q$, агенту необходимо сгенерировать цепочку рассуждений $c = (c_1, c_2, ..., c_n)$ и окончательный ответ $a$. Функция вознаграждения обычно проектируется как $r(q, c, a) = 1$, если $a = a^*$ else $0$, с целью обучения $\max_\theta \mathbb{E}_{q, (c,a) \sim \pi_\theta} [r(q, c, a)]$. Благодаря такому подходу модель учится генерировать качественные цепочки рассуждений, а не просто запоминать ответы.
 
-**Tool Use** refers to the agent's ability to call external tools to complete tasks. In tool use tasks, the action space expands to $a_t \in \{a_t^{\text{think}}, a_t^{\text{tool}}\}$, where $a_t^{\text{think}}$ is generating thinking process, $a_t^{\text{tool}} = (\text{tool\_name}, \text{arguments})$ is calling tools. Reinforcement learning allows agents to learn when to use tools, which tool to choose, and how to combine multiple tools. For example, when solving math problems, agents need to learn when to use calculators, when to use code interpreters, and when to reason directly.
+**Использование инструментов** означает способность агента вызывать внешние инструменты для выполнения задач. В задачах использования инструментов пространство действий расширяется до $a_t \in \{a_t^{\text{think}}, a_t^{\text{tool}}\}$, где $a_t^{\text{think}}$ порождает мыслительный процесс, $a_t^{\text{tool}} = (\text{tool\_name}, \text{arguments})$ вызывает инструменты. Обучение с подкреплением позволяет агентам узнать, когда использовать инструменты, какой инструмент выбрать и как комбинировать несколько инструментов. Например, при решении математических задач агентам необходимо научиться, когда использовать калькуляторы, когда использовать интерпретаторы кода, а когда рассуждать напрямую.
 
-**Memory** refers to the agent's ability to retain and reuse past information, which is crucial for long-term tasks. LLM's context window is limited, and static retrieval strategies (such as RAG) cannot be optimized for tasks. Reinforcement learning allows agents to learn memory management strategies: deciding which information is worth remembering, when to update memory, and when to delete outdated information. This is similar to human working memory, where we actively manage information in our brains, retaining important information and forgetting irrelevant information.
+**Память** означает способность агента сохранять и повторно использовать прошлую информацию, что имеет решающее значение для долгосрочных задач. Контекстное окно LLM ограничено, а стратегии статического поиска (например, RAG) не могут быть оптимизированы для задач. Обучение с подкреплением позволяет агентам изучать стратегии управления памятью: решать, какую информацию стоит запомнить, когда обновлять память и когда удалять устаревшую информацию. Это похоже на рабочую память человека, где мы активно управляем информацией в нашем мозгу, сохраняя важную информацию и забывая ненужную информацию.
 
-**Planning** refers to the ability to formulate action sequences to achieve goals. Traditional CoT is linear thinking and cannot backtrack; prompt engineering uses static planning templates that are difficult to adapt to new situations. Reinforcement learning allows agents to learn dynamic planning: discovering effective action sequences through trial and error, learning to balance short-term and long-term benefits. For example, in multi-step tasks, agents may need to first execute some seemingly "detour" steps, such as collecting information, before ultimately completing the task.
+**Планирование** означает способность формулировать последовательность действий для достижения целей. Традиционный ЦП предполагает линейное мышление и не может отступать; Оперативное проектирование использует статические шаблоны планирования, которые сложно адаптировать к новым ситуациям. Обучение с подкреплением позволяет агентам научиться динамическому планированию: обнаруживать эффективные последовательности действий методом проб и ошибок, учиться находить баланс между краткосрочными и долгосрочными выгодами. Например, в многоэтапных задачах агентам может потребоваться сначала выполнить некоторые, казалось бы, «обходные» шаги, такие как сбор информации, прежде чем окончательно завершить задачу.
 
-**Self-Improvement** refers to the agent's ability to review its own output, correct errors, and optimize strategies. Reinforcement learning allows agents to learn self-reflection: identifying their own errors, analyzing failure causes, and adjusting strategies. This capability enables agents to continuously improve without human intervention, similar to human "learning from mistakes".
+**Самосовершенствование** означает способность агента анализировать свои результаты, исправлять ошибки и оптимизировать стратегии. Обучение с подкреплением позволяет агентам научиться саморефлексии: выявлять собственные ошибки, анализировать причины неудач и корректировать стратегии. Эта возможность позволяет агентам постоянно совершенствоваться без вмешательства человека, подобно тому, как человек «учится на ошибках».
 
-**Perception** refers to the ability to understand multimodal information. For example, reinforcement learning can enhance visual reasoning capabilities, allowing models to learn to use visual tools and learn visual planning. This enables agents to not only understand text but also understand and operate in the visual world.
+**Восприятие** относится к способности понимать мультимодальную информацию. Например, обучение с подкреплением может улучшить возможности визуального мышления, позволяя моделям научиться использовать визуальные инструменты и научиться визуальному планированию. Это позволяет агентам не только понимать текст, но также понимать и действовать в визуальном мире.
 
-### 11.1.4 HelloAgents' Agentic RL Design
+### 11.1.4 Дизайн агентского RL HelloAgents
 
-After understanding the core philosophy of Agentic RL, let's see how to implement these capabilities in the HelloAgents framework.
+Поняв основную философию Agentic RL, давайте посмотрим, как реализовать эти возможности в платформе HelloAgents.
 
-In terms of technology selection, we integrated the TRL (Transformer Reinforcement Learning) framework<sup>[9]</sup> and chose the Qwen3-0.6B model<sup>[10]</sup>. TRL is Hugging Face's reinforcement learning library, mature and stable, feature-complete, and easy to integrate. Qwen3-0.6B is Alibaba Cloud's small language model, with 0.6B parameters suitable for ordinary GPU training, excellent performance, and open source and free.
+Что касается выбора технологии, мы интегрировали структуру TRL (Transformer Reinforcement Learning)<sup>[9]</sup> и выбрали модель Qwen3-0.6B<sup>[10]</sup>. TRL — это библиотека обучения с подкреплением Hugging Face, зрелая и стабильная, полнофункциональная и простая в интеграции. Qwen3-0.6B — это небольшая языковая модель Alibaba Cloud с параметрами 0,6B, подходящая для обычного обучения графического процессора, отличная производительность, открытый исходный код и бесплатная версия.
 
-HelloAgents' Agentic RL module adopts a four-layer architecture design, as shown in Figure 11.3.
+Модуль Agentic RL HelloAgents использует четырехуровневую архитектуру, как показано на рисунке 11.3.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-3.png" alt="" width="85%"/>
-  <p>Figure 11.3 HelloAgents Agentic RL Architecture</p>
+  <p>Рис. 11.3 Архитектура агентного RL HelloAgents</p>
 </div>
 
-The bottom layer is the **Dataset Layer**, containing the `GSM8KDataset` class, `create_sft_dataset()` function, and `create_rl_dataset()` function, responsible for data loading and format conversion. The second layer is the **Reward Function Layer**, containing the `MathRewardFunction` base class, `AccuracyReward` accuracy reward, `LengthPenaltyReward` length penalty, `StepReward` step reward, and convenient creation functions `create_*_reward()`, responsible for defining what good behavior is. The third layer is the **Trainer Layer**, containing `SFTTrainerWrapper` and `GRPOTrainerWrapper`, responsible for specific training logic and LoRA support. The top layer is the **Unified Interface Layer**, providing `RLTrainingTool` unified training tool, supporting four operations: `action="train"` (train model), `action="load_dataset"` (load dataset), `action="create_reward"` (create reward function), `action="evaluate"` (evaluate model).
+Нижний уровень — это **Слой набора данных**, содержащий`GSM8KDataset`сорт,`create_sft_dataset()`функция и`create_rl_dataset()`функция, отвечающая за загрузку данных и преобразование формата. Второй уровень — это **Уровень функции вознаграждения**, содержащий`MathRewardFunction`базовый класс,`AccuracyReward`награда за точность,`LengthPenaltyReward`штраф за длину,`StepReward`пошаговое вознаграждение и удобные функции создания`create_*_reward()`, ответственный за определение того, что такое хорошее поведение. Третий уровень — **Тренерский уровень**, содержащий`SFTTrainerWrapper`и`GRPOTrainerWrapper`, отвечающий за конкретную логику обучения и поддержку LoRA. Верхний уровень — это **Уровень единого интерфейса**, обеспечивающий`RLTrainingTool`единый инструмент обучения, поддерживающий четыре операции:`action="train"`(модель поезда),`action="load_dataset"`(загрузить набор данных),`action="create_reward"`(создать функцию вознаграждения),`action="evaluate"`(оценить модель).
 
-### 11.1.5 Quick Start Example
+### 11.1.5 Пример быстрого запуска
 
-Before diving into learning, let's quickly experience the complete training process. Since this chapter has a lot of theoretical content and practical debugging is quite tedious, we focus on learning to apply rather than constructing tools. First install the HelloAgents framework:
+Прежде чем погрузиться в обучение, давайте быстро испытаем весь процесс обучения. Поскольку в этой главе много теоретического содержания, а практическая отладка довольно утомительна, мы сосредоточимся на обучении применению, а не на создании инструментов. Сначала установите платформу HelloAgents:
 
 ```bash
 # Install HelloAgents framework (Chapter 11 version)
@@ -174,7 +174,7 @@ cd HelloAgents
 pip install -e ".[rl]"
 ```
 
-Then run the quick training example:
+Затем запустите пример быстрого обучения:
 
 ```python
 import sys
@@ -237,24 +237,24 @@ print(f"  SFT model: {sft_result['output_dir']}")
 print(f"  GRPO model: {grpo_result['output_dir']}")
 ```
 
-This quick example demonstrates the complete training process: SFT training allows the model to learn basic reasoning formats and dialogue patterns, GRPO training optimizes reasoning strategies through reinforcement learning to improve accuracy, and model evaluation assesses training effectiveness on the test set. Also, it's normal for accuracy to be very low after running, because the model has only seen 0.7% of training samples and only ran for one epoch.
+Этот краткий пример демонстрирует полный процесс обучения: обучение SFT позволяет модели изучить основные форматы рассуждений и шаблоны диалога, обучение GRPO оптимизирует стратегии рассуждения посредством обучения с подкреплением для повышения точности, а оценка модели оценивает эффективность обучения на тестовом наборе. Кроме того, очень низкая точность после запуска является нормальным явлением, поскольку модель рассмотрела только 0,7% обучающих выборок и работала только в течение одной эпохи.
 
-## 11.2 Datasets and Reward Functions
+## 11.2 Наборы данных и функции вознаграждения
 
-Datasets and reward functions are the two cornerstones of reinforcement learning training. Datasets define the tasks the agent needs to learn, and reward functions define what good behavior is. In this section, we will learn how to prepare training data and design reward functions.
+Наборы данных и функции вознаграждения являются двумя краеугольными камнями обучения с подкреплением. Наборы данных определяют задачи, которые агенту необходимо изучить, а функции вознаграждения определяют, что такое хорошее поведение. В этом разделе мы узнаем, как подготовить обучающие данные и разработать функции вознаграждения.
 
-### 11.2.1 GSM8K Mathematical Reasoning Dataset
+### 11.2.1 Набор данных математических рассуждений GSM8K
 
-Mathematical reasoning is an ideal task for evaluating LLM reasoning capabilities. First, math problems have clear correct answers that can be automatically evaluated without manual annotation or complex reward models. Second, solving math problems requires decomposing problems and step-by-step derivation, which is a typical scenario for multi-step reasoning. Finally, learned reasoning capabilities can transfer to other domains with strong generalization. In contrast, open-ended Q&A tasks (such as "How to learn programming?") have answer quality that is difficult to objectively evaluate and requires extensive manual annotation.
+Математическое рассуждение — идеальная задача для оценки способностей рассуждения LLM. Во-первых, математические задачи имеют четкие правильные ответы, которые можно автоматически оценить без ручных аннотаций или сложных моделей вознаграждения. Во-вторых, решение математических задач требует декомпозиции задач и пошагового вывода, что является типичным сценарием многоэтапного рассуждения. Наконец, приобретенные способности к рассуждению могут быть перенесены в другие области при сильном обобщении. Напротив, открытые задания вопросов и ответов (например, «Как научиться программировать?») имеют качество ответов, которое трудно объективно оценить и требуют обширных ручных аннотаций.
 
-GSM8K (Grade School Math 8K)<sup>[4]</sup> is a high-quality elementary school math word problem dataset. As shown in Table 11.2, the dataset contains 7,473 training samples and 1,319 test samples, with difficulty at elementary school math level (grades 2-8), problem types are word problems, requiring 2-8 steps of reasoning to arrive at answers.
+GSM8K (Grade School Math 8K)<sup>[4]</sup> – это высококачественный набор данных по математике для начальной школы. Как показано в таблице 11.2, набор данных содержит 7473 обучающих выборки и 1319 тестовых выборок с трудностью на уровне начальной школы по математике (2–8 классы), типы задач представляют собой текстовые задачи, требующие 2–8 шагов рассуждения для получения ответов.
 
 <div align="center">
-  <p>Table 11.2 GSM8K Dataset Statistics</p>
+  <p>Таблица 11.2 Статистика набора данных GSM8K</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-2.png" alt="" width="85%"/>
 </div>
 
-Let's look at a typical GSM8K problem:
+Давайте посмотрим на типичную проблему GSM8K:
 
 ```
 Question: Natalia sold clips to 48 of her friends in April, and then she sold half
@@ -268,17 +268,17 @@ Answer: Natalia sold 48/2 = <<48/2=24>>24 clips in May.
 Final Answer: 72
 ```
 
-This problem requires two steps of reasoning: first calculate the quantity sold in May (half of 48), then calculate the total (April + May). The `<<48/2=24>>` in the answer is a marker for intermediate calculation steps, and `#### 72` marks the final answer.
+Эта задача требует двухэтапного рассуждения: сначала вычислите количество, проданное в мае (половина от 48), затем вычислите общую сумму (апрель + май).`<<48/2=24>>`в ответе — маркер промежуточных шагов расчета, а`#### 72`отмечает окончательный ответ.
 
-The GSM8K dataset needs to be converted to different formats to adapt to different training methods, as shown in Figure 11.4.
+Набор данных GSM8K необходимо преобразовать в другие форматы для адаптации к различным методам обучения, как показано на рисунке 11.4.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-4.png" alt="" width="85%"/>
-  <p>Figure 11.4 GSM8K Data Format Conversion</p>
+  <p>Рисунок 11.4 Преобразование формата данных GSM8K</p>
 </div>
 
 
-The original format comes directly from the dataset, containing question and answer (with solution steps), suitable for human reading. SFT format is used for supervised fine-tuning, converting questions to dialogue format prompts, with complete solutions as completion. For example:
+Исходный формат берется непосредственно из набора данных и содержит вопросы и ответы (с этапами решения), пригодный для чтения человеком. Формат SFT используется для контролируемой тонкой настройки, преобразования вопросов в подсказки диалогового формата с завершением полных решений. Например:
 
 ```python
 {
@@ -287,9 +287,9 @@ The original format comes directly from the dataset, containing question and ans
 }
 ```
 
-Key points are using the model's dialogue template (such as Qwen's `<|im_start|>` marker), prompt contains user question, completion contains complete solution process and answer. This way the model can learn how to format output and how to reason step by step.
+Ключевым моментом является использование шаблона диалога модели (например, шаблона Квена).`<|im_start|>`маркер), подсказка содержит вопрос пользователя, завершение содержит полный процесс решения и ответ. Таким образом, модель может шаг за шагом научиться форматировать выходные данные и рассуждать.
 
-RL format is used for reinforcement learning, only providing questions and correct answers, not solution processes. For example:
+Формат RL используется для обучения с подкреплением, обеспечивая только вопросы и правильные ответы, а не процессы решения. Например:
 
 ```python
 {
@@ -298,16 +298,16 @@ RL format is used for reinforcement learning, only providing questions and corre
 }
 ```
 
-Key points are prompt is the same as SFT, but ground_truth only contains the final answer (used to calculate reward), and the model needs to generate the complete reasoning process itself. This design forces the model to learn autonomous reasoning rather than simply memorizing answers.
+Ключевые моменты: Prompt аналогичен SFT, но ground_truth содержит только окончательный ответ (используемый для расчета вознаграждения), а модель должна сама генерировать полный процесс рассуждения. Такая конструкция заставляет модель учиться автономному рассуждению, а не просто запоминать ответы.
 
-As shown in Table 11.3, the three formats each have their uses.
+Как показано в таблице 11.3, каждый из трех форматов имеет свое применение.
 
 <div align="center">
-  <p>Table 11.3 Data Format Comparison</p>
+  <p>Таблица 11.3 Сравнение форматов данных</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-3.png" alt="" width="85%"/>
 </div>
 
-HelloAgents provides convenient dataset loading functions. Let's load and view the dataset through code:
+HelloAgents предоставляет удобные функции загрузки наборов данных. Давайте загрузим и просмотрим набор данных с помощью кода:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -341,51 +341,51 @@ print(f"Data format: {rl_data['format']}")
 print(f"Sample keys: {rl_data['sample_keys']}")
 ```
 
-As can be seen, SFT format contains complete solution processes for supervised learning; RL format only contains final answers, and the model needs to generate reasoning processes itself. The `max_samples` parameter controls the number of samples loaded, convenient for quick testing.
+Как можно видеть, формат SFT содержит полные процессы решения для контролируемого обучения; Формат RL содержит только окончательные ответы, а модель должна сама генерировать процессы рассуждения.`max_samples`Параметр контролирует количество загружаемых образцов, что удобно для быстрого тестирования.
 
-### 11.2.2 Reward Function Design
+### 11.2.2 Дизайн функции вознаграждения
 
-Reward functions are the core of reinforcement learning, defining what "good behavior" is. A good reward function can guide agents to learn correct strategies, while a poor reward function may lead to training failure or learning wrong behaviors.
+Функции вознаграждения являются основой обучения с подкреплением и определяют, что такое «хорошее поведение». Хорошая функция вознаграждения может помочь агентам изучить правильные стратегии, тогда как плохая функция вознаграждения может привести к неудаче в обучении или обучению неправильному поведению.
 
-In reinforcement learning, the reward function $r(s, a)$ or $r(s, a, s')$ assigns a numerical reward to each action of the agent. The agent's goal is to maximize cumulative reward:
+При обучении с подкреплением функция вознаграждения $r(s, a)$ или $r(s, a, s')$ присваивает числовое вознаграждение каждому действию агента. Цель агента — максимизировать совокупное вознаграждение:
 
 $$
 J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]
 $$
 
-For mathematical reasoning tasks, we can simplify to:
+Для задач математического рассуждения мы можем упростить следующее:
 
 $$
-r(q, a) = f(a, a^*)
+г(д, а) = f(а, а^*)
 $$
 
-Where $q$ is the question, $a$ is the answer generated by the model, $a^*$ is the correct answer, and $f$ is the evaluation function.
+Где $q$ — вопрос, $a$ — ответ, сгенерированный моделью, $a^*$ — правильный ответ, а $f$ — оценочная функция.
 
-Reward function design directly affects training effectiveness. Good reward functions should clearly define what success is, provide gradient signals, not produce excessive variance, and be easy to adjust and combine. Poor reward functions may only give rewards at task end with no intermediate feedback, have reward hacking where agents find "cheating" ways to get high rewards, have multiple conflicting objectives, or have excessive variance preventing convergence.
+Дизайн функции вознаграждения напрямую влияет на эффективность обучения. Хорошие функции вознаграждения должны четко определять, что такое успех, обеспечивать градиентные сигналы, не вызывать чрезмерных отклонений, а также легко настраивать и комбинировать. Плохие функции вознаграждения могут давать вознаграждение только в конце задачи без промежуточной обратной связи, иметь возможность взлома вознаграждений, когда агенты находят «обманные» способы получения высоких вознаграждений, иметь несколько конфликтующих целей или иметь чрезмерную дисперсию, препятствующую конвергенции.
 
-HelloAgents provides three built-in reward functions that can be used individually or in combination, as shown in Figure 11.5.
+HelloAgents предоставляет три встроенные функции вознаграждения, которые можно использовать по отдельности или в сочетании, как показано на рисунке 11.5.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-5.png" alt="" width="85%"/>
-  <p>Figure 11.5 Reward Function Design</p>
+  <p>Рисунок 11.5. Структура функции вознаграждения</p>
 </div>
 
-**(1) Accuracy Reward**
+**(1) Награда за точность**
 
-Accuracy Reward (AccuracyReward) is the most basic reward function, only caring whether the answer is correct. Mathematical definition:
+Награда за точность (AccuracyReward) — это самая базовая функция вознаграждения, заботящаяся только о том, правильный ли ответ. Математическое определение:
 
 $$
 r_{\text{acc}}(a, a^*) = \begin{cases}
 1 & \text{if } a = a^* \\
-0 & \text{otherwise}
-\end{cases}
+0 и \text{иначе}
+\end{случаи}
 $$
 
-Where $a$ is the answer generated by the model and $a^*$ is the correct answer. This is a binary reward function, getting 1 point for correct answers and 0 for incorrect ones.
+Где $a$ — это ответ, сгенерированный моделью, а $a^*$ — правильный ответ. Это двоичная функция вознаграждения: за правильные ответы вы получаете 1 балл, за неправильные — 0.
 
-Implementation requires handling answer extraction and comparison. Model output may contain large amounts of text, and we need to extract the final answer. Common extraction methods include: finding numbers after "Final Answer:", finding numbers after "####" marker, using regular expressions to extract the last number. Answer comparison needs to handle numerical precision (such as 72.0 and 72 should be considered the same), unit conversion (such as 1000 and 1k), and format differences (such as "72" and "seventy-two").
+Implementation requires handling answer extraction and comparison. Model output may contain large amounts of text, and we need to extract the final answer. Common extraction methods include: finding numbers after "Final Answer:", finding numbers after "####" marker, using regular expressions to extract the last number. При сравнении ответов необходимо учитывать числовую точность (например, 72,0 и 72 следует считать одинаковыми), преобразование единиц измерения (например, 1000 и 1k) и различия в формате (например, «72» и «семьдесят два»).
 
-Usage example:
+Пример использования:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -406,7 +406,7 @@ print(f"Description: {reward_data['description']}")
 # the actual reward function will be automatically created and used during training
 ```
 
-Output:
+Выход:
 
 ```json
 Prediction: 72, Ground truth: 72, Reward: 1.0
@@ -414,21 +414,21 @@ Prediction: 72.0, Ground truth: 72, Reward: 1.0
 Prediction: 73, Ground truth: 72, Reward: 0.0
 ```
 
-Advantages of accuracy reward: simple and direct, easy to understand and implement, suitable for tasks with clear correct answers. Disadvantages: sparse reward, only fully correct answers get rewards, cannot distinguish between "close to correct" and "completely wrong", may lead to lack of effective feedback in early training.
+Преимущества вознаграждения за точность: простота и прямота, легкость понимания и реализации, подходит для задач с четкими правильными ответами. Недостатки: скудное вознаграждение, вознаграждение получают только полностью правильные ответы, невозможно отличить «близко к правильному» от «совершенно неверного», может привести к отсутствию эффективной обратной связи на ранних этапах обучения.
 
-**(2) Length Penalty**
+**(2) Штраф за длину**
 
-Length Penalty (LengthPenaltyReward) encourages the model to generate concise answers, avoiding verbosity. Mathematical definition:
+Штраф за длину (LengthPenaltyReward) побуждает модель генерировать краткие ответы, избегая многословия. Математическое определение:
 
 $$
 r_{\text{length}}(a, a^*, l) = r_{\text{acc}}(a, a^*) - \alpha \cdot \max(0, l - l_{\text{target}})
 $$
 
-Where $l$ is the length of generated text (character count or token count), $l_{\text{target}}$ is the target length, and $\alpha$ is the penalty coefficient (default 0.001). Length penalty is only applied when the answer is correct, avoiding the model generating incorrect short answers to reduce penalty.
+Где $l$ — длина сгенерированного текста (количество символов или токенов), $l_{\text{target}}$ — целевая длина, а $\alpha$ — штрафной коэффициент (по умолчанию 0,001). Штраф за длину применяется только в том случае, если ответ правильный, что позволяет избежать генерации неверных коротких ответов моделью и уменьшения штрафа.
 
-Design rationale: if answer is incorrect, reward is 0 (regardless of length); if answer is correct and length is reasonable, reward is 1; if answer is correct but too long, reward is $1 - \alpha \cdot (l - l_{\text{target}})$. For example, target length 200 characters, actual length 500 characters, penalty coefficient 0.001, then reward is $1 - 0.001 \times (500 - 200) = 0.7$.
+Обоснование дизайна: если ответ неверен, вознаграждение равно 0 (независимо от длины); если ответ правильный и длина разумная, награда равна 1; если ответ правильный, но слишком длинный, награда составит $1 - \alpha \cdot (l - l_{\text{target}})$. Например, целевая длина 200 символов, фактическая длина 500 символов, коэффициент штрафа 0,001, тогда вознаграждение составит $1 – 0,001 \times (500 – 200) = 0,7$.
 
-Usage example:
+Пример использования:
 
 ```python
 # Create length penalty reward function
@@ -446,7 +446,7 @@ print(f"Max length: {reward_data['max_length']}")
 print(f"Penalty weight: {reward_data['penalty_weight']}")
 ```
 
-Output:
+Выход:
 
 ```
 Prediction: 72, Ground truth: 72, Length: 50, Reward: 1.000
@@ -455,21 +455,21 @@ Prediction: 72, Ground truth: 72, Length: 500, Reward: 0.700
 Prediction: 73, Ground truth: 72, Length: 50, Reward: 0.000
 ```
 
-Advantages of length penalty: encourages concise expression, avoids model generating redundant content, can control reasoning cost (shorter output means less token consumption). Disadvantages: may suppress detailed reasoning, requires careful adjustment of penalty coefficient, optimal length varies greatly across different tasks.
+Преимущества штрафа за длину: способствует краткости выражения, позволяет избежать создания модели избыточного контента, может контролировать затраты на рассуждения (более короткий вывод означает меньшее потребление токенов). Недостатки: может подавлять детальное рассуждение, требует тщательной настройки штрафного коэффициента, оптимальная длина сильно варьируется в зависимости от разных задач.
 
-**(3) Step Reward**
+**(3) Награда за шаг**
 
-Step Reward (StepReward) encourages the model to generate clear reasoning steps, improving interpretability. Mathematical definition:
+Step Reward (StepReward) побуждает модель генерировать четкие логические шаги, улучшая интерпретируемость. Математическое определение:
 
 $$
 r_{\text{step}}(a, a^*, s) = r_{\text{acc}}(a, a^*) + \beta \cdot s
 $$
 
-Where $s$ is the number of detected reasoning steps and $\beta$ is the step reward coefficient (default 0.1). Similarly, step rewards are only given when the answer is correct.
+Где $s$ — количество обнаруженных шагов рассуждения, а $\beta$ — коэффициент вознаграждения за шаг (по умолчанию 0,1). Аналогичным образом, награды за этапы выдаются только в том случае, если ответ правильный.
 
-Step detection methods include: finding "Step 1:", "Step 2:" markers, counting newline characters, using regular expressions to match reasoning patterns. For example, a correct answer with 3 clear steps gets reward $1 + 0.1 \times 3 = 1.3$.
+Методы обнаружения шагов включают в себя: поиск маркеров «Шаг 1:», «Шаг 2:», подсчет символов новой строки, использование регулярных выражений для сопоставления шаблонов рассуждений. Например, правильный ответ с тремя четкими шагами приносит вознаграждение $1 + 0,1 \times 3 = 1,3$.
 
-Usage example:
+Пример использования:
 
 ```python
 # Create step reward function
@@ -485,7 +485,7 @@ print(f"Description: {reward_data['description']}")
 print(f"Step bonus: {reward_data['step_bonus']}")
 ```
 
-Output:
+Выход:
 
 ```
 Prediction: 72, Ground truth: 72, Steps: 0, Reward: 1.00
@@ -494,31 +494,31 @@ Prediction: 72, Ground truth: 72, Steps: 5, Reward: 1.50
 Prediction: 73, Ground truth: 72, Steps: 5, Reward: 0.00
 ```
 
-Advantages of step reward: encourages interpretable reasoning, generated answers are easier to verify and debug, helps model learn systematic thinking. Disadvantages: may lead model to generate redundant steps to get more rewards, needs to balance step quantity and answer quality, step detection may be inaccurate.
+Преимущества пошагового вознаграждения: поощряет интерпретируемые рассуждения, сгенерированные ответы легче проверять и отлаживать, помогает моделировать систематическое мышление. Недостатки: может привести к тому, что модель будет генерировать избыточные шаги для получения большего вознаграждения, необходимо сбалансировать количество шагов и качество ответов, обнаружение шагов может быть неточным.
 
-In practical applications, we typically combine multiple reward functions to balance different objectives. Common combination strategies include:
+В практических приложениях мы обычно комбинируем несколько функций вознаграждения, чтобы сбалансировать различные цели. Общие комбинированные стратегии включают в себя:
 
-**Accuracy + Length Penalty**: Encourages concise correct answers, suitable for dialogue systems and Q&A systems. Formula:
+**Точность + штраф за длину**: поощряет краткие правильные ответы, подходящие для диалоговых систем и систем вопросов и ответов. Формула:
 
 $$
 r = r_{\text{acc}} - \alpha \cdot \max(0, l - l_{\text{target}})
 $$
 
-**Accuracy + Step Reward**: Encourages detailed reasoning processes, suitable for educational scenarios and explainable AI. Formula:
+**Точность + награда за шаг**: поощряет детальные процессы рассуждения, подходящие для образовательных сценариев и объяснимого ИИ. Формула:
 
 $$
 r = r_{\text{acc}} + \beta \cdot s
 $$
 
-**Three-way Balance**: Comprehensively optimizes answer quality, conciseness, and interpretability. Formula:
+**Трехсторонний баланс**: комплексно оптимизирует качество ответов, их краткость и интерпретируемость. Формула:
 
 $$
 r = r_{\text{acc}} - \alpha \cdot \max(0, l - l_{\text{target}}) + \beta \cdot s
 $$
 
-Weights $\alpha$ and $\beta$ need to be carefully adjusted to avoid one objective dominating excessively.
+Веса $\alpha$ и $\beta$ необходимо тщательно корректировать, чтобы избежать чрезмерного доминирования одной цели.
 
-Usage example:
+Пример использования:
 
 ```python
 # Combined reward function: accuracy + length penalty + step reward
@@ -551,7 +551,7 @@ step_result = rl_tool.run({
 print("Step reward:", json.loads(step_result)['description'])
 ```
 
-Output:
+Выход:
 
 ```
 Combined reward: 1.200
@@ -560,33 +560,33 @@ Combined reward: 1.200
   - Step reward: +0.3
 ```
 
-As shown in Table 11.4, different reward functions are suitable for different application scenarios.
+Как показано в таблице 11.4, разные функции вознаграждения подходят для разных сценариев применения.
 
 <div align="center">
-  <p>Table 11.4 Reward Function Comparison</p>
+  <p>Таблица 11.4. Сравнение функций вознаграждения</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-4.png" alt="" width="85%"/>
 </div>
 
-### 11.2.3 Custom Datasets and Reward Functions
+### 11.2.3 Пользовательские наборы данных и функции вознаграждения
 
-Although HelloAgents provides the GSM8K dataset and common reward functions, in practical applications you may need to use your own dataset or design specific reward functions. This section will introduce how to extend the framework.
+Хотя HelloAgents предоставляет набор данных GSM8K и общие функции вознаграждения, в практических приложениях вам может потребоваться использовать собственный набор данных или разработать специальные функции вознаграждения. В этом разделе будет описано, как расширить структуру.
 
-Before using custom datasets, you need to understand the data requirements for two training formats:
+Прежде чем использовать пользовательские наборы данных, вам необходимо понять требования к данным для двух форматов обучения:
 
-**SFT Format**: Used for supervised fine-tuning, needs to contain the following fields:
-- `prompt`: Input prompt (containing system and user messages)
-- `completion`: Expected output
-- `text`: Complete dialogue text (optional)
+**Формат SFT**: используется для контролируемой точной настройки и должен содержать следующие поля:
+-`prompt`: Подсказка ввода (содержащая системные и пользовательские сообщения)
+-`completion`: Ожидаемый результат
+-`text`: Полный текст диалога (необязательно)
 
-**RL Format**: Used for reinforcement learning, needs to contain the following fields:
-- `question`: Original question
-- `prompt`: Input prompt (containing system and user messages)
-- `ground_truth`: Correct answer
-- `full_answer`: Complete answer (including reasoning process)
+**Формат RL**: используется для обучения с подкреплением и должен содержать следующие поля:
+-`question`: Оригинальный вопрос
+-`prompt`: Подсказка ввода (содержащая системные и пользовательские сообщения)
+-`ground_truth`: Правильный ответ
+-`full_answer`: Полный ответ (включая процесс рассуждения)
 
-**(1) Converting with format_math_dataset**
+**(1) Преобразование с помощью format_math_dataset**
 
-The simplest method is to prepare raw data containing `question` and `answer` fields, then use the `format_math_dataset()` function for automatic conversion:
+Самый простой метод — подготовить необработанные данные, содержащие`question`и`answer`fields, then use the`format_math_dataset()`функция автоматического преобразования:
 
 ```python
 from datasets import Dataset
@@ -630,9 +630,9 @@ print(f"RL dataset: {len(rl_dataset)} samples")
 print(f"Fields: {rl_dataset.column_names}")
 ```
 
-**(2) Directly Passing Custom Dataset**
+**(2) Непосредственная передача пользовательского набора данных**
 
-When using RLTrainingTool, you can directly pass a custom dataset through the `custom_dataset` parameter:
+При использовании RLTrainingTool вы можете напрямую передать пользовательский набор данных через`custom_dataset`параметр:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -664,9 +664,9 @@ result = rl_tool.run({
 })
 ```
 
-**(3) Registering Custom Dataset (Recommended)**
+**(3) Регистрация пользовательского набора данных (рекомендуется)**
 
-For datasets that need to be used multiple times, registration is recommended:
+Для наборов данных, которые необходимо использовать несколько раз, рекомендуется регистрация:
 
 ```python
 # 1. Register dataset
@@ -683,7 +683,7 @@ result = rl_tool.run({
 })
 ```
 
-Reward functions are used to evaluate the quality of answers generated by the model. Custom reward functions need to follow this signature:
+Функции вознаграждения используются для оценки качества ответов, генерируемых моделью. Пользовательские функции вознаграждения должны следовать этой сигнатуре:
 
 ```python
 from typing import List
@@ -739,9 +739,9 @@ def custom_reward_function(
     return rewards
 ```
 
-There are two ways to use custom reward functions:
+Существует два способа использования пользовательских функций вознаграждения:
 
-**(1) Direct Passing**
+**(1) Прямая передача**
 
 ```python
 result = rl_tool.run({
@@ -754,7 +754,7 @@ result = rl_tool.run({
 })
 ```
 
-**(2) Registration (Recommended)**
+**(2) Регистрация (рекомендуется)**
 
 ```python
 # 1. Register reward function
@@ -770,7 +770,7 @@ result = rl_tool.run({
 })
 ```
 
-Here is a complete example of custom dataset and reward function:
+Вот полный пример пользовательского набора данных и функции вознаграждения:
 
 ```python
 from datasets import Dataset
@@ -837,17 +837,17 @@ result = rl_tool.run({
 })
 ```
 
-## 11.3 SFT Training
+## 11.3 Обучение SFT
 
-Supervised Fine-Tuning (SFT) is the first step of reinforcement learning training and the most important foundation. SFT allows the model to learn the basic format of tasks, dialogue patterns, and preliminary reasoning capabilities. Without the foundation of SFT, directly conducting reinforcement learning often fails because the model doesn't even know the basic output format.
+Контролируемая точная настройка (SFT) — это первый шаг обучения с подкреплением и самая важная основа. SFT позволяет модели изучить базовый формат задач, шаблоны диалога и возможности предварительного рассуждения. Без основы SFT прямое проведение обучения с подкреплением часто терпит неудачу, поскольку модель даже не знает базового формата вывода.
 
-### 11.3.1 Why SFT is Needed
+### 11.3.1 Зачем нужна SFT
 
-Before starting reinforcement learning, we need to conduct SFT training first. This is because although pretrained models have powerful language capabilities, they don't know how to complete specific tasks. The training objective of pretrained models is to predict the next word, not to solve math problems or use tools. The output format of pretrained models is free text, while we need structured output (such as "Step 1: ..., Step 2: ..., Final Answer: ..."). Pretrained models haven't seen task-related data and don't know what a "good" reasoning process is.
+Прежде чем начать обучение с подкреплением, нам необходимо сначала провести обучение SFT. Это связано с тем, что, хотя предварительно обученные модели обладают мощными языковыми возможностями, они не знают, как выполнять конкретные задачи. Целью обучения предварительно обученных моделей является предсказание следующего слова, а не решение математических задач или использование инструментов. Выходной формат предварительно обученных моделей — это произвольный текст, а нам нужен структурированный вывод (например, «Шаг 1: ..., Шаг 2: ..., Окончательный ответ: ...»). Предварительно обученные модели не видели данных, связанных с задачами, и не знают, что такое «хороший» процесс рассуждения.
 
-The role of SFT is to teach the model the basic rules of the task. First, learning output format, letting the model know how to organize answers (such as using "Step 1", "Final Answer" markers). Second, learning reasoning patterns, learning how to decompose problems and derive step by step through examples. Third, establishing baseline capabilities, providing a reasonable starting point for subsequent reinforcement learning. Finally, reducing exploration space, reinforcement learning doesn't need to start from scratch and can optimize based on SFT.
+Роль SFT — научить модель основным правилам выполнения задачи. Во-первых, изучаем формат вывода, давая модели знать, как организовывать ответы (например, используя маркеры «Шаг 1», «Окончательный ответ»). Во-вторых, изучение шаблонов рассуждения, обучение тому, как разлагать проблемы и шаг за шагом выводить их на примерах. В-третьих, установление базовых возможностей, обеспечивающих разумную отправную точку для последующего обучения с подкреплением. Наконец, сокращая пространство для исследования, обучение с подкреплением не нужно начинать с нуля, его можно оптимизировать на основе SFT.
 
-Let's understand the importance of SFT through a comparative experiment. Suppose we directly use a pretrained model to solve GSM8K problems:
+Давайте поймем важность SFT посредством сравнительного эксперимента. Предположим, мы напрямую используем предварительно обученную модель для решения задач GSM8K:
 
 ```python
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -872,7 +872,7 @@ print("Pretrained model's answer:")
 print(response)
 ```
 
-The pretrained model's output might be:
+Результатом предварительно обученной модели может быть:
 
 ```bash
 <|im_start|>user
@@ -881,9 +881,9 @@ Natalia sold clips to 48 of her friends in April, and then she sold half as many
 I can help you with that. Let me think about this problem. Natalia sold clips to her friends. In April she sold 48 clips. In May she sold half as many. So we need to find out how many she sold in May and then add them together. But I'm not sure how to calculate half of 48. Maybe I should use a calculator? Or maybe I can just estimate...
 ```
 
-As can be seen, although the pretrained model understands the question, the output is very verbose, lacks structure, has no clear answer, and has confused reasoning process. Such output cannot be used for reinforcement learning because we cannot extract answers, cannot evaluate quality, and cannot provide effective reward signals.
+Как можно видеть, хотя предварительно обученная модель понимает вопрос, выходные данные очень многословны, лишены структуры, не имеют четкого ответа и запутывают процесс рассуждения. Такие выходные данные нельзя использовать для обучения с подкреплением, потому что мы не можем извлекать ответы, не можем оценивать качество и не можем предоставлять эффективные сигналы вознаграждения.
 
-Now let's look at the model after SFT:
+Теперь посмотрим на модель после SFT:
 
 ```python
 # Load SFT model (assuming already trained)
@@ -898,7 +898,7 @@ print("SFT model's answer:")
 print(response)
 ```
 
-SFT model's output:
+Вывод модели SFT:
 
 ```bash
 <|im_start|>user
@@ -916,55 +916,55 @@ Total = April + May = 48 + 24 = 72
 Final Answer: 72<|im_end|>
 ```
 
-As can be seen, the SFT model's output has clear structure (using "Step 1", "Step 2", "Final Answer" markers), correct reasoning, clear answer, and unified format. Such output can be used for reinforcement learning because we can extract answers, calculate rewards, and optimize strategies.
+Как видно, выходные данные модели SFT имеют четкую структуру (с использованием маркеров «Шаг 1», «Шаг 2», «Окончательный ответ»), правильное обоснование, четкий ответ и единый формат. Такие результаты можно использовать для обучения с подкреплением, поскольку мы можем извлекать ответы, рассчитывать вознаграждения и оптимизировать стратегии.
 
-As shown in Figure 11.6, SFT is the bridge from pretrained models to reinforcement learning.
+Как показано на рисунке 11.6, SFT — это мост от предварительно обученных моделей к обучению с подкреплением.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-6.png" alt="" width="85%"/>
-  <p>Figure 11.6 Role of SFT in Training Pipeline</p>
+  <p>Рисунок 11.6 Роль SFT в процессе обучения</p>
 </div>
 
-### 11.3.2 LoRA: Parameter-Efficient Fine-Tuning
+### 11.3.2 LoRA: точная настройка с эффективным использованием параметров
 
-Directly fine-tuning the entire model requires substantial computational resources and memory. For Qwen3-0.6B (0.6B parameters), full fine-tuning requires about 12GB memory (FP16) or 24GB memory (FP32). For larger models (such as 7B, 13B), full fine-tuning is almost impossible on consumer-grade GPUs.
+Непосредственная точная настройка всей модели требует значительных вычислительных ресурсов и памяти. Для Qwen3-0.6B (параметры 0.6B) полная тонкая настройка требует около 12 ГБ памяти (FP16) или 24 ГБ памяти (FP32). Для более крупных моделей (таких как 7B, 13B) полная точная настройка практически невозможна на графических процессорах потребительского уровня.
 
-LoRA (Low-Rank Adaptation)<sup>[3]</sup> is a parameter-efficient fine-tuning method that only trains a small number of additional parameters while keeping the original model parameters frozen. The core idea of LoRA is: parameter changes during model fine-tuning can be represented by low-rank matrices.
+LoRA (Низкоранговая адаптация)<sup>[3]</sup> – это метод точной настройки с эффективным использованием параметров, который обучает лишь небольшое количество дополнительных параметров, сохраняя при этом исходные параметры модели замороженными. Основная идея LoRA заключается в следующем: изменения параметров во время точной настройки модели могут быть представлены матрицами низкого ранга.
 
-Assume the original model's weight matrix is $W \in \mathbb{R}^{d \times k}$, and the fine-tuned weight is $W' = W + \Delta W$. LoRA assumes $\Delta W$ can be decomposed into the product of two low-rank matrices:
+Предположим, что весовая матрица исходной модели равна $W \in \mathbb{R}^{d \times k}$, а точно настроенный вес равен $W' = W + \Delta W$. LoRA предполагает, что $\Delta W$ можно разложить в произведение двух матриц низкого ранга:
 
 $$
 \Delta W = BA
 $$
 
-Where $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times k}$, $r \ll \min(d, k)$ is the rank.
+Где $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times k}$, $r \ll \min(d, k)$ — ранг.
 
-During forward propagation, the output is:
+Во время прямого распространения выходной сигнал:
 
 $$
 h = Wx + \Delta Wx = Wx + BAx
 $$
 
-The original model parameters $W$ remain frozen, only training $B$ and $A$.
+Исходные параметры модели $W$ остаются замороженными, обучаются только $B$ и $A$.
 
-Parameter count comparison: original model parameter count is $d \times k$, LoRA parameter count is $d \times r + r \times k = r(d + k)$. When $r \ll \min(d, k)$, LoRA parameter count is much smaller than the original model. For example, for $d=4096, k=4096, r=8$, original model parameter count is $4096 \times 4096 = 16,777,216$, LoRA parameter count is $8 \times (4096 + 4096) = 65,536$, a 256-fold reduction in parameters!
+Сравнение количества параметров: количество параметров исходной модели равно $d \times k$, количество параметров LoRA равно $d \times r + r \times k = r(d + k)$. Когда $r \ll \min(d, k)$, количество параметров LoRA намного меньше, чем в исходной модели. Например, для $d=4096, k=4096, r=8$ исходное количество параметров модели составляет $4096 \times 4096 = 16,777,216$, количество параметров LoRA составляет $8 \times (4096 + 4096) = 65,536$, то есть уменьшение параметров в 256 раз!
 
-Therefore, we can summarize LoRA's advantages: significantly reduced memory usage, faster training speed, easy deployment, and prevention of overfitting. However, training effectiveness is usually somewhat worse than full parameter tuning.
+Таким образом, мы можем суммировать преимущества LoRA: значительно уменьшенное использование памяти, более высокая скорость обучения, простота развертывания и предотвращение переобучения. Однако эффективность обучения обычно несколько хуже, чем при полной настройке параметров.
 
-As shown in Table 11.5, comparison of LoRA effects at different model scales.
+Как показано в Таблице 11.5, сравнение эффектов LoRA в разных масштабах модели.
 
 <div align="center">
-  <p>Table 11.5 LoRA vs Full Fine-Tuning Comparison</p>
+  <p>Таблица 11.5 Сравнение LoRA и полной точной настройки</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-5.png" alt="" width="85%"/>
 </div>
 
-LoRA's key hyperparameters include: rank (r), controlling the rank of LoRA matrices, larger means stronger expressiveness but more parameters, typical values 4-64, default 8; Alpha ($\alpha$), LoRA scaling factor, actual update is $\Delta W = \frac{\alpha}{r} BA$, controls LoRA's influence strength, typical value equals rank; target_modules, specifying which layers to apply LoRA, usually choosing attention layers (q_proj, k_proj, v_proj, o_proj), can also include MLP layers (gate_proj, up_proj, down_proj).
+Ключевые гиперпараметры LoRA включают: ранг (r), контролирующий ранг матриц LoRA, больший размер означает более сильную выразительность, но больше параметров, типичные значения 4–64, по умолчанию 8; Alpha ($\alpha$), коэффициент масштабирования LoRA, фактическое обновление $\Delta W = \frac{\alpha}{r} BA$, контролирует силу влияния LoRA, типичное значение равно рангу; target_modules, определяющий, какие слои применять LoRA, обычно выбирая уровни внимания (q_proj, k_proj, v_proj, o_proj), также могут включать слои MLP (gate_proj, up_proj, down_proj).
 
-### 11.3.3 SFT Training Practice
+### 11.3.3 Практика обучения SFT
 
-Now let's conduct SFT training using HelloAgents. The complete training process includes: preparing dataset, configuring LoRA, setting training parameters, starting training, and saving model.
+Теперь давайте проведем обучение SFT с помощью HelloAgents. Полный процесс обучения включает в себя: подготовку набора данных, настройку LoRA, настройку параметров обучения, начало обучения и сохранение модели.
 
-Basic training example:
+Базовый пример обучения:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -1003,38 +1003,38 @@ print(f"  - Training epochs: {result['num_epochs']}")
 print(f"  - Final loss: {result['final_loss']:.4f}")
 ```
 
-If the loss gradually decreases during training, it indicates the model is learning.
+Если потери постепенно уменьшаются во время обучения, это указывает на то, что модель обучается.
 
-**(1) Training Parameter Details**
+**(1) Подробности параметров обучения**
 
-Let's understand the meaning and tuning suggestions for each training parameter in detail.
+Давайте подробно разберемся в значении и предложениях по настройке каждого параметра обучения.
 
-**Data Parameters**:
+**Параметры данных**:
 
-- `max_samples`: Number of training samples to use. For quick testing, use 100-1000 samples; for complete training, recommend using all data (7473 samples). More data usually brings better results, but training time is also longer.
-- `split`: Dataset split, default "train". Can be set to "train[:1000]" to use only the first 1000 samples.
+- `max_samples`: количество используемых обучающих выборок. Для быстрого тестирования используйте 100–1000 образцов; для полного обучения рекомендуем использовать все данные (7473 выборки). Больше данных обычно приносит лучшие результаты, но время обучения также увеличивается.
+- `split`: разделение набора данных, по умолчанию «поезд». Можно установить значение «train[:1000]», чтобы использовать только первые 1000 выборок.
 
-**Training Parameters**:
+**Параметры обучения**:
 
-- `num_epochs`: Number of training epochs. 1 epoch means traversing the entire dataset once. Too few (1-2 epochs) may underfit, too many (>10 epochs) may overfit. Recommend starting from 3 epochs, observe loss curve and adjust.
-- `batch_size`: Number of samples used per update. Larger is more stable but uses more memory. Recommend adjusting based on memory: 4GB memory use batch_size=1-2, 8GB memory use batch_size=4-8, 16GB memory use batch_size=8-16.
-- `learning_rate`: Learning rate, controls parameter update step size. Too small (1e-6) converges slowly, too large (1e-3) may not converge. SFT recommends 5e-5, LoRA can be slightly larger (1e-4).
+- `num_epochs`: количество эпох обучения. 1 эпоха означает однократное прохождение всего набора данных. Слишком мало (1-2 эпохи) могут не соответствовать, слишком много (> 10 эпох) могут переподходить. Рекомендуется начинать с 3 эпох, наблюдать за кривой потерь и корректировать.
+- `batch_size`: количество образцов, используемых для каждого обновления. Чем больше, тем более стабильно, но используется больше памяти. Рекомендуется выполнить настройку в зависимости от объема памяти: для памяти 4 ГБ используйте пакетный размер = 1–2, для памяти 8 ГБ используйте пакетный_размер = 4–8, для памяти 16 ГБ используйте пакетный_размер = 8–16.
+- `learning_rate`: Скорость обучения, контролирует размер шага обновления параметра. Слишком маленький (1e-6) сходится медленно, слишком большой (1e-3) может не сходиться. SFT рекомендует 5e-5, LoRA может быть немного больше (1e-4).
 
-**LoRA Parameters**:
+**Параметры LoRA**:
 
-- `use_lora`: Whether to use LoRA. Recommend always enabling unless there is sufficient memory.
-- `lora_rank`: LoRA rank, controls expressiveness. 4-8 suitable for small tasks, 16-32 suitable for complex tasks, 64 suitable for large-scale fine-tuning.
-- `lora_alpha`: LoRA scaling factor, usually set to 2 times the rank. When rank=8, alpha=16; when rank=16, alpha=32.
+- `use_lora`: использовать ли LoRA. Рекомендуется всегда включать, если недостаточно памяти.
+- `lora_rank`: ранг LoRA, контролирует выразительность. 4-8 подходят для небольших задач, 16-32 подходят для сложных задач, 64 подходят для масштабной тонкой настройки.
+- `lora_alpha`: коэффициент масштабирования LoRA, обычно в 2 раза превышающий ранг. Когда ранг=8, альфа=16; когда ранг=16, альфа=32.
 
-**Optimizer Parameters**:
+**Параметры оптимизатора**:
 
-- `optimizer`: Optimizer type, default "adamw". AdamW is the most commonly used choice, can also try "sgd" or "adafactor".
-- `weight_decay`: Weight decay, prevents overfitting. Default 0.01, can try 0.001-0.1.
-- `warmup_ratio`: Learning rate warmup ratio. Learning rate increases linearly for the first warmup_ratio steps, then decays linearly. Default 0.1 (warmup for first 10% steps).
+- `оптимизатор`: тип оптимизатора, по умолчанию «adamw». AdamW — наиболее часто используемый выбор, также можно попробовать «sgd» или «adafactor».
+- `weight_decay`: снижение веса, предотвращает переобучение. По умолчанию 0,01, можно попробовать 0,001-0,1.
+- `warmup_ratio`: Коэффициент разминки скорости обучения. Скорость обучения увеличивается линейно на первых шагах Warmup_ratio, а затем линейно затухает. По умолчанию 0,1 (разминка для первых 10% шагов).
 
-**(2) Complete Training Example**
+**(2) Полный пример обучения**
 
-Let's conduct a complete SFT training using all data and best practices:
+Давайте проведем полное обучение SFT, используя все данные и лучшие практики:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -1075,25 +1075,25 @@ result = rl_tool.run({
 print(f"Training completed! Model saved at: {result['model_path']}")
 ```
 
-This configuration is suitable for training on GPUs with 8GB memory, estimated to take 30-60 minutes.
+Эта конфигурация подходит для обучения на графических процессорах с памятью 8 ГБ, которое займет 30–60 минут.
 
-**(3) Training Monitoring and Debugging**
+**(3) Мониторинг и отладка обучения**
 
-During training, we need to monitor three key metrics. Loss should gradually decrease; if it doesn't decrease, learning rate may be too small or data may have problems; if it decreases then rises, learning rate may be too large or overfitting may occur. Gradient Norm should be in a reasonable range of 0.1-10; too large (>100) indicates gradient explosion and requires reducing learning rate; too small (<0.01) indicates gradient vanishing and requires checking model configuration. Learning Rate should change according to warmup strategy, linearly increasing for the first 10% steps, then linearly decaying to 0.
+Во время обучения нам необходимо отслеживать три ключевых показателя. Потери должны постепенно уменьшаться; если оно не уменьшается, возможно, скорость обучения слишком мала или с данными могут быть проблемы; если он уменьшается, а затем увеличивается, скорость обучения может быть слишком большой или может произойти переобучение. Градиент Нормы должен находиться в разумных пределах 0,1-10; слишком большой (>100) указывает на взрывной градиент и требует снижения скорости обучения; слишком маленький (<0,01) указывает на исчезновение градиента и требует проверки конфигурации модели. Скорость обучения должна меняться в соответствии со стратегией разминки: линейно увеличиваться в течение первых 10% шагов, а затем линейно уменьшаться до 0.
 
-Common problems during training and solutions: when out of memory, reduce batch_size or max_length, use gradient accumulation or smaller model; when training is slow, increase batch_size, reduce logging frequency, or use mixed precision training; when loss doesn't decrease, increase learning rate, check data format, or increase training epochs; when overfitting, increase weight_decay, reduce training epochs, or use more data.
+Распространенные проблемы во время обучения и решения: при нехватке памяти уменьшите пакетный_размер или максимальную_длину, используйте накопление градиента или модель меньшего размера; если обучение происходит медленно, увеличьте пакетный размер, уменьшите частоту регистрации или используйте обучение смешанной точности; когда потери не уменьшаются, увеличьте скорость обучения, проверьте формат данных или увеличьте эпоху обучения; при переобучении увеличьте Weight_decay, уменьшите периоды обучения или используйте больше данных.
 
-### 11.3.4 Model Evaluation
+### 11.3.4 Оценка модели
 
-After training is complete, we need to evaluate the model's effectiveness. Evaluation metrics include:
+После завершения обучения нам необходимо оценить эффективность модели. Метрики оценки включают в себя:
 
-- **Accuracy**: Proportion of completely correct answers, most direct metric, range 0-1, higher is better.
+- **Точность**: доля полностью правильных ответов, наиболее прямой показатель, диапазон 0–1, чем выше, тем лучше.
 
-- **Average Reward**: Average reward across all samples, comprehensively considering accuracy, length, steps and other factors, range depends on reward function design.
+- **Среднее вознаграждение**: среднее вознаграждение по всем выборкам с учетом точности, длины, шагов и других факторов. Диапазон зависит от конструкции функции вознаграждения.
 
-- **Reasoning Quality**: Clarity and logic of reasoning process, requires manual evaluation or specialized evaluation models.
+- **Качество рассуждения**: Ясность и логика процесса рассуждения, требует ручной оценки или специализированных моделей оценки.
 
-Using HelloAgents to evaluate models:
+Использование HelloAgents для оценки моделей:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -1115,9 +1115,9 @@ print(f"  - Average reward: {eval_data['average_reward']}")
 print(f"  - Test samples: {eval_data['num_samples']}")
 ```
 
-For small models like Qwen3-0.6B, achieving 40-50% accuracy on GSM8K after SFT is normal. Through reinforcement learning, we can further improve to 60-70%.
+Для небольших моделей, таких как Qwen3-0.6B, точность 40–50 % на GSM8K после SFT является нормальным явлением. Благодаря обучению с подкреплением мы можем улучшить показатели до 60-70%.
 
-To better understand SFT's effectiveness, we can compare models at different stages:
+Чтобы лучше понять эффективность SFT, мы можем сравнить модели на разных этапах:
 
 ```python
 # Evaluate pretrained model (without SFT)
@@ -1144,63 +1144,63 @@ print(f"Pretrained model accuracy: {base_data['accuracy']}")
 print(f"SFT model accuracy: {sft_data['accuracy']}")
 ```
 
-In this section, we learned about SFT's importance (learning format, establishing baseline), LoRA principles (low-rank decomposition, parameter efficiency), SFT training practice (parameter configuration, training monitoring), and model evaluation (accuracy, comparative analysis).
+В этом разделе мы узнали о важности SFT (формат обучения, установление базового уровня), принципах LoRA (низкоранговая декомпозиция, эффективность параметров), практике обучения SFT (конфигурация параметров, мониторинг обучения) и оценке модели (точность, сравнительный анализ).
 
-## 11.4 GRPO Training
+## 11.4 Обучение GRPO
 
-After completing SFT training, we have obtained a model capable of generating structured answers. However, the SFT model has only learned to "imitate" the reasoning process in training data and hasn't truly learned to "think". Reinforcement learning can allow the model to optimize reasoning strategies through trial and error, thereby surpassing the quality of training data.
+После завершения обучения SFT мы получили модель, способную генерировать структурированные ответы. Однако модель SFT научилась только «имитировать» процесс рассуждения в обучающих данных и не научилась по-настоящему «думать». Обучение с подкреплением может позволить модели оптимизировать стратегии рассуждения методом проб и ошибок, тем самым превосходя качество обучающих данных.
 
-### 11.4.1 From PPO to GRPO
+### 11.4.1 От PPO к GRPO
 
-In the field of reinforcement learning, PPO (Proximal Policy Optimization)<sup>[1]</sup> is one of the most classic algorithms. PPO ensures training stability by limiting the magnitude of policy updates. However, PPO has some problems in LLM training: it requires training a Value Model, increasing training complexity and memory usage; it requires maintaining four models simultaneously (Policy Model, Reference Model, Value Model, Reward Model), making engineering implementation complex; training is unstable, prone to reward collapse or policy degradation.
+В области обучения с подкреплением PPO (оптимизация проксимальной политики)<sup>[1]</sup> является одним из самых классических алгоритмов. PPO обеспечивает стабильность обучения, ограничивая объем обновлений политики. Однако у PPO есть некоторые проблемы при обучении LLM: он требует обучения модели ценности, увеличивает сложность обучения и использование памяти; требуется одновременное обслуживание четырех моделей (модель политики, эталонная модель, модель ценности, модель вознаграждения), что усложняет инженерную реализацию; обучение нестабильно, склонно к краху вознаграждений или деградации политики.
 
-GRPO (Group Relative Policy Optimization)<sup>[2]</sup> is a simplified PPO variant specifically designed for LLMs. GRPO's core idea is: no need for Value Model, using group-relative rewards instead of absolute rewards; simplified training process, only requiring Policy Model and Reference Model; improved training stability, reducing risk of reward collapse.
+GRPO (оптимизация групповой относительной политики)<sup>[2]</sup> — это упрощенный вариант PPO, специально разработанный для LLM. Основная идея GRPO заключается в следующем: отсутствие необходимости в модели ценности, использование вознаграждений, относящихся к группе, вместо абсолютных вознаграждений; упрощенный процесс обучения, требующий только Политической модели и Эталонной модели; улучшенная стабильность обучения, снижающая риск потери вознаграждения.
 
-Let's understand GRPO's principles through mathematical formulas. PPO's objective function is:
+Давайте разберемся в принципах GRPO с помощью математических формул. Целевая функция ППО:
 
 $$
 J_{\text{PPO}}(\theta) = \mathbb{E}_{s,a \sim \pi_\theta} \left[ \min\left( \frac{\pi_\theta(a|s)}{\pi_{\text{old}}(a|s)} A(s,a), \text{clip}\left(\frac{\pi_\theta(a|s)}{\pi_{\text{old}}(a|s)}, 1-\epsilon, 1+\epsilon\right) A(s,a) \right) \right]
 $$
 
-Where $A(s,a)$ is the advantage function, requiring Value Model to estimate:
+Где $A(s,a)$ — функция преимущества, требующая, чтобы Модель ценности оценила:
 
 $$
 A(s,a) = Q(s,a) - V(s) = r(s,a) + \gamma V(s') - V(s)
 $$
 
-GRPO's objective function is simplified to:
+Целевая функция GRPO упрощается до:
 
 $$
 J_{\text{GRPO}}(\theta) = \mathbb{E}_{s,a \sim \pi_\theta} \left[ \frac{\pi_\theta(a|s)}{\pi_{\text{ref}}(a|s)} \cdot (r(s,a) - \bar{r}_{\text{group}}) \right] - \beta \cdot D_{KL}(\pi_\theta || \pi_{\text{ref}})
 $$
 
-Where $\bar{r}_{\text{group}}$ is the group average reward and $\beta$ is the KL divergence penalty coefficient. Key differences are: GRPO uses $r(s,a) - \bar{r}_{\text{group}}$ instead of advantage function $A(s,a)$, no need for Value Model; GRPO uses group-relative rewards, reducing reward variance; GRPO adds KL divergence penalty, preventing policy from deviating too far.
+Где $\bar{r}_{\text{group}}$ — среднее вознаграждение по группе, а $\beta$ — штрафной коэффициент за дивергенцию KL. Ключевые отличия: GRPO использует $r(s,a) - \bar{r}_{\text{group}}$ вместо функции преимущества $A(s,a)$, нет необходимости в модели стоимости; GRPO использует вознаграждения относительно групп, уменьшая дисперсию вознаграждений; GRPO добавляет штраф за расхождение KL, предотвращая слишком большие отклонения в политике.
 
-As shown in Figure 11.7, comparison of PPO and GRPO training processes.
+Как показано на рисунке 11.7, сравнение процессов обучения PPO и GRPO.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-7.png" alt="" width="85%"/>
-  <p>Figure 11.7 PPO vs GRPO Training Process</p>
+  <p>Рисунок 11.7 Процесс обучения PPO и GRPO</p>
 </div>
 
-As can be seen, GRPO eliminates Value Model training, greatly simplifying the process.
+Как можно видеть, GRPO исключает обучение модели ценности, что значительно упрощает процесс.
 
-As shown in Table 11.6, detailed comparison of PPO and GRPO.
+Как показано в Таблице 11.6, детальное сравнение PPO и GRPO.
 
 <div align="center">
-  <p>Table 11.6 PPO vs GRPO Comparison</p>
+  <p>Таблица 11.6 Сравнение PPO и GRPO</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-6.png" alt="" width="85%"/>
 </div>
 
 
 
-For LLM training, GRPO is a better choice because it is simpler, more stable, and has lower memory usage.
+Для обучения LLM лучше выбрать GRPO, поскольку он проще, стабильнее и требует меньше памяти.
 
-### 11.4.2 GRPO Training Practice
+### 11.4.2 Практика обучения GRPO
 
-Now let's conduct GRPO training using HelloAgents. The prerequisite for GRPO training is completing SFT training, because GRPO requires a reasonable initial policy.
+Теперь давайте проведем обучение GRPO с помощью HelloAgents. Предпосылкой для обучения GRPO является прохождение обучения SFT, поскольку GRPO требует разумной начальной политики.
 
-Basic GRPO training example:
+Пример базового обучения GRPO:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -1246,28 +1246,28 @@ print(f"  - Training epochs: {result['num_epochs']}")
 print(f"  - Average reward: {result['average_reward']:.4f}")
 ```
 
-If average reward gradually increases and KL divergence remains in a reasonable range during GRPO training, it indicates training is proceeding normally.
+Если среднее вознаграждение постепенно увеличивается, а расхождение KL остается в разумном диапазоне во время обучения GRPO, это указывает на то, что обучение проходит нормально.
 
-GRPO has some specific parameters that need to be understood and tuned.
+У GRPO есть некоторые специфические параметры, которые необходимо понять и настроить.
 
-**Generation Parameters**:
+**Параметры генерации**:
 
-- `num_generations`: How many answers to generate per question. More is better, but computational cost is also higher. Typical values are 4-8. The purpose of generating multiple answers is to calculate group-relative rewards and increase diversity of training signals.
-- `max_new_tokens`: Maximum number of tokens to generate per answer. Too few may truncate answers, too many wastes computation. Recommend 256-512.
-- `temperature`: Generation temperature, controls randomness. 0 means greedy decoding, 1 means standard sampling. GRPO recommends 0.7-1.0, maintaining some exploration.
+- `num_generations`: сколько ответов нужно сгенерировать на вопрос. Чем больше, тем лучше, но вычислительные затраты также выше. Типичные значения: 4-8. Целью генерации множественных ответов является расчет вознаграждений относительно группы и увеличение разнообразия обучающих сигналов.
+- `max_new_tokens`: Максимальное количество токенов, которые можно сгенерировать за ответ. Слишком малое количество может сократить ответы, слишком большое количество вычислений будет потрачено впустую. Рекомендую 256-512.
+- `temperature`: температура генерации, контролирует случайность. 0 означает жадное декодирование, 1 означает стандартную выборку. GRPO рекомендует 0,7-1,0, сохраняя некоторую разведку.
 
-**Optimization Parameters**:
+**Параметры оптимизации**:
 
-- `learning_rate`: GRPO's learning rate is usually smaller than SFT because we don't want to deviate too far from the SFT model. Recommend 1e-6 to 1e-5; too large a learning rate (e.g., 5e-5) on small models may cause policy collapse.
-- `kl_coef`: KL divergence penalty coefficient, controls magnitude of policy updates. Too small (0.01) may cause policy to deviate too far, too large (0.5) may limit learning. Recommend 0.05-0.1.
-- `clip_range`: Policy ratio clipping range, similar to PPO's epsilon. Recommend 0.2.
+- `learning_rate`: скорость обучения GRPO обычно меньше, чем SFT, потому что мы не хотим слишком сильно отклоняться от модели SFT. Рекомендовать от 1e-6 до 1e-5; слишком большая скорость обучения (например, 5e-5) для небольших моделей может привести к коллапсу политики.
+- `kl_coef`: коэффициент штрафа за расхождение KL, контролирует величину обновлений политики. Слишком маленький (0,01) может привести к слишком сильному отклонению политики, слишком большой (0,5) может ограничить обучение. Рекомендую 0,05-0,1.
+- `clip_range`: диапазон ограничения соотношения политик, аналогичный эпсилону PPO. Рекомендую 0,2.
 
-**Reward Parameters**:
+**Параметры вознаграждения**:
 
-- `reward_type`: Reward function type, can be "accuracy", "length_penalty", "step", or "combined".
-- `reward_config`: Additional configuration for reward function, such as target length for length penalty, coefficient for step reward, etc.
+- `reward_type`: тип функции вознаграждения, может быть «точность», «длина_пенальти», «шаг» или «комбинированный».
+- `reward_config`: дополнительная конфигурация для функции вознаграждения, например, целевая длина для штрафа за длину, коэффициент для вознаграждения за шаг и т. д.
 
-Let's conduct a complete GRPO training using all data and best practices:
+Давайте проведем полное обучение GRPO, используя все данные и лучшие практики:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -1322,25 +1322,25 @@ result = rl_tool.run({
 print(f"Training completed! Model saved at: {result['model_path']}")
 ```
 
-### 11.4.3 GRPO Training Process Analysis
+### 11.4.3 Анализ процесса обучения GRPO
 
-Let's deeply understand GRPO's training process and see what happens at each step.
+Давайте глубоко разберемся в процессе обучения GRPO и посмотрим, что происходит на каждом этапе.
 
-**(1) Training Loop**
+**(1) Цикл обучения**
 
-GRPO's training loop includes the following steps:
+Цикл обучения GRPO включает в себя следующие этапы:
 
-1. **Sampling Phase**: For each question, use current policy to generate multiple answers (`num_generations`). These answers form a "group" for calculating relative rewards.
+1. **Этап выборки**: для каждого вопроса используйте текущую политику для создания нескольких ответов («num_generations»). Эти ответы образуют «группу» для расчета относительного вознаграждения.
 
-2. **Reward Calculation**: Calculate reward $r_i$ for each generated answer. Rewards can be accuracy, length penalty, step reward, or their combination.
+2. **Расчёт вознаграждения**: рассчитайте вознаграждение $r_i$ за каждый сгенерированный ответ. Наградами могут быть точность, штраф за длину, награда за шаг или их комбинация.
 
-3. **Relative Reward**: Calculate group average reward $\bar{r} = \frac{1}{N}\sum_{i=1}^{N} r_i$, then calculate relative reward $\hat{r}_i = r_i - \bar{r}$. The benefit of this is reducing reward variance and making training more stable.
+3. **Относительное вознаграждение**: рассчитайте среднее вознаграждение группы $\bar{r} = \frac{1}{N}\sum_{i=1}^{N} r_i$, затем рассчитайте относительное вознаграждение $\hat{r}_i = r_i - \bar{r}$. Преимущество этого заключается в уменьшении дисперсии вознаграждения и повышении стабильности обучения.
 
-4. **Policy Update**: Use relative rewards to update policy, while adding KL divergence penalty to prevent policy from deviating too far from reference model.
+4. **Обновление политики**. Используйте относительные вознаграждения для обновления политики, добавляя штраф за расхождение KL, чтобы предотвратить слишком сильное отклонение политики от эталонной модели.
 
-5. **Repeat**: Repeat above steps until all training epochs are complete.
+5. **Повторить**: повторяйте вышеуказанные шаги, пока не будут завершены все эпохи обучения.
 
-Let's understand through a specific example:
+Давайте разберемся на конкретном примере:
 
 ```python
 # Assume we have a question
@@ -1371,47 +1371,47 @@ relative_rewards = [
 # Policy update: increase probability of first two answers, decrease probability of third answer
 ```
 
-As can be seen, the relative reward mechanism encourages the model to generate answers "better than average" rather than simply pursuing high rewards. This can reduce reward variance and improve training stability.
+Как можно видеть, механизм относительного вознаграждения побуждает модель генерировать ответы «лучше среднего», а не просто стремиться к высоким вознаграждениям. Это может уменьшить дисперсию вознаграждения и улучшить стабильность обучения.
 
-**(2) KL Divergence Penalty**
+**(2) Штраф за расхождение КЛ**
 
-KL divergence penalty is a key component of GRPO, preventing policy from deviating too far from the reference model. KL divergence is defined as:
+Штраф за расхождение KL является ключевым компонентом GRPO, предотвращающим слишком сильное отклонение политики от эталонной модели. Дивергенция KL определяется как:
 
 $$
 D_{KL}(\pi_\theta || \pi_{\text{ref}}) = \mathbb{E}_{s,a \sim \pi_\theta} \left[ \log \frac{\pi_\theta(a|s)}{\pi_{\text{ref}}(a|s)} \right]
 $$
 
-In practice, we calculate KL divergence for each token, then sum:
+На практике мы вычисляем дивергенцию KL для каждого токена, затем суммируем:
 
 $$
 D_{KL} = \sum_{t=1}^{T} \log \frac{\pi_\theta(a_t|s, a_{<t})}{\pi_{\text{ref}}(a_t|s, a_{<t})}
 $$
 
-The larger the KL divergence, the greater the difference between current policy and reference model. By adding KL divergence penalty term $-\beta \cdot D_{KL}$, we limit the magnitude of policy updates, avoiding "forgetting" knowledge learned during SFT phase.
+Чем больше расхождение KL, тем больше разница между текущей политикой и эталонной моделью. Добавляя штрафной срок за расхождение KL $-\beta \cdot D_{KL}$, мы ограничиваем объем обновлений политики, избегая «забывания» знаний, полученных на этапе SFT.
 
-The choice of `kl_coef` ($\beta$) is important:
+Выбор`kl_coef`($\beta$) важен:
 
-- Too small (0.01): Policy may deviate too far, causing output format confusion or quality degradation
-- Too large (0.5): Policy updates are limited, learning is slow, difficult to surpass SFT model
-- Recommended (0.05-0.1): Balance exploration and stability
+- Слишком маленький (0,01): политика может слишком сильно отклоняться, что приведет к путанице в формате вывода или ухудшению качества.
+- Слишком большой (0,5): обновления политик ограничены, обучение происходит медленно, трудно превзойти модель SFT.
+- Рекомендуется (0,05–0,1): исследование баланса и стабильность.
 
-**(3) Training Monitoring**
+**(3) Мониторинг обучения**
 
-During GRPO training, we need to monitor the following metrics:
+Во время обучения GRPO нам необходимо отслеживать следующие показатели:
 
-- **Average Reward**: Should gradually increase. If reward doesn't increase, learning rate may be too small, KL penalty too large, or reward function design unreasonable. If reward rises then falls, may be overfitting or reward collapse.
+- **Средняя награда**: должна постепенно увеличиваться. Если вознаграждение не увеличивается, возможно, скорость обучения слишком мала, штраф за KL слишком велик или конструкция функции вознаграждения необоснованна. Если вознаграждение растет, а затем падает, возможно, произошло переобучение или коллапс вознаграждения.
 
-- **KL Divergence**: Should remain in reasonable range (0.01-0.1). If KL divergence is too large (>0.5), policy deviates too far, need to increase kl_coef or reduce learning rate. If KL divergence is too small (<0.001), policy is barely updating, need to reduce kl_coef or increase learning rate.
+- **Дивергенция KL**: должна оставаться в разумном диапазоне (0,01–0,1). Если расхождение KL слишком велико (>0,5), политика отклоняется слишком сильно, необходимо увеличить kl_coef или снизить скорость обучения. Если расхождение KL слишком мало (<0,001), политика почти не обновляется, необходимо уменьшить kl_coef или увеличить скорость обучения.
 
-- **Accuracy**: Should gradually improve. This is the most intuitive metric, reflecting the model's actual capability.
+- **Точность**: должна постепенно улучшаться. Это наиболее интуитивно понятный показатель, отражающий реальные возможности модели.
 
-- **Generation Quality**: Need manual inspection of generated answers to ensure correct format and clear reasoning.
+- **Качество генерации**: требуется ручная проверка сгенерированных ответов, чтобы убедиться в правильности формата и ясности обоснования.
 
-HelloAgents integrates two mainstream training monitoring tools: Weights & Biases (wandb) and TensorBoard.
+HelloAgents объединяет два основных инструмента мониторинга тренировок: Weights & Biases (wandb) и TensorBoard.
 
-**Method 1: Using Weights & Biases (Recommended)**
+**Метод 1: использование весов и смещений (рекомендуется)**
 
-Weights & Biases is currently the most popular machine learning experiment tracking platform, providing powerful visualization and experiment management features.
+Weights & Biases в настоящее время является самой популярной платформой для отслеживания экспериментов в машинном обучении, предоставляющей мощные функции визуализации и управления экспериментами.
 
 ```python
 import os
@@ -1435,16 +1435,16 @@ result = rl_tool.run({
 # After training completes, visit https://wandb.ai to view training curves
 ```
 
-wandb will automatically log the following metrics:
-- `train/reward`: Average reward
-- `train/kl`: KL divergence
-- `train/loss`: Training loss
-- `train/learning_rate`: Learning rate
-- `train/epoch`: Training epoch
+wandb автоматически регистрирует следующие показатели:
+-`train/reward`: Средняя награда
+-`train/kl`: Дивергенция KL
+-`train/loss`: потеря тренировки
+-`train/learning_rate`: Скорость обучения
+-`train/epoch`: Эпоха обучения
 
-**Method 2: Using TensorBoard**
+**Метод 2: Использование TensorBoard**
 
-TensorBoard is a visualization tool provided by TensorFlow, also supporting PyTorch training.
+TensorBoard — это инструмент визуализации, предоставляемый TensorFlow, который также поддерживает обучение PyTorch.
 
 ```python
 # 1. TensorBoard logs will be automatically created in output_dir during training
@@ -1464,9 +1464,9 @@ result = rl_tool.run({
 # Then visit http://localhost:6006
 ```
 
-**Method 3: Offline Monitoring (No External Tools Required)**
+**Метод 3: Автономный мониторинг (внешние инструменты не требуются)**
 
-If you don't want to use wandb or TensorBoard, you can also monitor through training logs:
+Если вы не хотите использовать wandb или TensorBoard, вы также можете отслеживать журналы обучения:
 
 ```python
 # Training process will print detailed logs
@@ -1486,96 +1486,96 @@ result = rl_tool.run({
 # ...
 ```
 
-In GRPO training, you may encounter some problems. When reward doesn't increase, it may be that learning rate is too small or KL penalty is too large limiting policy updates, or reward function design is unreasonable or SFT model quality is too poor. In this case, increase learning rate (from 1e-5 to 5e-5), reduce kl_coef (from 0.1 to 0.05), check reward function, or retrain SFT model.
+При обучении GRPO вы можете столкнуться с некоторыми проблемами. Если вознаграждение не увеличивается, возможно, скорость обучения слишком мала, или штраф KL слишком велик, что ограничивает обновления политики, или дизайн функции вознаграждения необоснован, или качество модели SFT слишком плохое. В этом случае увеличьте скорость обучения (с 1e-5 до 5e-5), уменьшите kl_coef (с 0,1 до 0,05), проверьте функцию вознаграждения или переобучите модель SFT.
 
-When KL divergence explodes (exceeds 0.5 or even 1.0) causing generated answer format confusion, it's usually because learning rate is too large or KL penalty is too small, or reward function is too aggressive. You can reduce learning rate (from 5e-5 to 1e-5), increase kl_coef (from 0.05 to 0.1), adjust reward function, or use gradient clipping.
+Когда расхождение KL резко возрастает (превышает 0,5 или даже 1,0), вызывая путаницу в формате генерируемого ответа, это обычно происходит из-за того, что скорость обучения слишком велика, штраф KL слишком мал или функция вознаграждения слишком агрессивна. Вы можете уменьшить скорость обучения (с 5e-5 до 1e-5), увеличить kl_coef (с 0,05 до 0,1), настроить функцию вознаграждения или использовать ограничение градиента.
 
-When generation quality degrades (accuracy improves but format is confused, reasoning unclear), it may be that reward function only focuses on accuracy ignoring other quality metrics, or KL penalty is too small causing model to deviate too far from SFT, or overfitting occurs. In this case, use combined reward function to optimize multiple metrics simultaneously, increase kl_coef to maintain consistency, reduce training epochs, or increase training data.
+Когда качество генерации ухудшается (точность повышается, но формат сбивается, причина неясна), возможно, функция вознаграждения фокусируется только на точности, игнорируя другие показатели качества, или штраф KL слишком мал, что приводит к слишком большому отклонению модели от SFT, или происходит переобучение. В этом случае используйте комбинированную функцию вознаграждения для одновременной оптимизации нескольких показателей, увеличьте kl_coef для обеспечения согласованности, сократите периоды обучения или увеличьте данные обучения.
 
-GRPO training has higher memory usage than SFT because it needs to generate multiple answers simultaneously and store reference model outputs, prone to OOM. You can reduce num_generations (from 8 to 4), batch_size (from 4 to 2), or max_new_tokens (from 512 to 256), or use gradient checkpointing and mixed precision training to alleviate.
+Обучение GRPO требует большего использования памяти, чем SFT, поскольку ему необходимо одновременно генерировать несколько ответов и сохранять выходные данные эталонной модели, что подвержено ошибкам OOM. Вы можете уменьшить число num_generations (с 8 до 4), пакетный размер (с 4 до 2) или max_new_tokens (с 512 до 256) или использовать градиентную контрольную точку и обучение смешанной точности для облегчения ситуации.
 
-## 11.5 Model Evaluation and Analysis
+## 11.5 Оценка и анализ модели
 
-After training is complete, we need to comprehensively evaluate model performance, not only looking at accuracy as a single metric, but also deeply analyzing model's reasoning quality, error patterns, generalization ability, etc. This section will introduce how to systematically evaluate and analyze Agentic RL models.
+После завершения обучения нам необходимо всесторонне оценить производительность модели, рассматривая не только точность как единый показатель, но и глубоко анализируя качество рассуждений модели, закономерности ошибок, способность к обобщению и т. д. В этом разделе будет показано, как систематически оценивать и анализировать модели агентного RL.
 
-### 11.5.1 Evaluation Metric System
+### 11.5.1 Система показателей оценки
 
-A good evaluation system should be multi-dimensional, measuring model capabilities from different angles. We divide evaluation metrics into three categories: accuracy metrics, efficiency metrics, and quality metrics.
+Хорошая система оценки должна быть многомерной и измерять возможности модели под разными углами. Мы делим показатели оценки на три категории: показатели точности, показатели эффективности и показатели качества.
 
-**(1) Accuracy Metrics**
+**(1) Показатели точности**
 
-Accuracy metrics measure whether the model can arrive at correct answers.
+Метрики точности измеряют, может ли модель дать правильные ответы.
 
-**Accuracy**: Most basic metric, proportion of completely correct answers. Calculation formula:
+**Точность**: основной показатель: доля полностью правильных ответов. Формула расчета:
 $$
-\text{Accuracy} = \frac{\text{Number of correct answers}}{\text{Total number of questions}}
-$$
-
-Advantages are simple and intuitive, easy to understand and compare. Disadvantages are inability to distinguish "nearly correct" from "completely wrong", may be too coarse for complex tasks.
-
-**Top-K Accuracy**: Generate K answers, count as correct if at least one is correct. Calculation formula:
-$$
-\text{Accuracy@K} = \frac{\text{Number of questions with at least one correct answer}}{\text{Total number of questions}}
+\text{Точность} = \frac{\text{Количество правильных ответов}}{\text{Общее количество вопросов}}
 $$
 
-This metric reflects the model's "potential", i.e., whether correct answers can be found through multiple sampling.
+Преимущества просты и интуитивно понятны, их легко понять и сравнить. Недостатки: неспособность отличить «почти правильно» от «совершенно неправильно», может быть слишком грубым для сложных задач.
 
-**Numerical Error**: For mathematical problems, can calculate error between predicted and true values. Calculation formula:
+**Топ-K точности**: генерирует K ответов; считается правильным, если хотя бы один правильный. Формула расчета:
+$$
+\text{Accuracy@K} = \frac{\text{Количество вопросов хотя бы с одним правильным ответом}}{\text{Общее количество вопросов}}
+$$
+
+Эта метрика отражает «потенциал» модели, т. е. можно ли найти правильные ответы с помощью множественной выборки.
+
+**Числовая ошибка**: для математических задач можно вычислить ошибку между прогнозируемыми и истинными значениями. Формула расчета:
 
 $$
 \text{Error} = \frac{1}{N} \sum_{i=1}^{N} |y_i - \hat{y}_i|
 $$
 
-This metric can distinguish "nearly correct" (e.g., predicted 72.5, actual 72) from "completely wrong" (e.g., predicted 100, actual 72).
+Эта метрика позволяет отличить «почти правильное» (например, предсказанное 72,5, фактическое 72) от «совершенно неверного» (например, предсказанное 100, фактическое 72).
 
-**(2) Efficiency Metrics**
+**(2) Показатели эффективности**
 
-Efficiency metrics measure the cost of generating answers.
+Показатели эффективности измеряют стоимость получения ответов.
 
-**Average Length**: Average number of tokens in generated answers. Calculation formula:
-
-$$
-\text{Avg Length} = \frac{1}{N} \sum_{i=1}^{N} |y_i|
-$$
-
-Shorter answers mean lower inference cost and faster response speed.
-
-**Reasoning Steps**: Number of reasoning steps contained in answers. Calculation formula:
+**Средняя длина**: среднее количество токенов в сгенерированных ответах. Формула расчета:
 
 $$
-\text{Avg Steps} = \frac{1}{N} \sum_{i=1}^{N} s_i
+\text{Средняя длина} = \frac{1}{N} \sum_{i=1}^{N} |y_i|
 $$
 
-Appropriate number of steps (2-5 steps) indicates model can systematically decompose problems; too many steps may indicate redundant reasoning.
+Более короткие ответы означают меньшую стоимость вывода и более высокую скорость ответа.
 
-**Inference Time**: Time required to generate one answer. This metric is important in actual deployment, affecting user experience.
+**Этапы рассуждения**: количество шагов рассуждения, содержащихся в ответах. Формула расчета:
 
-**(3) Quality Metrics**
-
-Quality metrics measure readability and explainability of answers.
-
-**Format Correctness**: Whether answers conform to expected format (e.g., containing markers like "Step 1", "Final Answer"). Calculation formula:
 $$
-\text{Format Correctness} = \frac{\text{Number of correctly formatted answers}}{\text{Total number of answers}}
+\text{Средние шаги} = \frac{1}{N} \sum_{i=1}^{N} s_i
 $$
 
-Correct format is a basic requirement; answers with confused format are difficult to use even if results are correct.
+Соответствующее количество шагов (2–5 шагов) указывает на то, что модель может систематически декомпозировать проблемы; слишком много шагов может указывать на излишние рассуждения.
 
-**Reasoning Coherence**: Whether reasoning steps are logically coherent. This metric usually requires manual evaluation or specialized evaluation models.
+**Время вывода**: время, необходимое для генерации одного ответа. Этот показатель важен при фактическом развертывании и влияет на взаимодействие с пользователем.
 
-**Explainability**: Whether answers are easy to understand and verify. Answers with clear steps are more explainable than answers that directly give results.
+**(3) Показатели качества**
 
-As shown in Table 11.7, comparison of different metrics.
+Метрики качества измеряют читабельность и объяснимость ответов.
+
+**Правильность формата**. Соответствуют ли ответы ожидаемому формату (например, содержат ли такие маркеры, как «Шаг 1», «Окончательный ответ»). Формула расчета:
+$$
+\text{Правильность формата} = \frac{\text{Количество правильно оформленных ответов}}{\text{Общее количество ответов}}
+$$
+
+Правильный формат является основным требованием; ответы в запутанном формате сложно использовать, даже если результаты верны.
+
+**Последовательность рассуждений**: являются ли шаги рассуждения логически последовательными. Этот показатель обычно требует ручной оценки или специализированных моделей оценки.
+
+**Объяснимость**: легко ли понять и проверить ответы. Ответы с четкими шагами более объяснимы, чем ответы, которые непосредственно дают результат.
+
+Как показано в Таблице 11.7, сравнение различных показателей.
 
 <div align="center">
-  <p>Table 11.7 Evaluation Metric Comparison</p>
+  <p>Таблица 11.7. Сравнение показателей оценки</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-7.png" alt="" width="85%"/>
 </div>
 
 
-### 11.5.2 Evaluation Practice
+### 11.5.2 Практика оценки
 
-HelloAgents provides comprehensive evaluation functionality, capable of calculating multiple metrics at once.
+HelloAgents предоставляет комплексные функции оценки, позволяющие рассчитывать несколько показателей одновременно.
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -1614,7 +1614,7 @@ print(f"  Average reward: {eval_data['average_reward']}")
 print(f"  Test samples: {eval_data['num_samples']}")
 ```
 
-We can compare performance of pretrained model, SFT model, and GRPO model:
+Мы можем сравнить производительность предварительно обученной модели, модели SFT и модели GRPO:
 
 ```python
 # Evaluate three models
@@ -1645,11 +1645,11 @@ for name, result in results:
 print("=" * 70)
 ```
 
-### 11.5.3 Error Analysis
+### 11.5.3 Анализ ошибок
 
-Knowing accuracy alone is not enough; we need to deeply analyze what types of problems the model is prone to errors on, thereby guiding subsequent improvements. Model errors can be divided into four categories: calculation errors (reasoning steps correct but calculation wrong, e.g., "48/2=25", indicating insufficient numerical calculation ability), reasoning errors (reasoning logic errors leading to wrong problem-solving approach, e.g., adding first then dividing instead of dividing first then adding, indicating insufficient logical reasoning ability), comprehension errors (not correctly understanding the problem, e.g., question asks for "total" but only calculated part, indicating insufficient language understanding ability), format errors (answer correct but format doesn't meet requirements, e.g., missing "Final Answer:" marker, indicating insufficient format learning).
+Одного знания точности недостаточно; нам необходимо глубоко проанализировать, в каких типах проблем модель склонна к ошибкам, тем самым направляя последующие улучшения. Ошибки модели можно разделить на четыре категории: ошибки расчета (шаги рассуждения правильные, но расчет неправильный, например, «48/2 = 25», что указывает на недостаточную способность к численным расчетам), ошибки рассуждения (логические ошибки рассуждения, ведущие к неправильному подходу к решению задач, например, сначала сложение, затем деление вместо первого деления, а затем сложение, что указывает на недостаточную способность логического рассуждения), ошибки понимания (неправильное понимание проблемы, например, в вопросе запрашивается «всего», но только вычисленная часть, что указывает на недостаточность способность понимать язык), ошибки формата (ответ правильный, но формат не соответствует требованиям, например, отсутствует маркер «Окончательный ответ:», что указывает на недостаточное усвоение формата).
 
-Error analysis example:
+Пример анализа ошибок:
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -1699,7 +1699,7 @@ for error_type, count in error_types.items():
     print(f"  {error_type}: {count} ({percentage:.1f}%)")
 ```
 
-Output example:
+Пример вывода:
 
 ```bash
 Total errors: 76
@@ -1711,7 +1711,7 @@ Error type distribution:
   Format Error: 4 (5.3%)
 ```
 
-As can be seen, calculation errors are the main error type (42.1%), indicating the model's numerical calculation ability needs strengthening. Format errors are rare (5.3%), indicating SFT training was effective. We can also analyze the model's performance on problems of different difficulty:
+Как видно, ошибки расчетов являются основным типом ошибок (42,1%), что указывает на необходимость усиления возможностей численных расчетов модели. Ошибки формата редки (5,3%), что указывает на эффективность обучения SFT. Мы также можем проанализировать эффективность модели на задачах различной сложности:
 
 ```python
 # Group by number of reasoning steps
@@ -1740,7 +1740,7 @@ for group_name, results in step_groups.items():
         print(f"  {group_name}: {accuracy:.2%} ({len(results)} samples)")
 ```
 
-Output example:
+Пример вывода:
 
 ```bash
 Accuracy at different difficulty levels:
@@ -1749,33 +1749,33 @@ Accuracy at different difficulty levels:
   Hard (5+ steps): 31.60% (19 samples)
 ```
 
-As can be seen, the model performs well on easy problems (78.5%) but poorly on hard problems (31.6%). This indicates the model's multi-step reasoning ability needs improvement.
+Как видно, модель хорошо справляется с простыми задачами (78,5%), но плохо справляется с сложными задачами (31,6%). Это указывает на то, что способность многоэтапного рассуждения модели нуждается в улучшении.
 
-### 11.5.4 Improvement Directions
+### 11.5.4 Направления улучшения
 
-Based on evaluation and analysis results, we can determine improvement directions for the model, as shown in Figure 11.8.
+По результатам оценки и анализа мы можем определить направления улучшения модели, как показано на рисунке 11.8.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-8.png" alt="" width="85%"/>
-  <p>Figure 11.8 Model Improvement Iteration Process</p>
+  <p>Рисунок 11.8. Итерационный процесс улучшения модели.</p>
 </div>
 
-This is a continuous iteration process: train model → evaluate performance → analyze errors → identify problems → select improvement direction → retrain. Through multiple iterations, model performance will continuously improve.
+Это непрерывный итерационный процесс: обучение модели → оценка производительности → анализ ошибок → выявление проблем → выбор направления улучшения → переобучение. Благодаря множеству итераций производительность модели будет постоянно улучшаться.
 
-## 11.6 Complete Training Pipeline Practice
+## 11.6 Полная практика обучения
 
-In previous sections, we learned about data preparation, SFT training, GRPO training, and model evaluation separately. Now, let's integrate this knowledge to complete an end-to-end Agentic RL training pipeline.
+В предыдущих разделах мы узнали о подготовке данных, обучении SFT, обучении GRPO и оценке модели отдельно. Теперь давайте интегрируем эти знания, чтобы завершить комплексный конвейер обучения Agentic RL.
 
-### 11.6.1 End-to-End Training Pipeline
+### 11.6.1 Сквозной конвейер обучения
 
-A complete Agentic RL training pipeline includes the following stages: data preparation, SFT training, SFT evaluation, GRPO training, GRPO evaluation, and model deployment. As shown in Figure 11.9.
+Полный конвейер обучения Agentic RL включает следующие этапы: подготовка данных, обучение SFT, оценка SFT, обучение GRPO, оценка GRPO и развертывание модели. Как показано на рисунке 11.9.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-9.png" alt="" width="85%"/>
-  <p>Figure 11.9 End-to-End Training Pipeline</p>
+  <p>Рисунок 11.9. Сквозной конвейер обучения</p>
 </div>
 
-Let's implement this pipeline through a complete script:
+Давайте реализуем этот конвейер через полный скрипт:
 
 ```python
 """
@@ -2030,13 +2030,13 @@ if __name__ == "__main__":
     pipeline.run()
 ```
 
-Running this script, you will see the complete training process.
+Запустив этот скрипт, вы увидите полный процесс обучения.
 
-Running tips:
+Советы по бегу:
 
-**Start Small**: Don't start training with all data at once. First use 100-1000 samples for quick iteration, validate process and parameters, and scale up after confirming effectiveness. This can save significant time and computational resources.
+**Начните с малого**: не начинайте обучение со всеми данными сразу. Сначала используйте 100–1000 образцов для быстрой итерации, проверки процесса и параметров и масштабирования после подтверждения эффективности. Это может сэкономить значительное время и вычислительные ресурсы.
 
-**Data Quality Check**: Check data quality before training, ensure correct format, accurate answers, and no duplicate samples. You can use the following code:
+**Проверка качества данных**. Перед обучением проверяйте качество данных, убедитесь в правильности формата, точности ответов и отсутствии дублирующихся образцов. Вы можете использовать следующий код:
 
 ```python
 def check_data_quality(dataset):
@@ -2072,15 +2072,15 @@ else:
     print("✓ Data quality check passed")
 ```
 
-**Data Augmentation**: If data volume is insufficient, consider data augmentation, such as rewriting questions (keeping answers unchanged), generating similar questions, or back translation. But be careful to maintain data quality and avoid introducing noise.
+**Дополнение данных**. Если объем данных недостаточен, рассмотрите возможность увеличения данных, например переписывание вопросов (с сохранением ответов без изменений), создание похожих вопросов или обратный перевод. Но будьте осторожны, чтобы сохранить качество данных и избежать шума.
 
-### 11.6.2 Hyperparameter Tuning
+### 11.6.2 Настройка гиперпараметров
 
-Hyperparameter tuning is key to improving model performance. Here are some commonly used tuning strategies.
+Настройка гиперпараметров является ключом к улучшению производительности модели. Вот некоторые часто используемые стратегии настройки.
 
-**(1) Grid Search**
+**(1) Поиск по сетке**
 
-Grid Search is the simplest tuning method, traversing all parameter combinations and selecting the best set.
+Поиск по сетке — это самый простой метод настройки, позволяющий просмотреть все комбинации параметров и выбрать лучший набор.
 
 ```python
 # Define parameter grid
@@ -2124,11 +2124,11 @@ print(f"Best parameters: {best_params}")
 print(f"Best accuracy: {best_accuracy:.2%}")
 ```
 
-Grid search advantages are simple and direct, can find global optimum. Disadvantages are high computational cost, impractical when many parameters.
+Преимущества поиска по сетке просты и понятны, позволяют найти глобальный оптимум. Недостатками являются высокие вычислительные затраты, что непрактично при наличии большого количества параметров.
 
-**(2) Random Search**
+**(2) Случайный поиск**
 
-Random Search randomly samples parameter combinations, more efficient than grid search.
+Случайный поиск случайным образом выбирает комбинации параметров, что более эффективно, чем поиск по сетке.
 
 ```python
 import random
@@ -2160,11 +2160,11 @@ print(f"Best parameters: {best_params}")
 print(f"Best accuracy: {best_accuracy:.2%}")
 ```
 
-Random search advantages are high efficiency, suitable for large parameter spaces. Disadvantages are may miss optimal solution.
+Преимущества случайного поиска — высокая эффективность, подходит для больших пространств параметров. Недостатки: возможно отсутствие оптимального решения.
 
-**(3) Bayesian Optimization**
+**(3) Байесовская оптимизация**
 
-Bayesian Optimization uses probabilistic models to guide search, more intelligent. Can use libraries like Optuna:
+Байесовская оптимизация использует вероятностные модели для более интеллектуального поиска. Можно использовать такие библиотеки, как Optuna:
 
 ```python
 import optuna
@@ -2203,34 +2203,34 @@ print(f"Best parameters: {study.best_params}")
 print(f"Best accuracy: {study.best_value:.2%}")
 ```
 
-Bayesian optimization advantages are high sample efficiency, can quickly find good parameters. Disadvantages are complex implementation, requires additional libraries.
+Преимущества байесовской оптимизации: высокая эффективность выборки, возможность быстрого поиска хороших параметров. Недостатки — сложная реализация, требуются дополнительные библиотеки.
 
-As shown in Table 11.8, comparison of different tuning methods.
+Как показано в таблице 11.8, сравнение различных методов настройки.
 
 <div align="center">
-  <p>Table 11.8 Hyperparameter Tuning Method Comparison</p>
+  <p>Таблица 11.8. Сравнение методов настройки гиперпараметров</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-8.png" alt="" width="85%"/>
 </div>
 
-### 11.6.3 Distributed Training
+### 11.6.3 Распределенное обучение
 
-When data volume and model scale increase, single GPU training becomes very slow. At this point we need to use distributed training to accelerate the training process. HelloAgents is based on TRL and Hugging Face Accelerate, naturally supporting multi-GPU and multi-node distributed training.
+Когда объем данных и масштаб модели увеличиваются, обучение на одном графическом процессоре становится очень медленным. На этом этапе нам нужно использовать распределенное обучение для ускорения процесса обучения. HelloAgents основан на TRL и Hugging Face Accelerate, естественно поддерживая распределенное обучение с несколькими графическими процессорами и несколькими узлами.
 
-**Solution Selection Recommendations**:
+**Рекомендации по выбору решения**:
 
-- **Single Machine Multi-GPU (2-8 cards)**: Use DDP, simple and efficient
-- **Large Models (>7B)**: Use DeepSpeed ZeRO-2 or ZeRO-3
-- **Multi-Node Cluster**: Use DeepSpeed ZeRO-3 + Offload
+- **Одна машина с несколькими графическими процессорами (2–8 карт)**: используйте DDP, просто и эффективно.
+- **Большие модели (>7B)**: используйте DeepSpeed ​​ZeRO-2 или ZeRO-3.
+- **Многоузловой кластер**: используйте DeepSpeed ​​ZeRO-3 + разгрузка.
 
-**(1) Configure Accelerate**
+**(1) Настройка ускорения**
 
-First need to create Accelerate configuration file. Run the following command:
+Сначала необходимо создать файл конфигурации Accelerate. Выполните следующую команду:
 
 ```bash
 accelerate config
 ```
 
-Select configuration according to prompts:
+Выберите конфигурацию согласно подсказкам:
 
 ```
 In which compute environment are you running?
@@ -2255,13 +2255,13 @@ How many GPU(s) should be used for distributed training?
 > 4
 ```
 
-This will generate a configuration file at `~/.cache/huggingface/accelerate/default_config.yaml`.
+Это создаст файл конфигурации по адресу`~/.cache/huggingface/accelerate/default_config.yaml`.
 
-**(2) Training with DDP**
+**(2) Обучение с помощью DDP**
 
-**Data Parallel (DDP)** is the simplest distributed solution, each GPU holds a complete model copy, data is split across GPUs.
+**Параллельный доступ к данным (DDP)** — это самое простое распределенное решение: каждый графический процессор содержит полную копию модели, данные распределяются между графическими процессорами.
 
-**Accelerate Configuration File** (`multi_gpu_ddp.yaml`):
+**Файл конфигурации ускорения** (`multi_gpu_ddp.yaml`):
 
 ```yaml
 compute_environment: LOCAL_MACHINE
@@ -2273,7 +2273,7 @@ gpu_ids: all
 mixed_precision: fp16
 ```
 
-**Training Script** (no modification needed):
+**Сценарий обучения** (изменения не требуются):
 
 ```python
 from hello_agents.tools import RLTrainingTool
@@ -2292,7 +2292,7 @@ result = rl_tool.run({
 })
 ```
 
-**Launch Training**:
+**Запуск обучения**:
 
 ```bash
 # Using configuration file
@@ -2302,11 +2302,11 @@ accelerate launch --config_file multi_gpu_ddp.yaml train_script.py
 accelerate launch --num_processes 4 --mixed_precision fp16 train_script.py
 ```
 
-**(3) Training with DeepSpeed ZeRO**
+**(3) Тренировка с DeepSpeed ​​ZeRO**
 
-**DeepSpeed ZeRO** significantly reduces memory usage by sharding optimizer states, gradients, and model parameters, supporting larger models and batch sizes.
+**DeepSpeed ​​ZeRO** значительно снижает использование памяти за счет сегментирования состояний оптимизатора, градиентов и параметров модели, поддерживая более крупные модели и размеры пакетов.
 
-**ZeRO-2 Configuration File** (`deepspeed_zero2.yaml`):
+**Файл конфигурации ZeRO-2** (`deepspeed_zero2.yaml`):
 
 ```yaml
 compute_environment: LOCAL_MACHINE
@@ -2325,7 +2325,7 @@ deepspeed_config:
   zero_stage: 2  # ZeRO-2
 ```
 
-**ZeRO-3 Configuration File** (`deepspeed_zero3.yaml`):
+**Файл конфигурации ZeRO-3** (`deepspeed_zero3.yaml`):
 
 ```yaml
 compute_environment: LOCAL_MACHINE
@@ -2344,7 +2344,7 @@ deepspeed_config:
   zero_stage: 3  # ZeRO-3
 ```
 
-**Launch Training**:
+**Запуск обучения**:
 
 ```bash
 # ZeRO-2
@@ -2354,18 +2354,18 @@ accelerate launch --config_file deepspeed_zero2.yaml train_script.py
 accelerate launch --config_file deepspeed_zero3.yaml train_script.py
 ```
 
-As shown in Table 11.9, this is a memory comparison for training Qwen3-0.6B model with different methods:
+Как показано в таблице 11.9, это сравнение памяти для обучения модели Qwen3-0.6B различными методами:
 
 <div align="center">
-  <p>Table 11.9 Memory Comparison (Qwen3-0.6B Model)</p>
+  <p>Таблица 11.9 Сравнение памяти (модель Qwen3-0.6B)</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/11-figures/11-table-9.png" alt="" width="85%"/>
 </div>
 
-**(4) Multi-Node Training**
+**(4) Многоузловое обучение**
 
-For ultra-large-scale training, multiple nodes (machines) can be used.
+Для сверхкрупномасштабного обучения можно использовать несколько узлов (машин).
 
-**Main Node Configuration** (`multi_node_main.yaml`):
+**Конфигурация основного узла** (`multi_node_main.yaml`):
 
 ```yaml
 compute_environment: LOCAL_MACHINE
@@ -2383,14 +2383,14 @@ deepspeed_config:
   offload_param_device: cpu
 ```
 
-**Worker Node Configuration** (modify `machine_rank` to 1, 2, 3):
+**Конфигурация рабочего узла** (изменить`machine_rank`до 1, 2, 3):
 
 ```yaml
 machine_rank: 1  # Worker node 1
 # Other configurations same
 ```
 
-**Launch Training**:
+**Запуск обучения**:
 
 ```bash
 # On main node
@@ -2406,27 +2406,27 @@ accelerate launch --config_file multi_node_worker2.yaml train_script.py
 accelerate launch --config_file multi_node_worker3.yaml train_script.py
 ```
 
-**(5) Distributed Training Best Practices**
+**(5) Лучшие практики распределенного обучения**
 
-**1. Batch Size Adjustment**
+**1. Корректировка размера партии**
 
-In distributed training, total batch size = `per_device_batch_size × num_gpus × gradient_accumulation_steps`
+При распределенном обучении общий размер пакета =`per_device_batch_size × num_gpus × gradient_accumulation_steps`
 
 ```python
 # Single GPU: batch_size=4, gradient_accumulation=4, total_batch=16
 # 4GPU DDP: batch_size=4, gradient_accumulation=1, total_batch=16 (keep consistent)
 ```
 
-**2. Learning Rate Scaling**
+**2. Масштабирование скорости обучения**
 
-Use linear scaling rule: `lr_new = lr_base × sqrt(total_batch_size_new / total_batch_size_base)`
+Используйте правило линейного масштабирования:`lr_new = lr_base × sqrt(total_batch_size_new / total_batch_size_base)`
 
 ```python
 # Baseline: single GPU, batch=16, lr=5e-5
 # 4GPU: batch=64, lr=5e-5 × sqrt(64/16) = 1e-4
 ```
 
-**3. Monitoring and Debugging**
+**3. Мониторинг и отладка**
 
 ```python
 # Enable verbose logging
@@ -2439,13 +2439,13 @@ export NCCL_DEBUG=INFO
 watch -n 1 nvidia-smi
 ```
 
-### 11.6.4 Production Deployment
+### 11.6.4 Развертывание производства
 
-After training is complete, we need to deploy the model to production environment. Here are some deployment recommendations.
+После завершения обучения нам необходимо развернуть модель в производственной среде. Вот несколько рекомендаций по развертыванию.
 
-**(1) Model Export**
+**(1) Экспорт модели**
 
-Merge LoRA weights into base model for easier deployment:
+Объедините веса LoRA в базовую модель для упрощения развертывания:
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -2470,9 +2470,9 @@ tokenizer.save_pretrained("./models/merged_model")
 print("✓ Model exported to: ./models/merged_model")
 ```
 
-**(2) Inference Optimization**
+**(2) Оптимизация вывода**
 
-Use quantization and optimization techniques to accelerate inference:
+Используйте методы квантования и оптимизации для ускорения вывода:
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -2508,9 +2508,9 @@ answer = generate_answer(question)
 print(answer)
 ```
 
-**(3) API Service**
+**(3) Служба API**
 
-Create inference service using FastAPI:
+Создайте сервис вывода с помощью FastAPI:
 
 ```python
 from fastapi import FastAPI
@@ -2557,136 +2557,136 @@ def generate(question: Question):
 
 
 
-## 11.7 Chapter Summary
+## 11.7 Краткое содержание главы
 
-In this chapter, we systematically learned the theory and practice of Agentic RL, from basic concepts to complete training pipeline, from data preparation to model deployment. Let's review the main content of this chapter.
+В этой главе мы систематически изучили теорию и практику агентного обучения, от базовых концепций до полного процесса обучения, от подготовки данных до развертывания модели. Рассмотрим основное содержание этой главы.
 
-**(1) Essence of Agentic RL**
+**(1) Сущность Агентского РЛ**
 
-Agentic RL treats LLM as a learnable policy, embedding it into the agent's perception-decision-execution loop, optimizing agent performance in multi-step tasks through reinforcement learning. Its core difference from traditional PBRFT (Preference-Based Reinforcement Fine-Tuning) lies in:
+Agentic RL рассматривает LLM как обучаемую политику, встраивая ее в цикл восприятия-решения-исполнения агента, оптимизируя производительность агента при выполнении многоэтапных задач посредством обучения с подкреплением. Его основное отличие от традиционного PBRFT (точная настройка армирования на основе предпочтений) заключается в:
 
-- **Task Nature**: From single-turn dialogue optimization to multi-step sequential decision-making
-- **State Space**: From static prompts to dynamically evolving environment states
-- **Action Space**: From pure text generation to text + tools + environment operations
-- **Reward Design**: From single-step quality assessment to long-term cumulative returns
-- **Optimization Objective**: From short-term response quality to long-term task success
+- **Характер задачи**: от одноходовой оптимизации диалога к многоэтапному последовательному принятию решений.
+- **Пространство состояний**: от статических подсказок к динамически развивающимся состояниям среды.
+- **Пространство действий**: от генерации чистого текста к операциям с текстом + инструментами + средой.
+- **Дизайн вознаграждений**: от одноэтапной оценки качества до долгосрочной совокупной прибыли.
+- **Цель оптимизации**: от краткосрочного качества реагирования к долгосрочному успеху задач.
 
-**(2) Six Core Capabilities**
+**(2) Шесть основных возможностей**
 
-Agentic RL aims to enhance six core capabilities of agents:
+Agentic RL направлен на улучшение шести основных возможностей агентов:
 
-1. **Reasoning**: Multi-step logical deduction, learning reasoning strategies
-2. **Tool Use**: API/tool invocation, learning when and how to use
-3. **Memory**: Long-term information retention, learning memory management
-4. **Planning**: Action sequence planning, learning dynamic planning
-5. **Self-Improvement**: Self-reflection optimization, learning from mistakes
-6. **Perception**: Multimodal understanding, visual reasoning and tool use
+1. **Рассуждение**: многоэтапный логический вывод, изучение стратегий рассуждения.
+2. **Использование инструментов**: вызов API/инструментов, изучение того, когда и как их использовать.
+3. **Память**: долговременное сохранение информации, управление обучающей памятью.
+4. **Планирование**: планирование последовательности действий, обучение динамическому планированию.
+5. **Самосовершенствование**: оптимизация самоанализа, обучение на ошибках.
+6. **Восприятие**: мультимодальное понимание, визуальное мышление и использование инструментов.
 
-**(3) Training Pipeline**
+**(3) Программа обучения**
 
-Complete Agentic RL training pipeline includes:
+Полный пакет обучения Agentic RL включает в себя:
 
-1. **Pretraining**: Learning language knowledge on large-scale text (usually using existing pretrained models)
-2. **Supervised Fine-Tuning (SFT)**: Learning task format and basic reasoning ability
-3. **Reinforcement Learning (RL)**: Optimizing reasoning strategies through trial and error, surpassing training data quality
+1. **Предварительное обучение**: изучение языковых знаний на основе крупномасштабного текста (обычно с использованием существующих предварительно обученных моделей).
+2. **Точная настройка с учителем (SFT)**: формат обучающих задач и базовые способности к рассуждению.
+3. **Обучение с подкреплением (RL)**: оптимизация стратегий рассуждения методом проб и ошибок, превосходящее качество обучающих данных.
 
-Among these, SFT is the foundation, RL is the enhancement. Without SFT foundation, RL is difficult to succeed; without RL optimization, models can only imitate training data.
+Среди них SFT является основой, RL — усовершенствованием. Без основы SFT RL трудно добиться успеха; без оптимизации RL модели могут только имитировать обучающие данные.
 
-If you want to deeply learn Agentic RL, recommend following this path:
+Если вы хотите глубоко изучить Agentic RL, рекомендуем пройти по этому пути:
 
-**Foundation Stage**
+**Основной этап**
 
-1. **Reinforcement Learning Basics**: Learn basic concepts like MDP, policy gradient, PPO
-2. **LLM Basics**: Understand technologies like Transformer, pretraining, fine-tuning
-3. **Practice HelloAgents**: Run example code from this chapter, understand complete pipeline
+1. **Основы обучения с подкреплением**: изучите базовые понятия, такие как MDP, градиент политики, PPO.
+2. **Основы LLM**: понимание таких технологий, как Transformer, предварительное обучение, точная настройка.
+3. **Практика HelloAgents**: запустите пример кода из этой главы, чтобы понять весь конвейер.
 
-**Advanced Stage**
+**Продвинутый уровень**
 
-1. **Deep Dive into TRL**: Learn TRL library implementation, understand details of algorithms like SFT and GRPO
-2. **Custom Datasets**: Train models using your own datasets
-3. **Custom Reward Functions**: Design reward functions suitable for your tasks
-4. **Parameter Tuning**: Systematically tune hyperparameters, improve model performance
+1. **Углубленное изучение TRL**: изучите реализацию библиотеки TRL, разберитесь в деталях таких алгоритмов, как SFT и GRPO.
+2. **Пользовательские наборы данных**: обучайте модели, используя собственные наборы данных.
+3. **Пользовательские функции вознаграждения**: создавайте функции вознаграждения, подходящие для ваших задач.
+4. **Настройка параметров**: систематическая настройка гиперпараметров, повышение производительности модели.
 
-**Expert Stage**
+**Экспертный уровень**
 
-1. **Multi-Step Reasoning**: Research long-sequence reasoning tasks
-2. **Tool Learning**: Enable agents to learn tool use
-3. **Multi-Agent**: Research multi-agent collaboration
-4. **Cutting-Edge Papers**: Read latest research papers, follow frontier progress
-
-
-
-We hope this chapter helps you understand and master Agentic RL technology, apply this knowledge in your own projects, and build more intelligent Agent systems!
+1. **Многоэтапное рассуждение**: исследуйте задачи на рассуждение с длинной последовательностью.
+2. **Обучение инструментам**: позвольте агентам изучать использование инструментов.
+3. **Мультиагентность**: исследование сотрудничества между несколькими агентами.
+4. **Передовые статьи**: читайте последние научные статьи и следите за передовым прогрессом.
 
 
 
-## References
+Мы надеемся, что эта глава поможет вам понять и освоить технологию Agentic RL, применить эти знания в своих собственных проектах и ​​построить более интеллектуальные системы агентов!
 
-[1] Schulman, J., Wolski, F., Dhariwal, P., Radford, A., & Klimov, O. (2017). Proximal Policy Optimization Algorithms. *arXiv preprint arXiv:1707.06347*.
 
-[2] Shao, Z., Wang, P., Zhu, Q., Xu, R., Song, J., Zhang, M., ... & Guo, D. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. *arXiv preprint arXiv:2402.03300*.
 
-[3] Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., ... & Chen, W. (2021). LoRA: Low-Rank Adaptation of Large Language Models. *arXiv preprint arXiv:2106.09685*.
+## Ссылки
 
-[4] Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L., ... & Schulman, J. (2021). Training Verifiers to Solve Math Word Problems. *arXiv preprint arXiv:2110.14168*.
+[1] Шульман Дж., Вольски Ф., Дхаривал П., Рэдфорд А. и Климов О. (2017). Алгоритмы оптимизации проксимальной политики. *Препринт arXiv arXiv:1707.06347*.
 
-[5] Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C., Mishkin, P., ... & Lowe, R. (2022). Training language models to follow instructions with human feedback. *Advances in Neural Information Processing Systems*, 35, 27730-27744.
+[2] Шао З., Ван П., Чжу Ц., Сюй Р., Сун Дж., Чжан М., ... и Го Д. (2024). DeepSeekMath: расширение границ математических рассуждений в моделях открытого языка. *Препринт arXiv arXiv:2402.03300*.
 
-[6] Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. *arXiv preprint arXiv:2305.18290*.
+[3] Ху, Э.Дж., Шен, Ю., Уоллис, П., Аллен-Чжу, З., Ли, Ю., Ван, С., ... и Чен, В. (2021). LoRA: низкоранговая адаптация больших языковых моделей. *Препринт arXiv arXiv:2106.09685*.
 
-[7] Lee, H., Phatale, S., Mansoor, H., Lu, K., Mesnard, T., Bishop, C., ... & Rastogi, A. (2023). RLAIF: Scaling Reinforcement Learning from Human Feedback with AI Feedback. *arXiv preprint arXiv:2309.00267*.
+[4] Коббе К., Косараджу В., Баварян М., Чен М., Джун Х., Кайзер Л., ... и Шульман Дж. (2021). Обучение проверяющих решению математических словесных задач. *Препринт arXiv arXiv:2110.14168*.
 
-[8] Wei, J., Wang, X., Schuurmans, D., Bosma, M., Ichter, B., Xia, F., ... & Zhou, D. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. *Advances in Neural Information Processing Systems*, 35, 24824-24837.
+[5] Оуян Л., Ву Дж., Цзян Х., Алмейда Д., Уэйнрайт К., Мишкин П., ... и Лоу Р. (2022). Обучение языковых моделей следованию инструкциям с обратной связью от человека. *Достижения в области нейронных систем обработки информации*, 35, 27730-27744.
 
-[9] von Werra, L., Belkada, Y., Tunstall, L., Beeching, E., Thrush, T., Lambert, N., & Huang, S. (2020). TRL: Transformer Reinforcement Learning. *GitHub repository*. https://github.com/huggingface/trl
+[6] Рафаилов Р., Шарма А., Митчелл Э., Эрмон С., Мэннинг К.Д. и Финн К. (2023). Прямая оптимизация предпочтений: ваша языковая модель тайно является моделью вознаграждения. *Препринт arXiv arXiv:2305.18290*.
 
-[10] Qwen Team. (2025). Qwen3 Technical Report. *arXiv preprint arXiv:2505.09388*.
+[7] Ли, Х., Фатале, С., Мансур, Х., Лу, К., Меснард, Т., Бишоп, К., ... и Растоги, А. (2023). RLAIF: масштабирование обучения с подкреплением на основе обратной связи между людьми и обратной связью от ИИ. *Препринт arXiv arXiv:2309.00267*.
 
-[11] Bai, Y., Jones, A., Ndousse, K., Askell, A., Chen, A., DasSarma, N., ... & Kaplan, J. (2022). Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback. *arXiv preprint arXiv:2204.05862*.
+[8] Вэй Дж., Ван Х., Шуурманс Д., Босма М., Ихтер Б., Ся Ф., ... и Чжоу Д. (2022). Подсказки по цепочке мыслей вызывают рассуждения в больших языковых моделях. *Достижения в области нейронных систем обработки информации*, 35, 24824-24837.
 
-[12] Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E., Narang, S., ... & Zhou, D. (2022). Self-Consistency Improves Chain of Thought Reasoning in Language Models. *arXiv preprint arXiv:2203.11171*.
+[9] фон Верра Л., Белкада Ю., Танстолл Л., Бичинг Э., Дрозд Т., Ламберт Н. и Хуанг С. (2020). TRL: Обучение армированию трансформаторов. *Репозиторий GitHub*.https://github.com/huggingface/trl
 
-[13] Christiano, P. F., Leike, J., Brown, T., Martic, M., Legg, S., & Amodei, D. (2017). Deep Reinforcement Learning from Human Preferences. *Advances in Neural Information Processing Systems*, 30.
+[10] Команда Квен. (2025). Технический отчет Qwen3. *Препринт arXiv arXiv:2505.09388*.
 
-[14] Stiennon, N., Ouyang, L., Wu, J., Ziegler, D., Lowe, R., Voss, C., ... & Christiano, P. F. (2020). Learning to summarize with human feedback. *Advances in Neural Information Processing Systems*, 33, 3008-3021.
+[11] Бай, Ю., Джонс, А., Ндусс, К., Аскелл, А., Чен, А., ДасСарма, Н., ... и Каплан, Дж. (2022). Обучение полезного и безобидного помощника с подкреплением обучения на основе отзывов людей. *Препринт arXiv arXiv:2204.05862*.
 
-[15] Ziegler, D. M., Stiennon, N., Wu, J., Brown, T. B., Radford, A., Amodei, D., ... & Irving, G. (2019). Fine-Tuning Language Models from Human Preferences. *arXiv preprint arXiv:1909.08593*.
+[12] Ван, X., Вэй, Дж., Шуурманс, Д., Ле, К., Чи, Э., Наранг, С., ... и Чжоу, Д. (2022). Самосогласованность улучшает цепочку мыслей в языковых моделях. *Препринт arXiv arXiv:2203.11171*.
 
-## Exercises
+[13] Кристиано П.Ф., Лейке Дж., Браун Т., Мартич М., Легг С. и Амодей Д. (2017). Глубокое обучение с подкреплением на основе человеческих предпочтений. *Достижения в области нейронных систем обработки информации*, 30.
 
-> **Note**: Some exercises do not have standard answers; the focus is on cultivating learners' comprehensive understanding and practical ability in Agentic RL and agent training.
+[14] Стиеннон Н., Оуян Л., Ву Дж., Зиглер Д., Лоу Р., Восс К., ... и Кристиано П.Ф. (2020). Учимся подводить итоги с помощью человеческой обратной связи. *Достижения в области нейронных систем обработки информации*, 33, 3008-3021.
 
-1. This chapter introduced the evolution from LLM training to Agentic RL. Please analyze:
+[15] Зиглер, Д.М., Стиеннон, Н., Ву, Дж., Браун, Т.Б., Рэдфорд, А., Амодей, Д., ... и Ирвинг, Г. (2019). Точная настройка языковых моделей на основе человеческих предпочтений. *Препринт arXiv arXiv:1909.08593*.
 
-   - In Table 11.1 of Section 11.1.3, the differences between PBRFT (Preference-Based Reinforcement Fine-Tuning) and Agentic RL under the MDP framework are compared. Please explain in depth: Why does Agentic RL's state space $s_t = (\text{prompt}, o_1, o_2, ..., o_t)$ include historical observations, while PBRFT's state $s_0 = \text{prompt}$ only includes the initial prompt? What impact does this difference have on the training process and final results?
-   - Suppose you want to train an "intelligent code debugging assistant" that needs to: (1) analyze code to find bugs; (2) consult documentation to understand API usage; (3) modify code; (4) run tests to verify fix effectiveness. Please map this task to the reinforcement learning framework, clearly defining state space, action space, reward function, and state transition function.
-   - Section 11.1.1 mentioned that traditional supervised learning has the limitation of "difficulty optimizing long-term objectives". Please design a specific multi-step reasoning task (such as mathematical proof, complex problem solving), demonstrating why supervised learning struggles to optimize intermediate steps, while reinforcement learning can solve this problem through delayed rewards.
+## Упражнения
 
-2. SFT (Supervised Fine-Tuning) and GRPO (Group Relative Policy Optimization) are two core training methods in this chapter. Based on Sections 11.2 and 11.3, please think deeply:
+> **Примечание**. Некоторые упражнения не имеют стандартных ответов; основное внимание уделяется развитию всестороннего понимания и практических способностей учащихся в области агентского обучения и обучения агентов.
 
-   > **Note**: This is a hands-on practice question, actual operation recommended
+1. В этой главе представлена ​​эволюция от обучения LLM к Agentic RL. Пожалуйста, проанализируйте:
 
-   - In the SFT training code in Section 11.2.4, we used LoRA (Low-Rank Adaptation) technology to reduce training parameters. Please analyze: What is the core idea of LoRA? Why can it achieve effects close to full parameter fine-tuning with a small number of parameters (such as 0.16%)? Under what circumstances should LoRA be chosen over full parameter fine-tuning?
-   - What advantages does the GRPO algorithm (Section 11.3) have compared to traditional PPO algorithm? Please compare the training processes of both, analyzing how GRPO simplifies the training process and improves stability through "group-relative rewards". If applying GRPO to other tasks (such as code generation, dialogue optimization), what adjustments are needed?
-   - Based on the code in Section 11.2.5, please extend the SFT training pipeline, adding the following features: (1) support for multi-turn dialogue data training; (2) add data augmentation strategies (such as synonym rewriting, difficulty adjustment); (3) implement visualization monitoring of training process (such as loss curves, sample quality assessment).
+   - В таблице 11.1 раздела 11.1.3 сравниваются различия между PBRFT (тонкая настройка подкрепления на основе предпочтений) и агентным RL в рамках MDP. Пожалуйста, объясните подробно: почему пространство состояний Agentic RL $s_t = (\text{prompt}, o_1, o_2, ..., o_t)$ включает исторические наблюдения, а состояние PBRFT $s_0 = \text{prompt}$ включает только начальное приглашение? Какое влияние эта разница оказывает на тренировочный процесс и конечные результаты?
+   - Предположим, вы хотите обучить «интеллектуального помощника по отладке кода», который должен: (1) анализировать код для поиска ошибок; (2) ознакомиться с документацией, чтобы понять использование API; (3) изменить код; (4) запустить тесты для проверки эффективности исправлений. Пожалуйста, сопоставьте эту задачу со структурой обучения с подкреплением, четко определив пространство состояний, пространство действий, функцию вознаграждения и функцию перехода состояний.
+   - В разделе 11.1.1 упоминается, что традиционное обучение под учителем имеет ограничение, заключающееся в «трудности оптимизации долгосрочных целей». Пожалуйста, разработайте конкретную многоэтапную задачу рассуждения (например, математическое доказательство, решение сложных проблем), демонстрирующую, почему контролируемое обучение с трудом оптимизирует промежуточные шаги, в то время как обучение с подкреплением может решить эту проблему за счет отсроченного вознаграждения.
 
-3. Reward function design is a core challenge of Agentic RL. Based on Section 11.3.3, please complete the following extended practice:
+2. SFT (контролируемая точная настройка) и GRPO (оптимизация групповой относительной политики) — два основных метода обучения, рассматриваемых в этой главе. На основании разделов 11.2 и 11.3, пожалуйста, подумайте глубоко:
 
-   > **Note**: This is a hands-on practice question, actual operation recommended
+> **Примечание**: это практический вопрос, рекомендуется использовать в реальных условиях.
 
-   - In Section 11.3.3, we designed a simple binary reward for GSM8K math problems (correct +1, incorrect 0). Please design a more refined reward function that can: (1) give partial rewards for partially correct answers; (2) score the reasonableness of the reasoning process; (3) penalize overly verbose or inefficient solution paths. How should this reward function be implemented?
-   - Reward function design often requires domain knowledge. Please design reward functions for the following three different agent tasks: (1) code generation assistant (need to consider code correctness, readability, efficiency); (2) customer service dialogue agent (need to consider problem resolution rate, user satisfaction, response time); (3) game AI (need to consider win rate, strategy diversity, adversarial robustness).
-   - In practical applications, reward functions may have "reward hacking" problems: agents find shortcuts to obtain high rewards but don't actually complete tasks. Please give examples of this phenomenon and design defense mechanisms to avoid reward hacking.
+   - В обучающем коде SFT в разделе 11.2.4 мы использовали технологию LoRA (Low-Rank Adaptation) для уменьшения параметров обучения. Пожалуйста, проанализируйте: какова основная идея LoRA? Почему при небольшом количестве параметров (например, 0,16%) можно достичь эффектов, близких к полной точной настройке параметров? При каких обстоятельствах следует выбирать LoRA вместо полной точной настройки параметров?
+   - Какие преимущества имеет алгоритм GRPO (раздел 11.3) по сравнению с традиционным алгоритмом PPO? Пожалуйста, сравните тренировочные процессы обоих, проанализировав, как GRPO упрощает тренировочный процесс и повышает стабильность за счет «групповых вознаграждений». Какие корректировки необходимы, если применить GRPO к другим задачам (например, генерации кода, оптимизации диалогов)?
+   - На основе кода из раздела 11.2.5 расширьте конвейер обучения SFT, добавив следующие функции: (1) поддержку обучения данных многоходового диалога; (2) добавить стратегии увеличения данных (например, переписывание синонимов, корректировку сложности); (3) реализовать визуальный мониторинг процесса обучения (например, кривые потерь, оценку качества выборки).
 
-4. In the "Mathematical Reasoning Agent Training" case in Section 11.4, we saw the complete training pipeline. Please analyze in depth:
+3. Разработка функции вознаграждения — основная задача Agentic RL. На основании раздела 11.3.3 выполните следующую расширенную практику:
 
-   - The case used the GSM8K dataset for training and evaluation. Please analyze: What are the characteristics of this dataset? What type of reasoning ability is it suitable for training? If training an agent capable of handling more complex mathematical problems (such as advanced mathematics, mathematical proofs), how should the dataset and training methods be extended?
-   - In the training results in Section 11.4.3, we observed accuracy improvement on the training set, but there may be overfitting risks. Please design a "generalization ability assessment" plan: How to test whether the model truly learned mathematical reasoning rather than memorizing training data? How to improve generalization ability through regularization, data augmentation and other techniques?
-   - The training in the case is offline (using pre-collected datasets). Please design an "online learning" plan: agents continuously collect user feedback during actual use and automatically update the model. What technical challenges need to be considered in this plan (such as data quality control, catastrophic forgetting, safety assurance)?
+> **Примечание**: это практический вопрос, рекомендуется использовать в реальных условиях.
 
-5. An important application of Agentic RL is enabling agents to learn tool use. Please think:
+   - В разделе 11.3.3 мы разработали простое двоичное вознаграждение за математические задачи GSM8K (правильный +1, неправильный 0). Пожалуйста, разработайте более совершенную функцию вознаграждения, которая может: (1) давать частичное вознаграждение за частично правильные ответы; (2) оценить разумность процесса рассуждения; (3) наказывать слишком многословные или неэффективные пути решения. Как следует реализовать эту функцию вознаграждения?
+   - Разработка функции вознаграждения часто требует знаний предметной области. Разработайте функции вознаграждения для следующих трех различных задач агента: (1) помощник по генерации кода (необходимо учитывать корректность, читаемость и эффективность кода); (2) агент диалога службы поддержки клиентов (необходимо учитывать скорость решения проблем, удовлетворенность пользователей, время ответа); (3) игровой ИИ (необходимо учитывать процент побед, разнообразие стратегий, устойчивость состязательности).
+   - В практических приложениях функции вознаграждения могут иметь проблемы со «взломом вознаграждения»: агенты находят короткие пути для получения высоких вознаграждений, но фактически не выполняют задачи. Пожалуйста, приведите примеры этого явления и разработайте защитные механизмы, чтобы избежать взлома вознаграждений.
 
-   - Section 11.1.3 mentioned that Agentic RL is suitable for optimizing tasks "requiring multi-step reasoning, tool use, long-term planning". Please design a "tool learning" training plan: Given a set of tools (such as search engine, calculator, code executor), how to train agents to learn to choose appropriate tools at appropriate times? How should the reward function be designed?
-   - Tool use often involves complex dependencies (such as "must first call tool A to obtain information before calling tool B"). Please design a "hierarchical reinforcement learning" plan: high-level policy responsible for task planning, low-level policy responsible for tool invocation. How to train this hierarchical structure? How to coordinate optimization objectives of high and low levels?
-   - In practical applications, the number of tools may be very large (such as 50+ APIs), and direct training may face "low exploration efficiency" problems. Please design a "curriculum learning" plan: start training from simple tasks (using few tools), gradually increasing task difficulty and number of tools. How should this plan design curriculum sequence? How to assess whether agents are ready to enter the next stage?
+4. В случае «Обучение агента математического рассуждения» в разделе 11.4 мы видели полный конвейер обучения. Пожалуйста, проанализируйте внимательно:
+
+   - Для обучения и оценки в данном случае использовался набор данных GSM8K. Пожалуйста, проанализируйте: каковы характеристики этого набора данных? Какой тип рассуждения подходит для тренировки? Как следует расширить набор данных и методы обучения при обучении агента, способного решать более сложные математические задачи (например, высшую математику, математические доказательства)?
+   - В результатах обучения в разделе 11.4.3 мы наблюдали улучшение точности обучающего набора, но могут существовать риски переобучения. Пожалуйста, разработайте план «оценки способности к обобщению»: как проверить, действительно ли модель научилась математическим рассуждениям, а не запоминанию обучающих данных? Как улучшить способность к обобщению с помощью регуляризации, увеличения данных и других методов?
+   - Обучение в данном случае проводится оффлайн (с использованием заранее собранных наборов данных). Разработайте план «онлайн-обучения»: агенты постоянно собирают отзывы пользователей во время фактического использования и автоматически обновляют модель. Какие технические проблемы необходимо учитывать в этом плане (например, контроль качества данных, катастрофическое забывание, обеспечение безопасности)?
+
+5. Важным применением Agentic RL является предоставление агентам возможности научиться пользоваться инструментом. Пожалуйста, подумайте:
+
+   - В разделе 11.1.3 упоминалось, что Agentic RL подходит для оптимизации задач, «требующих многоэтапного рассуждения, использования инструментов и долгосрочного планирования». Пожалуйста, разработайте план обучения «обучению инструментам»: учитывая набор инструментов (таких как поисковая система, калькулятор, исполнитель кода), как научить агентов выбирать подходящие инструменты в подходящее время? Как должна быть спроектирована функция вознаграждения?
+   - Использование инструмента часто включает в себя сложные зависимости (например, «необходимо сначала вызвать инструмент A, чтобы получить информацию, прежде чем вызывать инструмент B»). Разработайте план «иерархического обучения с подкреплением»: политика высокого уровня, отвечающая за планирование задач, политика низкого уровня, отвечающая за вызов инструментов. Как обучить эту иерархическую структуру? Как согласовать цели оптимизации высокого и низкого уровня?
+   - В практических приложениях количество инструментов может быть очень большим (например, более 50 API), и прямое обучение может столкнуться с проблемами «низкой эффективности исследования». Пожалуйста, разработайте план «учебной программы»: начните обучение с простых задач (используя несколько инструментов), постепенно увеличивая сложность задач и количество инструментов. Как в этом плане должна быть построена последовательность учебной программы? Как оценить, готовы ли агенты перейти на следующий этап?
 

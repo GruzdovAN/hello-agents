@@ -1,140 +1,140 @@
-# Chapter 9 - 上下文工程示例代码
+# Глава 9. Пример кода контекстного проекта
 
-本目录包含第九章"上下文工程"的所有示例代码和演示文件。
+В этом каталоге содержатся все примеры кода и демонстрационные файлы главы 9 «Контекстная инженерия».
 
-## 📁 目录结构
+## 📁 Структура каталогов
 
 ```
 chapter9/
-├── 01_context_builder_basic.py          # ContextBuilder 基础用法
-├── 02_context_builder_with_agent.py     # ContextBuilder 与 Agent 集成
-├── 03_note_tool_operations.py           # NoteTool 基本操作
-├── 04_note_tool_integration.py          # NoteTool 高级集成
-├── 05_terminal_tool_examples.py         # TerminalTool 使用示例
-├── 06_three_day_workflow.py             # 完整三天工作流演示
-├── codebase_maintainer.py               # 代码库维护助手（核心组件）
-├── codebase/                            # 示例代码库
+├── 01_context_builder_basic.py          # Базовое использование ContextBuilder
+├── 02_context_builder_with_agent.py     # ContextBuilder интегрирован с агентом
+├── 03_note_tool_operations.py           # Основные операции NoteTool
+├── 04_note_tool_integration.py          # Расширенная интеграция NoteTool
+├── 05_terminal_tool_examples.py         # Пример использования TerminalTool
+├── 06_three_day_workflow.py             # Полная трехдневная демонстрация рабочего процесса
+├── codebase_maintainer.py               # Помощник по обслуживанию кодовой базы (основной компонент)
+├── codebase/                            # Пример базы кода
 │   ├── data_processor.py
 │   ├── api_client.py
 │   ├── utils.py
 │   └── models.py
-├── data/                                # 示例数据
+├── data/                                # Пример данных
 │   └── sales_2024.csv
-├── logs/                                # 示例日志
+├── logs/                                # Пример журнала
 │   └── app.log
-└── project/                             # 示例项目
+└── project/                             # Пример проекта
     ├── README.md
     └── main.py
 ```
 
-## 🚀 快速开始
+## 🚀 Быстрый старт
 
-### 1. 配置嵌入模型
+### 1. Настройте встроенную модель
 
-所有使用记忆功能的示例都需要配置嵌入模型。最简单的方式：
+Все примеры, использующие функцию памяти, требуют настройки модели внедрения. Самый простой способ:
 
 ```python
 import os
-# 使用 TF-IDF（无需额外依赖或下载）
+# Используйте TF-IDF (дополнительные зависимости или загрузки не требуются)
 os.environ['EMBED_MODEL_TYPE'] = 'tfidf'
-os.environ['EMBED_MODEL_NAME'] = ''  # 必须清空
+os.environ['EMBED_MODEL_NAME'] = ''  # Должно быть очищено
 ```
 
-### 2. 运行示例
+### 2. Запустите пример
 
 ```bash
-# 进入 chapter9 目录
+# Войдите в каталог главы 9.
 cd code/chapter9
 
-# 运行 TerminalTool 示例（无需 LLM）
+# Запустите примеры TerminalTool (LLM не требуется)
 python 05_terminal_tool_examples.py
 
-# 运行 NoteTool 基本操作（无需 LLM）
+# Запуск основных операций NoteTool (LLM не требуется)
 python 03_note_tool_operations.py
 
-# 运行完整工作流演示（需要配置 LLM）
+# Запустите полную демонстрацию рабочего процесса (требуется настройка LLM)
 python 06_three_day_workflow.py
 ```
 
-## 📖 示例说明
+## 📖Пример описания
 
-### 基础示例
+### Базовый пример
 
 #### 01_context_builder_basic.py
-- ContextBuilder 的基本用法
-- 上下文包（ContextPacket）的创建和管理
-- Token 限制和上下文优先级
+- Базовое использование ContextBuilder
+- Создание и управление контекстными пакетами (ContextPacket)
+- Ограничения токена и приоритет контекста
 
 #### 02_context_builder_with_agent.py
-- ContextBuilder 与 SimpleAgent 集成
-- 自动上下文管理
-- 对话历史的处理
+- ContextBuilder интегрирован с SimpleAgent.
+- Автоматическое управление контекстом
+- Обработка истории разговоров
 
 #### 03_note_tool_operations.py
-- NoteTool 的 CRUD 操作
-- 笔记搜索和标签管理
-- 笔记导出功能
+- Операции CRUD для NoteTool.
+- Поиск заметок и управление тегами
+- Функция экспорта заметок
 
 #### 04_note_tool_integration.py
-- NoteTool 与 ContextBuilder 集成
-- 长期项目追踪
-- 基于历史笔记的建议
+- NoteTool интегрирован с ContextBuilder
+- Долгосрочное сопровождение проекта
+- Предложения, основанные на исторических заметках.
 
 #### 05_terminal_tool_examples.py
-- TerminalTool 的典型使用场景
-- 探索式导航
-- 数据文件分析
-- 日志分析
-- 代码库分析
-- 安全特性演示
+- Типичные сценарии использования TerminalTool
+- Исследовательская навигация
+- Анализ файла данных
+- Анализ журналов
+- Анализ кодовой базы
+- Демонстрация функций безопасности
 
-### 高级示例
+### Расширенные примеры
 
 #### 06_three_day_workflow.py
-**完整的长程智能体工作流演示**，包括：
-- 第一天：探索代码库
-- 第二天：分析代码质量
-- 第三天：规划重构任务
-- 一周后：检查进度
-- 跨会话连贯性演示
-- 三大工具协同演示
+**Полная демонстрация рабочего процесса агента дальнего действия**, включая:
+- День 1. Изучите кодовую базу.
+- День 2. Анализ качества кода.
+- День 3: Планирование задачи рефакторинга
+- Через неделю: проверьте прогресс
+- Демонстрация межсессионной согласованности
+- Совместная демонстрация трех основных инструментов.
 
-使用我们创建的示例代码库（`./codebase`），包含：
-- `data_processor.py` - 数据处理模块（含多个 TODO）
-- `api_client.py` - API 客户端（需要改进错误处理）
-- `utils.py` - 工具函数（需要优化）
-- `models.py` - 数据模型（需要补充验证）
+Используя созданный нами образец базы кода (`./codebase`), содержащий:
+— `data_processor.py` — модуль обработки данных (содержит несколько TODO)
+- `api_client.py` — API-клиент (требуется улучшенная обработка ошибок)
+- `utils.py` — служебные функции (требуется оптимизация)
+— `models.py` — модель данных (требуется дополнительная проверка)
 
 #### codebase_maintainer.py
-**核心组件：代码库维护助手**，集成了：
-- ContextBuilder - 上下文管理
-- NoteTool - 结构化笔记
-- TerminalTool - 即时文件访问
-- MemoryTool - 对话记忆（仅使用 working 记忆）
+**Основной компонент: Помощник по обслуживанию кодовой базы**, объединяющий:
+- ContextBuilder - управление контекстом
+- NoteTool - структурированные заметки
+- TerminalTool - Мгновенный доступ к файлам
+- MemoryTool - Диалоговая память (только с использованием рабочей памяти)
 
-## ⚙️ 配置说明
+## ⚙️ Инструкция по настройке
 
-### 嵌入模型配置
+### Встроить конфигурацию модели
 
-有三种选择：
+Есть три варианта:
 
-#### 方案一：TF-IDF（推荐用于测试）
+#### Решение 1: TF-IDF (рекомендуется для тестирования)
 
 ```python
 import os
 os.environ['EMBED_MODEL_TYPE'] = 'tfidf'
-os.environ['EMBED_MODEL_NAME'] = ''  # 重要！
+os.environ['EMBED_MODEL_NAME'] = ''  # важный!
 ```
 
-**优点**：
-- ✅ 无需额外依赖
-- ✅ 无需 API key
-- ✅ 无需下载模型
+**Преимущества**:
+- ✅ Никаких дополнительных зависимостей не требуется
+- ✅ Ключ API не требуется
+- ✅ Не нужно скачивать модели
 
-**缺点**：
-- ⚠️ 语义理解能力较弱
+**Недостатки**:
+- ⚠️ Слабая способность к семантическому пониманию.
 
-#### 方案二：本地 Transformer（推荐用于离线使用）
+#### Вариант 2: Локальный трансформатор (рекомендуется для автономного использования)
 
 ```python
 import os
@@ -143,25 +143,24 @@ os.environ['EMBED_MODEL_NAME'] = 'sentence-transformers/all-MiniLM-L6-v2'
 os.environ['HF_TOKEN'] = 'your_huggingface_token'
 ```
 
-**需要**：
-1. 安装依赖：`pip install sentence-transformers`
-2. Hugging Face Token（从 https://huggingface.co/settings/tokens 获取）
-3. 首次运行会下载模型（约 90MB）
+**Обязательно**:
+1. Установите зависимости: `pip install предложения-трансформеры`
+2. Токен обнимающего лица (полученный по адресу https://huggingface.co/settings/tokens)
+3. При первом запуске загрузится модель (около 90МБ)
 
-**配置 HF Token 的方式**：
-```bash
-# 方式一：使用 huggingface-cli（推荐，一次配置永久使用）
+**Как настроить HF Token**:```bash
+# Способ 1. Используйтеhuggingface-cli (рекомендуется, после настройки для постоянного использования)
 pip install huggingface-hub
 huggingface-cli login
 
-# 方式二：在代码中设置
+# Способ 2: установить в коде
 os.environ['HF_TOKEN'] = 'hf_your_token_here'
 
-# 方式三：命令行设置
+# Способ 3: настройки командной строки
 export HF_TOKEN="hf_your_token_here"
 ```
 
-#### 方案三：通义千问 DashScope（推荐用于生产环境）
+#### Решение 3: Tongyi Qianwen DashScope (рекомендуется для производственной среды)
 
 ```python
 import os
@@ -170,155 +169,153 @@ os.environ['EMBED_MODEL_NAME'] = 'text-embedding-v3'
 os.environ['EMBED_API_KEY'] = 'your_dashscope_api_key'
 ```
 
-**需要**：
-1. 注册：https://dashscope.aliyun.com/
-2. 获取 API key
-3. 安装依赖：`pip install dashscope`
+**Обязательно**:
+1. Зарегистрируйтесь: https://dashscope.aliyun.com/
+2. Получите ключ API
+3. Установите зависимости: `pip install Dashscope`
 
-### LLM 配置
+### Конфигурация LLM
 
-如果使用需要 LLM 的示例，需要配置：
+Если вы используете пример, требующий LLM, вам необходимо настроить:
 
 ```python
 from hello_agents import HelloAgentsLLM
 
-# 使用默认配置（需要设置 OPENAI_API_KEY）
+# Использовать конфигурацию по умолчанию (требуется настройка OPENAI_API_KEY)
 llm = HelloAgentsLLM()
 
-# 或者明确指定
+# или явно указать
 llm = HelloAgentsLLM(
     api_key="your_api_key",
     base_url="https://api.openai.com/v1",
     model="gpt-4"
 )
-```
-建议直接在'.env'文件中设置。
+```Рекомендуется установить его непосредственно в файле «.env».
     
 
 
-### 记忆功能配置
+### Конфигурация функции памяти
 
-`codebase_maintainer.py` 已配置为只使用 `working` 记忆，避免需要 Qdrant 向量数据库：
+`codebase_maintainer.py` настроен на использование только `рабочей` памяти, что позволяет избежать необходимости в векторной базе данных Qdrant:
 
 ```python
 self.memory_tool = MemoryTool(
     user_id=project_name,
-    memory_types=["working"]  # 只使用工作记忆
+    memory_types=["working"]  # Используйте только рабочую память
 )
 ```
 
-如果需要更强大的记忆功能（episodic, semantic），需要安装并启动 Qdrant：
+Если вам нужны более мощные функции памяти (эпизодическая, семантическая), вам необходимо установить и запустить Qdrant:
 
 ```bash
-# 使用 Docker 启动 Qdrant
+# Запуск Qdrant с помощью Docker
 docker run -p 6333:6333 qdrant/qdrant
 ```
 
-## 🔍 示例文件说明
+## 🔍 Пример описания файла
 
-### 演示数据文件
+### Файл демонстрационных данных
 
-#### data/sales_2024.csv
-包含 40+ 条销售数据，字段包括：
-- date（日期）
-- product（产品）
-- category（类别：Electronics, Furniture）
-- quantity（数量）
-- price（价格）
-- customer_id（客户ID）
-- region（地区：North, South, East, West）
+#### данные/продажи_2024.csv
+Содержит более 40 данных о продажах, поля включают в себя:
+- дата
+- продукт
+- категория (Категория: Электроника, Мебель)
+- количество
+- цена
+- customer_id (идентификатор клиента)
+- регион (регион: Север, Юг, Восток, Запад)
 
-#### logs/app.log
-模拟一天的应用日志，包含：
-- 多种日志级别（INFO, WARNING, ERROR）
-- 多种错误类型（DatabaseConnectionError, ValidationError 等）
-- 时间戳从 2024-01-19 14:00 到 23:30
+#### журналы/app.log
+Смоделируйте журналы приложений за один день, включая:
+- Несколько уровней журнала (ИНФОРМАЦИЯ, ПРЕДУПРЕЖДЕНИЕ, ОШИБКА)
+- Несколько типов ошибок (DatabaseConnectionError, ValidationError и т. д.)
+- Временная метка с 19 января 2024 г., с 14:00 до 23:30.
 
-#### codebase/
-包含 4 个 Python 模块，共 10+ 个 TODO 注释，适合演示：
-- 代码分析
-- TODO 查找
-- 函数定义搜索
-- 代码统计
+#### кодовая база/
+Содержит 4 модуля Python с более чем 10 комментариями TODO, подходящими для демонстрации:
+- Анализ кода
+- TODO поиск
+- Поиск определения функции
+- Статистика кода
 
-## 🐛 常见问题
+## 🐛 Часто задаваемые вопросы
 
-### Q1: RuntimeError: 所有嵌入模型都不可用
+### Вопрос 1: Ошибка выполнения: все встроенные модели недоступны.
 
-**原因**：嵌入模型配置不正确。
+**Причина**: встроенная модель настроена неправильно.
 
-**解决**：确保设置了 `EMBED_MODEL_NAME` 为空字符串：
+**РЕШЕНИЕ**. Убедитесь, что для параметра EMBED_MODEL_NAME задана пустая строка:
 
 ```python
 os.environ['EMBED_MODEL_TYPE'] = 'tfidf'
-os.environ['EMBED_MODEL_NAME'] = ''  # 必须有这行！
+os.environ['EMBED_MODEL_NAME'] = ''  # Этот бизнес просто необходим!
 ```
 
-### Q2: Qdrant 连接失败
+### Q2: Не удалось подключиться к Qdrant
 
-**原因**：默认配置尝试连接 Qdrant 向量数据库。
+**Причина**: Конфигурация по умолчанию пытается подключиться к базе данных векторов Qdrant.
 
-**解决方案一**（推荐）：使用只需 working 记忆的配置（已在 codebase_maintainer.py 中配置）
+**Решение 1** (рекомендуется). Используйте конфигурацию, которую нужно запоминать только при работе (уже настроено в codebase_maintainer.py).
 
-**解决方案二**：安装并启动 Qdrant：
-```bash
+**Решение 2**. Установите и запустите Qdrant:```bash
 docker run -p 6333:6333 qdrant/qdrant
 ```
 
-### Q3: 下载 Hugging Face 模型失败
+### Q3: Не удалось загрузить модель Hugging Face.
 
-**原因**：网络问题或缺少 Token。
+**Причина**: проблема с сетью или отсутствие токена.
 
-**解决方案**：
-1. 配置 HF Token（见上文"方案二"）
-2. 或使用镜像：`export HF_ENDPOINT=https://hf-mirror.com`
-3. 或改用 TF-IDF：`os.environ['EMBED_MODEL_TYPE'] = 'tfidf'`
+**Решение**:
+1. Настройте HF Token (см. «Вариант 2» выше).
+2. Или используйте зеркало: `export HF_ENDPOINT=https://hf-mirror.com`
+3. Или вместо этого используйте TF-IDF: `os.environ['EMBED_MODEL_TYPE'] = 'tfidf'`
 
-### Q4: TerminalTool 提示"不允许的命令"
+### Q4: TerminalTool выдает сообщение «Команда не разрешена»
 
-**原因**：TerminalTool 有白名单限制，只允许安全的命令。
+**Причина**: TerminalTool имеет ограничения белого списка и разрешает только безопасные команды.
 
-**解决**：使用允许的命令列表中的命令，如：
-- 文件操作：ls, cat, head, tail, grep, find
-- 文本处理：awk, sed, cut, sort, uniq, wc
-- 其他：pwd, cd, tree, stat
+**Решение**. Используйте команду из списка разрешенных команд, например:
+- Операции с файлами: ls, cat, head, Tail, grep, find.
+- Обработка текста: awk, sed, вырезать, сортировать, uniq, wc
+- Прочее: pwd, cd, дерево, статистика
 
-## 📝 运行顺序建议
+## 📝 Выполнение предложений по порядку
 
-1. **先运行无需 LLM 的示例**：
-   - `03_note_tool_operations.py` - 了解 NoteTool
-   - `05_terminal_tool_examples.py` - 了解 TerminalTool
+1. **Сначала запустите пример без LLM**:
+   - `03_note_tool_operations.py` — Узнайте больше о NoteTool.
+   - `05_terminal_tool_examples.py` — Узнайте больше о TerminalTool.
 
-2. **配置嵌入模型后运行**：
-   - `01_context_builder_basic.py` - 理解上下文管理
+2. **Запустить после настройки встроенной модели**:
+   - `01_context_builder_basic.py` - Понимание управления контекстом.
 
-3. **配置 LLM 后运行**：
-   - `02_context_builder_with_agent.py` - Agent 集成
-   - `04_note_tool_integration.py` - 高级集成
-   - `06_three_day_workflow.py` - 完整工作流
+3. **Запустить после настройки LLM**:
+   - `02_context_builder_with_agent.py` - Интеграция агента.
+   - `04_note_tool_integration.py` - Расширенная интеграция.
+   - `06_three_day_workflow.py` — полный рабочий процесс
 
-## 🎯 学习路径
+## 🎯 Путь обучения
 
-1. **基础概念** → `01_context_builder_basic.py`
-2. **工具使用** → `03_note_tool_operations.py`, `05_terminal_tool_examples.py`
-3. **Agent 集成** → `02_context_builder_with_agent.py`
-4. **高级应用** → `04_note_tool_integration.py`
-5. **实战案例** → `06_three_day_workflow.py`
+1. **Основные понятия** → `01_context_builder_basic.py`
+2. **Использование инструмента** → `03_note_tool_operations.py`, `05_terminal_tool_examples.py`
+3. **Интеграция агента** → `02_context_builder_with_agent.py`
+4. **Расширенное приложение** → `04_note_tool_integration.py`
+5. **Практический пример** → `06_three_day_workflow.py`
 
-## 💡 提示
+## 💡 Советы
 
-- 所有示例都在代码开头包含了嵌入模型配置
-- TF-IDF 方案适合快速测试和演示
-- 生产环境建议使用 DashScope 或本地 Transformer
-- codebase_maintainer.py 是完整的实战案例，值得深入学习
+- Все примеры включают конфигурацию встроенной модели в начале кода.
+- Решение TF-IDF, подходящее для быстрого тестирования и демонстрации
+- Для производственных сред рекомендуется использовать DashScope или локальный Transformer.
+— codebase_maintainer.py — это полноценный практический пример, который стоит тщательно изучить.
 
-## 📚 相关文档
+## 📚 Сопутствующие документы
 
-- 详细文档：`docs/chapter9/第九章 上下文工程.md`
-- API 文档：查看各工具类的 docstring
-- 项目主页：README.md
+- Подробная документация: `docs/chapter9/Chapter 9 Context Engineering.md`
+- Документация по API: просмотрите документацию каждого класса инструментов.
+- Домашняя страница проекта: README.md
 
-## 🤝 贡献
+## 🤝 Внести свой вклад
 
-如有问题或建议，欢迎提 Issue 或 PR！
+Если у вас есть какие-либо вопросы или предложения, пожалуйста, отправьте вопрос или PR!
 

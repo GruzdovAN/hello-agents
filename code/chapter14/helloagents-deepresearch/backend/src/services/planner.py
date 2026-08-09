@@ -45,8 +45,8 @@ class PlanningService:
         todo_items: List[TodoItem] = []
 
         for idx, item in enumerate(tasks_payload, start=1):
-            title = str(item.get("title") or f"任务{idx}").strip()
-            intent = str(item.get("intent") or "聚焦主题的关键问题").strip()
+            title = str(item.get("title") or f"Задача {idx}").strip()
+            intent = str(item.get("intent") or "Акцент на ключевых вопросах темы").strip()
             query = str(item.get("query") or state.research_topic).strip()
 
             if not query:
@@ -72,9 +72,9 @@ class PlanningService:
 
         return TodoItem(
             id=1,
-            title="基础背景梳理",
-            intent="收集主题的核心背景与最新动态",
-            query=f"{state.research_topic} 最新进展" if state.research_topic else "基础背景梳理",
+            title="Базовый обзор истории",
+            intent="Соберите основную информацию и последние события по теме.",
+            query=f"{state.research_topic} Последние события" if state.research_topic else "Базовый обзор истории",
         )
 
     # ------------------------------------------------------------------

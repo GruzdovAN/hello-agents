@@ -1,28 +1,28 @@
-- [Hello-Agents](./README.md)
-  - [前言](./前言.md)
-  
-- <strong>第一部分：智能体与语言模型基础</strong>
-  - [第一章 初识智能体](./chapter1/第一章%20初识智能体.md)
-  - [第二章 智能体发展史](./chapter2/第二章%20智能体发展史.md)
-  - [第三章 大语言模型基础](./chapter3/第三章%20大语言模型基础.md)
+- [Hello-Agents](README.md)
+  - [Предисловие](./Preface.md)
 
-- <strong>第二部分：构建你的大语言模型智能体</strong>
-  - [第四章 智能体经典范式构建](./chapter4/第四章%20智能体经典范式构建.md)
-  - [第五章 基于低代码平台的智能体搭建](./chapter5/第五章%20基于低代码平台的智能体搭建.md)
-  - [第六章 框架开发实践](./chapter6/第六章%20框架开发实践.md)
-  - [第七章 构建你的Agent框架](./chapter7/第七章%20构建你的Agent框架.md)
+- <strong>Часть I: Основы агентов и языковых моделей</strong>
+  - [Глава 1. Знакомство с агентами](chapter1/Chapter1-Introduction-to-Agents.md)
+  - [Глава 2. История агентов](chapter2/Chapter2-History-of-Agents.md)
+  - [Глава 3. Основы больших языковых моделей](chapter3/Chapter3-Fundamentals-of-Large-Language-Models.md)
 
-- <strong>第三部分：高级知识扩展</strong>
-  - [第八章 记忆与检索](./chapter8/第八章%20记忆与检索.md)
-  - [第九章 上下文工程](./chapter9/第九章%20上下文工程.md)
-  - [第十章 智能体通信协议](./chapter10/第十章%20智能体通信协议.md)
-  - [第十一章 Agentic-RL](./chapter11/第十一章%20Agentic-RL.md)
-  - [第十二章 智能体性能评估](./chapter12/第十二章%20智能体性能评估.md)
+- <strong>Часть II: Создаём своего LLM-агента</strong>
+  - [Глава 4. Классические парадигмы агентов](chapter4/Chapter4-Building-Classic-Agent-Paradigms.md)
+  - [Глава 5. Агенты на low-code платформах](chapter5/Chapter5-Building-Agents-with-Low-Code-Platforms.md)
+  - [Глава 6. Практика работы с фреймворками](chapter6/Chapter6-Framework-Development-Practice.md)
+  - [Глава 7. Свой фреймворк агента](chapter7/Chapter7-Building-Your-Agent-Framework.md)
 
-- <strong>第四部分：综合案例进阶</strong>
-  - [第十三章 智能旅行助手](./chapter13/第十三章%20智能旅行助手.md)
-  - [第十四章 自动化深度研究智能体](./chapter14/第十四章%20自动化深度研究智能体.md)
-  - [第十五章 构建赛博小镇](./chapter15/第十五章%20构建赛博小镇.md)
+- <strong>Часть III: Продвинутые темы</strong>
+  - [Глава 8. Память и поиск](chapter8/Chapter8-Memory-and-Retrieval.md)
+  - [Глава 9. Инженерия контекста](chapter9/Chapter9-Context-Engineering.md)
+  - [Глава 10. Протоколы общения агентов](chapter10/Chapter10-Agent-Communication-Protocols.md)
+  - [Глава 11. Agentic-RL](chapter11/Chapter11-Agentic-RL.md)
+  - [Глава 12. Оценка производительности агентов](chapter12/Chapter12-Agent-Performance-Evaluation.md)
 
-- <strong>第五部分：毕业设计及未来展望</strong>
-  - [第十六章 毕业设计](./chapter16/第十六章%20毕业设计.md)
+- <strong>Часть IV: Комплексные кейсы</strong>
+  - [Глава 13. Умный помощник путешественника](chapter13/Chapter13-Intelligent-Travel-Assistant.md)
+  - [Глава 14. Агент автоматизированного глубокого исследования](chapter14/Chapter14-Automated-Deep-Research-Agent.md)
+  - [Глава 15. Кибер-городок](chapter15/Chapter15-Building-Cyber-Town.md)
+
+- <strong>Часть V: Выпускной проект и перспективы</strong>
+  - [Глава 16. Выпускной проект](chapter16/Chapter16-Graduation-Project.md)

@@ -1,23 +1,23 @@
-"""FastAPI主应用"""
+"""Основное приложение FastAPI"""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ..config import get_settings, validate_config, print_config
 from .routes import trip, poi, map as map_routes
 
-# 获取配置
+# Получить конфигурацию
 settings = get_settings()
 
-# 创建FastAPI应用
+# Создать приложение FastAPI
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="基于HelloAgents框架的智能旅行规划助手API",
+    description="API-интерфейс интеллектуального помощника по планированию поездок на основе платформы HelloAgents.",
     docs_url="/docs",
     redoc_url="/redoc"
 )
 
-# 配置CORS
+# Настроить КОРС
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_cors_origins_list(),
@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 注册路由
+# Зарегистрировать маршрут
 app.include_router(trip.router, prefix="/api")
 app.include_router(poi.router, prefix="/api")
 app.include_router(map_routes.router, prefix="/api")
@@ -34,40 +34,40 @@ app.include_router(map_routes.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
-    """应用启动事件"""
+    """событие запуска приложения"""
     print("\n" + "="*60)
     print(f"🚀 {settings.app_name} v{settings.app_version}")
     print("="*60)
     
-    # 打印配置信息
+    # Распечатать информацию о конфигурации
     print_config()
     
-    # 验证配置
+    # Проверьте конфигурацию
     try:
         validate_config()
-        print("\n✅ 配置验证通过")
+        print("\n✅ Проверка конфигурации пройдена")
     except ValueError as e:
-        print(f"\n❌ 配置验证失败:\n{e}")
-        print("\n请检查.env文件并确保所有必要的配置项都已设置")
+        print(f"\n❌ Проверка конфигурации не удалась:\n{e}")
+        print("\nПроверьте файл .env и убедитесь, что установлены все необходимые элементы конфигурации.")
         raise
     
     print("\n" + "="*60)
-    print("📚 API文档: http://localhost:8000/docs")
-    print("📖 ReDoc文档: http://localhost:8000/redoc")
+    print("📚 Документация по API: http://localhost:8000/docs.")
+    print("📖 Документ ReDoc: http://localhost:8000/redoc.")
     print("="*60 + "\n")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """应用关闭事件"""
+    """Событие закрытия приложения"""
     print("\n" + "="*60)
-    print("👋 应用正在关闭...")
+    print("👋Приложение закрывается...")
     print("="*60 + "\n")
 
 
 @app.get("/")
 async def root():
-    """根路径"""
+    """корневой путь"""
     return {
         "name": settings.app_name,
         "version": settings.app_version,
@@ -79,7 +79,7 @@ async def root():
 
 @app.get("/health")
 async def health():
-    """健康检查"""
+    """проверка здоровья"""
     return {
         "status": "healthy",
         "service": settings.app_name,

@@ -1,28 +1,28 @@
-"""Unsplash图片服务"""
+"""Сервис изображений Unsplash"""
 
 import requests
 from typing import List, Optional
 from ..config import get_settings
 
 class UnsplashService:
-    """Unsplash图片服务类"""
+    """Класс обслуживания изображений Unsplash"""
     
     def __init__(self):
-        """初始化服务"""
+        """Инициализировать службу"""
         settings = get_settings()
         self.access_key = settings.unsplash_access_key
         self.base_url = "https://api.unsplash.com"
     
     def search_photos(self, query: str, per_page: int = 5) -> List[dict]:
         """
-        搜索图片
+        Поиск изображений
         
-        Args:
-            query: 搜索关键词
-            per_page: 每页数量
+        Аргументы:
+            запрос: ключевое слово поиска
+            per_page: количество на странице
             
-        Returns:
-            图片列表
+        Возврат:
+            Список изображений
         """
         try:
             url = f"{self.base_url}/search/photos"
@@ -38,7 +38,7 @@ class UnsplashService:
             data = response.json()
             results = data.get("results", [])
             
-            # 提取图片URL
+            # Извлечь URL-адрес изображения
             photos = []
             for photo in results:
                 photos.append({
@@ -52,18 +52,18 @@ class UnsplashService:
             return photos
             
         except Exception as e:
-            print(f"❌ Unsplash搜索失败: {str(e)}")
+            print(f"❌ Ошибка поиска Unsplash: {str(e)}")
             return []
     
     def get_photo_url(self, query: str) -> Optional[str]:
         """
-        获取单张图片URL
+        Получить URL-адрес одного изображения
 
-        Args:
-            query: 搜索关键词
+        Аргументы:
+            запрос: ключевое слово поиска
 
-        Returns:
-            图片URL
+        Возврат:
+            URL-адрес изображения
         """
         photos = self.search_photos(query, per_page=1)
         if photos:
@@ -71,12 +71,12 @@ class UnsplashService:
         return None
 
 
-# 全局服务实例
+# Глобальный экземпляр службы
 _unsplash_service = None
 
 
 def get_unsplash_service() -> UnsplashService:
-    """获取Unsplash服务实例(单例模式)"""
+    """Получите экземпляр службы Unsplash (одиночный режим)"""
     global _unsplash_service
     
     if _unsplash_service is None:

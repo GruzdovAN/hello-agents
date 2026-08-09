@@ -1,8 +1,8 @@
 """
-智能搜索助手 - 基于 LangGraph + Tavily API 的真实搜索系统
-1. 理解用户需求
-2. 使用Tavily API真实搜索信息  
-3. 生成基于搜索结果的回答
+Intelligent Search Assistant — Настоящая поисковая система на основе LangGraph + Tavily API
+1. Понять потребности пользователей
+2. Используйте Tavily API для полноценного поиска информации.
+3. Генерируйте ответы на основе результатов поиска.
 """
 
 import asyncio
@@ -16,19 +16,19 @@ import os
 from dotenv import load_dotenv
 from tavily import TavilyClient
 
-# 加载环境变量
+# Загрузить переменные среды
 load_dotenv()
 
-# 定义状态结构
+# Определить государственную структуру
 class SearchState(TypedDict):
     messages: Annotated[list, add_messages]
-    user_query: str        # 用户查询
-    search_query: str      # 优化后的搜索查询
-    search_results: str    # Tavily搜索结果
-    final_answer: str      # 最终答案
-    step: str             # 当前步骤
+    user_query: str        # Пользовательский запрос
+    search_query: str      # Оптимизированный поисковый запрос
+    search_results: str    # Результаты поиска Тавили
+    final_answer: str      # окончательный ответ
+    step: str             # текущий шаг
 
-# 初始化模型和Tavily客户端
+# Инициализируйте модель и клиент Tavily.
 llm = ChatOpenAI(
     model=os.getenv("LLM_MODEL_ID", "gpt-4o-mini"),
     api_key=os.getenv("LLM_API_KEY"),
@@ -36,56 +36,56 @@ llm = ChatOpenAI(
     temperature=0.7
 )
 
-# 初始化Tavily客户端
+# Инициализировать клиент Tavily
 tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 def understand_query_node(state: SearchState) -> SearchState:
-    """步骤1：理解用户查询并生成搜索关键词"""
+    """Шаг 1. Изучите запросы пользователей и сгенерируйте ключевые слова для поиска."""
     
-    # 获取最新的用户消息
+    # Получайте последние новости пользователей
     user_message = ""
     for msg in reversed(state["messages"]):
         if isinstance(msg, HumanMessage):
             user_message = msg.content
             break
     
-    understand_prompt = f"""分析用户的查询："{user_message}"
+    understand_prompt = f"""Проанализируйте запрос пользователя: "{user_message}"
 
-请完成两个任务：
-1. 简洁总结用户想要了解什么
-2. 生成最适合搜索的关键词（中英文均可，要精准）
+Пожалуйста, выполните два задания:
+1. Кратко изложите то, что хотят знать пользователи.
+2. Создайте ключевые слова, наиболее подходящие для поиска (допускаются как китайские, так и английские слова, но они должны быть точными).
 
-格式：
-理解：[用户需求总结]
-搜索词：[最佳搜索关键词]"""
+Формат:
+Понимание: [Краткий обзор потребностей пользователей]
+Условия поиска: [Лучшие ключевые слова для поиска]"""
 
     response = llm.invoke([SystemMessage(content=understand_prompt)])
     
-    # 提取搜索关键词
+    # Извлечение ключевых слов для поиска
     response_text = response.content
-    search_query = user_message  # 默认使用原始查询
+    search_query = user_message  # Использовать необработанный запрос по умолчанию
     
-    if "搜索词：" in response_text:
-        search_query = response_text.split("搜索词：")[1].strip()
-    elif "搜索关键词：" in response_text:
-        search_query = response_text.split("搜索关键词：")[1].strip()
+    if "Условия поиска:" in response_text:
+        search_query = response_text.split("Условия поиска:")[1].strip()
+    elif "Ключевые слова для поиска:" in response_text:
+        search_query = response_text.split("Ключевые слова для поиска:")[1].strip()
     
     return {
         "user_query": response.content,
         "search_query": search_query,
         "step": "understood",
-        "messages": [AIMessage(content=f"我理解您的需求：{response.content}")]
+        "messages": [AIMessage(content=f"Я понимаю ваши потребности: {response.content}")]
     }
 
 def tavily_search_node(state: SearchState) -> SearchState:
-    """步骤2：使用Tavily API进行真实搜索"""
+    """Шаг 2. Используйте API Tavily для реального поиска."""
     
     search_query = state["search_query"]
     
     try:
-        print(f"🔍 正在搜索: {search_query}")
+        print(f"🔍 Ищем: {search_query}")
         
-        # 调用Tavily搜索API
+        # Вызов API поиска Тавили
         response = tavily_client.search(
             query=search_query,
             search_depth="basic",
@@ -94,52 +94,52 @@ def tavily_search_node(state: SearchState) -> SearchState:
             max_results=5
         )
         
-        # 处理搜索结果
+        # Обработка результатов поиска
         search_results = ""
         
-        # 优先使用Tavily的综合答案
+        # Отдавайте предпочтение исчерпывающим ответам Тавили
         if response.get("answer"):
-            search_results = f"综合答案：\n{response['answer']}\n\n"
+            search_results = f"Исчерпывающий ответ:\n{response['ответ']}\n\n"
         
-        # 添加具体的搜索结果
+        # Добавить конкретные результаты поиска
         if response.get("results"):
-            search_results += "相关信息：\n"
+            search_results += "Сопутствующая информация:\n"
             for i, result in enumerate(response["results"][:3], 1):
                 title = result.get("title", "")
                 content = result.get("content", "")
                 url = result.get("url", "")
-                search_results += f"{i}. {title}\n{content}\n来源：{url}\n\n"
+                search_results += f"{я}. {title}\n{content}\nИсточник: {url}\n\n"
         
         if not search_results:
-            search_results = "抱歉，没有找到相关信息。"
+            search_results = "К сожалению, релевантной информации не найдено."
         
         return {
             "search_results": search_results,
             "step": "searched",
-            "messages": [AIMessage(content=f"✅ 搜索完成！找到了相关信息，正在为您整理答案...")]
+            "messages": [AIMessage(content=f"✅ Поиск завершен! Нашли нужную информацию и разбираем для вас ответы...")]
         }
         
     except Exception as e:
-        error_msg = f"搜索时发生错误: {str(e)}"
+        error_msg = f"Произошла ошибка при поиске: {str(e)}"
         print(f"❌ {error_msg}")
         
         return {
-            "search_results": f"搜索失败：{error_msg}",
+            "search_results": f"Поиск не удался: {error_msg}",
             "step": "search_failed",
-            "messages": [AIMessage(content="❌ 搜索遇到问题，我将基于已有知识为您回答")]
+            "messages": [AIMessage(content="❌ Если при поиске вы столкнетесь с проблемой, я отвечу вам на нее, исходя из имеющихся у меня знаний.")]
         }
 
 def generate_answer_node(state: SearchState) -> SearchState:
-    """步骤3：基于搜索结果生成最终答案"""
+    """Шаг 3. Создайте окончательный ответ на основе результатов поиска."""
     
-    # 检查是否有搜索结果
+    # Проверьте, есть ли результаты поиска
     if state["step"] == "search_failed":
-        # 如果搜索失败，基于LLM知识回答
-        fallback_prompt = f"""搜索API暂时不可用，请基于您的知识回答用户的问题：
+        # Если поиск не удался, ответьте на основе знаний LLM
+        fallback_prompt = f"""API поиска временно недоступен. Пожалуйста, ответьте на вопросы пользователей, исходя из своих знаний:
 
-用户问题：{state['user_query']}
+Вопрос пользователя: {state['user_query']}
 
-请提供一个有用的回答，并说明这是基于已有知识的回答。"""
+Пожалуйста, дайте полезный ответ и объясните, что он основан на предварительных знаниях."""
         
         response = llm.invoke([SystemMessage(content=fallback_prompt)])
         
@@ -149,20 +149,20 @@ def generate_answer_node(state: SearchState) -> SearchState:
             "messages": [AIMessage(content=response.content)]
         }
     
-    # 基于搜索结果生成答案
-    answer_prompt = f"""基于以下搜索结果为用户提供完整、准确的答案：
+    # Генерируйте ответы на основе результатов поиска
+    answer_prompt = f"""Предоставляйте пользователям полные и точные ответы на основе следующих результатов поиска:
 
-用户问题：{state['user_query']}
+Вопрос пользователя: {state['user_query']}
 
-搜索结果：
-{state['search_results']}
+Результаты поиска:
+{состояние['search_results']}
 
-请要求：
-1. 综合搜索结果，提供准确、有用的回答
-2. 如果是技术问题，提供具体的解决方案或代码
-3. 引用重要信息的来源
-4. 回答要结构清晰、易于理解
-5. 如果搜索结果不够完整，请说明并提供补充建议"""
+Пожалуйста, запросите:
+1. Комплексные результаты поиска и предоставление точных и полезных ответов.
+2. Если это техническая проблема, предоставьте конкретные решения или код.
+3. Укажите источники важной информации.
+4. Ответы должны быть четко структурированы и понятны.
+5. Если результаты поиска недостаточно полны, объясните и предоставьте дополнительные предложения."""
 
     response = llm.invoke([SystemMessage(content=answer_prompt)])
     
@@ -172,49 +172,49 @@ def generate_answer_node(state: SearchState) -> SearchState:
         "messages": [AIMessage(content=response.content)]
     }
 
-# 构建搜索工作流
+# Создайте рабочий процесс поиска
 def create_search_assistant():
     workflow = StateGraph(SearchState)
     
-    # 添加三个节点
+    # Добавьте три узла
     workflow.add_node("understand", understand_query_node)
     workflow.add_node("search", tavily_search_node)
     workflow.add_node("answer", generate_answer_node)
     
-    # 设置线性流程
+    # Настройте линейный процесс
     workflow.add_edge(START, "understand")
     workflow.add_edge("understand", "search")
     workflow.add_edge("search", "answer")
     workflow.add_edge("answer", END)
     
-    # 编译图
+    # Компилировать график
     memory = InMemorySaver()
     app = workflow.compile(checkpointer=memory)
     
     return app
 
 async def main():
-    """主函数：运行智能搜索助手"""
+    """Основная функция: запуск интеллектуального помощника поиска."""
     
-    # 检查API密钥
+    # Проверьте ключ API
     if not os.getenv("TAVILY_API_KEY"):
-        print("❌ 错误：请在.env文件中配置TAVILY_API_KEY")
+        print("❌ Ошибка: настройте TAVILY_API_KEY в файле .env.")
         return
     
     app = create_search_assistant()
     
-    print("🔍 智能搜索助手启动！")
-    print("我会使用Tavily API为您搜索最新、最准确的信息")
-    print("支持各种问题：新闻、技术、知识问答等")
-    print("(输入 'quit' 退出)\n")
+    print("🔍 Запущен умный помощник по поиску!")
+    print("Я буду использовать API Tavily для поиска самой последней и точной информации для вас.")
+    print("Поддерживает различные вопросы: новости, технологии, мелочи и многое другое.")
+    print("(Введите «quit», чтобы выйти)\n")
     
     session_count = 0
     
     while True:
-        user_input = input("🤔 您想了解什么: ").strip()
+        user_input = input("🤔 Что вы хотите знать: ").strip()
         
-        if user_input.lower() in ['quit', 'q', '退出', 'exit']:
-            print("感谢使用！再见！👋")
+        if user_input.lower() in ['quit', 'q', 'покидать', 'exit']:
+            print("Спасибо за использование! до свидания! 👋")
             break
         
         if not user_input:
@@ -223,7 +223,7 @@ async def main():
         session_count += 1
         config = {"configurable": {"thread_id": f"search-session-{session_count}"}}
         
-        # 初始状态
+        # исходное состояние
         initial_state = {
             "messages": [HumanMessage(content=user_input)],
             "user_query": "",
@@ -236,24 +236,24 @@ async def main():
         try:
             print("\n" + "="*60)
             
-            # 执行工作流
+            # Выполнить рабочий процесс
             async for output in app.astream(initial_state, config=config):
                 for node_name, node_output in output.items():
                     if "messages" in node_output and node_output["messages"]:
                         latest_message = node_output["messages"][-1]
                         if isinstance(latest_message, AIMessage):
                             if node_name == "understand":
-                                print(f"🧠 理解阶段: {latest_message.content}")
+                                print(f"🧠 Стадия понимания: {latest_message.content}")
                             elif node_name == "search":
-                                print(f"🔍 搜索阶段: {latest_message.content}")
+                                print(f"🔍 Фаза поиска: {latest_message.content}")
                             elif node_name == "answer":
-                                print(f"\n💡 最终回答:\n{latest_message.content}")
+                                print(f"\n💡 Окончательный ответ:\n{latest_message.content}")
             
             print("\n" + "="*60 + "\n")
         
         except Exception as e:
-            print(f"❌ 发生错误: {e}")
-            print("请重新输入您的问题。\n")
+            print(f"❌ Произошла ошибка: {e}")
+            print("Пожалуйста, введите свой вопрос еще раз. \п")
 
 if __name__ == "__main__":
     asyncio.run(main())

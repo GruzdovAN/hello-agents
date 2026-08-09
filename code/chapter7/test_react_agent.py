@@ -3,145 +3,145 @@ from dotenv import load_dotenv
 from hello_agents import HelloAgentsLLM, ToolRegistry
 from my_react_agent import MyReActAgent
 
-# 加载环境变量
+# Загрузить переменные среды
 load_dotenv()
 
 def test_react_agent():
-    """测试MyReActAgent的功能"""
+    """Проверьте функциональность MyReActAgent."""
     
-    # 创建LLM实例
+    # Создать экземпляр LLM
     llm = HelloAgentsLLM()
     
-    # 创建工具注册表
+    # Создайте реестр инструментов
     tool_registry = ToolRegistry()
     
-    # 注册一些基础工具用于测试
-    print("🔧 注册测试工具...")
+    # Зарегистрируйте некоторые основные инструменты для тестирования
+    print("🔧Зарегистрировать инструмент тестирования...")
     
-    # 注册计算器工具
+    # Зарегистрировать калькулятор
     try:
         from hello_agents import calculate
-        tool_registry.register_function("calculate", "执行数学计算，支持基本的四则运算", calculate)
-        print("✅ 计算器工具注册成功")
+        tool_registry.register_function("calculate", "Выполняйте математические вычисления и поддерживайте четыре основные арифметические операции.", calculate)
+        print("✅ Регистрация калькулятора прошла успешно")
     except ImportError:
-        print("⚠️ 计算器工具未找到，跳过注册")
+        print("⚠️ Калькулятор не найден, регистрация пропущена.")
 
-    # 注册搜索工具（如果可用）
+    # Зарегистрируйте инструмент поиска (если доступен)
     try:
         from hello_agents import search
-        tool_registry.register_function("search", "搜索互联网信息", search)
-        print("✅ 搜索工具注册成功")
+        tool_registry.register_function("search", "Ищите информацию в Интернете", search)
+        print("✅ Регистрация инструмента поиска прошла успешно")
     except ImportError:
-        print("⚠️ 搜索工具未找到，跳过注册")
+        print("⚠️ Инструмент поиска не найден, пропустите регистрацию")
     
-    # 创建自定义ReActAgent
+    # Создайте собственный ReActAgent.
     agent = MyReActAgent(
-        name="我的推理行动助手",
+        name="Мой помощник в рассуждениях",
         llm=llm,
         tool_registry=tool_registry,
         max_steps=5
     )
     
     print("\n" + "="*60)
-    print("开始测试 MyReActAgent")
+    print("Начать тестирование MyReActAgent")
     print("="*60)
     
-    # 测试1：数学计算问题
-    print("\n📊 测试1：数学计算问题")
-    math_question = "请帮我计算：(25 + 15) * 3 - 8 的结果是多少？"
+    # Тест 1: Вопросы по математическим расчетам
+    print("\n📊 Тест 1: Вопросы по математическим расчетам")
+    math_question = "Помогите пожалуйста посчитать: (25+15)*3 - 8. Какой результат?"
     
     try:
         result1 = agent.run(math_question)
-        print(f"\n🎯 测试1结果: {result1}")
+        print(f"\n🎯 Результат теста 1: {result1}")
     except Exception as e:
-        print(f"❌ 测试1失败: {e}")
+        print(f"❌ Тест 1 не пройден: {e}")
     
-    # 测试2：需要搜索的问题
-    print("\n🔍 测试2：信息搜索问题")
-    search_question = "Python编程语言是什么时候发布的？请告诉我具体的年份。"
+    # Тест 2: Вопросы для поиска
+    print("\n🔍 Тест 2: Задача поиска информации")
+    search_question = "Когда был выпущен язык программирования Python? Подскажите, пожалуйста, конкретный год."
     
     try:
         result2 = agent.run(search_question)
-        print(f"\n🎯 测试2结果: {result2}")
+        print(f"\n🎯 Результаты теста 2: {result2}")
     except Exception as e:
-        print(f"❌ 测试2失败: {e}")
+        print(f"❌ Тест 2 не пройден: {e}")
     
-    # 测试3：复合问题（需要多步推理）
-    print("\n🧠 测试3：复合推理问题")
-    complex_question = "如果一个班级有30个学生，其中60%是女生，那么男生有多少人？请先计算女生人数，再计算男生人数。"
+    # Тест 3: Сложные вопросы (требующие многоэтапного рассуждения)
+    print("\n🧠 Тест 3. Вопросы на сложное рассуждение")
+    complex_question = "Сколько мальчиков в классе, если в классе 30 учеников и 60% из них девочки? Пожалуйста, посчитайте сначала количество девочек, а затем количество мальчиков."
     
     try:
         result3 = agent.run(complex_question)
-        print(f"\n🎯 测试3结果: {result3}")
+        print(f"\n🎯 Результаты теста 3: {result3}")
     except Exception as e:
-        print(f"❌ 测试3失败: {e}")
+        print(f"❌ Тест 3 не пройден: {e}")
     
-    # 查看对话历史
-    print(f"\n📝 对话历史记录: {len(agent.get_history())} 条消息")
+    # Просмотреть историю разговоров
+    print(f"\n📝 История разговоров: {len(agent.get_history())} сообщений")
     
-    # 显示工具使用统计
-    print(f"\n🛠️ 可用工具数量: {len(tool_registry._tools)}")
-    print("已注册的工具:")
+    # Показать статистику использования инструмента
+    print(f"\n🛠️ Количество доступных инструментов: {len(tool_registry._tools)}")
+    print("Зарегистрированные инструменты:")
     for tool_name in tool_registry._tools.keys():
         print(f"  - {tool_name}")
     
-    print("\n🎉 测试完成！")
+    print("\n🎉 Тест завершен!")
 
 def test_custom_prompt():
-    """测试自定义提示词的ReActAgent"""
+    """ReActAgent для тестирования пользовательских слов подсказки"""
     
     print("\n" + "="*60)
-    print("测试自定义提示词的 MyReActAgent")
+    print("MyReActAgent для тестирования пользовательских слов подсказки")
     print("="*60)
     
-    # 创建LLM和工具注册表
+    # Создайте LLM и реестр инструментов.
     llm = HelloAgentsLLM()
     tool_registry = ToolRegistry()
     
-    # 注册计算器工具
+    # Зарегистрировать калькулятор
     try:
         from hello_agents import calculate
-        tool_registry.register_function("calculate", calculate, "数学计算工具")
+        tool_registry.register_function("calculate", calculate, "Инструменты математических вычислений")
     except ImportError:
         pass
     
-    # 自定义提示词（更简洁的版本）
-    custom_prompt = """你是一个数学专家AI助手。
+    # Пользовательские слова-подсказки (более краткая версия)
+    custom_prompt = """Вы — помощник ИИ-эксперта по математике.
 
-可用工具：{tools}
+Доступные инструменты: {инструменты}
 
-请按以下格式回应：
-Thought: [你的思考]
-Action: [tool_name[input] 或 Finish[答案]]
+Пожалуйста, ответьте в следующем формате:
+Мысль: [ваши мысли]
+Действие: [имя_инструмента[вход] или Завершить[ответ]]
 
-问题：{question}
-历史：{history}
+Вопрос: {вопрос}
+История: {история}
 
-开始："""
+Начало:"""
     
-    # 创建使用自定义提示词的Agent
+    # Создайте агента, который использует пользовательские слова подсказки.
     custom_agent = MyReActAgent(
-        name="数学专家助手",
+        name="Помощник эксперта по математике",
         llm=llm,
         tool_registry=tool_registry,
         max_steps=3,
         custom_prompt=custom_prompt
     )
     
-    # 测试数学问题
-    math_question = "计算 15 × 8 + 32 ÷ 4 的结果"
+    # тестовые вопросы по математике
+    math_question = "Вычислить результат 15×8 + 32 ÷ 4"
     
     try:
         result = custom_agent.run(math_question)
-        print(f"\n🎯 自定义提示词测试结果: {result}")
+        print(f"\n🎯 Результаты теста пользовательского слова-подсказки: {result}")
     except Exception as e:
-        print(f"❌ 自定义提示词测试失败: {e}")
+        print(f"❌ Проверка пользовательского слова-подсказки не удалась: {e}")
 
 if __name__ == "__main__":
-    # 运行基础测试
+    # Запустите базовые тесты
     test_react_agent()
     
-    # 运行自定义提示词测试
+    # Запустите пользовательскую проверку слов-подсказок
     test_custom_prompt()
     
-    print("\n✨ 所有测试完成！")
+    print("\n✨ Все тесты пройдены!")

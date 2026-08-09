@@ -1,48 +1,48 @@
 from hello_agents.protocols.a2a.implementation import A2AServer, A2A_AVAILABLE
 
 def create_custom_agent():
-    """创建自定义智能体"""
+    """Создайте собственного агента"""
     if not A2A_AVAILABLE:
-        print("请先安装 A2A SDK: pip install a2a-sdk")
+        print("Сначала установите A2A SDK: pip install a2a-sdk")
         return None
 
-    # 创建智能体
+    # Создать агента
     agent = A2AServer(
         name="my-custom-agent",
-        description="我的自定义智能体",
+        description="Мой индивидуальный агент",
         capabilities={"custom": ["skill1", "skill2"]}
     )
 
-    # 添加技能
+    # Добавить навыки
     @agent.skill("greet")
     def greet_user(name: str) -> str:
-        """问候用户"""
-        return f"你好，{name}！我是自定义智能体。"
+        """приветствовать пользователя"""
+        return f"Здравствуйте, {имя}! Я индивидуальный агент."
 
     @agent.skill("calculate")
     def simple_calculate(expression: str) -> str:
-        """简单计算"""
+        """Простой расчет"""
         try:
-            # 安全的计算（仅支持基本运算）
+            # Безопасные вычисления (поддерживаются только базовые операции)
             allowed_chars = set('0123456789+-*/(). ')
             if all(c in allowed_chars for c in expression):
                 result = eval(expression)
-                return f"计算结果: {expression} = {result}"
+                return f"Результат расчета: {выражение} = {результат}"
             else:
-                return "错误: 只支持基本数学运算"
+                return "Ошибка: поддерживаются только базовые математические операции."
         except Exception as e:
-            return f"计算错误: {e}"
+            return f"Ошибка расчета: {e}"
 
     return agent
 
-# 创建并测试自定义智能体
+# Создание и тестирование пользовательских агентов
 custom_agent = create_custom_agent()
 if custom_agent:
-    # 测试技能
-    print("测试问候技能:")
-    result1 = custom_agent.skills["greet"]("张三")
+    # Тестирование навыков
+    print("Проверьте свои навыки приветствия:")
+    result1 = custom_agent.skills["greet"]("Чжан Сан")
     print(result1)
 
-    print("\n测试计算技能:")
+    print("\nПроверьте свои компьютерные навыки:")
     result2 = custom_agent.skills["calculate"]("10 + 5 * 2")
     print(result2)

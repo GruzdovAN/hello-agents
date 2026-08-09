@@ -1,69 +1,69 @@
-# Chapter 14: Automated Deep Research Agent
+# Глава 14. Агент автоматизированного глубокого исследования
 
-In Chapter 13's travel assistant project, we experienced how to apply HelloAgents to a multi-agent product. In this chapter, we continue forward, focusing on **knowledge-intensive applications**: **building an agent assistant that can automatically execute deep research tasks.**
+В проекте помощника по поездкам в главе 13 мы узнали, как применить HelloAgents к мультиагентному продукту. В этой главе мы продолжим двигаться вперед, сосредоточив внимание на **наукоемких приложениях**: **создании помощника агента, который может автоматически выполнять глубокие исследовательские задачи.**
 
-Compared to travel planning, the difficulty of deep research lies in the continuous divergence of information, rapid updates of facts, and users' high requirements for citation sources. To deliver trustworthy research reports, we need to equip agents with three core capabilities:
+По сравнению с планированием путешествий сложность глубоких исследований заключается в постоянном расхождении информации, быстром обновлении фактов и высоких требованиях пользователей к источникам цитирования. Чтобы предоставлять достоверные исследовательские отчеты, нам необходимо снабдить агентов тремя основными возможностями:
 
-**(1) Problem Analysis**: Decompose users' open topics into retrievable query statements.
+**(1) Анализ проблем**: разложите открытые темы пользователей на извлекаемые операторы запроса.
 
-**(2) Multi-Round Information Collection**: Continuously mine materials by combining different search APIs and deduplicate and integrate them.
+**(2) Многораундовый сбор информации**. Постоянно анализируйте материалы, комбинируя различные поисковые API, а также дедупликатируйте и интегрируйте их.
 
-**(3) Reflection and Summarization**: Identify knowledge gaps based on stage results, decide whether to continue retrieval, and generate structured summaries.
+**(3) Размышление и обобщение**: выявите пробелы в знаниях на основе результатов этапов, решите, продолжать ли поиск, и создайте структурированные резюме.
 
-## 14.1 Project Overview and Architecture Design
+## 14.1 Обзор проекта и архитектурный дизайн
 
-### 14.1.1 Why We Need a Deep Research Assistant
+### 14.1.1 Почему нам нужен ассистент по глубоким исследованиям
 
-In the era of information explosion, we need to quickly understand new technologies, concepts, or events every day. Traditional research methods have several pain points. First is **information overload**. Search engines return thousands of results, and you need to click on links one by one and read a lot of content to find useful information. Second is **lack of structure**. Even if you find relevant information, this information is often fragmented and lacks systematic organization. Finally is **repetitive labor**. Every time you research a new topic, you need to repeat the process of "search → read → summarize → organize".
+В эпоху информационного взрыва нам необходимо каждый день быстро разбираться в новых технологиях, концепциях или событиях. Традиционные методы исследования имеют несколько болевых точек. Во-первых, это **информационная перегрузка**. Поисковые системы выдают тысячи результатов, и вам нужно переходить по ссылкам одну за другой и читать много контента, чтобы найти полезную информацию. Во-вторых, это **отсутствие структуры**. Даже если вы найдете соответствующую информацию, эта информация часто фрагментирована и не имеет систематической организации. Наконец, это **повторяющийся труд**. Каждый раз, когда вы исследуете новую тему, вам необходимо повторять процесс «поиск → чтение → обобщение → систематизация».
 
-This is the problem that the deep research assistant needs to solve. It's not just a search tool, but a research assistant that can autonomously plan, execute, and summarize.
+Это проблема, которую должен решить научный сотрудник. Это не просто инструмент поиска, а помощник исследователя, который может автономно планировать, выполнять и обобщать.
 
-**Core Value of Deep Research Assistant:**
+**Основная ценность помощника по глубоким исследованиям:**
 
-1. **Save Time**: Compress 1-2 hours of research work into 5-10 minutes
-2. **Improve Quality**: Systematic research process to avoid missing important information
-3. **Traceable**: Record all search results and sources for easy verification and citation
-4. **Extensible**: Easily add new search engines, data sources, and analysis tools
+1. **Экономьте время**: сократите 1–2 часа исследовательской работы до 5–10 минут.
+2. **Повышение качества**: систематический исследовательский процесс, позволяющий не пропустить важную информацию.
+3. **Отслеживаемость**: записывайте все результаты поиска и источники для облегчения проверки и цитирования.
+4. **Расширяемость**: легко добавляйте новые поисковые системы, источники данных и инструменты анализа.
 
-### 14.1.2 Technical Architecture Overview
+### 14.1.2 Обзор технической архитектуры
 
-This system still adopts the classic **front-end and back-end separation architecture**, as shown in Figure 14.1.
+В этой системе по-прежнему используется классическая **архитектура разделения клиентской и серверной частей**, как показано на рис. 14.1.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-1.png" alt="" width="85%"/>
-  <p>Figure 14.1 Deep Research Assistant Technical Architecture</p>
+  <p>Рисунок 14.1 Техническая архитектура Deep Research Assistant</p>
 </div>
 
-The system is designed with a four-layer architecture:
+Система спроектирована с четырехуровневой архитектурой:
 
-**Front-End Layer (Vue3+TypeScript)**: Full-screen modal dialog UI, Markdown result visualization
+**Внешний уровень (Vue3+TypeScript)**: полноэкранный модальный диалоговый интерфейс, визуализация результатов Markdown.
 
-**Back-End Layer (FastAPI)**: API routing (`/research/stream`)
+**Верхний уровень (FastAPI)**: маршрутизация API (`/research/stream`)
 
-**Agent Layer (HelloAgents)**: Three specialized Agents (TODO Planner, Task Summarizer, Report Writer) + Two core tools (SearchTool, NoteTool)
+**Уровень агентов (HelloAgents)**: три специализированных агента (TODO Planner, Task Summarizer, Report Writer) + два основных инструмента (SearchTool, NoteTool).
 
-**External Service Layer**: Search engines + LLM providers
+**Уровень внешнего обслуживания**: поисковые системы + поставщики LLM.
 
-Let's see how a complete research request flows through the system, as shown in Figure 14.2:
+Давайте посмотрим, как полный запрос на исследование проходит через систему, как показано на рисунке 14.2:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-2.png" alt="" width="85%"/>
-  <p>Figure 14.2 Deep Research Assistant Data Flow Process</p>
+  <p>Рисунок 14.2. Процесс потока данных Deep Research Assistant</p>
 </div>
 
-1. **User Input**: User enters research topic on the front-end
-2. **Front-End Sends**: Front-end connects to `/research/stream` via SSE
-3. **Back-End Receives**: FastAPI receives request, creates research state
-4. **Planning Phase**: Calls research planning Agent, decomposes into 3 subtasks
-5. **Execution Phase**: Executes each subtask one by one
-   - Use SearchTool to search
-   - Call task summarization Agent to summarize
-   - Use NoteTool to record results
-6. **Report Phase**: Call report generation Agent, integrate all summaries
-7. **Stream Return**: Push progress and results to front-end via SSE
-8. **Front-End Display**: Front-end updates task status, progress bar, logs, and report in real-time
+1. **Ввод пользователя**: пользователь вводит тему исследования во внешнем интерфейсе.
+2. **Внешняя отправка**: внешний интерфейс подключается к `/research/stream` через SSE.
+3. **Верхний сервер получает**: FastAPI получает запрос и создает состояние исследования.
+4. **Фаза планирования**: вызывает агента по планированию исследований, разбивается на 3 подзадачи.
+5. **Фаза выполнения**: каждая подзадача выполняется одна за другой.
+   - Используйте SearchTool для поиска
+   - Вызов агента суммирования задач для подведения итогов
+   - Используйте NoteTool для записи результатов
+6. **Этап отчета**: вызов агента по созданию отчетов, объединение всех сводок.
+7. **Возврат в поток**: перенос прогресса и результатов на внешний интерфейс через SSE.
+8. **Внешний интерфейс**: внешний интерфейс обновляет статус задачи, индикатор выполнения, журналы и отчеты в режиме реального времени.
 
-The project directory structure is as follows:
+Структура каталогов проекта следующая:
 
 ```
 helloagents-deepresearch/
@@ -94,11 +94,11 @@ helloagents-deepresearch/
     └── vite.config.ts         # Build configuration
 ```
 
-### 14.1.3 Quick Experience: Run the Project in 5 Minutes
+### 14.1.3 Быстрый опыт: запуск проекта за 5 минут
 
-Before diving into implementation details, let's first run the project to see the final result. This way you'll have an intuitive understanding of the entire system.
+Прежде чем углубляться в детали реализации, давайте сначала запустим проект, чтобы увидеть конечный результат. Таким образом, вы получите интуитивное понимание всей системы.
 
-You can check versions with the following commands:
+Проверить версии можно следующими командами:
 
 ```bash
 python --version  # Should show Python 3.10.x or higher
@@ -106,7 +106,7 @@ node --version    # Should show v16.x.x or higher
 npm --version     # Should show 8.x.x or higher
 ```
 
-**(1) Start the Back-End**
+**(1) Запустите серверную часть**
 
 ```bash
 # 1. Enter back-end directory
@@ -133,7 +133,7 @@ cp .env.example .env
 python src/main.py
 ```
 
-If everything is normal, you'll see output similar to:
+Если все в порядке, вы увидите вывод, похожий на:
 
 ```
 INFO:     Started server process [12345]
@@ -142,9 +142,9 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 
-**(2) Start the Front-End**
+**(2) Запустите интерфейс**
 
-Open a new terminal window:
+Откройте новое окно терминала:
 
 ```bash
 # 1. Enter front-end directory
@@ -157,7 +157,7 @@ npm install
 npm run dev
 ```
 
-If everything is normal, you'll see output similar to:
+Если все в порядке, вы увидите вывод, похожий на:
 
 ```
   VITE v5.0.0  ready in 500 ms
@@ -167,39 +167,39 @@ If everything is normal, you'll see output similar to:
   ➜  press h + enter to show help
 ```
 
-**(3) Start Research**
+**(3) Начать исследование**
 
-Open your browser and visit `http://localhost:5174`. You'll see a centered input card, as shown in Figure 14.3. Enter a research topic, for example `What kind of organization is Datawhale?`, select a search engine (if multiple are configured), and click the "Start Research" button.
+Откройте браузер и посетите`http://localhost:5174`. Вы увидите центрированную карту ввода, как показано на рис. 14.3. Введите тему исследования, например`What kind of organization is Datawhale?`, выберите поисковую систему (если настроено несколько) и нажмите кнопку «Начать исследование».
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-3.png" alt="" width="85%"/>
-  <p>Figure 14.3 Deep Research Assistant Search Page</p>
+  <p>Рисунок 14.3 Страница поиска Deep Research Assistant</p>
 </div>
 
-As shown in Figure 14.4, the system will automatically expand to full screen, with research information displayed on the left and research progress and results displayed in real-time on the right. The entire research process takes about 1-3 minutes, depending on the complexity of the topic and the response speed of the search engine.
+Как показано на рисунке 14.4, система автоматически развернется в полноэкранный режим, при этом информация об исследовании будет отображаться слева, а ход исследования и результаты будут отображаться в режиме реального времени справа. Весь процесс исследования занимает около 1-3 минут, в зависимости от сложности темы и скорости ответа поисковой системы.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-4.png" alt="" width="85%"/>
-  <p>Figure 14.4 Deep Research Assistant Expanded Research</p>
+  <p>Рис. 14.4 Deep Research Assistant Expanded Research</p>
 </div>
 
-After research is complete, you'll see:
+После завершения исследования вы увидите:
 
-- **Task List**: Shows all subtasks and their status
-- **Progress Log**: Shows all operations during the research process
-- **Final Report**: Structured Markdown report containing summaries of all subtasks and source citations
+- **Список задач**: отображаются все подзадачи и их статус.
+- **Журнал прогресса**: показывает все операции в процессе исследования.
+- **Итоговый отчет**: структурированный отчет Markdown, содержащий сводку всех подзадач и ссылки на источники.
 
-Now you've successfully run the deep research assistant and have an intuitive understanding of the system.
+Теперь вы успешно запустили помощника по глубоким исследованиям и имеете интуитивное понимание системы.
 
-## 14.2 TODO-Driven Research Paradigm
+## 14.2 Парадигма исследования, основанного на TODO
 
-### 14.2.1 What is TODO-Driven Research
+### 14.2.1 Что такое исследование, управляемое TODO
 
-Traditional search engines can only answer single questions, while deep research needs to answer a series of related questions. The TODO-driven research paradigm decomposes complex research topics into multiple subtasks (TODOs), executes them one by one, and integrates the results.
+Традиционные поисковые системы могут ответить только на отдельные вопросы, тогда как глубокие исследования должны ответить на ряд связанных вопросов. Парадигма исследования, основанная на TODO, разбивает сложные темы исследования на несколько подзадач (TODO), выполняет их одну за другой и интегрирует результаты.
 
-The core idea of this paradigm is: **Transform the complex task of "research" into a "planning → execution → integration" process**.
+Основная идея этой парадигмы: **Преобразовать сложную задачу «исследования» в процесс «планирование → выполнение → интеграция»**.
 
-Let's understand this transformation through an example. Suppose you want to research "What kind of organization is Datawhale?". The traditional search method is:
+Давайте разберемся в этой трансформации на примере. Предположим, вы хотите изучить вопрос «Что за организация представляет собой Datawhale?». Традиционный метод поиска:
 
 ```
 User input: What kind of organization is Datawhale?
@@ -208,9 +208,9 @@ User: Click on links one by one, read content, take notes
 Result: Fragmented information, lacking systematization
 ```
 
-The problem with this approach is that each link only covers one aspect of the topic, lacks systematic structure, and requires manual organization and summarization.
+Проблема этого подхода заключается в том, что каждая ссылка охватывает только один аспект темы, не имеет систематической структуры и требует ручной организации и обобщения.
 
-**TODO-Driven Approach: Systematic Research**
+**Подход, основанный на TODO: систематические исследования**
 
 ```
 User input: What kind of organization is Datawhale?
@@ -236,34 +236,34 @@ System integration:
     └─ References: All source citations
 ```
 
-The advantages of this approach are that it decomposes complex topics into clear sub-questions, records search results and summaries for each subtask for easy traceability, and the systematic research process avoids missing important information. It's also easy to add new subtasks or adjust execution order.
+Преимущества этого подхода заключаются в том, что он разбивает сложные темы на четкие подвопросы, записывает результаты поиска и резюме для каждой подзадачи для облегчения отслеживания, а систематический процесс исследования позволяет избежать пропуска важной информации. Также легко добавлять новые подзадачи или регулировать порядок выполнения.
 
-A complete TODO-driven research system contains three core elements:
+Полная исследовательская система, основанная на TODO, содержит три основных элемента:
 
-**(1) Intelligent Planner (TODO Planner)**: Responsible for decomposing research topics into subtasks. A good planner needs to understand the key aspects and research objectives of the topic, decompose the topic into 3-5 subtasks (too few won't cover everything, too many will be redundant), and design appropriate search queries for each subtask.
+**(1) Интеллектуальный планировщик (TODO Planner)**: отвечает за разложение тем исследования на подзадачи. Хорошему планировщику необходимо понимать ключевые аспекты и цели исследования темы, разложить тему на 3-5 подзадач (слишком мало не окроет все, слишком много будет избыточно) и разработать подходящие поисковые запросы для каждой подзадачи.
 
-**(2) Task Executor**: Responsible for executing each subtask. The executor needs to use search engines to obtain relevant materials, extract key information and remove redundant content, while saving all source citations for easy verification.
+**(2) Исполнитель задач**: отвечает за выполнение каждой подзадачи. Исполнителю необходимо использовать поисковые системы для получения актуальных материалов, извлечения ключевой информации и удаления лишнего контента, сохраняя при этом все цитаты на источники для удобства проверки.
 
-**(3) Report Writer**: Responsible for integrating the results of all subtasks. The generator needs to organize content in logical order, merge duplicate information, and add source citations for each viewpoint.
+**(3) Составитель отчетов**: отвечает за интеграцию результатов всех подзадач. Генератору необходимо организовать контент в логическом порядке, объединить повторяющуюся информацию и добавить ссылки на источники для каждой точки зрения.
 
-In our case, the TODO-driven research process is shown in Figure 14.5:
+В нашем случае процесс исследования, основанный на TODO, показан на рисунке 14.5:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-5.png" alt="" width="85%"/>
-  <p>Figure 14.5 TODO-Driven Research Process</p>
+  <p>Рисунок 14.5. Процесс исследования, основанный на TODO</p>
 </div>
 
-The entire process is linear, but each stage has clear inputs and outputs. This design makes the system easy to understand and debug.
+Весь процесс линейный, но каждый этап имеет четкие входы и выходы. Такая конструкция упрощает понимание и отладку системы.
 
-### 14.2.2 Three-Stage Research Process
+### 14.2.2 Трехэтапный процесс исследования
 
-The TODO-driven research process is divided into three stages: Planning, Execution, and Reporting. Each stage has a dedicated Agent responsible for it.
+Процесс исследования, основанный на TODO, разделен на три этапа: планирование, выполнение и отчетность. За каждый этап отвечает специальный агент.
 
-**(1) Stage 1: Planning**
+**(1) Этап 1: Планирование**
 
-The goal of the planning stage is to decompose the research topic into 3-5 subtasks. The system receives the research topic and current date as input, and outputs a JSON-format list of subtasks. Each subtask contains three fields: title (task title), intent (research intent), and query (search query).
+Цель этапа планирования – декомпозиция темы исследования на 3-5 подзадач. Система получает на вход тему исследования и текущую дату и выводит список подзадач в формате JSON. Каждая подзадача содержит три поля: title (название задачи), Intent (намерение исследования) и query (поисковый запрос).
 
-The research planning Agent adopts different decomposition strategies based on topic characteristics, usually starting with basic concepts, then understanding technical status, practical applications, and development trends, and conducting comparative analysis when necessary. For example, for "What kind of organization is Datawhale?", the planning Agent might generate the following subtasks:
+Агент по планированию исследований применяет различные стратегии декомпозиции на основе характеристик темы, обычно начиная с базовых концепций, затем понимания технического состояния, практического применения и тенденций развития, а также проведения сравнительного анализа, когда это необходимо. Например, для вопроса «Какая организация представляет собой Datawhale?» агент планирования может сгенерировать следующие подзадачи:
 
 ```json
 [
@@ -281,15 +281,15 @@ The research planning Agent adopts different decomposition strategies based on t
 ]
 ```
 
-A good plan should be comprehensive, logically clear, have precise queries, and an appropriate number of items.
+Хороший план должен быть всеобъемлющим, логически ясным, содержать точные запросы и соответствующее количество пунктов.
 
-**(2) Stage 2: Execution**
+**(2) Этап 2: Исполнение**
 
-The execution stage executes each subtask one by one, searching and summarizing relevant materials. The system receives the subtask list and search engine configuration as input, and outputs a summary (Markdown format) and source citation list for each subtask. The execution process is as follows:
+На этапе исполнения каждая подзадача выполняется поочередно, осуществляя поиск и обобщение соответствующих материалов. Система получает на входе список подзадач и конфигурацию поисковой системы и выводит сводку (формат Markdown) и список цитирования источников для каждой подзадачи. Процесс выполнения следующий:
 
-For each subtask, the executor will:
+По каждой подзадаче исполнитель:
 
-1. **Search for materials**: Use the configured search engine to execute the search
+1. **Поиск материалов**: используйте настроенную поисковую систему для выполнения поиска.
 
    ```python
    search_results = search_tool.run({
@@ -300,7 +300,7 @@ For each subtask, the executor will:
    })
    ```
 
-2. **Get search results**: Extract title, URL, snippet
+2. **Получите результаты поиска**: извлеките заголовок, URL-адрес и фрагмент.
 
    ```json
    {
@@ -315,7 +315,7 @@ For each subtask, the executor will:
    }
    ```
 
-3. **Call summarization Agent**: Summarize search results
+3. **Агент суммирования вызовов**: суммируйте результаты поиска.
 
    ```python
    summary = summarizer_agent.run(
@@ -324,7 +324,7 @@ For each subtask, the executor will:
    )
    ```
 
-4. **Record summary and sources**: Save to NoteTool
+4. **Сводка записи и источники**: Сохранить в NoteTool.
 
    ```python
    note_tool.run({
@@ -335,7 +335,7 @@ For each subtask, the executor will:
    })
    ```
 
-The task summarization Agent will extract core viewpoints from each search result, merge similar information, retain important numbers, dates, names and other key data, and add source citations for each viewpoint. For example, for the search results of "Basic information about Datawhale", the summarization Agent might generate:
+Агент суммирования задач будет извлекать основные точки зрения из каждого результата поиска, объединять аналогичную информацию, сохранять важные цифры, даты, имена и другие ключевые данные, а также добавлять ссылки на источники для каждой точки зрения. Например, для результатов поиска «Основная информация о Datawhale» агент суммирования может сгенерировать:
 
 ```markdown
 ## Basic Information about Datawhale
@@ -362,7 +362,7 @@ Datawhale is an open source organization focused on data science and AI, founded
 [4] https://datawhale.cn
 ```
 
-During execution, the system will push progress information to the front-end in real-time:
+Во время выполнения система будет передавать информацию о ходе выполнения во внешний интерфейс в режиме реального времени:
 
 ```json
 {
@@ -389,9 +389,9 @@ During execution, the system will push progress information to the front-end in 
 }
 ```
 
-**(3) Stage 3: Reporting**
+**(3) Этап 3: Отчетность**
 
-The goal of the reporting stage is to integrate the summaries of all subtasks and generate the final report. The system receives the summaries of all subtasks and the research topic as input, and outputs the final report in Markdown format. The report contains five parts: title, overview, detailed analysis of each subtask, summary, and references. For example, for "What kind of organization is Datawhale?", the final report might be:
+Целью этапа отчетности является объединение сводных данных всех подзадач и создание итогового отчета. Система получает на вход сводку всех подзадач и темы исследования и выводит итоговый отчет в формате Markdown. Отчет состоит из пяти частей: заголовок, обзор, подробный анализ каждой подзадачи, резюме и ссылки. Например, для вопроса «Какая организация представляет собой Datawhale?» окончательный отчет может быть таким:
 
 ```markdown
 # What Kind of Organization is Datawhale?
@@ -423,32 +423,32 @@ Through this research, we learned about Datawhale's organizational positioning, 
 ...
 ```
 
-The report generation Agent will organize content in the logical order of subtasks, add a brief overview at the beginning, merge duplicate information, unify Markdown format, and organize all source citations into the references section.
+Агент формирования отчетов организует контент в логическом порядке подзадач, добавит краткий обзор в начале, объединит повторяющуюся информацию, унифицирует формат Markdown и упорядочит все ссылки на источники в разделе ссылок.
 
-## 14.3 Agent System Design
+## 14.3 Проектирование агентской системы
 
-### 14.3.1 Agent Responsibility Division
+### 14.3.1 Отдел ответственности агентов
 
-In the deep research assistant, we designed three specialized Agents, each responsible for a specific task. This makes each Agent simple, easy to understand and maintain.
+В Deep Research Assistant мы разработали трех специализированных агентов, каждый из которых отвечает за определенную задачу. Это делает каждого агента простым, легким для понимания и обслуживания.
 
-In Chapter 7, we learned how to use `SimpleAgent` to build agents. The design philosophy of `SimpleAgent` is simple and direct: each time the `run()` method is called, the Agent analyzes the user's question, decides whether to call tools, and then returns the result. This design is very effective when handling simple tasks, but when facing complex tasks like deep research, we need to continue using a multi-agent collaboration approach.
+In Chapter 7, we learned how to use`SimpleAgent`для создания агентов. Философия дизайна`SimpleAgent`is simple and direct: each time the`run()`вызывается метод, Агент анализирует вопрос пользователя, решает, следует ли вызывать инструменты, а затем возвращает результат. Этот дизайн очень эффективен при решении простых задач, но при решении сложных задач, таких как глубокие исследования, нам необходимо продолжать использовать подход к многоагентному сотрудничеству.
 
-As shown in Table 14.1, the three Agents are respectively responsible for planning, summarization, and report generation.
+Как показано в Таблице 14.1, три агента отвечают соответственно за планирование, обобщение и составление отчетов.
 
 <div align="center">
-  <p>Table 14.1 Responsibility Division of Three Agents</p>
+  <p>Таблица 14.1 Responsibility Division of Three Agents</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-table-1.png" alt="" width="85%"/>
 </div>
 
-Let's introduce the design of each Agent in detail.
+Давайте подробно представим дизайн каждого агента.
 
-**Agent 1: Research Planning Expert (TODO Planner)**
+**Агент 1: Эксперт по планированию исследований (TODO Planner)**
 
-**Responsibility**: Decompose research topics into 3-5 subtasks
+**Ответственность**: разбейте темы исследования на 3–5 подзадач.
 
-**Design Philosophy**: The core task of the research planning expert is to understand the user's research topic, analyze the key aspects of the topic, and then generate a series of subtasks. This process is similar to the "brainstorming" stage of human researchers before starting research.
+**Философия дизайна**. Основная задача специалиста по планированию исследований — понять тему исследования пользователя, проанализировать ключевые аспекты темы, а затем сгенерировать ряд подзадач. Этот процесс аналогичен этапу «мозгового штурма», который проводят исследователи-люди перед началом исследования.
 
-**Prompt Design**:
+**Быстрый дизайн**:
 
 ```python
 todo_planner_instructions = """
@@ -486,11 +486,11 @@ Please ensure:
 """
 ```
 
-**Key Design Points**: The prompt includes the current date to get the latest information, explicitly requires JSON format output for easy parsing, helps the Agent understand expected output through examples, and emphasizes constraints such as number of subtasks and logical relationships.
+**Ключевые моменты разработки**: приглашение включает текущую дату для получения самой последней информации, явно требует вывода в формате JSON для удобства анализа, помогает агенту понять ожидаемый результат с помощью примеров и подчеркивает такие ограничения, как количество подзадач и логические связи.
 
-**Implementation Code**:
+**Код реализации**:
 
-The ToolAwareSimpleAgent here is an extension of SimpleAgent. You can learn about it in Section 14.3.2, no need to delve into it here.
+ToolAwareSimpleAgent здесь является расширением SimpleAgent. Об этом можно узнать в разделе 14.3.2, здесь углубляться не нужно.
 
 ```python
 class PlanningService:
@@ -534,13 +534,13 @@ class PlanningService:
             raise ValueError("Unable to extract JSON from response")
 ```
 
-**Agent 2: Task Summarization Expert (Task Summarizer)**
+**Агент 2: Эксперт по суммированию задач (Сумматор задач)**
 
-**Responsibility**: Summarize search results, extract key information
+**Обязанности**: обобщать результаты поиска, извлекать ключевую информацию.
 
-**Design Philosophy**: The core task of the task summarization expert is to read search results, extract key information, and present it in a structured way. This process is similar to human researchers taking notes after reading literature.
+**Философия дизайна**. Основная задача специалиста по обобщению задач — прочитать результаты поиска, извлечь ключевую информацию и представить ее в структурированном виде. Этот процесс аналогичен тому, как люди-исследователи делают заметки после прочтения литературы.
 
-**Prompt Design**:
+**Быстрый дизайн**:
 
 ```python
 task_summarizer_instructions = """
@@ -584,9 +584,9 @@ Multimodal models are AI models that can process multiple types of data[1]. Unli
 """
 ```
 
-**Key Design Points**: The prompt includes task title, intent, query and other context to help the Agent understand the task, explicitly requires output to include core viewpoints, key data, and source citations, emphasizes adding source citations for each viewpoint, and helps the Agent understand the expected output format through examples.
+**Ключевые моменты разработки**: подсказка включает название задачи, намерение, запрос и другой контекст, чтобы помочь агенту понять задачу, явно требует вывода, включающего основные точки зрения, ключевые данные и цитаты из источников, подчеркивает добавление цитат из источников для каждой точки зрения и помогает агенту понять ожидаемый формат вывода с помощью примеров.
 
-**Implementation Code**:
+**Код реализации**:
 
 ```python
 class SummarizationService:
@@ -628,13 +628,13 @@ class SummarizationService:
         return "\n".join(formatted)
 ```
 
-**Agent 3: Report Writing Expert (Report Writer)**
+**Агент 3: Эксперт по написанию отчетов (составитель отчетов)**
 
-**Responsibility**: Integrate summaries of all subtasks and generate final report
+**Обязанности**: интеграция сводных данных по всем подзадачам и составление итогового отчета.
 
-**Design Philosophy**: The core task of the report writing expert is to integrate the summaries of all subtasks into a structured report. This process is similar to human researchers writing research reports after completing all investigations.
+**Философия дизайна**. Основная задача эксперта по написанию отчета — объединить краткое изложение всех подзадач в структурированный отчет. Этот процесс аналогичен тому, как люди-исследователи пишут отчеты об исследованиях после завершения всех исследований.
 
-**Prompt Design**:
+**Быстрый дизайн**:
 
 ```python
 report_writer_instructions = """
@@ -689,9 +689,9 @@ Through this research, we learned about...
 """
 ```
 
-**Key Design Points**: The prompt explicitly requires the report to include title, overview, detailed analysis, summary, references and other structures, emphasizes organizing content in logical order, requires merging duplicate information to eliminate redundancy, and retains all source citations.
+**Ключевые моменты**: в подсказке явно требуется, чтобы отчет включал заголовок, обзор, подробный анализ, резюме, ссылки и другие структуры, подчеркивается организация контента в логическом порядке, требуется объединение повторяющейся информации для устранения избыточности и сохраняются все ссылки на источники.
 
-**Implementation Code**:
+**Код реализации**:
 
 ```python
 class ReportingService:
@@ -734,22 +734,22 @@ class ReportingService:
         return "\n".join(formatted)
 ```
 
-### 14.3.2 ToolAwareSimpleAgent Design
+### 14.3.2 Проект ToolAwareSimpleAgent
 
-In Chapter 7, we implemented `SimpleAgent`, which is the basic Agent of the HelloAgents framework. But in the deep research assistant, we need an Agent that can **record tool calls**. This is where `ToolAwareSimpleAgent` comes from.
+В главе 7 мы реализовали`SimpleAgent`, который является основным агентом платформы HelloAgents. Но в качестве помощника по глубоким исследованиям нам нужен агент, который может **записывать вызовы инструментов**. Вот где`ToolAwareSimpleAgent`происходит от.
 
-In the deep research assistant, we need to record the tool call status of each Agent for:
+В Deep Research Assistant нам необходимо записать статус вызова инструмента каждого агента для:
 
-1. **Debugging**: View which tools the Agent called and what parameters were passed
-2. **Logging**: Record all operations during the research process
-3. **Analysis**: Analyze the Agent's behavior patterns
-4. **Progress Display**: Show in real-time what the Agent is doing
+1. **Отладка**: просмотрите, какие инструменты вызывал агент и какие параметры были переданы.
+2. **Журналирование**: записывайте все операции в процессе исследования.
+3. **Анализ**: анализ поведения агента.
+4. **Отображение прогресса**: показывает в режиме реального времени, что делает агент.
 
-`SimpleAgent` itself does not support tool call listening, so we need to extend it.
+`SimpleAgent`сам по себе не поддерживает прослушивание вызовов инструментов, поэтому нам необходимо его расширить.
 
-`ToolAwareSimpleAgent` adds a `tool_call_listener` parameter on top of `SimpleAgent`. This is a callback function that is called every time a tool is called.
+`ToolAwareSimpleAgent`добавляет`tool_call_listener`параметр поверх`SimpleAgent`. Это функция обратного вызова, которая вызывается каждый раз при вызове инструмента.
 
-**Usage Example:**
+**Пример использования:**
 
 ```python
 from hello_agents import ToolAwareSimpleAgent
@@ -768,7 +768,7 @@ agent = ToolAwareSimpleAgent(
 )
 ```
 
-`ToolAwareSimpleAgent` inherits from `SimpleAgent` and overrides the `_execute_tool_call` method:
+`ToolAwareSimpleAgent`наследует от`SimpleAgent`и переопределяет`_execute_tool_call`метод:
 
 ```python
 class ToolAwareSimpleAgent(SimpleAgent):
@@ -808,7 +808,7 @@ class ToolAwareSimpleAgent(SimpleAgent):
         return result
 ```
 
-In the deep research assistant, we use `ToolAwareSimpleAgent` to record all Agent tool calls:
+В Deep Research Assistant мы используем`ToolAwareSimpleAgent`для записи всех вызовов инструментов агента:
 
 ```python
 class DeepResearchAgent:
@@ -831,24 +831,24 @@ class DeepResearchAgent:
         self.reporter = ReportingService(self.llm, tool_listener)
 ```
 
-This way, all Agent tool calls are recorded and pushed to the front-end via SSE, displayed to the user in real-time.
+Таким образом, все вызовы инструментов агента записываются и передаются во внешний интерфейс через SSE и отображаются пользователю в режиме реального времени.
 
-### 14.3.3 Agent Collaboration Mode
+### 14.3.3 Режим совместной работы агентов
 
-The three Agents have a **sequential collaboration** relationship, as shown in Figure 14.6.
+Три агента имеют отношения **последовательного сотрудничества**, как показано на рис. 14.6.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-6.png" alt="" width="85%"/>
-  <p>Figure 14.6 Agent Collaboration Process</p>
+  <p>Рисунок 14.6 Процесс совместной работы агентов</p>
 </div>
 
-The characteristics of the sequential collaboration mode are:
+Характеристики режима последовательного сотрудничества:
 
-1. **Linear Process**: Agents execute in a fixed order
-2. **Clear Input and Output**: Each Agent's input comes from the previous Agent's output
-3. **No Concurrency**: Only one Agent is working at the same time
+1. **Линейный процесс**: агенты выполняются в фиксированном порядке.
+2. **Очистить ввод и вывод**: ввод каждого агента берется из вывода предыдущего агента.
+3. **Нет параллелизма**: одновременно работает только один агент.
 
-`DeepResearchAgent` is the core coordinator of the entire system, responsible for scheduling the three Agents:
+`DeepResearchAgent`является основным координатором всей системы, отвечающим за планирование работы трех агентов:
 
 ```python
 class DeepResearchAgent:
@@ -886,22 +886,22 @@ class DeepResearchAgent:
         return report
 ```
 
-## 14.4 Tool System Integration
+## 14.4 Интеграция системы инструментов
 
-### 14.4.1 SearchTool Extension
+### 14.4.1 Расширение SearchTool
 
-In Chapter 7, we implemented the basic version of `SearchTool`, integrating Tavily and SerpApi search engines, demonstrating the design idea of multi-source search. In this chapter's deep research assistant, we further extended the capabilities of `SearchTool`, adding DuckDuckGo, Perplexity, SearXNG and other search engines, and implementing Advanced mode (combining multiple search engines). Search is the most core function of the deep research assistant, and these extensions enable the system to adapt to different usage scenarios and needs.
+В главе 7 мы реализовали базовую версию`SearchTool`, интегрируя поисковые системы Tavily и SerpApi, демонстрируя дизайнерскую идею поиска по нескольким источникам. В этой главе мы еще больше расширили возможности`SearchTool`, добавление DuckDuckGo, Perplexity, SearXNG и других поисковых систем, а также реализация расширенного режима (объединение нескольких поисковых систем). Поиск — основная функция Deep Research Assistant, и эти расширения позволяют системе адаптироваться к различным сценариям использования и потребностям.
 
-As shown in Table 14.2, the search engines added this time have different characteristics and applicable scenarios.
+Как показано в Таблице 14.2, добавленные на этот раз поисковые системы имеют разные характеристики и применимые сценарии.
 
 <div align="center">
-  <p>Table 14.2 Multi-Search Engine Comparison</p>
+  <p>Таблица 14.2. Сравнение нескольких поисковых систем</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-table-2.png" alt="" width="85%"/>
 </div>
 
-We will no longer discuss how to extend separately. You can refer to the source code and the extension cases in Chapter 7 for implementation. `SearchTool` provides a unified search interface. No matter which search engine is used, the calling method is the same.
+О том, как продлить отдельно, мы больше не будем говорить. Для реализации вы можете обратиться к исходному коду и вариантам расширения в главе 7.`SearchTool`предоставляет единый интерфейс поиска. Независимо от того, какая поисковая система используется, метод вызова один и тот же.
 
-In the deep research assistant, we select the search engine through the configuration file:
+В глубоком исследовательском помощнике выбираем поисковую систему через файл конфигурации:
 
 ```python
 # config.py
@@ -922,18 +922,18 @@ class Configuration(BaseModel):
 SEARCH_API=tavily
 ```
 
-This way, users can select the search engine by modifying the `.env` file without modifying the code.
+Таким образом, пользователи могут выбрать поисковую систему, изменив`.env`файл без изменения кода.
 
-The result returned by `SearchTool` is a dictionary containing:
+The result returned by`SearchTool`представляет собой словарь, содержащий:
 
-- `results`: List of search results, each result contains title, URL, snippet
-- `backend`: Search engine used
-- `answer`: AI-generated answer (Perplexity only)
-- `notices`: Notification information (such as API limits, errors, etc.)
+- `results`: список результатов поиска, каждый результат содержит заголовок, URL-адрес и фрагмент.
+- `backend`: используемая поисковая система
+- `ответ`: ответ, сгенерированный ИИ (только в Perplexity)
+- `notices`: информация для уведомлений (например, ограничения API, ошибки и т. д.).
 
-Here are some special case handling.
+Вот некоторые особые случаи.
 
-Search results may contain duplicate URLs, we need to deduplicate:
+Результаты поиска могут содержать повторяющиеся URL-адреса, нам необходимо выполнить дедупликацию:
 
 ```python
 def deduplicate_sources(sources: List[dict]) -> List[dict]:
@@ -949,7 +949,7 @@ def deduplicate_sources(sources: List[dict]) -> List[dict]:
     return unique_sources
 ```
 
-Search results may contain a large amount of text, we need to limit the number of tokens for each source:
+Результаты поиска могут содержать большое количество текста, нам нужно ограничить количество токенов для каждого источника:
 
 ```python
 def limit_source_tokens(source: dict, max_tokens: int = 2000) -> dict:
@@ -968,15 +968,15 @@ def limit_source_tokens(source: dict, max_tokens: int = 2000) -> dict:
     }
 ```
 
-### 14.4.2 NoteTool Usage
+### 14.4.2 Использование NoteTool
 
-In the deep research assistant, we use `NoteTool` to persist research progress. `NoteTool` is a built-in tool integrated in Chapter 9, used to create, read, update, and delete notes.
+В Deep Research Assistant мы используем`NoteTool`продолжать исследовательский прогресс.`NoteTool`— это встроенный инструмент, интегрированный в главу 9, используемый для создания, чтения, обновления и удаления заметок.
 
-During the research process, we need to record the search results, summaries, and final research report for each subtask. This information needs to be persisted to disk so that research can continue from the last progress when interrupted, and it is also convenient to view all operations during the research process and analyze the quality and efficiency of the research.
+В процессе исследования нам необходимо записывать результаты поиска, резюме и окончательный отчет об исследовании для каждой подзадачи. Эту информацию необходимо сохранить на диск, чтобы при прерывании исследования можно было продолжить с последнего прогресса, а также было удобно просматривать все операции в процессе исследования и анализировать качество и эффективность исследования.
 
-`NoteTool` stores notes in the specified workspace directory, with each note being a Markdown file. The note filename is the task ID, and the content includes task title, task intent, search query, search results, and summary.
+`NoteTool`сохраняет заметки в указанном каталоге рабочей области, причем каждая заметка представляет собой файл Markdown. Имя файла заметки — это идентификатор задачи, а содержимое включает название задачи, намерение задачи, поисковый запрос, результаты поиска и сводку.
 
-The final generated file style will be in the following tree structure:
+Окончательно сгенерированный стиль файла будет иметь следующую древовидную структуру:
 
 ```
 workspace/
@@ -989,7 +989,7 @@ workspace/
     └── final_report.md  # Final report
 ```
 
-In the deep research assistant, we use `NoteTool` to record the research progress of each subtask:
+В Deep Research Assistant мы используем`NoteTool`фиксировать ход исследования каждой подзадачи:
 
 ```python
 class NotesService:
@@ -1041,11 +1041,11 @@ class NotesService:
         return content
 ```
 
-### 14.4.3 ToolRegistry Tool Management
+### 14.4.3 Управление инструментами ToolRegistry
 
-`ToolRegistry` is the tool registry of the HelloAgents framework, also supported in our Chapter 7, used to manage the registration and invocation of all tools. In the deep research assistant, we use `ToolRegistry` to manage `SearchTool` and `NoteTool`.
+`ToolRegistry`— это реестр инструментов платформы HelloAgents, который также поддерживается в главе 7 и используется для управления регистрацией и вызовом всех инструментов. В Deep Research Assistant мы используем`ToolRegistry`управлять`SearchTool`и`NoteTool`.
 
-Before creating an Agent, we need to register tools first:
+Прежде чем создавать Агента, нам необходимо сначала зарегистрировать инструменты:
 
 ```python
 from hello_agents import ToolAwareSimpleAgent
@@ -1073,38 +1073,38 @@ agent = ToolAwareSimpleAgent(
 )
 ```
 
-When an Agent needs to call a tool, it generates a tool call instruction, as shown in Figure 14.7.
+Когда агенту необходимо вызвать инструмент, он генерирует инструкцию вызова инструмента, как показано на рисунке 14.7.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-7.png" alt="" width="85%"/>
-  <p>Figure 14.7 Tool Call Process</p>
+  <p>Рисунок 14.7 Процесс вызова инструмента</p>
 </div>
 
-**Tool Call Process**:
+**Процесс вызова инструмента**:
 
-1. **Agent generates instruction**: Agent generates tool call instruction, such as `[TOOL_CALL:search_tool:{"input": "Datawhale organization", "backend": "tavily"}]`
-2. **Parse instruction**: `ToolRegistry` parses the instruction, extracts tool name and parameters
-3. **Find tool**: `ToolRegistry` finds the corresponding tool based on the tool name
-4. **Call tool**: Call the tool's `run` method, passing in parameters
-5. **Return result**: Tool returns execution result
-6. **Format result**: Format the result as a string and return it to the Agent
+1. **Агент генерирует инструкцию**: Агент генерирует инструкцию по вызову инструмента, например `[TOOL_CALL:search_tool:{"input": "Datawhale Organization", "backend": "tavily"}]`
+2. **Инструкция анализа**: ToolRegistry анализирует инструкцию, извлекает имя и параметры инструмента.
+3. **Найти инструмент**: ToolRegistry находит соответствующий инструмент по имени инструмента.
+4. **Вызов инструмента**: вызов метода run инструмента с передачей параметров.
+5. **Возврат результата**: инструмент возвращает результат выполнения.
+6. **Форматировать результат**: отформатируйте результат как строку и верните его агенту.
 
-## 14.5 Service Layer Implementation
+## 14.5 Реализация сервисного уровня
 
-This section will introduce the implementation of core services in detail, including PlanningService, SummarizationService, ReportingService, and SearchService. These services are the bridge connecting Agents and tools, responsible for specific business logic.
+В этом разделе будет подробно представлена ​​реализация основных служб, включая PlanningService, SummarizationService, ReportingService и SearchService. Эти сервисы являются мостом, соединяющим агентов и инструменты, отвечающие за конкретную бизнес-логику.
 
-### 14.5.1 Task Planning Service
+### 14.5.1 Служба планирования задач
 
-`PlanningService` is responsible for calling the research planning Agent to decompose the research topic into subtasks. This is the first and most critical step of the entire research process.
+`PlanningService`отвечает за вызов агента по планированию исследования для разложения темы исследования на подзадачи. Это первый и наиболее важный шаг всего исследовательского процесса.
 
-**(1) Implementation Approach**
+**(1) Подход к реализации**
 
-Its core responsibilities are:
+Его основные обязанности:
 
-1. **Build planning Prompt**: Build Prompt based on research topic and current date
-2. **Call planning Agent**: Call TODO Planner Agent to generate subtask list
-3. **Parse JSON response**: Extract JSON-format subtask list from Agent's response
-4. **Validate subtask format**: Ensure each subtask contains required fields (title, intent, query)
+1. **Подсказка по планированию сборки**: Подсказка по сборке на основе темы исследования и текущей даты.
+2. **Агент планирования звонков**: вызовите агента TODO Planner, чтобы создать список подзадач.
+3. **Разобрать ответ JSON**: извлечь список подзадач в формате JSON из ответа агента.
+4. **Проверьте формат подзадачи**: убедитесь, что каждая подзадача содержит обязательные поля (заголовок, намерение, запрос).
 
 ```python
 import re
@@ -1202,23 +1202,23 @@ class PlanningService:
             raise ValueError("Unable to extract JSON from response")
 ```
 
-**(2) JSON Parsing and Validation**
+**(2) Анализ и проверка JSON**
 
-The JSON returned by the Agent may contain extra text or format errors, so we need robust parsing logic:
+JSON, возвращаемый агентом, может содержать дополнительный текст или ошибки формата, поэтому нам нужна надежная логика синтаксического анализа:
 
-**Common Issues**:
+**Распространенные проблемы**:
 
-1. **Contains extra text**: Agent may add explanatory text before and after JSON
-2. **Format errors**: JSON may be missing quotes, commas, etc.
-3. **Missing fields**: Some subtasks may be missing required fields
+1. **Содержит дополнительный текст**: агент может добавлять пояснительный текст до и после JSON.
+2. **Ошибки формата**: в JSON могут отсутствовать кавычки, запятые и т. д.
+3. **Отсутствуют поля**. В некоторых подзадачах могут отсутствовать обязательные поля.
 
-**Solutions**:
+**Решения**:
 
-1. **Use regex**: Extract JSON part
-2. **Multiple parsing strategies**: First try to extract JSON array, then try to parse directly
-3. **Field validation**: Ensure each subtask contains required fields
+1. **Используйте регулярное выражение**: извлеките часть JSON.
+2. **Несколько стратегий анализа**: сначала попробуйте извлечь массив JSON, а затем попробуйте выполнить анализ напрямую.
+3. **Проверка полей**: убедитесь, что каждая подзадача содержит обязательные поля.
 
-**Example**:
+**Пример**:
 
 ```python
 # Agent response example 1: Contains extra text
@@ -1258,16 +1258,16 @@ tasks2 = service._extract_tasks(response2)
 # Result: [{"title": "What is a multimodal model", ...}, ...]
 ```
 
-**(3) Planning Quality Assessment**
+**(3) Планирование оценки качества**
 
-A good plan should meet the following criteria:
+Хороший план должен соответствовать следующим критериям:
 
-1. **Comprehensive coverage**: Cover all important aspects of the topic
-2. **Clear logic**: Clear logical relationships between subtasks
-3. **Precise queries**: Search queries can accurately find relevant materials
-4. **Appropriate quantity**: 3-5 subtasks
+1. **Комплексное освещение**: охватите все важные аспекты темы.
+2. **Четкая логика**: четкие логические связи между подзадачами.
+3. **Точные запросы**. Поисковые запросы позволяют точно находить релевантные материалы.
+4. **Соответствующее количество**: 3–5 подзадач.
 
-We can add an evaluation method:
+Мы можем добавить метод оценки:
 
 ```python
 def evaluate_plan(self, todo_items: List[TodoItem]) -> dict:
@@ -1302,18 +1302,18 @@ def evaluate_plan(self, todo_items: List[TodoItem]) -> dict:
     }
 ```
 
-### 14.5.2 Summarization Service
+### 14.5.2 Служба обобщения
 
-`SummarizationService` is responsible for calling the task summarization Agent to summarize search results. This is the core link of the research process and determines the quality of the research.
+`SummarizationService`отвечает за вызов агента суммирования задач для суммирования результатов поиска. Это основное звено исследовательского процесса, определяющее качество исследования.
 
-Its responsibilities are:
+Его обязанности:
 
-1. **Format search results**: Format search results into readable text
-2. **Build summarization Prompt**: Build Prompt based on task information and search results
-3. **Call summarization Agent**: Call Task Summarizer Agent to generate summary
-4. **Extract source citations**: Extract source citations from summary
+1. **Форматировать результаты поиска**: форматировать результаты поиска в читаемый текст.
+2. **Подсказка по сбору сводных данных**: Подсказка по сборке на основе информации о задаче и результатов поиска.
+3. **Вызов агента суммирования вызовов**: вызов агента суммирования задач для создания сводки.
+4. **Извлечение цитат из источников**: Извлечение цитат из резюме.
 
-Core code:
+Основной код:
 
 ```python
 from typing import List, Callable, Optional, Tuple
@@ -1394,33 +1394,33 @@ class SummarizationService:
         return "\n".join(formatted)
 ```
 
-### Report Structure Design
+### Проектирование структуры отчета
 
-The final report should include the following parts:
+Итоговый отчет должен включать следующие части:
 
-## References
+## Ссылки
 
-### Task 1: What is a Multimodal Model
-- https://example.com/multimodal-model-definition
+### Задача 1: Что такое мультимодальная модель
+-https://example.com/multimodal-model-definition
 ...
 
-### Task 2: What are the Latest Multimodal Models
-- https://example.com/gpt4v
+### Задача 2: Каковы новейшие мультимодальные модели
+-https://example.com/gpt4v
 ...
 ...
 
-### 14.5.3 Report Generation Service
+### 14.5.3 Служба создания отчетов
 
-`ReportingService` is responsible for calling the report generation Agent to integrate the summaries of all subtasks. This is the last step of the research process, generating the final research report.
+`ReportingService`отвечает за вызов агента формирования отчетов для интеграции сводных данных всех подзадач. Это последний этап исследовательского процесса, на котором создается окончательный отчет об исследовании.
 
-Its responsibilities are:
+Его обязанности:
 
-1. **Format subtask summaries**: Format all subtask summaries into a unified format
-2. **Build report Prompt**: Build Prompt based on research topic and subtask summaries
-3. **Call report Agent**: Call Report Writer Agent to generate final report
-4. **Organize citations**: Organize all source citations into the references section
+1. **Форматировать сводку подзадач**. Форматируйте все сводки подзадач в едином формате.
+2. **Подсказка о создании отчета**: подсказка о создании отчета на основе темы исследования и сводки подзадач.
+3. **Вызов агента по созданию отчетов**: вызов агента по созданию отчетов для создания окончательного отчета.
+4. **Организация цитирования**. Организуйте все ссылки на источники в разделе «Ссылки».
 
-**Core Code Implementation**:
+**Реализация основного кода**:
 
 ```python
 from typing import List, Callable, Optional, Tuple
@@ -1505,18 +1505,18 @@ class ReportingService:
         return "".join(formatted)
 ```
 
-### 14.5.4 Search Scheduling Service
+### 14.5.4 Служба планирования поиска
 
-`SearchService` is responsible for scheduling search engines, executing searches, and returning results. This is the bridge connecting Agents and SearchTool. Here we did not adopt the usual form of having SimpleAgent directly call tools, but instead return the execution results of SearchTool to the Agent through an intermediate layer, which makes the Agent more focused on processing the obtained information.
+`SearchService`отвечает за планирование поисковых систем, выполнение поиска и возврат результатов. Это мост, соединяющий агентов и SearchTool. Здесь мы не приняли обычную форму, когда SimpleAgent напрямую вызывает инструменты, а вместо этого возвращаем результаты выполнения SearchTool Агенту через промежуточный уровень, что делает Агента более ориентированным на обработку полученной информации.
 
-Its responsibilities are:
+Его обязанности:
 
-1. **Schedule search engine**: Select search engine based on configuration
-2. **Execute search**: Call SearchTool to execute search
-3. **Process results**: Deduplicate, limit tokens, format
-4. **Error handling**: Handle search failure situations
+1. **Поисковая система по расписанию**: выберите поисковую систему в зависимости от конфигурации.
+2. **Выполнить поиск**: вызовите SearchTool для выполнения поиска.
+3. **Результаты процесса**: дедупликация, ограничение токенов, форматирование.
+4. **Обработка ошибок**: обработка ситуаций сбоя поиска.
 
-Core code:
+Основной код:
 
 ```python
 from typing import List, Optional
@@ -1612,22 +1612,22 @@ class SearchService:
         return limited_sources
 ```
 
-Select search engine based on configuration, as shown in Figure 14.8:
+Выберите поисковую систему на основе конфигурации, как показано на рисунке 14.8:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-8.png" alt="" width="85%"/>
-  <p>Figure 14.8 Search Engine Scheduling Process</p>
+  <p>Рисунок 14.8. Процесс планирования поисковой системы</p>
 </div>
 
-**Scheduling Logic**:
+**Логика планирования**:
 
-1. **Read configuration**: Read `SEARCH_API` configuration from `.env` file
-2. **Select engine**: Select search engine based on configuration (tavily, duckduckgo, perplexity, etc.)
-3. **Execute search**: Call SearchTool to execute search
-4. **Process results**: Deduplicate, limit tokens, format
-5. **Return results**: Return processed search results
+1. **Чтение конфигурации**: чтение конфигурации `SEARCH_API` из файла `.env`.
+2. **Выберите систему**: выберите поисковую систему в зависимости от конфигурации (tavily, DuckDuckgo, Perplexity и т. д.).
+3. **Выполнить поиск**: вызовите SearchTool для выполнения поиска.
+4. **Результаты процесса**: дедупликация, ограничение токенов, форматирование.
+5. **Возврат результатов**: возврат обработанных результатов поиска.
 
-To improve efficiency and reduce costs, we can add search result caching:
+Чтобы повысить эффективность и сократить расходы, мы можем добавить кэширование результатов поиска:
 
 ```python
 import hashlib
@@ -1677,36 +1677,36 @@ class SearchService:
         return hashlib.md5(content.encode()).hexdigest()
 ```
 
-Through four core services (PlanningService, SummarizationService, ReportingService, SearchService), we built a complete research process. These services each perform their duties and collaborate through clear interfaces, achieving an automated process from research topic to final report.
+С помощью четырех основных служб (PlanningService, SummarizationService, ReportingService, SearchService) мы построили полный процесс исследования. Каждая из этих служб выполняет свои обязанности и сотрудничает через понятные интерфейсы, обеспечивая автоматизацию процесса от темы исследования до окончательного отчета.
 
-## 14.6 Front-End Interaction Design
+## 14.6 Проектирование внешнего взаимодействия
 
-In the previous sections, we implemented the complete back-end system. This section will introduce the front-end interaction design in detail, including full-screen modal dialog UI, real-time progress display, and research result visualization.
+В предыдущих разделах мы реализовали полную серверную систему. В этом разделе будет подробно описан дизайн внешнего интерфейса, включая полноэкранный модальный диалоговый интерфейс, отображение прогресса в реальном времени и визуализацию результатов исследования.
 
-### 14.6.1 Full-Screen Modal Dialog UI Design
+### 14.6.1 Дизайн пользовательского интерфейса полноэкранного модального диалогового окна
 
-The deep research assistant adopts a full-screen modal dialog UI design, which has the following advantages:
+Помощник по глубоким исследованиям использует полноэкранный модальный диалоговый дизайн пользовательского интерфейса, который имеет следующие преимущества:
 
-1. **Immersive experience**: Full-screen display, avoiding distractions, focusing on research
-2. **Clear hierarchy**: Main page and research page are separated, with clear hierarchy
-3. **Easy to close**: Click the close button or press ESC key to return to the main page
-4. **Responsive design**: Adapts to different screen sizes
+1. **Опыт погружения**: полноэкранный режим, отсутствие отвлекающих факторов и сосредоточенность на исследованиях.
+2. **Четкая иерархия**: главная страница и страница исследования разделены и имеют четкую иерархию.
+3. **Легко закрыть**: нажмите кнопку закрытия или нажмите клавишу ESC, чтобы вернуться на главную страницу.
+4. **Адаптивный дизайн**: адаптируется к экранам разных размеров.
 
-As shown in Figure 14.9, the full-screen modal dialog contains the following parts:
+Как показано на рисунке 14.9, полноэкранное модальное диалоговое окно состоит из следующих частей:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-9.png" alt="" width="85%"/>
-  <p>Figure 14.9 Full-Screen Modal Dialog UI</p>
+  <p>Рисунок 14.9 Пользовательский интерфейс полноэкранного модального диалогового окна</p>
 </div>
 
-**UI Components**:
+**Компоненты пользовательского интерфейса**:
 
-1. **Top bar**: Contains research topic and close button
-2. **Progress area**: Shows current research progress (planning, execution, reporting)
-3. **Content area**: Shows research results (Markdown format)
-4. **Bottom bar**: Shows status information (such as "Researching...", "Completed")
+1. **Верхняя панель**: содержит тему исследования и кнопку закрытия.
+2. **Область прогресса**: показывает текущий прогресс исследований (планирование, выполнение, отчетность).
+3. **Область контента**: отображаются результаты исследования (формат Markdown).
+4. **Нижняя панель**: показывает информацию о статусе (например, «Исследование...», «Завершено»).
 
-The corresponding Vue implementation is as follows (ResearchModal.vue):
+Соответствующая реализация Vue выглядит следующим образом (ResearchModal.vue):
 
 ```vue
 <template>
@@ -1814,7 +1814,7 @@ watch(() => props.isOpen, (isOpen) => {
 </style>
 ```
 
-To adapt to different screen sizes, we add media queries:
+Чтобы адаптироваться к разным размерам экрана, добавляем медиа-запросы:
 
 ```css
 /* Tablet devices */
@@ -1846,28 +1846,28 @@ To adapt to different screen sizes, we add media queries:
 }
 ```
 
-### 14.6.2 Real-Time Progress Display
+### 14.6.2 Отображение прогресса в реальном времени
 
-The deep research assistant uses SSE to implement real-time progress display. SSE is a server push technology that allows the server to actively send data to the client, which is also explained in the protocol chapter.
+Ассистент по глубоким исследованиям использует SSE для отображения прогресса в реальном времени. SSE — это технология принудительной отправки сервером, которая позволяет серверу активно отправлять данные клиенту, что также объясняется в главе о протоколе.
 
-As shown in Figure 14.10, the SSE process includes the following steps:
+Как показано на рисунке 14.10, процесс SSE включает следующие этапы:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/14-figures/14-10.png" alt="" width="85%"/>
-  <p>Figure 14.10 SSE Process</p>
+  <p>Рисунок 14.10 Процесс SSE</p>
 </div>
 
-**Process Description**:
+**Описание процесса**:
 
-1. **Client initiates request**: Send POST request to `/api/research`, containing research topic
-2. **Server establishes SSE connection**: Return `text/event-stream` response
-3. **Server pushes progress**: Periodically push research progress (planning, execution, reporting)
-4. **Client receives progress**: Listen for SSE events, update UI
-5. **Research complete**: Server pushes final report, closes connection
+1. **Клиент инициирует запрос**: отправьте POST-запрос в `/api/research`, содержащий тему исследования.
+2. **Сервер устанавливает соединение SSE**: возвращает ответ `text/event-stream`.
+3. **Сервер способствует прогрессу**: Периодически продвигайте прогресс исследований (планирование, выполнение, отчетность).
+4. **Клиент получает информацию о ходе выполнения**: прослушивайте события SSE, обновляйте пользовательский интерфейс.
+5. **Исследование завершено**: сервер отправляет окончательный отчет и закрывает соединение.
 
-If you want to use SSE in front-end and back-end projects, you also need to make the following configurations.
+Если вы хотите использовать SSE во внешних и внутренних проектах, вам также необходимо выполнить следующие настройки.
 
-**Back-End FastAPI SSE Endpoint**:
+**Верхняя конечная точка FastAPI SSE**:
 
 ```python
 from fastapi import FastAPI
@@ -1941,7 +1941,7 @@ async def research(request: ResearchRequest):
     )
 ```
 
-**Front-End Using EventSource to Receive SSE**:
+**Внешний интерфейс с использованием EventSource для получения SSE**:
 
 ```typescript
 // composables/useResearch.ts
@@ -2019,7 +2019,7 @@ export function useResearch() {
 }
 ```
 
-**Using in Component**:
+**Использование в компоненте**:
 
 ```vue
 <script setup lang="ts">
@@ -2040,11 +2040,11 @@ const handleStartResearch = (topic: string) => {
 </script>
 ```
 
-### 14.6.3 Research Result Visualization
+### 14.6.3 Визуализация результатов исследования
 
-Research results are displayed in Markdown format, including titles, paragraphs, lists, quotes, and other elements. We use the `marked` library to convert Markdown to HTML and add custom styles.
+Результаты исследований отображаются в формате Markdown, включая заголовки, абзацы, списки, цитаты и другие элементы. Мы используем`marked`библиотека для преобразования Markdown в HTML и добавления собственных стилей.
 
-**Rendering Markdown**:
+**Рендеринг уценки**:
 
 ```typescript
 import { marked } from 'marked'
@@ -2059,7 +2059,7 @@ marked.setOptions({
 const renderedHtml = marked(markdownContent.value)
 ```
 
-Research reports contain a large number of source citations, which we need to handle specially:
+Отчеты об исследованиях содержат большое количество ссылок на источники, с которыми необходимо обращаться особым образом:
 
 ```markdown
 ## References
@@ -2073,84 +2073,84 @@ Research reports contain a large number of source citations, which we need to ha
 ...
 ```
 
-Through full-screen modal dialog UI, SSE real-time progress display, and Markdown result visualization, we built a user-friendly front-end interface. Users can clearly see the research progress and view research results in a beautiful format.
+Благодаря полноэкранному модальному диалоговому интерфейсу, отображению прогресса SSE в реальном времени и визуализации результатов Markdown мы создали удобный интерфейс. Пользователи могут наглядно видеть ход исследований и просматривать результаты исследований в красивом формате.
 
-## 14.7 Chapter Summary
+## 14.7 Краткое содержание главы
 
-In this chapter, we built a complete automated deep research agent system from scratch. Let's review the core points:
+В этой главе мы с нуля создали полную автоматизированную систему агентов глубоких исследований. Давайте рассмотрим основные моменты:
 
-**(1) TODO-Driven Research Paradigm**
+**(1) Парадигма исследования, основанного на TODO**
 
-We proposed a new research paradigm - TODO-driven research. This paradigm decomposes complex research topics into executable subtasks and completes research through three stages:
+Мы предложили новую исследовательскую парадигму — исследование, основанное на TODO. Эта парадигма разлагает сложные темы исследования на выполнимые подзадачи и завершает исследование в три этапа:
 
-- **Planning stage**: Decompose research topic into 3-5 subtasks, each subtask contains title, intent, and search query
-- **Execution stage**: Execute search and summarization for each subtask, generating structured knowledge
-- **Reporting stage**: Integrate summaries of all subtasks, generate final research report
+- **Этап планирования**: разбейте тему исследования на 3–5 подзадач, каждая подзадача содержит заголовок, цель и поисковый запрос.
+- **Этап выполнения**: выполнение поиска и обобщения для каждой подзадачи, генерация структурированных знаний.
+- **Этап отчетности**: интеграция сводных данных по всем подзадачам и создание итогового отчета об исследовании.
 
-The advantages of this paradigm are:
+Преимущества этой парадигмы:
 
-1. **Strong controllability**: Each subtask has clear objectives and scope
-2. **Reliable quality**: Dedicated Agents ensure quality at each stage
-3. **Easy to debug**: Can debug each subtask individually
-4. **Good scalability**: Can easily add new subtasks or modify existing subtasks
+1. **Высокая управляемость**: каждая подзадача имеет четкие цели и объем.
+2. **Надежное качество**: выделенные агенты обеспечивают качество на каждом этапе.
+3. **Простота отладки**: можно отлаживать каждую подзадачу отдельно.
+4. **Хорошая масштабируемость**: можно легко добавлять новые или изменять существующие подзадачи.
 
-**(2) Three-Agent Collaboration System**
+**(2) Трехагентная система взаимодействия**
 
-We designed three specialized Agents, each performing their duties:
+Мы разработали трех специализированных Агентов, каждый из которых выполняет свои обязанности:
 
-- **TODO Planner (Research Planning Expert)**: Responsible for decomposing research topics into subtasks
-- **Task Summarizer (Task Summarization Expert)**: Responsible for summarizing search results for each subtask
-- **Report Writer (Report Writing Expert)**: Responsible for integrating summaries of all subtasks and generating final report
+- **TODO Planner (эксперт по планированию исследований)**: отвечает за разложение тем исследования на подзадачи.
+- **Суммаризатор задач (эксперт по суммированию задач)**: отвечает за обобщение результатов поиска для каждой подзадачи.
+- **Составитель отчетов (эксперт по написанию отчетов)**: отвечает за интеграцию сводных данных всех подзадач и создание итогового отчета.
 
-The advantages of this design are:
+Плюсами данной конструкции являются:
 
-1. **Clear responsibilities**: Each Agent focuses on a specific task
-2. **Prompt optimization**: Can customize specialized Prompts for each Agent
-3. **Easy to maintain**: Modifying one Agent does not affect other Agents
-4. **Quality assurance**: Each Agent is an "expert" in their field
+1. **Четкие обязанности**: каждый агент фокусируется на конкретной задаче.
+2. **Оптимизация подсказок**: можно настроить специальные подсказки для каждого агента.
+3. **Простота обслуживания**: изменение одного агента не влияет на другие агенты.
+4. **Гарантия качества**: каждый агент является «экспертом» в своей области.
 
-**(3) ToolAwareSimpleAgent Design**
+**(3) Дизайн ToolAwareSimpleAgent**
 
-We extended the `SimpleAgent` of the HelloAgents framework and implemented `ToolAwareSimpleAgent`. This Agent has tool call listening capability and can:
+Мы продлили`SimpleAgent`платформы HelloAgents и реализовано`ToolAwareSimpleAgent`. Этот агент имеет возможность прослушивания вызовов инструментов и может:
 
-- **Listen to tool calls**: Listen to each tool call through callback functions
-- **Real-time feedback**: Push tool call information to the front-end in real-time
-- **Debugging support**: Record all tool calls for easy debugging
+- **Прослушивание вызовов инструментов**: прослушивайте каждый вызов инструмента с помощью функций обратного вызова.
+- **Обратная связь в режиме реального времени**. Передавайте информацию о вызовах инструментов на внешний интерфейс в режиме реального времени.
+- **Поддержка отладки**: записывайте все вызовы инструментов для упрощения отладки.
 
-This Agent has been integrated into the HelloAgents framework and can be reused in other projects.
+Этот агент интегрирован в структуру HelloAgents и может быть повторно использован в других проектах.
 
-**(4) Tool System Integration**
+**(4) Интеграция системы инструментов**
 
-We fully utilized the tool system of the HelloAgents framework:
+Мы полностью использовали систему инструментов платформы HelloAgents:
 
-- **SearchTool**: Extended to support more search engines (Tavily, DuckDuckGo, Perplexity, etc.)
-- **NoteTool**: Persist research progress, support recovery and auditing
-- **ToolRegistry**: Unified management of all tools, support custom extensions
+- **SearchTool**: расширен для поддержки большего количества поисковых систем (Tavily, DuckDuckGo, Perplexity и т. д.).
+- **NoteTool**: сохранение прогресса исследований, поддержка восстановления и аудита.
+- **ToolRegistry**: единое управление всеми инструментами, поддержка пользовательских расширений.
 
-Through configuration-based design, users can easily switch search engines without modifying code.
+Благодаря дизайну на основе конфигурации пользователи могут легко переключать поисковые системы без изменения кода.
 
-**(5) Core Service Implementation**
+**(5) Реализация основного сервиса**
 
-We implemented four core services connecting Agents and tools:
+Мы реализовали четыре основных сервиса, соединяющих агентов и инструменты:
 
-- **PlanningService**: Call planning Agent, parse JSON, validate format
-- **SummarizationService**: Call summarization Agent, process search results, extract sources
-- **ReportingService**: Call report Agent, integrate summaries, generate report
-- **SearchService**: Schedule search engines, process results, error degradation, result caching
+- **PlanningService**: агент планирования звонков, анализ JSON, проверка формата.
+- **SummarizationService**: вызов агента суммирования, обработка результатов поиска, извлечение источников.
+- **ReportingService**: вызов агента отчетов, интеграция сводок, создание отчета.
+- **SearchService**: поисковые системы по расписанию, результаты обработки, ухудшение ошибок, кэширование результатов.
 
-These services each perform their duties and collaborate through clear interfaces, achieving an automated process from research topic to final report.
+Каждая из этих служб выполняет свои обязанности и сотрудничает через понятные интерфейсы, обеспечивая автоматизацию процесса от темы исследования до окончательного отчета.
 
-**(6) Front-End Interaction Design**
+**(6) Дизайн внешнего взаимодействия**
 
-We designed a user-friendly front-end interface:
+Мы разработали удобный интерфейс:
 
-- **Full-screen modal dialog**: Immersive experience, clear hierarchy
-- **SSE real-time progress**: Real-time display of research progress, good user experience
-- **Markdown visualization**: Beautiful format, clear structure
+- **Полноэкранное модальное диалоговое окно**: эффект погружения, четкая иерархия.
+- **Прогресс SSE в реальном времени**: отображение прогресса исследований в реальном времени, удобство для пользователей.
+- **Визуализация уценки**: красивый формат, понятная структура.
 
-Through the Vue 3 + TypeScript + SSE technology stack, we implemented a modern web application.
+С помощью стека технологий Vue 3 + TypeScript + SSE мы реализовали современное веб-приложение.
 
-This knowledge is not only applicable to deep research assistants, but can also be applied to other AI applications. We hope readers can explore more possibilities based on this chapter and build more powerful AI systems.
+Эти знания применимы не только к научным сотрудникам, но также могут быть применены к другим приложениям искусственного интеллекта. Мы надеемся, что читатели смогут изучить больше возможностей на основе этой главы и создать более мощные системы искусственного интеллекта.
 
-In the next chapter, we will build a multi-agent system combined with a game engine - Cyber Town, exploring complex interaction and collaboration patterns between Agents. Stay tuned!
+В следующей главе мы построим мультиагентную систему в сочетании с игровым движком — Cyber ​​Town, исследуя сложные модели взаимодействия и сотрудничества между агентами. Следите за обновлениями!
 

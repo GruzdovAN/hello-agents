@@ -1,4 +1,4 @@
-"""POI相关API路由"""
+"""Маршрутизация API, связанная с POI"""
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/poi", tags=["POI"])
 
 
 class POIDetailResponse(BaseModel):
-    """POI详情响应"""
+    """Ответ с подробностями POI"""
     success: bool
     message: str
     data: Optional[dict] = None
@@ -19,54 +19,54 @@ class POIDetailResponse(BaseModel):
 @router.get(
     "/detail/{poi_id}",
     response_model=POIDetailResponse,
-    summary="获取POI详情",
-    description="根据POI ID获取详细信息,包括图片"
+    summary="Получить подробную информацию о POI",
+    description="Получите подробную информацию на основе идентификатора POI, включая изображения."
 )
 async def get_poi_detail(poi_id: str):
     """
-    获取POI详情
+    Получить подробную информацию о POI
     
-    Args:
-        poi_id: POI ID
+    Аргументы:
+        poi_id: идентификатор POI
         
-    Returns:
-        POI详情响应
+    Возврат:
+        Ответ с подробностями POI
     """
     try:
         amap_service = get_amap_service()
         
-        # 调用高德地图POI详情API
+        # Вызовите API сведений о POI Amap.
         result = amap_service.get_poi_detail(poi_id)
         
         return POIDetailResponse(
             success=True,
-            message="获取POI详情成功",
+            message="Получите подробную информацию о POI успешно",
             data=result
         )
         
     except Exception as e:
-        print(f"❌ 获取POI详情失败: {str(e)}")
+        print(f"❌ Не удалось получить сведения о POI: {str(e)}.")
         raise HTTPException(
             status_code=500,
-            detail=f"获取POI详情失败: {str(e)}"
+            detail=f"Не удалось получить сведения о POI: {str(e)}."
         )
 
 
 @router.get(
     "/search",
-    summary="搜索POI",
-    description="根据关键词搜索POI"
+    summary="Поиск POI",
+    description="Поиск POI по ключевым словам"
 )
-async def search_poi(keywords: str, city: str = "北京"):
+async def search_poi(keywords: str, city: str = "Пекин"):
     """
-    搜索POI
+    Поиск POI
 
-    Args:
-        keywords: 搜索关键词
-        city: 城市名称
+    Аргументы:
+        ключевые слова: ключевые слова для поиска
+        город: название города
 
-    Returns:
-        搜索结果
+    Возврат:
+        Результаты поиска
     """
     try:
         amap_service = get_amap_service()
@@ -74,46 +74,46 @@ async def search_poi(keywords: str, city: str = "北京"):
 
         return {
             "success": True,
-            "message": "搜索成功",
+            "message": "Поиск успешен",
             "data": result
         }
 
     except Exception as e:
-        print(f"❌ 搜索POI失败: {str(e)}")
+        print(f"❌ Не удалось найти POI: {str(e)}.")
         raise HTTPException(
             status_code=500,
-            detail=f"搜索POI失败: {str(e)}"
+            detail=f"Не удалось найти POI: {str(e)}."
         )
 
 
 @router.get(
     "/photo",
-    summary="获取景点图片",
-    description="根据景点名称从Unsplash获取图片"
+    summary="Получите фотографии достопримечательностей",
+    description="Получите изображения из Unsplash на основе названий достопримечательностей."
 )
 async def get_attraction_photo(name: str):
     """
-    获取景点图片
+    Получите фотографии достопримечательностей
 
-    Args:
-        name: 景点名称
+    Аргументы:
+        название: Название достопримечательности
 
-    Returns:
-        图片URL
+    Возврат:
+        URL-адрес изображения
     """
     try:
         unsplash_service = get_unsplash_service()
 
-        # 搜索景点图片
+        # Поиск фотографий достопримечательностей
         photo_url = unsplash_service.get_photo_url(f"{name} China landmark")
 
         if not photo_url:
-            # 如果没找到,尝试只用景点名称搜索
+            # Если не найдено, попробуйте выполнить поиск только по названию достопримечательности.
             photo_url = unsplash_service.get_photo_url(name)
 
         return {
             "success": True,
-            "message": "获取图片成功",
+            "message": "Изображение получено успешно",
             "data": {
                 "name": name,
                 "photo_url": photo_url
@@ -121,9 +121,9 @@ async def get_attraction_photo(name: str):
         }
 
     except Exception as e:
-        print(f"❌ 获取景点图片失败: {str(e)}")
+        print(f"❌ Не удалось получить фотографии живописных мест: {str(e)}.")
         raise HTTPException(
             status_code=500,
-            detail=f"获取景点图片失败: {str(e)}"
+            detail=f"Не удалось получить фотографии живописных мест: {str(e)}."
         )
 

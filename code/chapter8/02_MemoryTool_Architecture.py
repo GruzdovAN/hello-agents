@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-代码示例 02: MemoryTool架构设计
-展示MemoryTool和MemoryManager的分层架构
+Пример кода 02: Проектирование архитектуры MemoryTool
+Демонстрация многоуровневой архитектуры MemoryTool и MemoryManager.
 """
 
 from dotenv import load_dotenv
@@ -13,103 +13,103 @@ from hello_agents.tools import MemoryTool
 from hello_agents.memory import MemoryConfig
 
 class MemoryToolArchitectureDemo:
-    """MemoryTool架构演示类"""
+    """Демонстрационный класс архитектуры MemoryTool"""
     
     def __init__(self):
         self.memory_config = MemoryConfig()
         self.memory_types = ["working", "episodic", "semantic", "perceptual"]
     
     def demonstrate_memory_tool_init(self):
-        """演示MemoryTool初始化过程"""
-        print("🏗️ MemoryTool架构设计演示")
+        """Демонстрация процесса инициализации MemoryTool"""
+        print("🏗️ Демонстрация дизайна архитектуры MemoryTool")
         print("=" * 50)
         
-        print("📋 MemoryTool初始化过程:")
-        print("1. 创建MemoryConfig配置对象")
-        print("2. 指定启用的记忆类型")
-        print("3. 初始化MemoryManager管理器")
-        print("4. 根据配置启用不同记忆模块")
+        print("📋Процесс инициализации MemoryTool:")
+        print("1. Создайте объект конфигурации MemoryConfig.")
+        print("2. Укажите тип памяти, который нужно включить.")
+        print("3. Инициализируйте менеджер MemoryManager.")
+        print("4. Включите различные модули памяти в соответствии с конфигурацией.")
         
-        # 演示MemoryTool的初始化
+        # Демонстрация инициализации MemoryTool
         memory_tool = MemoryTool(
             user_id="architecture_demo_user",
             memory_config=self.memory_config,
             memory_types=self.memory_types
         )
         
-        print(f"\n✅ MemoryTool初始化完成")
-        print(f"👤 用户ID: {memory_tool.memory_manager.user_id}")
-        print(f"🧠 启用的记忆类型: {memory_tool.memory_types}")
-        print(f"⚙️ 配置对象: {type(memory_tool.memory_config).__name__}")
+        print(f"\n ✅ Инициализация MemoryTool завершена")
+        print(f"👤 Идентификатор пользователя: {memory_tool.memory_manager.user_id}")
+        print(f"🧠 Включенные типы памяти: {memory_tool.memory_types}")
+        print(f"⚙️ Объект конфигурации: {type(memory_tool.memory_config).__name__}")
         
         return memory_tool
     
     def demonstrate_memory_manager_architecture(self, memory_tool):
-        """演示MemoryManager的组合模式架构"""
-        print("\n🔧 MemoryManager架构设计")
+        """Демонстрация архитектуры режима композиции MemoryManager."""
+        print("\n🔧 Проект архитектуры MemoryManager")
         print("-" * 40)
         
-        print("MemoryManager采用组合模式设计:")
-        print("- 统一的记忆操作接口")
-        print("- 独立的记忆类型组件")
-        print("- 灵活的配置和扩展能力")
+        print("MemoryManager разработан в комбинированном режиме:")
+        print("- Единый интерфейс работы с памятью")
+        print("- Независимые компоненты типа памяти")
+        print("- Гибкая настройка и возможности расширения.")
         
-        # 获取MemoryManager实例
+        # Получить экземпляр MemoryManager
         memory_manager = memory_tool.memory_manager
         
-        print(f"\n📊 MemoryManager状态:")
-        print(f"用户ID: {memory_manager.user_id}")
-        print(f"配置类型: {type(memory_manager.config).__name__}")
-        print(f"记忆类型数量: {len(memory_manager.memory_types)}")
+        print(f"\n📊 Статус MemoryManager:")
+        print(f"Идентификатор пользователя: {memory_manager.user_id}")
+        print(f"Тип конфигурации: {type(memory_manager.config).__name__}")
+        print(f"Количество типов памяти: {len(memory_manager.memory_types)}")
         
-        # 显示各记忆类型的状态
-        print(f"\n🧠 记忆类型组件:")
+        # Отображение состояния каждого типа памяти
+        print(f"\n🧠 Компонент типа памяти:")
         for memory_type, memory_instance in memory_manager.memory_types.items():
             print(f"  • {memory_type}: {type(memory_instance).__name__}")
     
     def demonstrate_memory_types_specialization(self, memory_tool):
-        """演示四种记忆类型的专业化特点"""
-        print("\n🎯 四种记忆类型的专业化设计")
+        """Продемонстрировать особенности специализации четырех типов памяти."""
+        print("\n🎯 Профессиональный дизайн четырех типов памяти")
         print("-" * 40)
         
         memory_types_info = {
             "working": {
-                "name": "工作记忆",
-                "features": ["容量有限", "访问速度快", "自动清理", "临时存储"],
-                "storage": "纯内存存储",
-                "ttl": "60分钟TTL机制"
+                "name": "рабочая память",
+                "features": ["Ограниченная емкость", "Быстрый доступ", "Автоматическая очистка", "временное хранилище"],
+                "storage": "Чистое хранилище памяти",
+                "ttl": "Механизм TTL 60 минут."
             },
             "episodic": {
-                "name": "情景记忆", 
-                "features": ["事件序列", "时间序列", "上下文丰富", "会话关联"],
-                "storage": "SQLite + Qdrant混合存储",
-                "ttl": "持久化存储"
+                "name": "эпизодическая память", 
+                "features": ["последовательность событий", "временной ряд", "Контекстно-богатый", "ассоциация сеанса"],
+                "storage": "Гибридное хранилище SQLite + Qdrant",
+                "ttl": "Постоянное хранилище"
             },
             "semantic": {
-                "name": "语义记忆",
-                "features": ["概念知识", "实体关系", "知识图谱", "语义推理"],
-                "storage": "Neo4j + Qdrant混合存储", 
-                "ttl": "长期存储"
+                "name": "семантическая память",
+                "features": ["концептуальные знания", "отношения сущностей", "График знаний", "семантическое рассуждение"],
+                "storage": "Гибридное хранилище Neo4j + Qdrant", 
+                "ttl": "долгосрочное хранение"
             },
             "perceptual": {
-                "name": "感知记忆",
-                "features": ["多模态", "跨模态检索", "感知数据", "内容生成"],
-                "storage": "分模态向量存储",
-                "ttl": "按重要性管理"
+                "name": "перцептивная память",
+                "features": ["мультимодальный", "Кросс-модальный поиск", "Сенсорные данные", "генерация контента"],
+                "storage": "Модальное векторное хранилище",
+                "ttl": "Управляйте по важности"
             }
         }
         
         for memory_type, info in memory_types_info.items():
             print(f"\n📚 {info['name']} ({memory_type}):")
-            print(f"   特点: {', '.join(info['features'])}")
-            print(f"   存储: {info['storage']}")
-            print(f"   生命周期: {info['ttl']}")
+            print(f"   Возможности: {', '.join(info['features'])}")
+            print(f"   Хранилище: {info['storage']}")
+            print(f"   Жизненный цикл: {info['ttl']}")
             
-            # 添加示例记忆来演示特点
+            # Добавьте образец памяти для демонстрации функций
             if memory_type == "working":
                 memory_tool.run({
                     "action":"add",
-                    "content":f"演示{info['name']}的临时存储特性",
+                    "content":f"Демонстрирует функцию временного хранения {info['name']}.",
                     "memory_type":memory_type,
                     "importance":0.6,
                     "demo_feature":"temporary_storage"
@@ -117,7 +117,7 @@ class MemoryToolArchitectureDemo:
             elif memory_type == "episodic":
                 memory_tool.run({
                     "action":"add",
-                    "content":f"演示{info['name']}的事件记录特性",
+                    "content":f"Демонстрирует функцию регистрации событий {info['name']}.",
                     "memory_type":memory_type,
                     "importance":0.7,
                     "event_type":"demonstration",
@@ -126,7 +126,7 @@ class MemoryToolArchitectureDemo:
             elif memory_type == "semantic":
                 memory_tool.run({
                     "action":"add",
-                    "content":f"{info['name']}用于存储概念性知识和实体关系",
+                    "content":f"{info['name']} используется для хранения концептуальных знаний и отношений сущностей.",
                     "memory_type":memory_type,
                     "importance":0.8,
                     "concept":"memory_architecture",
@@ -135,7 +135,7 @@ class MemoryToolArchitectureDemo:
             elif memory_type == "perceptual":
                 memory_tool.run({
                     "action":"add",
-                    "content":f"演示{info['name']}的多模态数据处理",
+                    "content":f"Продемонстрировать мультимодальную обработку данных {info['name']}",
                     "memory_type":memory_type,
                     "importance":0.6,
                     "modality":"text",
@@ -143,104 +143,104 @@ class MemoryToolArchitectureDemo:
                 })
     
     def demonstrate_unified_interface(self, memory_tool):
-        """演示统一接口的设计优势"""
-        print("\n🔗 统一接口设计优势")
+        """Демонстрация преимуществ дизайна унифицированных интерфейсов."""
+        print("\n🔗 Преимущества единого дизайна интерфейса")
         print("-" * 40)
         
-        print("统一的execute方法提供:")
-        print("• 一致的调用方式")
-        print("• 灵活的参数传递")
-        print("• 统一的错误处理")
-        print("• 简化的用户体验")
+        print("Унифицированный метод выполнения обеспечивает:")
+        print("• Последовательный метод вызова")
+        print("• Гибкая передача параметров")
+        print("• Единая обработка ошибок")
+        print("• Упрощенный пользовательский интерфейс.")
         
-        # 演示统一接口的使用
+        # Демонстрация использования единого интерфейса
         operations = [
-            ("search", {"query": "演示", "limit": 2}),
+            ("search", {"query": "Демо", "limit": 2}),
             ("summary", {"limit": 3}),
             ("stats", {}),
         ]
         
-        print(f"\n🔧 统一接口操作演示:")
+        print(f"\n🔧 Демонстрация работы единого интерфейса:")
         for operation, params in operations:
-            print(f"\n操作: {operation}")
-            print(f"参数: {params}")
+            print(f"\nОперация: {операция}")
+            print(f"Параметры: {параметры}")
             result = memory_tool.run({"action":operation, **params})
-            print(f"结果: {result[:100]}..." if len(str(result)) > 100 else f"结果: {result}")
+            print(f"Результат: {result[:100]}..." if len(str(result)) > 100 else f"Результат: {результат}")
     
     def demonstrate_extensibility(self):
-        """演示系统的扩展性设计"""
-        print("\n🚀 系统扩展性设计")
+        """Проектирование масштабируемости демонстрационной системы"""
+        print("\n🚀 Проектирование масштабируемости системы")
         print("-" * 40)
         
-        print("扩展性特点:")
-        print("• 插件化的记忆类型")
-        print("• 可配置的存储后端") 
-        print("• 灵活的记忆策略")
-        print("• 模块化的组件设计")
+        print("Возможности масштабируемости:")
+        print("• Тип подключаемой памяти")
+        print("• Настраиваемое серверное хранилище.") 
+        print("• Гибкие стратегии памяти")
+        print("• Модульная конструкция компонентов")
         
-        # 演示自定义配置
+        # Демонстрационная пользовательская конфигурация
         custom_config = MemoryConfig()
         custom_config.working_memory_capacity = 100
         custom_config.working_memory_ttl_minutes = 120
         
-        print(f"\n⚙️ 自定义配置示例:")
-        print(f"工作记忆容量: {custom_config.working_memory_capacity}")
-        print(f"工作记忆TTL: {custom_config.working_memory_ttl_minutes}分钟")
+        print(f"\n⚙️ Пример пользовательской конфигурации:")
+        print(f"Объем рабочей памяти: {custom_config.working_memory_capacity}")
+        print(f"Срок жизни рабочей памяти: {custom_config.working_memory_ttl_минуты} минут.")
         
-        # 演示选择性启用记忆类型
+        # Демонстрирует выборочное включение типов памяти.
         selective_memory_tool = MemoryTool(
             user_id="selective_user",
             memory_config=custom_config,
-            memory_types=["working", "semantic"]  # 只启用部分类型
+            memory_types=["working", "semantic"]  # Включить только некоторые типы
         )
         
-        print(f"\n🎯 选择性启用示例:")
-        print(f"启用的记忆类型: {selective_memory_tool.memory_types}")
-        print("✅ 系统支持根据需求灵活配置")
+        print(f"\n🎯 Пример выборочной активации:")
+        print(f"Включенные типы памяти: {selective_memory_tool.memory_types}")
+        print("✅ Система поддерживает гибкую настройку в соответствии с потребностями")
 
 def main():
-    """主函数"""
-    print("🏗️ MemoryTool架构设计完整演示")
-    print("展示记忆系统的分层架构和设计模式")
+    """основная функция"""
+    print("🏗️ Полная демонстрация проектирования архитектуры MemoryTool.")
+    print("Демонстрация многоуровневой архитектуры и шаблонов проектирования систем памяти.")
     print("=" * 60)
     
     try:
         demo = MemoryToolArchitectureDemo()
         
-        # 1. MemoryTool初始化演示
+        # 1. Демонстрация инициализации MemoryTool
         memory_tool = demo.demonstrate_memory_tool_init()
         
-        # 2. MemoryManager架构演示
+        # 2. Демонстрация архитектуры MemoryManager
         demo.demonstrate_memory_manager_architecture(memory_tool)
         
-        # 3. 记忆类型专业化演示
+        # 3. Профессиональная демонстрация типов памяти.
         demo.demonstrate_memory_types_specialization(memory_tool)
         
-        # 4. 统一接口演示
+        # 4. Демонстрация единого интерфейса
         demo.demonstrate_unified_interface(memory_tool)
         
-        # 5. 扩展性演示
+        # 5. Демонстрация масштабируемости
         demo.demonstrate_extensibility()
         
         print("\n" + "=" * 60)
-        print("🎉 MemoryTool架构演示完成！")
+        print("🎉 Демонстрация архитектуры MemoryTool завершена!")
         print("=" * 60)
         
-        print("\n✨ 架构设计亮点:")
-        print("1. 🏗️ 分层架构 - 关注点分离，职责清晰")
-        print("2. 🔧 组合模式 - 灵活组合，独立管理")
-        print("3. 🎯 专业化设计 - 各记忆类型特点鲜明")
-        print("4. 🔗 统一接口 - 简化使用，一致体验")
-        print("5. 🚀 高扩展性 - 插件化设计，灵活配置")
+        print("\n✨ Основные моменты архитектурного проектирования:")
+        print("1. 🏗️ Многоуровневая архитектура – ​​разделение задач и четкие обязанности.")
+        print("2. 🔧 Режим комбинирования – гибкое комбинирование, независимое управление.")
+        print("3. 🎯 Профессиональный дизайн – каждый тип памяти имеет отличительные характеристики.")
+        print("4. 🔗 Единый интерфейс — упрощенное использование, единообразный опыт")
+        print("5. 🚀 Высокая масштабируемость – подключаемый модуль, гибкая настройка.")
         
-        print("\n🎯 设计原则:")
-        print("• 单一职责原则 - 每个组件专注特定功能")
-        print("• 开闭原则 - 对扩展开放，对修改封闭")
-        print("• 依赖倒置原则 - 依赖抽象，不依赖具体")
-        print("• 组合优于继承 - 灵活组合，避免复杂继承")
+        print("\n🎯 Принципы дизайна:")
+        print("• Принцип единой ответственности – каждый компонент ориентирован на определенную функцию.")
+        print("• Принцип открытости-закрытости – открыт для расширения, закрыт для модификации.")
+        print("• Принцип инверсии зависимостей. Зависите от абстракции, а не от конкретного.")
+        print("• Композиция лучше, чем наследование: гибкая композиция, избегайте сложного наследования.")
         
     except Exception as e:
-        print(f"\n❌ 演示过程中发生错误: {e}")
+        print(f"\n❌ Во время демонстрации произошла ошибка: {e}")
         import traceback
         traceback.print_exc()
 

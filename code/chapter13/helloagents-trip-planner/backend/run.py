@@ -1,4 +1,4 @@
-"""启动脚本"""
+"""сценарий запуска"""
 
 import uvicorn
 from app.config import get_settings

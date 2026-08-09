@@ -1,44 +1,43 @@
-# Preface
+# Предисловие
 
-Since the end of 2022, Large Language Models (LLMs) represented by ChatGPT have swept across the world like a technological tsunami, completely transforming how we interact with artificial intelligence. The powerful natural language understanding and generation capabilities of LLMs have shown us a glimpse of the path toward Artificial General Intelligence (AGI). However, as the initial amazement settled, developers began exploring the next frontier: how to make AI not just a "question-answering" tool, but an "actor" capable of autonomous planning, tool invocation, and solving complex problems?
+С конца 2022 года большие языковые модели (LLM), ярким представителем которых стал ChatGPT, пронеслись по миру как технологическое цунами и полностью изменили то, как мы взаимодействуем с искусственным интеллектом. Мощные возможности понимания и порождения естественного языка показали нам контуры пути к общему искусственному интеллекту (AGI). Но когда первый восторг улёгся, разработчики начали искать следующий рубеж: как сделать ИИ не просто инструментом «вопрос–ответ», а «действующим лицом», способным самостоятельно планировать, вызывать инструменты и решать сложные задачи?
 
-The answer is **Agents**.
+Ответ — **агенты (Agents)**.
 
-If 2024 was the inaugural year of the "battle of a hundred models," then 2025 has undoubtedly ushered in the "Year of Agents." We see that the technological focus is shifting from training larger and more powerful foundation models to building smarter and more efficient agent applications. Individual agents can already handle tasks in specific domains, while Multi-Agent Systems (MAS), where multiple agents collaborate through division of labor, cooperation, and even debate to accomplish grand goals, are viewed as the key to unlocking the full potential of LLMs and solving complex real-world problems.
+Если 2024-й стал годом «битвы сотен моделей», то 2025-й без сомнения открыл «Год агентов». Фокус технологий смещается с обучения всё более крупных фундаментных моделей на создание более умных и эффективных агентных приложений. Отдельный агент уже может решать задачи в конкретной области, а мультиагентные системы (MAS), где несколько агентов делят роли, сотрудничают и даже спорят ради общей цели, считаются ключом к полному раскрытию потенциала LLM и решению сложных реальных задач.
 
-However, there is an obvious gap in the current ecosystem: on one hand, there is a dizzying array of Agent frameworks and applications emerging continuously; on the other hand, there is an extreme scarcity of systematic knowledge. Most tutorials focus on API calls for specific frameworks, leaving learners "knowing how but not knowing why," still feeling powerless when facing complex requirements. We lack a practical guide that can penetrate framework appearances, start from first principles, and systematically explain agent design, construction, and collaboration.
+Однако в экосистеме очевиден разрыв: с одной стороны — непрерывный поток фреймворков и приложений для агентов; с другой — острый дефицит систематических знаний. Большинство туториалов сводятся к вызовам API конкретного фреймворка: ученик «знает как, но не знает почему» и теряется перед сложными требованиями. Не хватает практического руководства, которое пробивает оболочку фреймворков, идёт от первых принципов и системно объясняет проектирование, построение и совместную работу агентов.
 
-In view of this, we launched the Hello-Agents project, hoping to provide the community with a guide for building agent systems from scratch, balancing theory and practice. We will not only lead you to appreciate the most cutting-edge technologies in the agent field but also guide you to delve into their core architecture, understand their classic paradigms, and ultimately build your own multi-agent applications with your own hands.
+Поэтому мы запустили проект Hello-Agents — руководство по созданию агентных систем с нуля, где теория и практика уравновешены. Мы не только покажем передовые технологии области агентов, но и проведём вас по ядру их архитектуры, классическим парадигмам и в итоге к созданию собственных мультиагентных приложений своими руками.
 
-We believe that the best way to learn is through hands-on practice. We hope this tutorial can become your starting point for exploring the world of agents, enabling you to transform from a "user" of large language models to a "builder" of agent systems.
+Мы уверены: лучший способ учиться — практика. Надеемся, этот курс станет вашей точкой входа в мир агентов и поможет превратиться из «пользователя» больших языковых моделей в «строителя» агентных систем.
 
-## Suggestions for Readers
+## Советы читателю
 
-Welcome, future intelligent system builder! Before embarking on this exciting journey, please allow us to give you some small suggestions.
+Добро пожаловать, будущий создатель интеллектуальных систем! Перед этим увлекательным путём — несколько коротких рекомендаций.
 
-Before reading this project, we hope you:
+Перед чтением проекта желательно:
 
-- Have basic Python programming skills.
+- владеть базовым программированием на Python;
 
-- Have a basic conceptual understanding of large language models (for example, know how to obtain LLM APIs).
+- иметь концептуальное представление о больших языковых моделях (например, уметь получать доступ к API LLM);
 
-- Rest assured, you don't need a deep background in algorithms or model training; the project focuses on application and construction.
+- не беспокоиться об отсутствии глубокого бэкграунда в алгоритмах или обучении моделей — упор проекта на прикладное построение.
 
-This project is divided into five parts, covering basics to practice, progressing step by step, layer by layer:
+Курс разделён на пять частей — от основ к практике, шаг за шагом:
 
-**Part One (Fundamentals)**: We will lay the foundation of core knowledge about artificial intelligence and LLMs, giving you a macro understanding of the background of agent emergence.
+**Часть I (Основы):** заложим фундамент знаний об ИИ и LLM, чтобы сложилась макрокартина появления агентов.
 
-**Part Two (Single Agent)**: This is where your hands-on practice begins. We will guide you to build a fully functional single agent from scratch, deeply understanding its internal "mental" structure.
+**Часть II (Один агент):** здесь начинается практика. Вы с нуля соберёте полноценного одиночного агента и разберёте его «ментальную» структуру.
 
-**Part Three (Advanced)**: Here, your agent will "learn" to think, possess memory and tools, and master communication protocols between agents, ultimately completing the evaluation closed loop.
+**Часть III (Продвинутый уровень):** агент «научится» думать, получит память и инструменты, освоит протоколы общения между агентами и замкнёт цикл оценки.
 
-**Part Four (Practice)**: This is where the core value of the project lies. You will integrate all learned knowledge through a series of carefully designed comprehensive cases, tempering true gold in practice.
+**Часть IV (Практика):** ядро ценности курса. На тщательно подобранных комплексных кейсах вы соедините всё изученное и закалите навыки на практике.
 
-**Part Five (Outlook)**: The end of the journey is a new beginning. You will personally create your "graduation project," drawing a perfect conclusion to your learning journey.
+**Часть V (Перспективы):** конец пути — новое начало. Вы создадите свой «выпускной проект» и подведёте итог обучения.
 
-"What is learned on paper is superficial; to truly understand, one must practice." To achieve the best learning effect, we provide all supporting code in the project's `code` folder. We strongly recommend combining theory with practice. Please be sure to personally run, debug, and even modify every piece of code provided in the project. We encourage you to apply what you've learned to real scenarios that interest you—this is the ultimate purpose of learning.
+«Знание с бумаги поверхностно; чтобы понять по-настоящему, нужно практиковать». Для лучшего эффекта весь сопутствующий код лежит в папке `code`. Настоятельно рекомендуем сочетать теорию с практикой: запускайте, отлаживайте и меняйте каждый фрагмент кода из проекта. Применяйте изученное к реальным сценариям, которые вам интересны, — в этом и смысл обучения.
 
-Finally, as an open-source project, we warmly welcome your participation and contribution. When you encounter problems, you can ask questions in our community; when you have new ideas or discoveries, you are also welcome to join the project's co-construction at any time.
+Наконец, как open-source проект, мы рады вашему участию. Вопросы можно задавать в сообществе; новые идеи и находки — вносить в совместную разработку.
 
-Thank you for choosing to read Hello-Agents. We wish you happy learning and unlimited exploration!
-
+Спасибо, что читаете Hello-Agents. Удачной учёбы и безграничных исследований!

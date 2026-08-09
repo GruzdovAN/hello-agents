@@ -1,302 +1,302 @@
-# Chapter 1: Introduction to Agents
+# Глава 1. Знакомство с агентами
 
-Welcome to the world of agents! In today's era where the wave of artificial intelligence is sweeping across the globe, **Agents** have become one of the core concepts driving technological transformation and application innovation. Whether your aspiration is to become a researcher or engineer in the AI field, or you hope to deeply understand the cutting edge of technology as an observer, mastering the essence of agents will be an indispensable part of your knowledge system.
+Добро пожаловать в мир агентов! В эпоху, когда волна искусственного интеллекта изменила весь мир, **агенты (Агенты)** стали одними из ключевых понятий, движущей силой технологических преобразований и прикладных инноваций. Независимо от того, стремитесь ли вы стать исследователем или инженером в области искусственного интеллекта или хотите углубить понимание передовых технологий в качестве наблюдателя, освоение агентов по сути станет незаменимой частью знаний вашей системы.
 
-Therefore, in this chapter, let's return to the fundamentals and explore several questions together: What is an agent? What are its main types? How does it interact with the world we live in? Through these discussions, we hope to lay a solid foundation for your future learning and exploration.
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-0.png" alt="Figure description" width="90%"/>
-  <p>Figure 1.1 Basic interaction loop between agent and environment</p>
-</div>
-
-## 1.1 What is an Agent?
-
-When exploring any complex concept, it's best to start with a concise definition. In the field of artificial intelligence, an agent is defined as any entity that can perceive its **Environment** through **Sensors**, and **autonomously** take **Actions** through **Actuators** to achieve specific goals.
-
-This definition contains four fundamental elements of an agent's existence. The environment is the external world in which the agent operates. For an autonomous vehicle, the environment is the dynamically changing road traffic; for a trading algorithm, the environment is the ever-changing financial market. The agent is not isolated from the environment—it continuously perceives the environmental state through its sensors. Cameras, microphones, radar, or data streams returned by various **Application Programming Interfaces (APIs)** are all extensions of its perceptual capabilities.
-
-After acquiring information, the agent needs to take actions to influence the environment, changing its state through actuators. Actuators can be physical devices (such as robotic arms or steering wheels) or virtual tools (such as executing code or calling a service).
-
-However, what truly endows an agent with "intelligence" is its **Autonomy**. An agent is not merely a program that passively responds to external stimuli or strictly executes preset instructions; it can make independent decisions based on its perceptions and internal state to achieve its design goals. This closed loop from perception to action forms the foundation of all agent behavior, as shown in Figure 1.1.
-
-### 1.1.1 Agents from a Traditional Perspective
-
-Before the current wave of **Large Language Models (LLMs)**, pioneers in artificial intelligence had already spent decades exploring and building the concept of "agents." These paradigms, which we now call "traditional agents," are not a single static concept but have undergone a clear evolutionary path from simple to complex, from passive reaction to active learning.
-
-The starting point of this evolution is the structurally simplest **Simple Reflex Agent**. Their decision-making core consists of "condition-action" rules explicitly designed by engineers, as shown in Figure 1.2. A classic automatic thermostat works this way: if the sensor perceives that the room temperature is higher than the set value, it activates the cooling system.
-
-This type of agent relies entirely on current perceptual input and has no memory or predictive capability. It's like a digitized instinct—reliable and efficient, but therefore unable to handle complex tasks that require understanding context. Its limitations raise a key question: What should an agent do if the current state of the environment is insufficient as the sole basis for decision-making?
+Поэтому в этой главе вернёмся к базам и вместе разберём несколько вопросов: что такое агент? Какие у него основные принципы? Как он взаимодействует с миром, в котором мы живём? В ходе этих обсуждений мы надеемся заложить прочную основу для дальнейшего обучения и исследований.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-1.png" alt="Figure description" width="90%"/>
-  <p>Figure 1.2 Decision logic diagram of a simple reflex agent</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-0.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 1.1 Базовый цикл взаимодействия агента с подтверждением</p>
 </div>
 
-To answer this question, researchers introduced the concept of "state" and developed **Model-Based Reflex Agents**. This type of agent has an internal **World Model** used to track and understand aspects of the environment that cannot be directly perceived. It attempts to answer: "What is the world like now?" For example, an autonomous vehicle driving through a tunnel, even if its camera temporarily cannot perceive the vehicle ahead, its internal model will still maintain a judgment about that vehicle's existence, speed, and estimated position. This internal model gives the agent a primitive form of "memory," making its decisions no longer solely dependent on instantaneous perception but based on a more coherent and complete understanding of the world state.
+## 1.1 Что такое агент?
 
-However, merely understanding the world is not enough—an agent needs clear goals. This led to the development of **Goal-Based Agents**. Unlike the previous two types, their behavior is no longer passively reacting to the environment but actively and proactively selecting actions that can lead to a specific future state. The question this type of agent needs to answer is: "What should I do to achieve my goal?" A classic example is a GPS navigation system: your goal is to reach the office, and the agent will plan an optimal route using search algorithms (such as A*) based on map data (world model). The core capability of this type of agent is reflected in its consideration and planning for the future.
+Изучая любую сложную идею, лучше всего начинать с краткого определения. В области искусственного интеллекта агент определяет как любую сущность, которая может воспринимать свою **среду (Окружающую среду)** через **датчики (Датчики)** и **автономно** определять **действия (Действия)** через **исполнительные устройства (Исполнительные устройства)** для достижения конкретных целей.
 
-Going further, real-world goals are often not singular. We not only want to reach the office but also want the shortest time, the most fuel-efficient route, and to avoid congestion. When multiple goals need to be balanced, **Utility-Based Agents** emerge. They assign a utility value to every possible world state, representing the level of satisfaction. The agent's core goal is no longer simply to achieve a specific state but to maximize expected utility. It needs to answer a more complex question: "Which behavior will bring me the most satisfactory result?" This architecture allows the agent to learn to balance conflicting goals, making its decisions closer to human rational choice.
+Это определение содержит четыре фундаментальных элемента источника света. Среда — это внешний мир, в котором действует агент. Для беспилотного состояния стабильность – это динамично меня сопровождающее движение; для торгового алгоритма — постоянно меняющийся финансовый рынок. Агент не изолирован от окружающей среды — он непрерывно воспринимает ее состояние через свои датчики. Камеры, микрофоны, радары или потоки данных, передаваемые различными **интерфейсами математических приложений (интерфейсы прикладного программирования, API)**, — всё это расширяет его возможности по восприятию.
 
-So far, the agents we've discussed, although increasingly complex in functionality, still rely on the prior knowledge of human designers for their core decision-making logic, whether rules, models, or utility functions. What if an agent could learn autonomously through interaction with the environment without relying on presets?
+Получив информацию, агент должен провести действия, влияющие на среду, и изменить ее состояние с помощью исполнительных устройств. Исполнительными устройствами могут быть физические механизмы (например, роботизированные манипуляторы или рулевое колесо) или виртуальные инструменты (например, код выполнения или сервис вызова).
 
-This is the core idea of **Learning Agents**, and **Reinforcement Learning (RL)** is the most representative path to realizing this idea. A learning agent contains a performance element (the various types of agents we discussed earlier) and a learning element. The learning element continuously modifies the performance element's decision-making strategy by observing the results of the performance element's actions in the environment.
+Однако то, что по-настоящему наделяет агента «интеллектом», — это его **автономия (Автономия)**. Агент — это не просто программа, которая пассивно реагирует на внешние стимулы или строго соблюдает заранее заданные инструкции; он умеет принимать самостоятельные решения на основе своих восприятий и внутреннего состояния, чтобы достичь целей своей конструкции. Этот замкнутый цикл от восприятия образует основу всего поведения агента, как показано на рис. 1.1.
 
-Imagine an AI learning to play chess. It might start by making random moves, but when it finally wins a game, the system gives it a positive reward. Through extensive self-play, the learning element gradually discovers which moves are more likely to lead to ultimate victory. AlphaGo Zero is a milestone achievement of this philosophy. In the complex game of Go, through reinforcement learning, it discovered many effective strategies that surpass existing human knowledge.
+### 1.1.1 Агенты с традиционными точками зрения
 
-From simple thermostats to cars with internal models, to navigation that can plan routes, to decision-makers who know how to weigh pros and cons, and finally to learners who can self-evolve through experience. This evolutionary path demonstrates the development trajectory that traditional artificial intelligence has undergone in building machine intelligence. They have laid a solid and necessary foundation for our understanding of more cutting-edge agent paradigms today.
+До нынешней волны **больших языковых моделей (Large Language Models, LLM)** пионеры искусственного интеллекта исследовали и выстраивали концепцию «агента». Эти парадигмы, которые мы сейчас называем «традиционными агентами», — не единая статичная концепция, результат ясного эволюционного пути от простого к сложному, от пассивной формы к активному обучению.
 
-### 1.1.2 New Paradigm Driven by Large Language Models
+Отправная точка этой эволюции — структурно простейший **простой реактивный агент (Simple Reflex Agent)**. Ядро их принятия решений основывается на правилах «условие–действие», явно заданных инженерами, как показано на рис. 1.2. Классический автоматический термостат работает именно так: если датчик воспринимает, что температура в помещении выше заданного значения, он включает систему охлаждения.
 
-The emergence of large language models represented by **GPT (Generative Pre-trained Transformer)** is significantly changing the construction methods and capability boundaries of agents. LLM agents driven by large language models have fundamentally different core decision-making mechanisms from traditional agents, thus endowing them with a series of entirely new characteristics.
-
-This transformation can be clearly seen from the comparison of the two in multiple dimensions such as core engine, knowledge source, and interaction method, as shown in Table 1.1. In short, the capabilities of traditional agents stem from engineers' explicit programming and knowledge construction, and their behavior patterns are deterministic and bounded; while LLM agents, through pre-training on massive data, have acquired implicit world models and powerful emergent capabilities, enabling them to handle complex tasks in a more flexible and general way.
+Такой агент полностью опирается на текущий перцептивный вход и не имеет памяти или способностей к прогнозированию. Это как оцифрованный каскад — надёжный и эффективный, но именно поэтому неспособный справиться со сложными задачами, требующими понимания контекста. Его ограничения ставят ключевой вопрос: что делать агенту, если нынешнее состояние окружающей среды является достаточным в качестве основы для принятия решений?
 
 <div align="center">
-  <p>Table 1.1 Core comparison between traditional agents and LLM-driven agents</p>
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-2.png" alt="Figure description" width="90%"/>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-1.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 1.2 Схема логики решений простого реактивного агента</p>
 </div>
 
-This difference enables LLM agents to directly process high-level, ambiguous, and context-rich natural language instructions. Let's use an "intelligent travel assistant" as an example to illustrate.
+Чтобы ответить на этот вопрос, исследователи рассмотрели концепцию «состояния» и разработали **реактивные агенты на основе моделей (Model-Based Reflex Agents)**. У такого агента есть внутренняя **модель мира (World Model)**, используемая для идентификации и понимания тех аспектов окружающей среды, которые нельзя принять напрямую. Он пытается ответить: «Каков мир сейчас?» Например, беспилотный автомобиль, едущий через туннель, даже если его камера временно не воспринимает впереди идущий автомобиль, во внутренней модели все равно сохраняет определение о существовании этого автомобиля, его скорости и оценочного положения. Эта внутренняя модель дает агенту примитивную форму «памяти», поскольку его решения не являются исключительными исключительно из-за мгновенного восприятия, а основаны на более связном и понимании полного состояния мира.
 
-Before the emergence of LLM agents, planning a trip typically meant users needed to manually switch between multiple dedicated applications (such as weather, maps, booking websites), with the user themselves playing the role of information integration and decision-making. An LLM agent, however, can integrate this process. When receiving an ambiguous instruction like "plan a trip to Xiamen," its working method reflects the following points:
+Однако одного понимания мира недостаточно — у агента есть светящиеся цели. Так появились **агенты на основе целей (Goal-Based Agents)**. В отличие от двух предыдущих типов, их поведение уже не пассивная реакция на окружающую среду, а активный и упреждающий выбор действий, которые могут привести к определенному будущему состоянию. Вопрос, на который должен ответить такому агенту: «Что мне сделать, чтобы достичь своей цели?» Классический пример — система GPS-навигации: ваша цель — добраться до офиса, и агент спланирует маршрут солнца с помощью алгоритмов поиска (например, A*) на основе данных карты (модели мира). Ключевая способность такого агента проявляется в учёте будущего и планировании.
 
-- **Planning and Reasoning**: The agent first decomposes this high-level goal into a series of logical subtasks, for example: `[Confirm travel preferences] -> [Query destination information] -> [Draft itinerary] -> [Book tickets and accommodation]`. This is an internal, model-driven planning process.
-- **Tool Use**: When executing the plan, the agent identifies information gaps and proactively calls external tools to fill them. For example, it will call a weather query interface to get real-time weather, and based on the information "rain is forecast," it will tend to recommend indoor activities in subsequent planning.
-- **Dynamic Adjustment**: During the interaction, the agent treats user feedback (such as "this hotel exceeds the budget") as new constraints and adjusts subsequent actions accordingly, re-searching and recommending options that meet the new requirements. The entire process of "**check weather → adjust itinerary → book hotel**" demonstrates its ability to dynamically modify its behavior based on context.
+Идя дальше, реальные цели зачастую не единственны. Мы хотим не только добраться до офиса, но и потратить меньше времени, выбрать самый экономичный маршрут заправки и избежать пробок. Когда необходимо сбалансировать несколько целей, применяются механические **агенты на основе полезности (агенты на основе полезности)**. Они признают каждому возможному состоянию мира значение полезности (полезности), отражающее уровень удовлетворенности. Главная цель агента — уже не просто достичь данного состояния, а максимизировать ожидаемую полезность. Ему нужно ответить на более сложный вопрос: «Какое поведение дает мне наиболее удовлетворительный результат?» Такая архитектура позволяет агенту научиться балансировать конфликтующие цели, делая свои решения более близкими к разумному выбору человека.
 
-In summary, we are shifting from developing specialized automation tools to building systems that can autonomously solve problems. The core is no longer writing code but guiding a general "brain" to plan, act, and learn.
+До сих пор обсуждаемые агенты, хотя и стали функционировать всё сложнее, по-прежнему основывались на логике принятия решений на основе априорных знаний проектировщиков-людей — будь то правила, модели или функции полезности. А что, если бы агент мог бы перейти к автономному взаимодействию со средой, не опираясь на заранее заданные установки?
 
-### 1.1.3 Types of Agents
+В этом и состоит ключевая идея **обучающихся агентов (Learning Agents)**, а **обучение с подкреплением (Reinforcement Learning, RL)** — самый характерный путь реализации этой идеи. Обучающийся агент содержит элемент производительности (performance element — те типы агентов, которые мы обсуждали ранее) и элемент обучения (learning element). Элемент непрерывного обучения изменяет принятие решений по элементам производительности, наблюдая за последними действиями в окружающей среде.
 
-Following the review of agent evolution above, this section will classify agents from three complementary dimensions.
+Представьте себе ИИ, который учится играть в шахматы. Сначала он может совершать случайные ходы, но когда, наконец, выиграет выигрыш, система принесет ему положительное вознаграждение. Благодаря обширной самоигре элемент постепенного обучения показывает, какие методы с большей вероятностью приводят к окончательной победе. AlphaGo Zero — веха этой философии. В мировой игре посредством обучения с подкреплением он открыл множество приемов, превосходящих современные знания физики.
 
-(1) **Classification Based on Internal Decision Architecture**
+От простых термостатов к автомобилям с распределенными моделями, к навигации, способной планировать маршруты, к принятию решающих сущностей, умеющим взвешивать «за» и «против», и, наконец, к обучающимся системам, способным самоэволюционировать посредством опыта. Этот эволюционный путь показывает траекторию развития, которая продвинулась в построении машинного интеллекта. Они заложили прочный и выбрали фундамент для нашего понимания более передовых парадигм агентов сегодня.
 
-The first classification dimension is based on the complexity of the agent's internal decision architecture. This perspective was systematically proposed in "Artificial Intelligence: A Modern Approach"<sup>[1]</sup>. As described in Section 1.1.1, the evolutionary path of traditional agents itself constitutes the most classic classification ladder, covering from simple **reactive** agents to **model-based** agents that introduce internal models, and then to more forward-looking **goal-based** and **utility-based** agents. Additionally, **learning capability** is a meta-capability that can be endowed to all the above types, enabling them to self-improve through experience.
+### 1.1.2 Новая парадигма, движимая изображениями языковых моделей
 
-(2) **Classification Based on Time and Reactivity**
+Появление больших языковых моделей, представленных **GPT (Генераторный предварительно обученный преобразователь)**, существенно меняет методы построения агентов и ограничения их возможностей. У LLM-агентов, движимых языковыми моделями, принципиально иные механизмы принятия решений по сравнению с резервными агентами, что наделяет их рядом совершенно новыми характеристиками.
 
-In addition to the complexity of internal architecture, agents can also be classified from the time dimension of decision-making processing. This perspective focuses on whether an agent acts immediately after receiving information or acts after deliberate planning. This reveals a core trade-off in agent design: the balance between **Reactivity**, which pursues speed, and **Deliberation**, which pursues optimal solutions, as shown in Figure 1.3.
+Это преобразование ясно видно из двух сравнительных подходов по обычным измерениям — ядру, источнику знаний и способу взаимодействия, — как показано в таблице 1.1. Вкратце: возможности традиционных агентов проистекают из явного программирования и построения знаний инженерами, а их модели поведения детерминированы и ограничены; LLM-агенты, а также посредством подготовки к огромным объемам данных, приобретенных неявными моделями мира и мощными новыми способностями, позволяют решать сложные задачи, более гибкие и универсальные.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-3.png" alt="Figure description" width="90%"/>
-  <p>Figure 1.3 Relationship between agent decision time and quality</p>
+  <p>Таблица 1.1 Ключевое сравнение традиционных агентов и агентов на базе LLM</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-2.png" alt="Рис. description" width="90%"/>
 </div>
 
-- **Reactive Agents**
+Благодаря этому отличию LLM-агенты могут напрямую обрабатывать высокоуровневые, неоднозначные и насыщенные контекстные инструкции на естественном языке. Проиллюстрируем это на тему «умного туристического ассистента».
 
-This type of agent makes nearly instantaneous responses to environmental stimuli with extremely low decision latency. They typically follow a direct mapping from perception to action, with no or minimal future planning. The **simple reactive** and **model-based** agents mentioned above belong to this category.
+Для показа планирования LLM-агентов, как правило, необходимо вручную переключаться между несколькими специализированными приложениями (погода, карты, сайты уровня), а сам пользователь выполняет роль интегратора информации и принимает решения. LLM-агент же может разработать этот процесс. Получив уникальную методику вроде «спланируй круг в Сямэнь», его способ работы отражает следующие моменты:
 
-Their core advantage lies in **fast speed and low computational overhead**, which is crucial in dynamic environments requiring rapid decision-making. For example, a vehicle's airbag system must react within milliseconds of a collision—any delay could lead to serious consequences; similarly, high-frequency trading robots must rely on reactive decision-making to capture fleeting market opportunities. However, the cost of this speed is "short-sightedness." Due to lack of long-term planning, reactive agents easily fall into local optima and struggle to complete complex tasks requiring multi-step coordination.
+- **Планирование и рассуждение**: сначала разбивает эту высокоуровневую цель на ряд логических подзадач, например: `[Уточнить выбранные поездки] -> [Запросить информацию о назначении места] -> [Составить черновик маршрута] -> [Забронировать билеты и жильё]`. Это внутренний процесс планирования, управляемый моделью.
+- **Использование инструментов**: выполнение плана, агент выявляет пробелы в информации и активно предоставляет внешние инструменты, чтобы их заполнить. Например, он вызывает внешний запрос погоды, чтобы получить актуальную погоду, и на основании данных о том, что «прогнозируется дождь» в перспективе планирования будет склонен к излучению активности в доме.
+- **Динамическая корректировка**: во время взаимодействия агент воспринимает обратную связь пользователя (например, «этот отель увеличивает бюджет») как новые ограничения и соответствующим образом корректирует ответное действие, заново ища и рекомендуя варианты, соответствующие новым требованиям. Весь процесс «**проверить ситуацию → скорректировать маршрут → вызов отеля**» дает ему возможность изменять поведение в зависимости от контекста.
 
-- **Deliberative Agents**
+В конце концов мы переходим от разработки специализированных инструментов автоматизации к построению систем, способных автономно решать задачи. Суть уже не в написании кода, а в том, чтобы направлять общий «мозг» планировать, действовать и изучать.
 
-In contrast to reactive agents, deliberative (or planning) agents engage in complex thinking and planning before acting. They do not immediately react to perceptions but first use their internal world model to systematically explore various future possibilities, evaluate the consequences of different action sequences, in hopes of finding an optimal path to achieve goals. **Goal-based** and **utility-based** agents are typical deliberative agents.
+### 1.1.3 Типы агентов
 
-Their decision-making process can be likened to a chess player. They don't just look at the immediate move but anticipate possible opponent responses and plan out subsequent moves, even dozens of moves ahead. This deliberative capability enables them to handle complex tasks requiring long-term vision, such as formulating a business plan or planning a long-distance trip. Their advantage lies in the strategic nature and foresight of their decisions. However, the flip side of this advantage is high time and computational costs. In rapidly changing environments, when a deliberative agent is still deep in thought, the best moment to act may have long passed.
+Опираясь на обзор эволюции агентов выше, в этом разделе классифицируемые агенты по трем взаимодополняющим измерениям.
 
-- **Hybrid Agents**
+(1) **Классификация по принятию решений по внутренней архитектуре**
 
-Complex tasks in the real world often require both immediate reactions and long-term planning. For example, the intelligent travel assistant we mentioned earlier needs to adjust recommendations based on user's immediate feedback (such as "this hotel is too expensive") (reactivity), while also being able to plan a complete multi-day travel itinerary (deliberation). Therefore, hybrid agents emerged, aiming to combine the advantages of both and achieve a balance between reaction and planning.
+Первое измерение основано на сложности внутренней структуры принятия решений агента. Этот взгляд систематически изложен в книге «Искусственный интеллект: современный подход»<sup>[1]</sup>. Как возникает в разделе 1.1.1, эволюционный путь традиционных агентов по себе образует низшую классическую классификационную лестницу — от простых **реактивных** агентов к **агентам на основе моделей**, вводя содержащую базовую модель, и далее к более дальновидным самим агентам **на основе целей** и **на полезности**. Кроме того, **способность к обучению** — это мета-способность, которой можно надеть все перечисленные типы, позволяющие им самосовершенствоваться посредством опыта.
 
-A classic hybrid architecture is hierarchical design: the lower layer is a fast reactive module that handles emergencies and basic actions; the upper layer is a deliberative planning module responsible for formulating long-term goals. Modern LLM agents demonstrate a more flexible hybrid mode. They typically operate in a "think-act-observe" loop, cleverly integrating both modes:
+(2) **Классификация по времени и реактивности**
 
-- **Reasoning**: In the "thinking" phase, the LLM analyzes the current situation and plans the next reasonable action. This is a deliberative process.
-- **Acting & Observing**: In the "acting" and "observing" phases, the agent interacts with external tools or the environment and immediately receives feedback. This is a reactive process.
-
-Through this approach, the agent decomposes a grand task requiring long-term planning into a series of "planning-reaction" micro-loops. This enables it to flexibly respond to immediate environmental changes while ultimately completing complex long-term goals through coherent steps.
-
-**(3) Classification Based on Knowledge Representation**
-
-This is a more fundamental classification dimension that explores what form the knowledge used by agents for decision-making exists in their "minds." This question is at the core of a debate that has lasted more than half a century in the field of artificial intelligence and has shaped two distinctly different AI cultures.
-
-- **Symbolic AI**
-
-Symbolism, often called traditional artificial intelligence, has a core belief: intelligence stems from logical operations on symbols. The symbols here are human-readable entities (such as words, concepts), and operations follow strict logical rules, as shown on the left side of Figure 1.4. This is like a meticulous librarian organizing world knowledge into clear rule bases and knowledge graphs.
-
-Its main advantage lies in transparency and interpretability. Since reasoning steps are explicit, its decision-making process can be fully traced, which is crucial in high-risk fields such as finance and healthcare. However, its "Achilles' heel" lies in fragility: it relies on a complete rule system, but in the real world full of ambiguity and exceptions, any new situation not covered can lead to system failure, which is the so-called "knowledge acquisition bottleneck."
-
-- **Sub-symbolic AI**
-
-Sub-symbolism, or connectionism, provides a completely different picture. Here, knowledge is not explicit rules but implicitly distributed in a complex network composed of numerous neurons, representing statistical patterns learned from massive data. Neural networks and deep learning are its representatives.
-
-As shown in the middle of Figure 1.4, if symbolic AI is a librarian, then sub-symbolic AI is like a babbling child. They don't learn to recognize cats by learning rules like "cats have four legs, are furry, and meow," but after seeing thousands of cat pictures, the neural network in their brain can identify the visual pattern of the concept "cat." The power of this approach lies in its pattern recognition capability and robustness to noisy data. It can easily handle unstructured data such as images and sounds, which are extremely difficult tasks for symbolic AI.
-
-However, this powerful intuitive capability also comes with opacity. Sub-symbolic systems are typically viewed as a **Black Box**. It can identify a cat in a picture with amazing accuracy, but if you ask it "why do you think this is a cat?", it likely cannot provide a logically sound explanation. Additionally, it performs poorly on pure logical reasoning tasks and sometimes produces hallucinations that seem reasonable but are factually incorrect.
-
-- **Neuro-Symbolic AI**
-
-For a long time, the two camps of symbolism and sub-symbolism developed like two parallel lines. To overcome the limitations of the above two paradigms, a "grand reconciliation" idea began to emerge, which is neuro-symbolic AI, also called neuro-symbolic hybrid. Its goal is to merge the advantages of both paradigms, creating a hybrid agent that can both learn from data like neural networks and perform logical reasoning like symbolic systems. It attempts to bridge the gap between perception and cognition, intuition and rationality. Nobel Prize-winning economist Daniel Kahneman's dual-system theory proposed in his book "Thinking, Fast and Slow" provides an excellent analogy for understanding neuro-symbolism<sup>[2]</sup>, as shown in Figure 1.4:
-
-- **System 1** is a fast, intuitive, parallel thinking mode, similar to the powerful pattern recognition capability of sub-symbolic AI.
-- **System 2** is slow, methodical, logic-based deliberative thinking, just like the reasoning process of symbolic AI.
+Помимо внутренней сложности структуры, агентов можно классифицировать и повременному учету обработки решений. Этот взгляд фокусируется на том, что агент действует сразу после получения информации или применяется после обдуманного планирования. Это обеспечивает ключевую компромиссность в проектировании агентов: баланс между **реактивностью (Reactivity)**, стремящейся к скорости, и **обдумыванием (Deliberation)**, стремящимися к расширенным решениям, как показано на рис. 1.3.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-4.png" alt="Figure description" width="90%"/>
-  <p>Figure 1.4 Knowledge representation paradigms of symbolism, sub-symbolism, and neuro-symbolic hybrid</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-3.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 1.3 Связь между приемом сообщений агента и их качеством</p>
 </div>
 
-Human intelligence stems from the collaborative work of these two systems. Similarly, a truly robust AI also needs to combine the strengths of both. Large language model-driven agents are an excellent practical example of neuro-symbolism. Its core is a huge neural network, giving it pattern recognition and language generation capabilities. However, when it works, it generates a series of structured intermediate steps, such as thoughts, plans, or API calls, which are all explicit, operable symbols. Through this approach, it achieves a preliminary fusion of perception and cognition, intuition and rationality.
+- **Реактивные агенты (Реактивные агенты)**
 
-## 1.2 Composition and Operating Principles of Agents
+Такие агенты дают почти мгновенные ответы на стимулирующие меры при минимально низких задержках решений. Обычно они следуют прямому переходу от восприятия к объекту, без планирования будущего или с планированием. Упомянутые выше **простые реактивные** и **на основе модели** агенты относятся к этой категории.
 
-### 1.2.1 Task Environment Definition
+Их главное преимущество — **высокая скорость и низкие вычислительные затраты**, что критично в динамичных средах, требующих быстрых решений. Например, система подушек безопасности автомобиля должна срабатывать за миллисекунды после срабатывания — любая задержка может привести к серьёзным последствиям; Во-вторых, роботы высокочастотной торговли должны опираться на реактивное принятие решений, чтобы ловить мимолётные рыночные возможности. Однако плата за эту скорость — «близорукость». Из-за возникновения долгосрочного планирования реактивные агенты легко учитывают локальные оптимумы и с трудом решают сложные задачи, требующие многошаговой коалиции.
 
-To understand how an agent operates, we must first understand the **task environment** in which it operates. In the field of artificial intelligence, the **PEAS model** is typically used to precisely describe a task environment, analyzing its **Performance measure, Environment, Actuators, and Sensors**. Taking the intelligent travel assistant mentioned above as an example, Table 1.2 below shows how to use the PEAS model to specify its task environment.
+- **Обдумывающие агенты**
+
+В отличие от реактивных, обдумывающие (или планирующие) агенты прежде всего реализовали технологии мышления и планирования. Они не реагируют на обнаружение сразу, а сначала с помощью внутренних моделей мира систематически исследуют различные будущие возможности, что приводит к последствиям разных последовательных действий в надежде найти резкий путь к действию. **Агенты на основе целей** и **на основе полезности** — типичные обдумывающие агенты.
+
+Их процесс принятия решений можно уподобить шахматисту. Они смотрят не только на ближайший ход, но и предвосхищают возможные ответы соперника и планируют ходы, даже на десять ходов вперед. Эта возможность к обдумыванию позволяет им решать сложные задачи, требующие долгосрочного видения, например составить бизнес-план или спланировать дальнюю даль. Их преимущество — стратегичность и дальновидность решений. Однако оборотная сторона этого преимущества — высокие временные и вычислительные затраты. В быстро меняющихся средах, пока обдумывающий агент еще глубже движется, лучший момент для действия может уже давно пройти.
+
+- **Гибридные агенты (Гибридные агенты)**
+
+Сложные проблемы в мире часто требуют мгновенного и долгосрочного планирования. Например, упомянутый ранее умный туристический ассистент должен корректировать рекомендации по немедленной обратной связи пользователя (например, «этот отель слишком дорогой») (реактивность) и одновременно уметь планировать полный многодневный маршрут поездки (обдумывание). Поэтому появляются гибридные агенты, стремящиеся объединить преимущества обоих подходов и достичь баланса между реакцией и планированием.
+
+Классическая гибридная архитектура — иерархический дизайн: нижний уровень — быстрый реактивный модуль, обрабатывающий аварийные ситуации и базовые действия; верхний уровень — модуль обдумывающего планирования, учитывающий формулирование долгосрочных целей. Современные LLM-агенты работают в более гибком гибридном режиме. Обычно они работают в цикле «подумать–действовать–наблюдать», искусно объединяя оба режима:
+
+- **Рассуждение**: на этапе «мышления» LLM анализирует текущую ситуацию и планирует следующие разумные действия. Это обдумывающий процесс.
+- **Действие и наблюдение**: на этапах «действия» и «наблюдения» агент взаимодействует с внешними инструментами или временно и немедленно получает обратную связь. Это реактивный процесс.
+
+Таким образом агент решает грандиозную задачу, требующую долгосрочного планирования, на серии микроциклов «планирование–реакция». Это позволяет гибко действовать на мгновенные изменения окружающей среды и в то же время посредством связных шагов в конечном итоге достигать сложных долгосрочных целей.
+
+**(3) Классификация по представлению знаний**
+
+Это более фундаментальная измерительная категория, исследующая в той или иной форме знания, используемая агентами для принятия решений, существующих в их «разуме». Этот вопрос находится в центре спора, распространившегося в области искусственного интеллекта более полувека, и сформировал два отчетливо различных культуры ИИ.
+
+- **Символьный ИИ (Символический ИИ)**
+
+Символизм, часто используемый для обращения к искусственному интеллекту, опирается на ключевое убеждение: интеллект проистекает из логических операций над символами. Символы здесь — читаемые человеческие сущности (слова, понятия), а операции следуют строгим логическим правилам, как показано слева на рис. 1.4. Это как педантичный библиотекарь, удостоверяющий знания о мире в ясности базовых правил и графических знаний.
+
+Особое преимущество — прозрачность и главное интерпретируемость. Поскольку шаги обсуждения очевидны, процесс принятия решений можно полностью отслеживать, что критично в высокорисковых областях, таких как финансы и здравоохранение. Однако его «ахиллесова пята» — хрупкость: он опирается на полные ошибки системы, но во втором мире, полная неоднозначностей и исключений, любая новая ситуация, не открытая в тайне, может привести к сбою системы — это так называемое «узкое место приобретения знаний» (узкое место в приобретении знаний).
+
+- **Подсимвольный ИИ (Субсимвольный AI)**
+
+Подсимволизм, или коннекционизм, рисует совершенно иную картину. Здесь знания — неявные правила, неявно распределенные в сети распространения нейронов, с учетом статистических закономерностей, выведенных из огромных объемов данных. Нейронные сети и глубокое обучение — его представители.
+
+Как показано на среднем рис. 1.4, если символьный ИИ — библиотекарь, то подсимвольный ИИ подобен лепечу ребёнку. Они не учатся распознавать кошек по правилам вроде «кошки у четырех ног, они мохнатые и мяукают», а после просмотра тысяч фотографий кошек нейронная сеть в их «мозге» может распознавать визуальное понятие «кот». Сила этого обстоятельства — способность распознавать закономерности и устойчивость к зашумлённым данным. Он легко обрабатывает неструктурированные данные — изображения и звуки, — которые для символического II весьма трудны.
+
+Однако эта мощная интуитивная особенность сопровождается и непрозрачностью. Подсимвольные системы обычно называют «черным ящиком»**. Система может с поразительной окружностью узнать кота на картинке, но если спросить «почему ты считаешь, что это кот?», она, скорее всего, не сможет дать логически убедительное объяснение. Кроме того, она плохо справляется с задачами чистого логического рассуждения и иногда блокчейн галлюцинации — кажущиеся разумными, но фактически неверными.
+
+- **Нейросимвольный ИИ (Нейро-Символический ИИ)**
+
+В течение долгого времени лагерный символизм и подсимволизм развивались как две параллельные линии. Чтобы ограничить ограничения данной парадигмы, возникла идея «великого примирения» — нейросимвольный ИИ, также называемый нейросимвольным гибридом. Его цель — применение принципов данной парадигмы, создавшей гибридного агента, который может изучать данные, как нейронные сети, и выполнять логическое рассуждение, как символические системы. Вам предстоит преодолеть разрыв между восприятием и познанием, интуицией и разумностью. Теория двух систем нобелевского лауреата по экономике Даниэля Канемана, изложенная в книге «Думать быстро и медленно», дает отличную аналогию для понимания нейросимволизма<sup>[2]</sup>, как показано на рис. 1.4:
+
+- **Система 1** — быстрый, интуитивный, параллельный режим мышления, сходный с мощной функцией для распознавания паттернов в подсимвольном ИИ.
+- **Система 2** — медленное, методичное, основанное на логике обдумывающее мышление, аналогичное процессу рассуждения символического ИИ.
 
 <div align="center">
-  <p>Table 1.2 PEAS description of intelligent travel assistant</p>
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-6.png" alt="Figure description" width="90%"/>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-4.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 1.4 Парадигмы представления знаний: символизм, подсимволизм и нейросимвольный гибрид</p>
 </div>
 
-In practice, the digital environment in which LLM agents operate exhibits several complex characteristics that directly affect agent design.
+Человеческий интеллект проистекает из совместной работы этих двух систем. Аналогично настоящему устойчивому ИИ также необходимо сочетать сильные стороны обоих сторон. Агенты на базе больших языковых моделей — отличный практический пример нейросимволизма. Их источник — огромная нейронная сеть, дающая способности к распознаванию паттернов и генерации языка. Однако в работе они используют ряд структурированных промежуточных шагов — планов, или вызовов API, — которые являются явными оперируемыми символами. Таким образом подготовлено предварительное восприятие и познание, интуиция и разумность.
 
-First, the environment is typically **partially observable**. For example, when a travel assistant queries flights, it cannot obtain all real-time seat information from all airlines at once. It can only see partial data returned by the flight booking API it calls, which requires the agent to have memory (remembering queried routes) and exploration (trying different query dates) capabilities.
+## 1.2 Состав и принципы работы агентов
 
-Second, the results of actions are not always deterministic. Based on the predictability of results, environments can be divided into **deterministic** and **stochastic**. The task environment of a travel assistant is a typical stochastic environment. When it searches for ticket prices, two adjacent calls may return different ticket prices and remaining seat numbers, requiring the agent to have the ability to handle uncertainty, monitor changes, and make timely decisions.
+### 1.2.1 Определение среды задачи
 
-Additionally, there may be other actors in the environment, forming a **multi-agent** environment. For a travel assistant, other users' booking behaviors, other automated scripts, and even airlines' dynamic pricing systems are all other "agents" in the environment. Their actions (for example, booking the last discounted ticket) directly change the state of the environment in which the travel assistant operates, placing higher demands on the agent's rapid response and strategy selection.
-
-Finally, almost all tasks occur in **sequential** and **dynamic** environments. "Sequential" means current actions affect the future; while "dynamic" means the environment itself may change while the agent is making decisions. This requires the agent's "perceive-think-act-observe" loop to be able to quickly and flexibly adapt to a continuously changing world.
-
-### 1.2.2 Agent Operating Mechanism
-
-After defining the task environment in which an agent operates, let's explore its core operating mechanism. An agent does not complete tasks in one go but interacts with the environment through a continuous loop. This core mechanism is called the **Agent Loop**. As shown in Figure 1.5, this loop describes the dynamic interaction process between the agent and the environment, forming the foundation of its autonomous behavior.
+Чтобы понять, как работает агент, сначала нужно понять **среду задачи (среду задач)**, в которой он действует. В области искусственного интеллекта для точного описания задачи обычно используют **модель PEAS**, анализируя **меру производительности (показатель производительности), среду (окружающая среда), исполнительные устройства (актуаторы) и датчики (датчики)**. Взяв упомянутого выше умного туристического ассистента, таблица 1.2 ниже показывает, как с помощью модели PEAS решает его задачу.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-5.png" alt="Figure description" width="90%"/>
-  <p>Figure 1.5 Basic loop of agent-environment interaction</p>
+  <p>Таблица 1.2 ГОРО-описание умного туристического ассистента</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-6.png" alt="Рис. description" width="90%"/>
 </div>
 
-This loop mainly contains the following interconnected stages:
+Например, цифровая среда, в которой работают LLM-агенты, реализует несколько сложных характеристик, непосредственно влияющих на проектирование агента.
 
-1. **Perception**: This is the starting point of the loop. The agent receives input information from the environment through its sensors (for example, API listening ports, user input interfaces). This information, i.e., **Observation**, can be either the user's initial instruction or feedback on environmental state changes caused by the previous action.
-2. **Thought**: After receiving observation information, the agent enters its core decision-making stage. For LLM agents, this is typically an internal reasoning process driven by large language models. As shown in the figure, the "thought" stage can be further subdivided into two key links:
-   - **Planning**: Based on current observations and its internal memory, the agent updates its understanding of the task and environment and formulates or adjusts an action plan. This may involve decomposing complex goals into a series of more specific subtasks.
-   - **Tool Selection**: Based on the current plan, the agent selects the most suitable tool from its available tool library to execute the next step and determines the specific parameters needed to call that tool.
-3. **Action**: After decision-making is complete, the agent executes specific actions through its actuators. This typically manifests as calling a selected tool (such as a code interpreter or search engine API), thereby influencing the environment with the intent to change its state.
+Во-первых, окружающая среда обычно **частично наблюдается (частично наблюдаема)**. Например, когда туристический ассистент запрашивает рейсы, он не может сразу получить всю актуальную информацию о местах на всех рейсах. Он видит лишь частичные данные, возвращённые к уровню API, которые требуют от агента памяти (запоминать запрошенные маршруты) и исследования (пробовать разные запросы дат).
 
-Action is not the end of the loop. The agent's action causes a **state change** in the **environment**, which then produces a new **observation** as result feedback. This new observation is captured by the agent's perception system in the next round of the loop, forming a continuous "perceive-think-act-observe" closed loop. It is through continuously repeating this loop that the agent gradually advances the task, evolving from the initial state toward the goal state.
+Во-вторых, результаты действий не всегда детерминированы. По благоприятным результатам условия делят на **детерминированные (детерминированные)** и **стохастические (стохастические)**. Среда задачи туристического ассистента — типичная стохастическая среда. Когда он ищет цены в билетах, два включенных вызова могут возвращать разные цены и количество оставшихся мест, поэтому агенту нужна обработка неопределенности, отслеживание изменений и своевременное принятие решений.
 
-### 1.2.3 Agent Perception and Action
+Кроме того, в окружающей среде могут быть и другие действующие лица, образующие **мультиагентную (мультиагентную)** среду. Для туристического ассистента, проводящего другие пользователи в бронировании, другие автоматические скрипты и даже системы динамического ценообразования — всё это другие «агенты» в окружающей среде. Их действия (например, регистрация последнего билета со скидкой) напрямую меняют состояние среды, в которой работает ассистент, предъявляя более высокие требования к стратегии быстрого режима и выбора.
 
-In engineering practice, to enable LLMs to effectively drive this loop, we need a clear **Interaction Protocol** to regulate information exchange between it and the environment.
+Наконец, почти все задачи ведут в **последовательных (последовательных)** и **динамических (динамических)** средах. «Последовательность» означает, что нынешние действия влияют на будущее; «динамичность» — что сама среда может измениться, пока агент не примет решения. Для этого требуется, чтобы агент цикла «воспринять–подумать–действовать–наблюдать» мог быстро и гибко адаптироваться к непрерывности меняющегося мира.
 
-In many modern agent frameworks, this protocol is embodied in the structured definition of each agent output. The agent's output is no longer a single natural language response but a piece of text following a specific format that explicitly shows its internal reasoning process and final decision.
+### 1.2.2 Механизм работы агента
 
-This structure typically contains two core parts:
+Ограничивающая окружающая задача, в которой применяется агент, заключается в обеспечении работы его ключевого механизма. Агент не выполняет задачу один раз, а взаимодействует с обеспечением в рамках непрерывного цикла. Этот ключевой механизм называют **циклом агента (Агентный цикл)**. Как показано на рис. 1.5, этот цикл описывает динамический процесс взаимодействия агента, который обеспечивает и формирует основу его автономного поведения.
 
-- **Thought**: This is a "snapshot" of the agent's internal decision-making. It articulates in natural language how the agent analyzes the current situation, reviews the observation results from the previous step, engages in self-reflection and problem decomposition, and ultimately plans the next specific action.
-- **Action**: This is the specific operation the agent decides to impose on the environment based on its thinking, typically expressed as a function call.
+<div align="center">
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-5.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 1.5 Базовый цикл взаимодействия агента с подтверждением</p>
+</div>
 
-For example, an agent planning a trip might generate the following formatted output:
+Этот цикл в основном содержит следующие взаимодополняющие стадии:
+
+1. **Восприятие**: это отправная точка цикла. Агент получает входную информацию из среды через свои датчики (например, порты прослушивания API, интерфейсы пользовательского ввода). Эта информация, что есть **наблюдение (наблюдение)**, может быть как предварительная инструкция пользователя, так и обратная связь по поводу предоставления состояния, вызванного логическим следствием.
+2. **Мышление**: получив оценку наблюдения, агент переходит на ключевую стадию принятия решения. Для LLM-агентов это обычно внутренний процесс рассуждения, управляемый большой языковой моделью. Как показано на рисунке, этап «мышления» можно далее разбить на два ключевых звена:
+   - **Планирование**: на основе существующих наблюдений и внутренней памяти агент обновляет понимание задач и условий и формулирует или корректирует плановые действия. Это может включать в себя разбиение простых целей на ряд более частных задач.
+   - **Выбор инструмента**: исходя из текущего плана, агент выбирает из доступных библиотек инструменты, наиболее подходящие для следующего шага, и определяет конкретные параметры, необходимые для вызова этого инструмента.
+3. **Действие**: после принятия решений агентом по конкретным действиям через исполнительные устройства. Обычно это когда обнаруживается вызов инструмента (например, интерпретатора кода или API поисковой системы), тем самым влияя на среду с намерением изменить ее состояние.
+
+Действие — конец не цикла. Действие агента вызывает **изменение состояния** в **среде**, а затем блокчейн осуществляет новое **наблюдение** по обратной связи о результате. Это новое наблюдение захватывает систему наблюдения агента в следующем раунде цикла, образуя непрерывный замкнутый цикл «воспринять–подумать–действовать–наблюдать». Именно благодаря непрерывному повторению этого цикла агент постепенно продвигает проблему, эволюционируя от начального состояния к целевому.
+
+### 1.2.3 Восприятие и действия агента
+
+В инженерной предпосылке, чтобы LLM эффективно управлял этим циклом, нужен яркий **протокол взаимодействия (протокол взаимодействия)**, регулирующий обмен информацией между агентом и прогнозом.
+
+Во многих современных фреймворках агентов этот протокол внедрен в структурированном виде каждого выходного агента. Выходной агент — уже не один ответ на естественном языке, фрагмент текста, следующая определенная форма и явный показ внутреннего процесса обсуждения и итогового решения.
+
+Эта структура обычно состоит из двух основных частей:
+
+- **Мысль (Мысль)**: это «снимок» внутреннего приема сообщений агента. На естественном языке он излагает, как агент анализирует текущую ситуацию, пересматривает результаты наблюдения этапа шага, занимается задачами саморефлексии и декомпозиции и в конечном итоге планирует следующее конкретное действие.
+- **Действие (Действие)**, которое представляет собой конкретную операцию, агент решает положить на окружающую среду на основе своего мышления, обычно выражается как функция вызова.
+
+Например, агент, планирующий круг, может сгенерировать следующий сформированный вывод:
 
 ```Bash
-Thought: The user wants to know the weather in Beijing. I need to call the weather query tool.
+Thought: Пользователь хочет узнать погоду в Пекине. Нужно вызвать инструмент запроса погоды.
 Action: get_weather("Beijing")
 ```
 
-The `Action` field here constitutes an instruction to the external world. An external **Parser** will capture this instruction and call the corresponding `get_weather` function.
+Поле`Action`здесь составляется процедура для внешнего мира. Внешний **парсер (Parser)** захватывает эту процедуру и вызывает соответствующую функцию`get_weather`.
 
-After the action is executed, the environment returns a result. For example, the `get_weather` function might return a JSON object containing detailed weather data. However, raw machine-readable data (such as JSON) typically contains redundant information that the LLM doesn't need to focus on, and the format doesn't conform to its natural language processing habits.
+После выполнения действия среда получает результат. Например, Функция`get_weather`может вернуть JSON-объект с подробными данными о погоде. Однако сырые машиночитаемые данные (такие как JSON) обычно содержат резервную информацию, на которой LLM не нужно фокусироваться, а формат не соответствует ее привычкам обработки естественного языка.
 
-Therefore, an important responsibility of the perception system is to play the role of a sensor: processing and encapsulating this raw output into concise, clear natural language text, i.e., observation.
+Поэтому важная роль в системе восприятия — играть роль датчика: обрабатывать и упаковывать этот сырой вывод в краткий, ясный текст на естественном языке, то есть наблюдение.
 
 ```Bash
-Observation: Beijing's current weather is sunny, temperature 25 degrees Celsius, light breeze.
+Observation: Текущая погода в Пекине: солнечно, температура 25 градусов Цельсия, лёгкий ветерок.
 ```
 
-This `Observation` text is fed back to the agent as the main input information for the next round of the loop, for it to conduct a new round of `Thought` and `Action`.
+Этот текст`Observation`подаётся агенту обратно как основная входная информация для следующего раунда цикла, чтобы он провёл новый раунд`Thought`и`Action`.
 
-In summary, through this rigorous loop composed of Thought, Action, and Observation, LLM agents can effectively combine their internal language reasoning capabilities with real information and tool operation capabilities from the external environment.
+В результате этого строгого цикла «Мысль, действие и наблюдение» LLM-агенты могут эффективно сочетать свои внутренние способности языкового рассуждения с математическими данными и возможностями работы с инструментами из внешней среды.
 
-## 1.3 Hands-on Experience: Implementing Your First Agent in 5 Minutes
+## 1.3 Практика: реализуйте своего первого агента за 5 минут
 
-In the previous sections, we learned about the agent's task environment, core operating mechanism, and the `Thought-Action-Observation` interaction paradigm. While theoretical knowledge is important, the best way to learn is through hands-on practice. In this section, we will guide you to build a working intelligent travel assistant from scratch using a few simple lines of Python code. This process will follow the theoretical loop we just learned, allowing you to intuitively experience how an agent "thinks" and interacts with external "tools." Let's get started!
+В предыдущих разделах мы узнали о задачах агента по окружающей среде, ключевом механизме работы и парадигме взаимодействия.`Thought-Action-Observation`. Теоретические знания важны, но лучший способ учиться — практика. В этом разделе мы проведём вас через построение с нулевым рабочим умного туристического ассистента с помощью нескольких простых строк кода на Python. Этот процесс последует теоретическому циклу, который мы только что изучили, что привело к ощущению, как агент «думает» и взаимодействует с периодическими «инструментами». Начнём!
 
-In this case, our goal is to build an intelligent travel assistant that can handle step-by-step tasks. The user task to be solved is defined as: "Hello, please help me check today's weather in Beijing, and then recommend a suitable tourist attraction based on the weather." To complete this task, the agent must demonstrate clear logical planning capabilities. It needs to first call the weather query tool and use the obtained observation results as the basis for the next step. In the next round of the loop, it then calls the attraction recommendation tool to arrive at the final suggestion.
+В этом случае наша цель — построить умного туристического ассистента, способного решить пошаговые задачи. Пользовательская задача определяется так: «Здравствуйте, помогите проверить сегодня внешнюю погоду, врекомендуйте Пекине, а затем постройте подход к достопримечательностям с точки зрения погоды». Чтобы выполнить эту задачу, агент должен пролить свет на способности логического планирования. Первоначально результаты ему вызвали необходимый инструмент запроса погоды и использовали результаты наблюдений в качестве основы для следующего шага. В следующем раунде цикла он затем вызывает инструмент с рекомендациями по достопримечательностям, чтобы прийти к итоговому предложению.
 
-### 1.3.1 Preparation
+### 1.3.1 Подготовка
 
-To access web APIs from a Python program, we need an HTTP library. `requests` is the most popular and easy-to-use choice in the Python community. `tavily-python` is a powerful AI search API client for obtaining real-time web search results, which can be obtained by registering on the [official website](https://www.tavily.com/). `openai` is the official Python SDK provided by OpenAI for calling large language model services such as GPT. Please install them first with the following command:
+Чтобы обращаться к веб-API из программы на Python, нужна HTTP-библиотека. `requests`— самый популярный и удобный выбор в сообществе Python.`tavily-python`— клиентский AI Search API для получения результатов веб-поиска в первое время; ключ можно получить, зарегистрировавшись на [официальном сайте](https://www.tavily.com/). `openai`— официальный Python SDK от OpenAI для вызова сервисов больших языковых моделей, таких как GPT. Сначала установите их одну единственную:
 
 ```bash
 pip install requests tavily-python openai
 ```
 
-(1) Instruction Template
+(1) Шаблоны инструкций
 
-The key to driving a real LLM lies in **Prompt Engineering**. We need to design an "instruction template" that tells the LLM what role it should play, what tools it has, and how to format its thinking and actions. This is the "manual" for our agent, which will be passed to the LLM as `system_prompt`.
+Ключ к управлению настоящей LLM — **инженерия промптов (Быстрый Инжиниринг)**. Нужно спроектировать «шаблон инструкций», который говорит LLM, какую роль она должна играть, какие у нее есть инструменты и как формировать мышление и действия. Это «руководство» для нашего агента, которое будет передано LLM как`system_prompt`.
 
 ```
 AGENT_SYSTEM_PROMPT = """
-You are an intelligent travel assistant. Your task is to analyze user requests and use available tools to solve problems step by step.
+Вы — умный туристический ассистент. Ваша задача — анализировать запросы пользователя и шаг за шагом решать задачи с помощью доступных инструментов.
 
-# Available Tools:
-- `get_weather(city: str)`: Query real-time weather for a specified city.
-- `get_attraction(city: str, weather: str)`: Search for recommended tourist attractions based on city and weather.
+# Доступные инструменты:
+- `get_weather(city: str)`: запросить актуальную погоду для указанного города.
+- `get_attraction(city: str, weather: str)`: найти рекомендованные достопримечательности по городу и погоде.
 
-# Output Format Requirements:
-Each response must strictly follow this format, containing one Thought-Action pair:
+# Требования к формату вывода:
+Каждый ответ должен строго следовать этому формату и содержать одну пару Thought-Action:
 
-Thought: [Your thinking process and next step plan]
-Action: [The specific action you want to execute]
+Thought: [Ваш процесс мышления и план следующего шага]
+Action: [Конкретное действие, которое вы хотите выполнить]
 
-Action format must be one of the following:
-1. Call a tool: function_name(arg_name="arg_value")
-2. Finish task: Finish[final answer]
+Формат Action должен быть одним из следующих:
+1. Вызов инструмента: function_name(arg_name="arg_value")
+2. Завершение задачи: Finish[итоговый ответ]
 
-# Important Notes:
-- Output only one Thought-Action pair each time
-- Action must be on the same line, do not break lines
-- When you have collected enough information to answer the user's question, you must use Action: Finish[final answer] format to end
+# Важные замечания:
+- Каждый раз выводите только одну пару Thought-Action
+- Action должен быть в одной строке, не переносите строку
+- Когда вы собрали достаточно информации, чтобы ответить на вопрос пользователя, вы должны завершить в формате Action: Finish[итоговый ответ]
 
-Let's begin!
+Начнём!
 """
 ```
 
-(2) Tool 1: Query Real Weather
+(2) Инструмент 1: запрос погоды
 
-We will use the free weather query service `wttr.in`, which can return weather data for a specified city in JSON format. Here is the code to implement this tool:
+Мы используем бесплатный сервис запроса погоды`wttr.in`, который может вернуть данные о погоде для указанного города в формате JSON. Вот код этого инструмента:
 
 ```python
 import requests
 
 def get_weather(city: str) -> str:
     """
-    Query real weather information by calling the wttr.in API.
+    Запросить реальную информацию о погоде через API wttr.in.
     """
-    # API endpoint, we request data in JSON format
+    # Конечная точка API, запрашиваем данные в формате JSON
     url = f"https://wttr.in/{city}?format=j1"
 
     try:
-        # Make network request
+        # Выполнить сетевой запрос
         response = requests.get(url)
-        # Check if response status code is 200 (success)
+        # Проверить, что код статуса ответа — 200 (успех)
         response.raise_for_status()
-        # Parse returned JSON data
+        # Разобрать возвращённые JSON-данные
         data = response.json()
 
-        # Extract current weather conditions
+        # Извлечь текущие погодные условия
         current_condition = data['current_condition'][0]
         weather_desc = current_condition['weatherDesc'][0]['value']
         temp_c = current_condition['temp_C']
 
-        # Format as natural language return
+        # Отформатировать как возврат на естественном языке
         return f"{city} current weather: {weather_desc}, temperature {temp_c} degrees Celsius"
 
     except requests.exceptions.RequestException as e:
-        # Handle network errors
+        # Обработать сетевые ошибки
         return f"Error: Network problem encountered when querying weather - {e}"
     except (KeyError, IndexError) as e:
-        # Handle data parsing errors
+        # Обработать ошибки разбора данных
         return f"Error: Failed to parse weather data, city name may be invalid - {e}"
 ```
 
-(3) Tool 2: Search and Recommend Tourist Attractions
+(3) Инструмент 2: поиск и рекомендации достопримечательностей.
 
-We will define a new tool `get_attraction` that searches the internet for suitable attractions based on city and weather conditions:
+Определим новый инструмент`get_attraction`, который ищет в интернете подходящие достопримечательности по городу и погодным условиям:
 
 ```python
 import os
@@ -304,29 +304,29 @@ from tavily import TavilyClient
 
 def get_attraction(city: str, weather: str) -> str:
     """
-    Based on city and weather, use Tavily Search API to search and return optimized attraction recommendations.
+    По городу и погоде с помощью Tavily Search API искать и возвращать оптимизированные рекомендации достопримечательностей.
     """
-    # 1. Read API key from environment variable
+    # 1. Прочитать API-ключ из переменной окружения
     api_key = os.environ.get("TAVILY_API_KEY")
     if not api_key:
         return "Error: TAVILY_API_KEY environment variable not configured."
 
-    # 2. Initialize Tavily client
+    # 2. Инициализировать клиент Tavily
     tavily = TavilyClient(api_key=api_key)
 
-    # 3. Construct a precise query
+    # 3. Сконструировать точный запрос
     query = f"'{city}' most worthwhile tourist attractions and reasons in '{weather}' weather"
 
     try:
-        # 4. Call API, include_answer=True will return a comprehensive answer
+        # 4. Вызвать API; include_answer=True вернёт сводный ответ
         response = tavily.search(query=query, search_depth="basic", include_answer=True)
 
-        # 5. Tavily's returned results are already very clean and can be used directly
-        # response['answer'] is a summary answer based on all search results
+        # 5. Результаты Tavily уже очень чистые и могут использоваться напрямую
+        # response['answer'] — сводный ответ на основе всех результатов поиска
         if response.get("answer"):
             return response["answer"]
 
-        # If there's no comprehensive answer, format raw results
+        # Если сводного ответа нет, отформатировать сырые результаты
         formatted_results = []
         for result in response.get("results", []):
             formatted_results.append(f"- {result['title']}: {result['content']}")
@@ -340,33 +340,33 @@ def get_attraction(city: str, weather: str) -> str:
         return f"Error: Problem occurred when executing Tavily search - {e}"
 ```
 
-Finally, we put all tool functions into a dictionary for the main loop to call:
+Наконец, поместим все функции-инструменты в словарь для вызова основного цикла:
 
 ```python
-# Put all tool functions into a dictionary for easy subsequent calling
+# Поместить все функции-инструменты в словарь для удобного последующего вызова
 available_tools = {
     "get_weather": get_weather,
     "get_attraction": get_attraction,
 }
 ```
 
-### 1.3.2 Connecting to Large Language Models
+### 1.3.2 Подключение к большим языковым моделям
 
-Currently, many LLM service providers (including OpenAI, Azure, and numerous open-source model service frameworks such as Ollama, vLLM, etc.) follow interface specifications similar to the OpenAI API. This standardization brings great convenience to developers. The agent's autonomous decision-making capability comes from the LLM. We will implement a universal client `OpenAICompatibleClient` that can connect to any LLM service compatible with the OpenAI interface specification.
+Сейчас многие провайдеры LLM-сервисов (включая OpenAI, Azure и платформы платформ сервисов открытых моделей, такие как Ollama, vLLM и др.) следуют спецификациям интерфейса, похожим на OpenAI API. Эта стандартизация дает разработчикам большую помощь. Способность агента к автономному принятию решений исходит от LLM. Мы реализуем универсальный клиент`OpenAICompatibleClient`, который может подключаться к любому LLM-сервису, совместимому по спецификации интерфейса OpenAI.
 
 ```python
 from openai import OpenAI
 
 class OpenAICompatibleClient:
     """
-    A client for calling any LLM service compatible with the OpenAI interface.
+    Клиент для вызова любого LLM-сервиса, совместимого с интерфейсом OpenAI.
     """
     def __init__(self, model: str, api_key: str, base_url: str):
         self.model = model
         self.client = OpenAI(api_key=api_key, base_url=base_url)
 
     def generate(self, prompt: str, system_prompt: str) -> str:
-        """Call LLM API to generate response."""
+        """Вызвать LLM API для генерации ответа."""
         print("Calling large language model...")
         try:
             messages = [
@@ -386,17 +386,17 @@ class OpenAICompatibleClient:
             return "Error: Error occurred when calling language model service."
 ```
 
-To instantiate this class, you need to provide three pieces of information: `API_KEY`, `BASE_URL`, and `MODEL_ID`. The specific values depend on the service provider you use (such as OpenAI official, Azure, or local models like Ollama). If you don't have access to these yet, you can refer to [Environment Configuration](https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra07-环境配置.md).
+Чтобы создать экземпляр этого класса, необходимо получить три результата:`API_KEY`, `BASE_URL`и`MODEL_ID`. Конкретные значения определяются используемым провайдером (например, виртуальный OpenAI, Azure или локальные модели вроде Ollama). Если у вас пока нет доступа к ним, обратитесь к [настройке окружения](https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra07-环境配置.md).
 
-### 1.3.3 Executing the Action Loop
+### 1.3.3 Выполнение действий цикла
 
-The main loop below will integrate all components and drive the LLM to make decisions through formatted prompts.
+Основной цикл ниже всех компонентов и будет управлять решениями LLM через сформированные предложения.
 
 ```python
 import re
 
-# --- 1. Configure LLM client ---
-# Please replace this with the corresponding credentials and address for the service you use
+# --- 1. Настроить клиент LLM ---
+# Замените на соответствующие учётные данные и адрес используемого сервиса
 API_KEY = "YOUR_API_KEY"
 BASE_URL = "YOUR_BASE_URL"
 MODEL_ID = "YOUR_MODEL_ID"
@@ -409,22 +409,22 @@ llm = OpenAICompatibleClient(
     base_url=BASE_URL
 )
 
-# --- 2. Initialize ---
+# --- 2. Инициализация ---
 user_prompt = "Hello, please help me check today's weather in Beijing, and then recommend a suitable tourist attraction based on the weather."
 prompt_history = [f"User request: {user_prompt}"]
 
 print(f"User input: {user_prompt}\n" + "="*40)
 
-# --- 3. Run main loop ---
-for i in range(5): # Set maximum number of loops
+# --- 3. Запустить основной цикл ---
+for i in range(5): # Задать максимальное число циклов
     print(f"--- Loop {i+1} ---\n")
 
-    # 3.1. Build Prompt
+    # 3.1. Построить Prompt
     full_prompt = "\n".join(prompt_history)
 
-    # 3.2. Call LLM for thinking
+    # 3.2. Вызвать LLM для мышления
     llm_output = llm.generate(full_prompt, system_prompt=AGENT_SYSTEM_PROMPT)
-    # Truncate extra Thought-Action pairs that the model may generate
+    # Обрезать лишние пары Thought-Action, которые модель может сгенерировать
     match = re.search(r'(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)', 
                     llm_output, re.DOTALL)
     if match:
@@ -435,7 +435,7 @@ for i in range(5): # Set maximum number of loops
     print(f"Model output:\n{llm_output}\n")
     prompt_history.append(llm_output)
 
-    # 3.3. Parse and execute action
+    # 3.3. Разобрать и выполнить действие
     action_match = re.search(r"Action: (.*)", llm_output, re.DOTALL)
     if not action_match:
         observation = "Error: No action found. Please explicitly use Action: finish(...) or other actions."
@@ -459,17 +459,17 @@ for i in range(5): # Set maximum number of loops
     else:
         observation = f"Error: Undefined tool '{tool_name}'"
 
-    # 3.4. Record observation results
+    # 3.4. Записать результаты наблюдения
     observation_str = f"Observation: {observation}"
     print(f"{observation_str}\n" + "="*40)
     prompt_history.append(observation_str)
 ```
 
-Through the above steps, we have built a complete agent driven by a real LLM. Its core lies in the combination of "tools" and "prompt engineering," which is precisely the design essence of current mainstream agent frameworks (such as LangChain, LlamaIndex, etc.).
+С помощью описанных шагов мы создали полного агента, движимого настоящим LLM. Его суть — в сочетании «инструментов» и «инженерии промптов», что и есть суть дизайна нынешних основных агентов-фреймворков (таких как LangChain, LlamaIndex и др.).
 
-### 1.3.4 Running Case Analysis
+### 1.3.4 Анализ примера запуска
 
-The following output fully demonstrates a successful agent execution process. Through analysis of this three-round loop, we can clearly see the core capabilities of the agent in solving problems.
+Следующий вывод полностью обеспечивает успешный процесс выполнения агентом. Благодаря анализу этого трехтактного цикла мы ясно видим ключевые способности агента для решения задачи.
 
 ```bash
 User input: Hello, please help me check today's weather in Beijing, and then recommend a suitable tourist attraction based on the weather.
@@ -505,147 +505,147 @@ Action: Finish[Today's weather in Beijing is sunny with a temperature of 26 degr
 Task completed, final answer: Today's weather in Beijing is sunny with a temperature of 26 degrees Celsius, very suitable for outdoor activities. I recommend you visit the Summer Palace to enjoy the beautiful lake views and ancient architecture, or go to the Great Wall to experience its spectacular scenery and profound historical significance. Hope you have a pleasant trip!
 ```
 
-This simple travel assistant case concentrates on demonstrating the four basic capabilities of an agent based on the `Thought-Action-Observation` paradigm: task decomposition, tool invocation, context understanding, and result synthesis. It is through the continuous iteration of this loop that the agent can transform a vague user intent into a series of specific, executable steps and ultimately achieve the goal.
+Этот простой пример туристического ассистента сконцентрирован на четырех базовых способностях агента на основе парадигмы.`Thought-Action-Observation`: задачи декомпозиции, инструменты вызова, понимание контекста и синтез результата. Именно посредством непрерывной итерации этого цикла агент может превратить расплывчатое намерение пользователя в ряд конкретных, исполняемых шагов и в итоге достичь цели.
 
-## 1.4 Collaboration Modes of Agent Applications
+## 1.4 Режимы сотрудничества в приложениях агентов
 
-In the previous section, we gained a deep understanding of the internal operating loop of an agent by building one ourselves. However, in broader application scenarios, our role is increasingly transforming into users and collaborators. Based on the agent's role in tasks and degree of autonomy, its collaboration modes are mainly divided into two types: one is as an efficient tool deeply integrated into our workflow; the other is as an autonomous collaborator working with other agents to complete complex goals.
+В предыдущем разделе мы глубоко поняли внутренний рабочий цикл агента, построив его самостоятельно. Однако в более сложных прикладных сценариях наша роль все чаще меняется на пользователей и соавторов. По роли агента в решении задач и в режиме автономии работа в основном растет по двум типам: один — как эффективный инструмент, глубоко встроенный в наш рабочий процесс; другой — как автономный соавтор, работающий с другими агентами для достижения сложных целей.
 
-### 1.4.1 Agents as Developer Tools
+### 1.4.1 Агенты как разработчики инструментов
 
-In this mode, agents are deeply integrated into developers' workflows as powerful auxiliary tools. They enhance rather than replace the developer's role, automating tedious, repetitive tasks so developers can focus more on creative core work. This human-machine collaboration approach greatly improves the efficiency and quality of software development.
+В этом режиме агенты глубоко интегрируются в рабочие процессы, создавая мощные вспомогательные инструменты. Они увеличивают, а не заменяют роль разработчика, автоматизируя утомительные, повторяющиеся задачи, чтобы разработчики могли больше сосредоточиться на творческой основной работе. Такой человеко-машинный подход к сотрудничеству значительно повышает эффективность и качество разработки ПО.
 
-Currently, the market has seen the emergence of multiple excellent AI programming assistance tools. While they all improve development efficiency, they differ in implementation paths and functional focus:
+Сейчас на рынке появилось множество отличных инструментов ИИ-помощи в программировании. Хотя все они повышают эффективность разработки, они различаются по пути реализации и функциональному фокусу:
 
-- **GitHub Copilot**: As one of the most influential products in this field, Copilot was jointly developed by GitHub and OpenAI. It is deeply integrated into mainstream editors such as Visual Studio Code and is renowned for its powerful code auto-completion capabilities. When developers write code, Copilot can provide real-time suggestions for entire lines or even entire function blocks. In recent years, it has also expanded conversational programming capabilities through Copilot Chat, allowing developers to solve programming problems through chat within the editor.
-- **Claude Code**: Claude Code is an AI programming assistant developed by Anthropic, designed to help developers efficiently complete coding tasks in the terminal through natural language instructions. It can understand complete codebase structures, perform operations such as code editing, testing, and debugging, and supports full-process development from describing functionality to code implementation. Claude Code also provides a headless mode suitable for CI, pre-commit hooks, build scripts, and other automation scenarios, providing developers with a powerful command-line programming experience.
-- **Trae**: As an emerging AI programming tool, Trae focuses on providing developers with intelligent code generation and optimization services. It analyzes code patterns through deep learning technology and can provide developers with precise code suggestions and automated refactoring solutions. Trae's distinctive feature is its lightweight design and fast response capability, particularly suitable for scenarios requiring frequent iteration and rapid prototyping.
-- **Cursor**: Unlike the above tools that mainly exist as plugins or integrated features, Cursor has chosen a more integrated path—it is itself an AI-native code editor. Rather than adding AI functionality to existing editors, it made AI interaction a core feature from the design stage. In addition to top-tier code generation and chat capabilities, it emphasizes letting AI understand the context of the entire codebase, thereby achieving deeper Q&A, refactoring, and debugging.
+- **GitHub Copilot**: Copilot, один из самых влиятельных продуктов в этой области, был разработан совместно GitHub и OpenAI. Он глубоко внедрился в основные редакторы, такие как Visual Studio Code, и известные эффективные возможности автодополнения кода. Когда разработчики пишут код, Copilot может на первом этапе добавить целые строки или даже целые блоки функций. В последние годы он также расширил возможности программирования через Copilot Chat, что позволило разработчикам решать проблемы программирования через чат внутри редактора.
+- **Код Клода**: Клод Код — созданный ИИ-помощник по программированию от Anthropic, позволяющий разработчикам эффективно выполнять задачи кодирования на терминале с помощью инструкции на естественном языке. Он может подразумевать полные базы структурного кода, выполнять операции по редактированию кода, написанию кода и отладке, а также поддерживать полную разработку процесса от описания функциональности до реализации кода. Claude Code также обеспечивает безголовый (безголовый) режим, подходящий для CI, предварительную фиксацию хуков, сборочных скриптов и другие процессы автоматизации, позволяющие разработчикам сети получать опыт программирования из командной строки.
+- **Trae**: как новый инструмент ИИ-программирования, Trae фокусируется на предоставлении разработчикам интеллектуальной генерации и оптимизации кода. Он анализирует шаблоны кода с помощью технологии глубокого обучения и может предоставить точные предложения по коду и автоматизированные решения рефакторинга. Отличительная черта Trae — легкий дизайн и быстрая реакция, особенно подходящие для случаев, требующих частых итераций и быстрого прототипирования.
+- **Курсор**: в отличие от инструментов выше, которые в основном существуют в виде плагинов или встроенных функций, курсор выбран более интегрированным способом — он сам по себе является собственным редактором кода для искусственного интеллекта. Вместо добавления ИИ-функций к существующим редакторам он сделал взаимодействие с ключевой модификацией ИИ уже на этапе проектирования. Помимо первых возможностей генерации кода и чата, он делает акцент на том, чтобы ИИ соответствовал контексту всей кодовой базы, тем самым достигалась более обоснованность вопросов-ответов, рефакторинга и отладки.
 
-Of course, there are many other excellent tools not listed here, but they all point to a clear trend: AI is deeply integrating into the entire software development lifecycle, profoundly reshaping the efficiency boundaries and development paradigms of software engineering by building efficient human-machine collaborative workflows.
+Конечно, есть много других превосходных инструментов, которые здесь не являются традиционными, но все они указывают на ясную перемену: ИИ глубоко интегрируется во весь жизненный цикл разработки ПО, глубоко перестраивая границу эффективности и парадигмы развития посредством эффективного сотрудничества человеко-машинных рабочих процессов.
 
-### 1.4.2 Agents as Autonomous Collaborators
+### 1.4.2 Агенты как автономные соавторы
 
-Unlike serving as tools to assist humans, the second interaction mode elevates the automation level of agents to an entirely new level: autonomous collaborators. In this mode, we no longer guide AI step-by-step through every action but delegate a high-level goal to it. The agent, like a true project team member, independently plans, reasons, executes, and reflects until finally delivering results. This transformation from assistant to collaborator has brought LLM agents deeper into public view. It marks the evolution of our relationship with AI from "command-execute" to "goal-delegate." Agents are no longer passive tools but active goal pursuers.
+В отличие от ролевых инструментов, помогающих людям, режим второго взаимодействия поднимает уровень автоматизации агентов на совершенно новый уровень: автономные соавторы. В этом режиме мы больше не направляем ИИ шаг за шагом через каждое действие, агируем ему сделать высокоуровневую цель. Агент, как настоящий член проектной команды, самостоятельно обдумывает, анализирует, осуществляет и размышляет, пока наконец не достигнет результата. Это появление помощника в соавторстве привело к тому, что LLM-агенты углубились в поле зрения общественности. Оно отмечает эволюцию наших отношений с ИИ от «команда–исполнение» к «цель–делегирование». Агенты больше не пассивные инструменты, а активные преследователи целей.
 
-Currently, approaches to achieving this autonomous collaboration are flourishing, with numerous excellent frameworks and products emerging, from early BabyAGI and AutoGPT to now more mature frameworks like CrewAI, AutoGen, MetaGPT, and LangGraph, collectively driving rapid development in this field. Although specific implementations vary greatly, their architectural paradigms can be roughly summarized into several mainstream directions:
+Сейчас бурно развиваются подходы к созданию такого автономного сотрудничества; Появилось множество выдающихся фреймворков и продуктов — от BabyAGI и AutoGPT до более зрелых фреймворков, таких как CrewAI, AutoGen, MetaGPT и LangGraph, — которые совместно двигают их быстрое развитие в этой области. Хотя конкретные реализации сильно существуют, их архитектурные парадигмы примерно созданы в соответствии с основными направлениями:
 
-1. **Single-Agent Autonomous Loop**: This is an early typical paradigm, represented by models like **AgentGPT**. Its core is a general agent that continuously self-prompts and iterates through a "think-plan-execute-reflect" closed loop to complete an open-ended high-level goal.
-2. **Multi-Agent Collaboration**: This is currently the most mainstream exploration direction, aiming to solve complex problems by simulating human team collaboration modes. It can be further subdivided into different modes: **Role-Playing Dialogue**: Like the **CAMEL** framework, which assigns clear roles and communication protocols to two agents (for example, "programmer" and "product manager"), allowing them to collaboratively complete tasks in a structured dialogue. **Organized Workflow**: Like **MetaGPT** and **CrewAI**, which simulate a "virtual team" with clear division of labor (such as a software company or consulting group). Each agent has preset responsibilities and workflows (SOPs), collaborating in a hierarchical or sequential manner to produce high-quality complex outputs (such as complete codebases or research reports). **AutoGen** and **AgentScope** provide more flexible dialogue modes, allowing developers to customize complex interaction networks between agents.
-3. **Advanced Control Flow Architecture**: Frameworks such as **LangGraph** focus more on providing agents with more powerful underlying engineering foundations. They model the agent's execution process as a state graph, enabling more flexible and reliable implementation of complex processes such as loops, branches, backtracking, and human intervention.
+1. **Автономный цикл одного агента**: это ранняя типичная парадигма, представленные модели вроде **AgentGPT**. Ее источник — общий агент, который непрерывность самоподсказывает себе и итерирует через замкнутый цикл «подумать–спланировать–выполнить–отразить», чтобы выбрать открытую высокоуровневую цель.
+2. **Мультиагентское сотрудничество**: это сейчас самое широкое направление исследований, стремящееся решить сложную задачу, имитируя режимы сотрудничества человеческой команды. Его дальше можно разбить в разных режимах: **диалог с ролевыми играми**: как фреймворк **CAMEL**, который объединяет агентов с яркими роликами и протоколами общения (например, «программист» и «продуктовый менеджер»), что позволяет им совместно выполнять задачи в структурированном диалоге. **Организованный рабочий процесс**: **MetaGPT** и **CrewAI**, которые имитируют «виртуальную команду» с блеском разделения труда (например, софтверная компания или консалтинговая группа). У каждого агента есть заранее заданные обязанности и рабочие процессы (СОП), сотрудничающие иерархически или последовательно, для получения высококачественных сложных результатов (например, полные кодовые базы или исследовательские отчеты). **AutoGen** и **AgentScope** обеспечивают более гибкие режимы диалога, позволяя разработчикам настраивать сетевое взаимодействие между агентами.
+3. **Продвинутая архитектура потока управления**: платформеры вроде **LangGraph** больше сосредоточены на предоставлении агентам более мощного низкоуровневого инженерного фундамента. Они моделируют выполнение агента процесса в виде графического явления, создавая более гибкую и надежную реализацию сложных процессов — циклов, ветлений, откатов и вмешательства человека.
 
-These different architectural paradigms collectively drive autonomous agents from theoretical concepts toward broader practical applications, enabling them to handle increasingly complex real-world tasks. In our subsequent chapters, we will also experience the differences and advantages between different types of frameworks.
+Эти разные архитектурные парадигмы совместно перемещают автономных агентов от теоретических концепций к более широким практическим приложениям, что позволяет им решать все более сложные задачи реального мира. В роли глав мы также ощутимы различия и преимущества разных типов фреймворков.
 
-### 1.4.3 Differences Between Workflow and Agent
+### 1.4.3 Обнаружение между рабочим процессом и агентом
 
-After understanding the two modes of agents as "tools" and "collaborators," it is necessary to discuss the differences between Workflow and Agent. Although both aim to achieve task automation, their underlying logic, core characteristics, and applicable scenarios are fundamentally different.
+Приняв два режима агентов, такие как «инструменты» и «соавторы», необходимо обсудить разницу между рабочим процессом и агентом. Хотя оба относятся к задачам автоматизации, их базовая логика, основные характеристики и применимые принципы принципиально различны.
 
-Simply put, **Workflow makes AI execute instructions step by step, while Agent gives AI freedom to autonomously achieve goals.**
+Проще говоря, **Рабочий процесс заставляет ИИ выполнять инструкцию шаг за шагом, а Агент предоставляет ИИ возможность автономного ограничения ограничений.**
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-18.png" alt="Figure description" width="90%"/>
-  <p>Figure 1.6 Differences between Workflow and Agent</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/1-figures/1757242319667-18.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 1.6 различия между рабочим процессом и агентом</p>
 </div>
 
-As shown in Figure 1.6, workflow is a traditional automation paradigm whose core is **pre-defined, structured orchestration of a series of tasks or steps**. It is essentially a precise, static flowchart that specifies which operations to execute under what conditions and in what order. A typical case: a company's expense reimbursement approval process. Employee submits reimbursement form (trigger) -> If amount is less than 500 yuan, directly approved by department manager -> If amount is greater than 500 yuan, first approved by department manager, then forwarded to CFO for approval -> After approval, notify finance department to make payment. Every step and every judgment condition of the entire process is precisely preset.
+Как показано на рис. 1.6, рабочий процесс — традиционная парадигма автоматизации, чья суть — **заранее определённая, структурированная оркестрация рядов задач или шагов**. По сути это точная, статичная блок-схема, задающая, какие операции выполняются при определенных условиях и в каком порядке. Типичный случай: процесс согласования возмещения расходов в компании. Сотрудник подает форму возмещения (триггер) → если сумма меньше 500 юаней, напрямую подает заявку менеджер отдела → если сумма превышает 500 юаней, сначала подает заявку менеджер отдела, затем пересылает финансовому директору утверждение → после заявления уведомляет финансовый отдел о выплатах. Каждый шаг и каждое условие процесса обсуждения заранее точно заданы.
 
-Unlike workflows, agents based on large language models are **autonomous, goal-oriented systems**. They not only execute preset instructions but can also understand the environment to a certain extent, reason, formulate plans, and dynamically take actions to achieve final goals. LLMs play the role of the "brain" in this process. A typical example is the intelligent travel assistant we wrote in Section 1.3. When we give it a new instruction, for example: **"Hello, please help me check today's weather in Beijing, and then recommend a suitable tourist attraction based on the weather."** Its processing fully demonstrates its autonomy:
+В отличие от рабочего процесса, агенты на базе больших языковых моделей — это **автономные, ориентированные на цели системы**. Они не только выполняют заранее заданные инструкции, но и могут в определенной степени учитывать окружающую среду, анализировать, формулировать планы и предпринимать действия для достижения конечных целей. LLM играет роль «мозга» в этом процессе. Типичный пример — умный туристический ассистент, которого мы написали в разделе 1.3. Когда мы даём ему новую инструкцию, например: **«Здравствуйте, помогите проверить сегодня внешнюю ситуацию в Пекине, а затем порекомендуйте подходящую достопримечательность с учетом погоды».** Его обработка полностью автономна:
 
-1. **Planning and Tool Invocation:** The agent first breaks down the task into two steps: ① Query weather; ② Recommend attractions based on weather. Then, it autonomously selects and calls the "weather query API," passing "Beijing" as a parameter.
-2. **Reasoning and Decision-Making:** Suppose the API returns "sunny, light breeze." The agent's LLM brain will reason based on this information: "Sunny days are suitable for outdoor activities." Then, based on this judgment, it will filter outdoor attractions in Beijing from its knowledge base or through search engine tools, such as the Forbidden City, Summer Palace, Temple of Heaven Park, etc.
-3. **Generate Results:** Finally, the agent will synthesize the information and provide a complete, humanized answer: "Today's weather in Beijing is sunny with a light breeze, very suitable for outdoor activities. I recommend you visit the Summer Palace, where you can boat on Kunming Lake and enjoy the beautiful royal garden scenery."
+1. **Инструменты планирования и вызова:** агент сначала разбирает задачу на два шага: ① запросить режим; ② означает достопримечательности погоде. Затем он самостоятельно выбирает и вызывает «API-запрос погоды», указывая «Пекин» в качестве параметра.
+2. **Распределение и принятие решений:** предположим, API возвращает «солнечно, лёгкий ветерок». Агент LLM-мозг исследует на основе этой информации: «Солнечные дни, подходящие для мероприятий в открытой атмосфере». Затем, исходя из этого мнения, он отфильтровывает достопримечательности открытого направления в Пекине из своих баз знаний или инструментов через поисковую систему — например, Запретный город, Летний дворец, парк Храма Неба и т. д. д.
+3. **Результат генерации:** наконец, агент синтезирует информацию и выдаёт полный, человечный ответ: «Сегодняшняя погода в Пекине — солнечный свет с лёгким ветерком, очень подходит для мероприятий в открытой атмосфере. Рекомендую посетить Летний дворец, где можно покататься на лодке по озеру Куньмин и насладиться прекрасным пейзажем императорского сада.»
 
-In this process, there are no hard-coded rules like `if weather=sunny then recommend Summer Palace`. If the weather is "rainy," the agent will autonomously reason and recommend indoor venues such as the National Museum or Capital Museum. **This ability to dynamically reason and make decisions based on real-time information is the core value of agents.**
+В этом процессе нет жёстко зашитых правил`if weather=sunny then recommend Summer Palace`. Если погода «дождливая», агент автономно рассудит и порекомендует места в помещении, такие как Национальный музей или Столичный музей. **Эта способность деактивировать и принимать решения на основе информации в первое время — ключевая ценность агентов.**
 
-## 1.5 Chapter Summary
+## 1.5 Итоги главы
 
-In this chapter, we embarked on an introductory journey to explore agents. Our journey began with the most fundamental questions:
+В это руководство мы вводим во вводное путешествие по исследованию агентов. Наш путь решения самых фундаментальных вопросов:
 
-- **What are large language model-driven agents?** We first clarified their definition and understood that modern agents are entities with capabilities. They are no longer just scripts executing preset programs but decision-makers capable of autonomous reasoning and tool use.
-- **How do agents work?** We delved into the operating mechanism of agent-environment interaction. We learned that this continuous closed loop is the foundation for agents to process information, make decisions, influence the environment, and adjust their behavior based on feedback.
-- **How to build an agent?** This was the practical core of this chapter. Using the "intelligent travel assistant" as an example, we built a complete agent driven by a real LLM.
-- **What are the mainstream application paradigms of agents?** Finally, we cast our vision toward broader application domains. We explored two mainstream agent interaction modes: one is "developer tools" represented by GitHub Copilot and Cursor that enhance human workflows; the other is "autonomous collaborators" represented by frameworks like CrewAI, MetaGPT, and AgentScope that can independently complete high-level goals. We also explained the differences between Workflow and Agent.
+- **Что такое агенты, движимые представителями языковых моделей?** Мы сначала прояснили их определение и поняли, что современные агенты — сущности со способностями. Они больше не просто скрипты, выполняющие заранее заданные программы, принимающие решения, способные к автономному рассуждению и использованию инструментов.
+- **Как работают агенты?** Мы углубились в механизм работы взаимодействия агента с обеспечением. Мы пришли к выводу, что этот непрерывный замкнутый цикл — основа того, как агенты обрабатывают информацию, принимают решения, учитывают окружающую среду и корректируют поведение на основе обратной связи.
+- **Как построить агента?** Это была практическая сердцевина главы. По принципу «умного туристического ассистента» мы создали полного агента, движимого настоящим LLM.
+- **Каковы основные прикладные парадигмы агентов?** Наконец, мы обращаем внимание на более широкие прикладные регионы. Мы исследовали два основных режима взаимодействия агентов: один — «инструменты разработчика», представленные GitHub Copilot и Cursor, усиливающие рабочие процессы человека; другой — «автономные соавторы», представленные фреймворками типа CrewAI, MetaGPT и AgentScope, способные самостоятельно выполнять высокоуровневые цели. Мы также объяснили различия между Workflow и Agent.
 
-Through this chapter's learning, we have established a foundational cognitive framework about agents. So, how did it evolve step by step from its initial conception to the present? In the next chapter, we will explore the development history of agents—a journey to trace back to the origins is about to begin!
+Благодаря этому изучению главы мы построили базовый когнитивный каркас агентов. Итак, как он шаг за шагом эволюционировал от начальных принципов до настоящего времени? В следующей главе мы продолжаем историю развития агентов — путешествие к истокам вот-вот начнётся!
 
-## Exercises
+## Упражнения
 
-> **Note**: Some of the following exercises do not have standard answers. The focus is on cultivating learners' critical in-depth thinking and hands-on practical abilities regarding agent systems.
+> **Примечание**: в части следующих упражнений нет эталонных ответов. Фокус — на развитие у обучающихся критического глубокого мышления и практических способностей в отношении системных агентов.
 
-1. Please analyze whether the **subject** in the following four `cases` qualifies as an agent. If so, what type of agent does it belong to (can be analyzed from multiple classification dimensions), and explain your reasoning:
+1. Проанализируйте, является ли **субъект** в следующих четырех `делах` агентом. Если да, к какому типу агента он относится (можно проанализировать по стандартным меркам), и объясните свое рассуждение:
 
-   `Case A`: **A supercomputer conforming to von Neumann architecture**, with peak computing power of up to 2 EFlops per second
+   `Case A`: **Суперкомпьютер, соответствующий архитектуре фон Неймана**, с пиковой вычислительной мощностью до 2 EFlops в секунду.
 
-   `Case B`: **Tesla's autonomous driving system** is driving on a highway when it suddenly detects an obstacle ahead and needs to make a braking or lane-change decision within milliseconds
+   `Case B`: **Система автономного вождения Tesla** едет по шоссе, когда внезапно обнаруживает встречный знак впереди, и должна за миллисекунды принять решение о торможении или смене полосы движения.
 
-   `Case C`: **AlphaGo** is playing against a human player and needs to evaluate the current situation and plan the optimal strategy for dozens of moves ahead
+   `Case C`: **AlphaGo** играет против человека и должен оценить текущую ситуацию и спланировать оптимальный сдвиг на десять ходов вперед.
 
-   `Case D`: **ChatGPT acting as an intelligent customer service** is handling a user complaint and needs to query order information, analyze the problem cause, provide solutions, and soothe user emotions
+   `Case D`: **ChatGPT в роликах умного клиентского сервиса** обрабатывает жалобы пользователя и должен запросить информацию о заказе, выяснить причину проблемы, предложить решения и успокоить эмоции пользователя.
 
-2. Suppose you need to design a task environment for an "intelligent fitness coach." This agent can:
-   - Monitor users' physiological data such as heart rate and exercise intensity through wearable devices
-   - Dynamically adjust training plans based on users' fitness goals (fat loss/muscle gain/endurance improvement)
-   - Provide real-time voice guidance and motion correction during user exercise
-   - Evaluate training effectiveness and provide dietary recommendations
+2. Предположим, вам нужно спроектировать среду для «умного фитнес-тренера». Этот агент может:
+   - Отслеживать подключения данных пользователей — пульс, измерение упражнений — через носимые устройства
+   - Динамически корректировать планы тренировок, основанные на использовании фитнес-целей (сжигание жира/набор мышц/повышение выносливости)
+   - Давать голосовые указания в первую очередь и корректировать движения во время упражнений.
+   - Оценивать эффективность тренировок и давать рекомендации по питанию.
 
-   Please use the PEAS model to completely describe this agent's task environment and analyze what characteristics this environment has (such as partially observable, stochastic, dynamic, etc.).
+Полностью опишите задачу этого агента с помощью модели PEAS и проанализируйте, какие характеристики в этой среде (например, частично наблюдаемая, стохастическая, динамическая и т. д.).
 
-3. An e-commerce company is considering two approaches to handle after-sales refund requests:
+3. Компания электронной коммерции рассматривает два подхода к обработке запросов на возврат после продажи:
 
-   Approach A (`Workflow`): Design a fixed process, for example:
+Подход А (`Workflow`): спроектировать фиксированный процесс, например:
 
-   A.1 For general products within 7 days, amounts `< 100 RMB` are automatically approved; `100-500 RMB` are reviewed by customer service; `> 500 RMB` require supervisor approval; special products (such as customized items) are always rejected
+A.1 Для обычных товаров в течение 7 дней в количестве`< 100 RMB`Проверяться автоматически;`100–500 RMB`проверяют службы поддержки;`> 500 RMB`требование требования супервайзера; специальные товары (например, кастомные изделия) всегда отклоняются
 
-   A.2 For products beyond 7 days, regardless of amount, they can only be reviewed by customer service or approved by supervisors;
+A.2 Для товаров старше 7 дней, независимо от суммы, они могут проверять только службу поддержки или утверждать супервамиайзер;
 
-   Approach B (`Agent`): Build an agent system that understands refund policies, analyzes user historical behavior, evaluates product conditions, and autonomously decides whether to approve refunds
+Подход Б (`Agent`): основа агента системы, которая понимает политику возврата, анализирует историческое поведение пользователя, оценивает состояние товара и автономно решает, утверждать возврат
 
-   Please analyze:
-   - What are the advantages and disadvantages of these two approaches?
-   - Under what circumstances is `Workflow` more suitable? When does `Agent` have advantages? If you were the head of this e-commerce company, which approach would you prefer?
-   - Is there an Approach C that can combine both approaches to achieve complementary strengths?
+Проанализируйте:
+   - Каковы преимущества и недостатки этих двух подходов?
+   - При любых обстоятельствах`Workflow`более подходящ? Когда ты`Agent`есть преимущество? Если бы вы были руководителем этой коммерческой компании, какой подход вы бы предпочли?
+   - Есть ли подход C, который может объединить обе встречи для достижения взаимодополняющих сильных сторон?
 
-4. Based on the intelligent travel assistant in Section 1.3, please consider how to add the following features (you can just describe the design ideas or further attempt code implementation):
+4. Работая с умным туристическим ассистентом из раздела 1.3, подумайте, как добавить следующие функции (можно описать идеи дизайна или продолжить реализацию принципа):
 
-   > **Hint**: Think about how to modify the `Thought-Action-Observation` loop to implement these features.
+> **Подсказка**: подумайте, как изменить цикл`Thought-Action-Observation`, чтобы реализовать эти функции.
 
-   - Add a "memory" feature that allows the agent to remember user preferences (such as liking historical and cultural attractions, budget range, etc.)
-   - When recommended attraction tickets are sold out, the agent can automatically recommend alternative options
-   - If the user consecutively rejects 3 recommendations, the agent can reflect and adjust its recommendation strategy
+   - Добавьте функцию «памяти», позволяющую агенту помнить предпочтения пользователя (например, любовь к историко-культурным достопримечательностям, размер бюджета и т. д.).
+   - Когда билеты на предпочтительную достопримечательность распроданы, агент может автоматически предлагать альтернативные варианты.
+   - Если пользователь подряда отклоняет 3 рекомендации, агент может задуматься и скорректировать корректировку корректировки.
 
-5. Kahneman's "System 1" (fast intuition) and "System 2" (slow reasoning) theory<sup>[2]</sup> provides a good analogy for neuro-symbolic AI. Please first conceive a specific agent application scenario, then explain in the scenario:
+5. Теория Канемана о «Системе 1» (быстрая интуиция) и «Системе 2» (медленное рассуждение)<sup>[2]</sup> дает хорошие аналогии для нейросимвольного ИИ. Сначала продумайте конкретный агент прикладного сценария, а затем объясните его в сценариях:
 
-   > **Hint**: Medical diagnosis assistants, legal consulting robots, financial risk control systems, etc., are all common application scenarios
+> **Подсказка**: ассистенты медицинских врачей, роботы юридических консультаций, системы финансового риск-контроля и т. д. д. — всё это распространённые прикладные сценарии
 
-   - Which tasks should be handled by "System 1"?
-   - Which tasks should be handled by "System 2"?
-   - How do these two systems work together to achieve the final goal?
+   - Какая задача должна обрабатывать «Систему 1»?
+   - Какая задача должна обрабатывать «Систему 2»?
+   - Как эти две системы работают вместе для достижения конечной цели?
 
-6. Although large language model-driven agent systems demonstrate powerful capabilities, they still have many limitations. Please analyze the following questions:
-   - Why do agents or agent systems sometimes produce "hallucinations" (generating seemingly reasonable but actually incorrect information)?
-   - In the case in Section 1.3, we set the maximum number of loops to 5. Without this limit, what problems might the agent encounter?
-   - How to evaluate an agent's "intelligence" level? Is using only accuracy metrics sufficient?
+6. Хотя системы агентов на базе больших языковых моделей демонстрируют мощные способности, у них всё ещё много ограничений. Проанализируйте следующие вопросы:
+   - Агенты или агенты систем иногда выделяют «галлюцинации» (генерируют кажущуюся разумной, но фактически не почему верную информацию)?
+   - В разделе 1.3 мы задали максимальное число циклов условий 5. Без этих ограничений с какими проблемами может обратиться агент?
+   - Как оценить уровень «интеллекта» агента? Достаточно ли использовать только метрики точности?
 
-## References
+## Список литературы
 
-[1] RUSSELL S, NORVIG P. Artificial Intelligence: A Modern Approach[M]. 4th ed. London: Pearson, 2020.
+[1] РАССЕЛ С., НОРВИГ П. Искусственный интеллект: современный подход[M]. 4-е изд. Лондон: Пирсон, 2020.
 
-[2] KAHNEMAN D. Thinking, Fast and Slow[M]. New York: Farrar, Straus and Giroux, 2011.
+[2] КАНЕМАН Д. Мышление быстрое и медленное[М]. Нью-Йорк: Фаррар, Штраус и Жиру, 2011.
 
 ---
 
-## 💬 Discussion & Communication
+## 💬 Обсуждение и общение
 
-Have questions while learning this chapter? Want to share insights with other learners?
+Есть вопросы при изучении этой главы? Хотите поделиться идеями с другими учениками?
 
-**📝 Visit GitHub Discussions:**
-- [💬 Exercises Discussion & Q&A](https://github.com/datawhalechina/Hello-Agents/discussions)
-- Here you can:
-  - ✅ Ask questions about exercises
-  - ✅ Share your solutions and ideas
-  - ✅ Exchange experiences with other learners
-  - ✅ Get help and feedback from the community
+**📝 Посетите обсуждения GitHub:**
+- [💬 Обсуждение упражнений и вопросы-ответы](https://github.com/datawhalechina/Hello-Agents/discussions)
+- Здесь вы можете:
+  - ✅ Задавать вопросы по игре
+  - ✅ Делиться своими решениями и идеями
+  - ✅ Обменивать опыт с другими учениками
+  - ✅ Получить помощь и вернуть сообщение от сообщества.
 
-**💡 Tip:** There's also a comment section at the bottom of each page for direct discussion!
+**💡 Совет:** внизу каждой страницы также есть комментарии к разделу для прямого обсуждения!
 
 ---

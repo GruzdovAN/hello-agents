@@ -39,7 +39,7 @@ class ToolCallTracker:
         self._event_sink: Optional[Callable[[dict[str, Any]], None]] = None
 
     def record(self, payload: dict[str, Any]) -> None:
-        """记录模型工具调用情况，便于日志与前端展示。"""
+        """Записывайте статус вызова инструментов модели, чтобы облегчить журналирование и внешнее отображение."""
 
         agent_name = str(payload.get("agent_name") or "unknown")
         tool_name = str(payload.get("tool_name") or "unknown")
@@ -89,7 +89,7 @@ class ToolCallTracker:
     # Draining helpers
     # ------------------------------------------------------------------
     def drain(self, state: SummaryState, *, step: Optional[int] = None) -> list[dict[str, Any]]:
-        """提取尚未消费的工具调用事件，并同步任务的 note_id。"""
+        """Извлеките события вызова инструмента, которые еще не были использованы, и синхронизируйте note_id задачи."""
 
         with self._lock:
             if self._cursor >= len(self._events):
@@ -179,7 +179,7 @@ class ToolCallTracker:
             break
 
     def _infer_task_id(self, parameters: dict[str, Any]) -> Optional[int]:
-        """尝试从工具参数推断 task_id。"""
+        """Попробуйте вывести Task_id из параметров инструмента."""
 
         if not parameters:
             return None
@@ -199,7 +199,7 @@ class ToolCallTracker:
 
         title = parameters.get("title")
         if isinstance(title, str):
-            match = re.search(r"任务\s*(\d+)", title)
+            match = re.search(r"Задача\s*(\d+)", title)
             if match:
                 return int(match.group(1))
 

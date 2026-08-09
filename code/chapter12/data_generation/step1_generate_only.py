@@ -1,12 +1,12 @@
 """
-步骤1：仅生成AIME题目
+Шаг 1. Создавайте только вопросы AIME
 
-运行方法：
-python data_generation/step1_generate_only.py 30 3.0
+Как запустить:
+python data_generate/step1_generate_only.py 30 3.0
 
-参数：
-- 30: 生成题目数量
-- 3.0: 每次生成之间的延迟（秒）
+Параметры:
+- 30: количество сгенерированных вопросов.
+- 3.0: Задержка между каждым поколением (секунды).
 """
 
 import sys
@@ -14,29 +14,29 @@ from aime_generator import AIMEGenerator
 
 
 def main():
-    # 解析命令行参数
+    # Анализ аргументов командной строки
     num_problems = int(sys.argv[1]) if len(sys.argv) > 1 else 30
     delay_seconds = float(sys.argv[2]) if len(sys.argv) > 2 else 3.0
     
     print("\n" + "="*80)
-    print("📝 步骤1: 生成AIME题目")
+    print("📝 Шаг 1. Создайте вопросы AIME.")
     print("="*80)
-    print(f"\n配置信息:")
-    print(f"  - 生成题目数量: {num_problems}")
-    print(f"  - API延迟: {delay_seconds}秒/题")
-    print(f"  - 生成参考数据: TianHongZXY/aime-1983-2025（900+道题）")
+    print(f"\nИнформация о конфигурации:")
+    print(f"  – Количество созданных вопросов: {num_problems}")
+    print(f"  - Задержка API: {delay_секунды} секунд/вопрос.")
+    print(f"  - Генерация справочных данных: TianHongZXY/aime-1983-2025 (более 900 вопросов)")
     
-    # 创建生成器
+    # Создать генератор
     generator = AIMEGenerator(delay_seconds=delay_seconds)
     
-    # 生成并保存
+    # Сгенерируйте и сохраните
     generated_data_path = generator.generate_and_save(
         num_problems=num_problems,
         output_dir="data_generation/generated_data"
     )
     
-    print(f"\n✅ 步骤1完成！生成数据保存在: {generated_data_path}")
-    print(f"\n下一步：运行评估")
+    print(f"\n ✅ Шаг 1 завершен! Сгенерированные данные сохраняются в: {generated_data_path}.")
+    print(f"\nСледующий шаг: запустить оценку")
     print(f"python data_generation/step2_evaluate_only.py {generated_data_path} 2024")
 
 

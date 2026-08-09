@@ -2,50 +2,50 @@
 from dotenv import load_dotenv
 from my_advanced_search import create_advanced_search_registry, MyAdvancedSearchTool
 
-# 加载环境变量
+# Загрузить переменные среды
 load_dotenv()
 
 def test_advanced_search():
-    """测试高级搜索工具"""
+    """Протестируйте инструменты расширенного поиска"""
 
-    # 创建包含高级搜索工具的注册表
+    # Создайте реестр с расширенными инструментами поиска.
     registry = create_advanced_search_registry()
 
-    print("🔍 测试高级搜索工具\n")
+    print("🔍 Протестируйте инструменты расширенного поиска\n")
 
-    # 测试查询
+    # Тестовый запрос
     test_queries = [
-        "Python编程语言的历史",
-        "人工智能的最新发展",
-        "2024年科技趋势"
+        "История языка программирования Python",
+        "Последние разработки в области искусственного интеллекта",
+        "Технологические тенденции в 2024 году"
     ]
 
     for i, query in enumerate(test_queries, 1):
-        print(f"测试 {i}: {query}")
+        print(f"Тест {i}: {запрос}")
         result = registry.execute_tool("advanced_search", query)
-        print(f"结果: {result}\n")
+        print(f"Результат: {result}\n")
         print("-" * 60 + "\n")
 
 def test_api_configuration():
-    """测试API配置检查"""
-    print("🔧 测试API配置检查:")
+    """Проверка конфигурации тестового API"""
+    print("🔧 Проверка конфигурации тестового API:")
 
-    # 直接创建搜索工具实例
+    # Создайте экземпляр инструмента поиска напрямую
     search_tool = MyAdvancedSearchTool()
 
-    # 如果没有配置API，会显示配置提示
-    result = search_tool.search("机器学习算法")
-    print(f"搜索结果: {result}")
+    # Если API не настроен, отобразится запрос на настройку.
+    result = search_tool.search("алгоритм машинного обучения")
+    print(f"Результаты поиска: {result}")
 
 def test_with_agent():
-    """测试与Agent的集成"""
-    print("\n🤖 与Agent集成测试:")
-    print("高级搜索工具已准备就绪，可以与Agent集成使用")
+    """Тестовая интеграция с Агентом"""
+    print("\n🤖 Тестирование интеграции с Агентом:")
+    print("Инструменты расширенного поиска готовы к интеграции с Агентом")
 
-    # 显示工具描述
+    # Показать описание инструмента
     registry = create_advanced_search_registry()
     tools_desc = registry.get_tools_description()
-    print(f"工具描述:\n{tools_desc}")
+    print(f"Описание инструмента:\n{tools_desc}")
 
 if __name__ == "__main__":
     test_advanced_search()

@@ -1,40 +1,40 @@
 # -*- coding: utf-8 -*-
-"""三国狼人杀游戏的结构化输出模型"""
+"""Структурированная выходная модель игры об убийстве оборотней «Троецарствие»"""
 from typing import Literal, Optional, List
 from pydantic import BaseModel, Field
 from agentscope.agent import AgentBase
 
 
 class DiscussionModelCN(BaseModel):
-    """中文版讨论输出格式"""
+    """Формат вывода обсуждения китайской версии"""
     
     reach_agreement: bool = Field(
-        description="是否已达成一致意见",
+        description="Достигнут ли консенсус?",
     )
     confidence_level: int = Field(
-        description="对当前推理的信心程度(1-10)",
+        description="Уровень уверенности в текущих рассуждениях (1-10)",
         ge=1, le=10
     )
     key_evidence: Optional[str] = Field(
-        description="支持你观点的关键证据",
+        description="Основные доказательства, подтверждающие ваше мнение",
         default=None
     )
 
 
 def get_vote_model_cn(agents: list[AgentBase]) -> type[BaseModel]:
-    """获取中文版投票模型"""
+    """Получите китайскую версию модели голосования"""
     
     class VoteModelCN(BaseModel):
-        """中文版投票输出格式"""
+        """Формат вывода голосования в китайской версии"""
         
         vote: Literal[tuple(_.name for _ in agents)] = Field(
-            description="你要投票淘汰的玩家姓名",
+            description="Имя игрока, за которого вы хотите проголосовать",
         )
         reason: str = Field(
-            description="投票理由，简要说明为什么选择此人",
+            description="Причина голосования с кратким описанием того, почему был выбран этот человек.",
         )
         suspicion_level: int = Field(
-            description="对被投票者的怀疑程度(1-10)",
+            description="Подозрение на голосуемого (1-10)",
             ge=1, le=10
         )
     
@@ -42,40 +42,40 @@ def get_vote_model_cn(agents: list[AgentBase]) -> type[BaseModel]:
 
 
 class WitchActionModelCN(BaseModel):
-    """中文版女巫行动模型"""
+    """Китайская версия модели Operation Witch"""
     
     use_antidote: bool = Field(
-        description="是否使用解药救人",
+        description="Стоит ли использовать противоядие для спасения жизней",
         default=False
     )
     use_poison: bool = Field(
-        description="是否使用毒药杀人", 
+        description="Стоит ли использовать яд для убийства людей", 
         default=False
     )
     target_name: Optional[str] = Field(
-        description="目标玩家姓名（救人或毒杀的对象）",
+        description="Имя целевого игрока (человека, которого нужно спасти или отравить)",
         default=None
     )
     action_reason: Optional[str] = Field(
-        description="行动理由",
+        description="причина для действия",
         default=None
     )
 
 
 def get_seer_model_cn(agents: list[AgentBase]) -> type[BaseModel]:
-    """获取中文版预言家模型"""
+    """Получите китайскую версию модели Пророка."""
     
     class SeerModelCN(BaseModel):
-        """中文版预言家查验格式"""
+        """Формат проверки пророка на китайском языке"""
         
         target: Literal[tuple(_.name for _ in agents)] = Field(
-            description="要查验的玩家姓名",
+            description="Имя игрока, которое нужно проверить",
         )
         check_reason: str = Field(
-            description="查验此人的原因",
+            description="Причина проверки этого человека",
         )
         priority_level: int = Field(
-            description="查验优先级(1-10)",
+            description="Проверить приоритет (1-10)",
             ge=1, le=10
         )
     
@@ -83,20 +83,20 @@ def get_seer_model_cn(agents: list[AgentBase]) -> type[BaseModel]:
 
 
 def get_hunter_model_cn(agents: list[AgentBase]) -> type[BaseModel]:
-    """获取中文版猎人模型"""
+    """Приобретите китайскую версию модели охотника."""
     
     class HunterModelCN(BaseModel):
-        """中文版猎人开枪格式"""
+        """Китайская версия формата охотничьей стрельбы"""
         
         shoot: bool = Field(
-            description="是否使用开枪技能",
+            description="Использовать ли навыки стрельбы",
         )
         target: Optional[Literal[tuple(_.name for _ in agents)]] = Field(
-            description="开枪目标玩家姓名",
+            description="Имя игрока, сделавшего бросок",
             default=None
         )
         shoot_reason: Optional[str] = Field(
-            description="开枪理由",
+            description="Причина стрельбы",
             default=None
         )
     
@@ -104,35 +104,35 @@ def get_hunter_model_cn(agents: list[AgentBase]) -> type[BaseModel]:
 
 
 class WerewolfKillModelCN(BaseModel):
-    """中文版狼人击杀模型"""
+    """Китайская версия модели убийства оборотня"""
     
     target: str = Field(
-        description="要击杀的玩家姓名",
+        description="Имя игрока, которого нужно убить",
     )
     kill_strategy: str = Field(
-        description="击杀策略说明",
+        description="Описание стратегии убийства",
     )
     team_coordination: Optional[str] = Field(
-        description="与狼队友的配合计划",
+        description="План сотрудничества с товарищами по команде Wolf",
         default=None
     )
 
 
 class GameAnalysisModelCN(BaseModel):
-    """中文版游戏分析模型"""
+    """Модель анализа игры в китайской версии"""
     
     suspected_werewolves: List[str] = Field(
-        description="怀疑的狼人名单",
+        description="Список подозреваемых оборотней",
         default_factory=list
     )
     trusted_players: List[str] = Field(
-        description="信任的玩家名单", 
+        description="Список доверенных игроков", 
         default_factory=list
     )
     key_clues: List[str] = Field(
-        description="关键线索列表",
+        description="список ключевых подсказок",
         default_factory=list
     )
     next_strategy: str = Field(
-        description="下一步策略",
+        description="стратегия следующего шага",
     )

@@ -1,50 +1,50 @@
-# Chapter 15: Building Cyber Town
+# Глава 15. Кибер-городок
 
-In this chapter, we will explore a brand new direction: **combining agent technology with game engines to build an AI town full of vitality**.
+В этой главе мы рассмотрим совершенно новое направление: **объединение агентских технологий с игровыми движками для создания искусственного города, полного жизненной силы**.
 
-Do you remember those lifelike NPCs in "The Sims" or "Animal Crossing"? They have their own personalities, memories, and social relationships. The Cyber Town in this chapter will be a similar project, but unlike traditional games, our NPCs have real "intelligence" - they can understand player conversations, remember past interactions, and react differently based on affection levels. The Cyber Town in this chapter includes the following core features:
+Помните этих реалистичных неигровых персонажей из «The Sims» или «Animal Crossing»? У них есть свои личности, воспоминания и социальные отношения. Кибергород в этой главе будет похожим проектом, но в отличие от традиционных игр наши NPC обладают настоящим «интеллектом» — они могут понимать разговоры игроков, запоминать прошлые взаимодействия и реагировать по-разному в зависимости от уровня привязанности. Кибергород в этой главе включает в себя следующие основные функции:
 
-**(1) Intelligent NPC Dialogue System**: Players can have natural language conversations with NPCs, and NPCs will respond based on their role settings and memories.
+**(1) Интеллектуальная система диалога с NPC**: игроки могут разговаривать с NPC на естественном языке, а NPC будут отвечать в зависимости от своих ролевых настроек и воспоминаний.
 
-**(2) Memory System**: NPCs have short-term and long-term memory, able to remember interaction history with players.
+**(2) Система памяти**: NPC обладают кратковременной и долговременной памятью, способной запоминать историю взаимодействия с игроками.
 
-**(3) Affection System**: NPC attitudes towards players change with interactions, from stranger to familiar, from friendly to intimate.
+**(3) Система привязанности**: отношение NPC к игрокам меняется в зависимости от взаимодействия: от незнакомца к знакомому, от дружелюбного к интимному.
 
-**(4) Gamified Interaction**: Players can move freely in a 2D pixel-style office scene and interact with different NPCs.
+**(4) Геймифицированное взаимодействие**: игроки могут свободно перемещаться по офисной 2D-сцене в пиксельном стиле и взаимодействовать с различными NPC.
 
-**(5) Real-Time Logging System**: All conversations and interactions are recorded for easy debugging and analysis.
+**(5) Система регистрации в реальном времени**: все разговоры и взаимодействия записываются для облегчения отладки и анализа.
 
-## 15.1 Project Overview and Architecture Design
+## 15.1 Обзор проекта и архитектурный дизайн
 
-### 15.1.1 Why Build an AI Town
+### 15.1.1 Зачем строить город с искусственным интеллектом
 
-NPCs in traditional games can usually only say fixed lines or have limited interactions through preset dialogue trees. Even in the most complex RPG games, NPC dialogues are pre-written by scriptwriters. This approach is controllable but lacks real "intelligence" and "vitality".
+Неигровые персонажи в традиционных играх обычно могут произносить только фиксированные строки или ограниченно взаимодействовать через предустановленные деревья диалогов. Даже в самых сложных RPG-играх диалоги NPC заранее пишутся сценаристами. Этот подход поддается контролю, но ему не хватает реального «разума» и «жизненной силы».
 
-Imagine if NPCs in games could understand anything you say, no longer limited to preset options. You can communicate with NPCs in natural language. NPCs will remember what you said last time, your relationship, and even your preferences. Each NPC has their own profession, personality, and speaking style. NPC attitudes towards you change with interactions, from strangers to friends, even close friends.
+Представьте себе, если бы NPC в играх могли понимать все, что вы говорите, и больше не ограничивались бы предустановленными опциями. Вы можете общаться с NPC на естественном языке. NPC запомнят, что вы сказали в прошлый раз, ваши отношения и даже ваши предпочтения. У каждого NPC есть своя профессия, личность и стиль речи. Отношение NPC к вам меняется в зависимости от взаимодействия: от незнакомцев к друзьям и даже близким друзьям.
 
-This is the new possibility that AI technology brings to games. By combining large language models with game engines, we can create NPCs that are truly "alive". This is not just a technical demonstration, but an exploration of future game forms. In educational games, NPCs can play historical figures and scientists, conducting interactive teaching with students. In virtual offices, NPCs can play colleagues and mentors, providing help and advice. NPCs can also serve as companions, conducting emotional communication with users, applied in mental health fields. Of course, the most direct application is to add AI NPCs to traditional games to enhance player experience.
+Это новая возможность, которую технология искусственного интеллекта привносит в игры. Объединив большие языковые модели с игровыми движками, мы можем создавать по-настоящему «живых» NPC. Это не просто техническая демонстрация, а исследование будущих игровых форм. В обучающих играх НПС могут играть исторических личностей и учёных, проводя интерактивное обучение со студентами. В виртуальных офисах NPC могут играть роль коллег и наставников, оказывая помощь и советы. NPC также могут выступать в качестве компаньонов, осуществляя эмоциональное общение с пользователями, что применяется в области психического здоровья. Конечно, самое прямое применение — это добавление AI-NPC в традиционные игры для улучшения впечатлений игроков.
 
-### 15.1.2 Technical Architecture Overview
+### 15.1.2 Обзор технической архитектуры
 
-Cyber Town adopts a **game engine + back-end service** separation architecture, divided into four layers, as shown in Figure 15.1.
+Cyber ​​Town использует архитектуру разделения **игровой движок + серверные службы**, разделенную на четыре уровня, как показано на рис. 15.1.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-1.png" alt="" width="85%"/>
-  <p>Figure 15.1 Cyber Town Technical Architecture</p>
+  <p>Рисунок 15.1 Техническая архитектура Кибергорода</p>
 </div>
 
-The front-end layer uses the Godot 4.5 game engine, responsible for game rendering, player control, NPC display, and dialogue UI. Godot is an open-source 2D/3D game engine, very suitable for quickly developing pixel-style games. The back-end layer uses the FastAPI framework, responsible for API routing, NPC state management, dialogue processing, and logging. FastAPI is a modern Python web framework with excellent performance and easy development. The agent layer uses our own HelloAgents framework, responsible for NPC intelligence, memory management, and affection calculation. Each NPC is a SimpleAgent instance with independent memory and state. The external service layer provides LLM capabilities, vector storage, and data persistence, including LLM API, Qdrant vector database, and SQLite relational database.
+Интерфейсный уровень использует игровой движок Godot 4.5, отвечающий за рендеринг игры, управление игроком, отображение NPC и диалоговый интерфейс. Godot — это игровой 2D/3D-движок с открытым исходным кодом, очень подходящий для быстрой разработки игр в пиксельном стиле. Внутренний уровень использует платформу FastAPI, отвечающую за маршрутизацию API, управление состоянием NPC, обработку диалогов и ведение журналов. FastAPI — это современная веб-инфраструктура Python с отличной производительностью и простотой разработки. Уровень агента использует нашу собственную структуру HelloAgents, отвечающую за интеллект NPC, управление памятью и расчет привязанности. Каждый NPC представляет собой экземпляр SimpleAgent с независимой памятью и состоянием. Уровень внешнего сервиса обеспечивает возможности LLM, векторное хранилище и постоянство данных, включая LLM API, векторную базу данных Qdrant и реляционную базу данных SQLite.
 
-The data flow process is shown in Figure 15.2:
+Процесс потока данных показан на рисунке 15.2:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-2.png" alt="" width="85%"/>
-  <p>Figure 15.2 Data Flow Process</p>
+  <p>Рисунок 15.2 Процесс потока данных</p>
 </div>
 
-Players press the E key in Godot to interact with NPCs, and Godot sends dialogue requests to the FastAPI back-end via HTTP API. The back-end calls HelloAgents' SimpleAgent to process the dialogue, the Agent retrieves relevant history from the memory system, and then calls the LLM to generate a reply. The back-end updates NPC state and affection, records logs to console and file, and finally returns the reply to the Godot front-end. Godot displays the NPC reply and updates the UI, completing a complete interaction loop.
+Игроки нажимают клавишу E в Godot, чтобы взаимодействовать с NPC, а Godot отправляет запросы диалога на серверную часть FastAPI через HTTP API. Серверная часть вызывает SimpleAgent HelloAgents для обработки диалога, агент извлекает соответствующую историю из системы памяти, а затем вызывает LLM для генерации ответа. Серверная часть обновляет состояние и привязанность NPC, записывает журналы в консоль и файл и, наконец, возвращает ответ во внешний интерфейс Godot. Годо отображает ответ NPC и обновляет пользовательский интерфейс, завершая полный цикл взаимодействия.
 
-The project structure is as follows, making it easy for you to locate the source code:
+Структура проекта следующая, что позволяет легко найти исходный код:
 
 ```
 Helloagents-AI-Town/
@@ -80,23 +80,23 @@ Helloagents-AI-Town/
     └── .env.example               # Environment variable example
 ```
 
-Detailed architecture design and data flow will be introduced in subsequent sections.
+Подробное проектирование архитектуры и потока данных будет представлено в последующих разделах.
 
-### 15.1.3 Quick Experience: Run the Project in 5 Minutes
+### 15.1.3 Быстрый опыт: запуск проекта за 5 минут
 
-Before diving into implementation details, let's first run the project to see the final result. This way you'll have an intuitive understanding of the entire system.
+Прежде чем углубляться в детали реализации, давайте сначала запустим проект, чтобы увидеть конечный результат. Таким образом, вы получите интуитивное понимание всей системы.
 
-**Environment Requirements:**
+**Требования к среде:**
 
-- Godot 4.2 or higher
-- Python 3.10 or higher
-- LLM API key (OpenAI, DeepSeek, Zhipu, etc.)
+- Годо 4.2 или выше
+- Питон 3.10 или выше
+- Ключ API LLM (OpenAI, DeepSeek, Zhipu и т. д.)
 
-**Get the Project:**
+**Получить проект:**
 
-You can check `code/chapter15/Helloagents-AI-Town`, or clone the complete hello-agents repository from GitHub.
+Вы можете проверить`code/chapter15/Helloagents-AI-Town`или клонируйте полный репозиторий hello-agents с GitHub.
 
-**Start the Back-End:**
+**Запуск серверной части:**
 
 ```bash
 # 1. Enter backend directory
@@ -113,7 +113,7 @@ cp .env.example .env
 python main.py
 ```
 
-After successful startup, you will see the following output:
+После успешного запуска вы увидите следующий вывод:
 
 ```
 ============================================================
@@ -125,50 +125,50 @@ After successful startup, you will see the following output:
 ============================================================
 ```
 
-**Start Godot:**
+**Запуск Годо:**
 
-Godot installation is very simple. Windows provides a direct `.exe` file, and Mac also provides a `.dmg` file. You can download directly from the official website ([Windows](https://godotengine.org/download/windows/) / [Mac](https://godotengine.org/download/macos/))
+Установка Godot очень проста. Windows обеспечивает прямой`.exe`файл, а Mac также предоставляет`.dmg`файл. Скачать можно прямо с официального сайта ([Windows](https://godotengine.org/download/windows/) / [Мак](https://godotengine.org/download/macos/))
 
-Open the Godot engine, click the "Import" button, browse to `Helloagents-AI-Town/helloagents-ai-town/scenes/main.tscn`, and click "Import and Edit". After Godot imports the resources, press `F5` or click the "Run" button to start the game.
+Откройте движок Godot, нажмите кнопку «Импортировать», перейдите к`Helloagents-AI-Town/helloagents-ai-town/scenes/main.tscn`и нажмите «Импортировать и редактировать». После того, как Годо импортирует ресурсы, нажмите`F5`или нажмите кнопку «Запустить», чтобы начать игру.
 
-**Experience Core Features:**
+**Испытайте основные функции:**
 
-After the game starts, you will see a pixel-style Datawhale office scene, as shown in Figure 15.3.
+После запуска игры вы увидите сцену офиса Datawhale в пиксельном стиле, как показано на рисунке 15.3.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-3.png" alt="" width="85%"/>
-  <p>Figure 15.3 Cyber Town Game Scene</p>
+  <p>Рисунок 15.3. Сцена игры «Кибергород»</p>
 </div>
 
-Use WASD keys to move the player character. When you walk near an NPC, the screen will display a "Press E to interact" prompt. After pressing the E key, a dialogue box will pop up, and you can enter anything you want to say, as shown in Figure 15.4.
+Используйте клавиши WASD для перемещения персонажа игрока. Когда вы подойдете к NPC, на экране появится подсказка «Нажмите E, чтобы взаимодействовать». После нажатия клавиши E появится диалоговое окно, и вы сможете ввести все, что хотите сказать, как показано на рисунке 15.4.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-4.png" alt="" width="85%"/>
-  <p>Figure 15.4 Dialogue Interface with NPC</p>
+  <p>Рисунок 15.4 Диалоговый интерфейс с NPC</p>
 </div>
 
-NPCs will respond based on their role settings (Python engineer, product manager, UI designer) and your interaction history. As the conversation progresses, the NPC's affection towards you will gradually increase, from "stranger" to "familiar", then to "friendly", "intimate", and even "close friend".
+NPC будут отвечать в зависимости от настроек своей роли (инженер Python, менеджер по продукту, дизайнер пользовательского интерфейса) и вашей истории взаимодействия. По ходу разговора привязанность NPC к вам будет постепенно возрастать: от «незнакомого» до «знакомого», затем до «дружественного», «близкого» и даже «близкого друга».
 
-**The affection system is implemented in the back-end**. Each conversation adjusts the affection value based on the player's message content and sentiment analysis. Although the affection value is not directly displayed in the front-end game interface, all affection changes are recorded in detail in the back-end logs. You can view the affection changes for each conversation in the `backend/logs/dialogue_YYYY-MM-DD.log` file. The log file records detailed information for each conversation, including: current affection value, retrieved relevant memories, NPC's reply, affection change amount (+2.0, +3.0, etc.), reason for change (friendly greeting, normal communication, etc.), and sentiment analysis results (positive, neutral, etc.). This design allows developers to clearly track the relationship development between NPCs and players, and also provides a data foundation for adding affection UI to the front-end later.
+**Система привязанностей реализована на серверной части**. В каждом разговоре значение привязанности корректируется на основе содержания сообщения игрока и анализа настроений. Хотя значение привязанности не отображается напрямую во внешнем интерфейсе игры, все изменения привязанности подробно записываются во внутренние журналы. Вы можете просмотреть изменения привязанности для каждого разговора в`backend/logs/dialogue_YYYY-MM-DD.log`файл. В файл журнала записывается подробная информация для каждого разговора, включая: текущую ценность привязанности, извлеченные соответствующие воспоминания, ответ NPC, величину изменения привязанности (+2,0, +3,0 и т. д.), причину изменения (дружеское приветствие, нормальное общение и т. д.) и результаты анализа настроений (положительные, нейтральные и т. д.). Этот дизайн позволяет разработчикам четко отслеживать развитие отношений между NPC и игроками, а также обеспечивает основу данных для последующего добавления пользовательского интерфейса взаимодействия во внешний интерфейс.
 
-All conversations are recorded in the back-end log files. You can view them in real-time with the following command:
+Все разговоры записываются в файлы журналов серверной части. Вы можете просмотреть их в режиме реального времени с помощью следующей команды:
 
 ```bash
 # In the backend directory
 python view_logs.py
 ```
 
-This simple experience demonstrates the core features of AI Town. Next, we will dive into how to implement these features.
+Этот простой опыт демонстрирует основные функции AI Town. Далее мы углубимся в то, как реализовать эти функции.
 
-## 15.2 NPC Agent System
+## 15.2 Агентская система NPC
 
-### 15.2.1 SimpleAgent Based on HelloAgents
+### 15.2.1 SimpleAgent на основе HelloAgents
 
-In Cyber Town, each NPC is an independent agent. We use SimpleAgent from the HelloAgents framework to implement NPC intelligence. SimpleAgent is a lightweight agent implementation that encapsulates core functions such as LLM calls, message management, and tool calls.
+В Кибер-городе каждый NPC является независимым агентом. Мы используем SimpleAgent из платформы HelloAgents для реализации интеллекта NPC. SimpleAgent — это облегченная реализация агента, которая инкапсулирует основные функции, такие как вызовы LLM, управление сообщениями и вызовы инструментов.
 
-Recall the SimpleAgent we learned in Chapter 7. Its core is a simple dialogue loop: receive user message, call LLM to generate reply, return result. In Cyber Town, we need to create a SimpleAgent instance for each NPC and configure unique system prompts for them, giving each NPC different personalities and role settings.
+Вспомните SimpleAgent, о котором мы узнали в главе 7. Его суть — простой диалоговый цикл: получение сообщения пользователя, вызов LLM для генерации ответа, возврат результата. В Кибер-городе нам нужно создать экземпляр SimpleAgent для каждого NPC и настроить для них уникальные системные подсказки, назначая каждому NPC разные персональные данные и настройки ролей.
 
-Let's see how to create an NPC Agent. First, we need to define the NPC's basic information, including ID, name, profession, and personality. Then, we build system prompts based on this information, letting the LLM play the role of this NPC. Finally, we create a SimpleAgent instance and configure the memory system.
+Давайте посмотрим, как создать NPC-агента. Во-первых, нам нужно определить основную информацию о NPC, включая идентификатор, имя, профессию и личность. Затем на основе этой информации строим системные подсказки, предоставляя LLM роль этого NPC. Наконец, мы создаем экземпляр SimpleAgent и настраиваем систему памяти.
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -208,22 +208,22 @@ Remember your previous conversations to maintain dialogue coherence.
     return agent
 ```
 
-This code demonstrates how to create an NPC Agent. The system prompt defines the NPC's identity and personality, and the memory manager allows the NPC to remember conversation history with players. WorkingMemory is short-term memory with a capacity of 10 messages and a retention time of 120 minutes. EpisodicMemory is long-term memory, using SQLite database and Qdrant vector database for storage, and can retrieve relevant historical conversations.
+Этот код демонстрирует, как создать агента NPC. Системная подсказка определяет личность и личность NPC, а менеджер памяти позволяет NPC запоминать историю разговоров с игроками. Рабочая память — это кратковременная память емкостью 10 сообщений и временем хранения 120 минут. EpisodicMemory — это долговременная память, использующая для хранения базу данных SQLite и векторную базу данных Qdrant и способную извлекать соответствующие исторические разговоры.
 
-The workflow of NPC Agent is shown in Figure 15.5:
+Рабочий процесс NPC Agent показан на рисунке 15.5:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-5.png" alt="" width="85%"/>
-  <p>Figure 15.5 NPC Agent Workflow</p>
+  <p>Рисунок 15.5 Рабочий процесс агента NPC</p>
 </div>
 
-### 15.2.2 NPC Role Settings and Prompt Design
+### 15.2.2 Настройки ролей NPC и быстрый дизайн
 
-A good NPC needs distinct personality and role settings. In Cyber Town, we designed three NPCs representing different professions and personalities.
+Хорошему NPC нужны четкие индивидуальные и ролевые настройки. В Кибер-городе мы создали трех NPC, представляющих разные профессии и личности.
 
-**Zhang San - Python Engineer**
+**Чжан Сан — инженер Python**
 
-Zhang San is a senior Python engineer responsible for the core development of the HelloAgents framework. He has a rigorous personality, speaks directly, and likes to use technical terms. He has high requirements for code quality and often shares programming tips and best practices.
+Чжан Сан — старший инженер Python, ответственный за основную разработку платформы HelloAgents. У него строгий характер, он говорит прямо и любит использовать технические термины. У него высокие требования к качеству кода, и он часто делится советами и лучшими практиками по программированию.
 
 ```python
 npc_zhang = {
@@ -234,9 +234,9 @@ npc_zhang = {
 }
 ```
 
-**Li Si - Product Manager**
+**Ли Си - менеджер по продукту**
 
-Li Si is an experienced product manager responsible for product planning and user experience design of the HelloAgents framework. He has an outgoing personality, is good at communication, and can always think from the user's perspective. He likes to discuss product design and user needs, and often asks "why".
+Ли Си — опытный менеджер по продукту, отвечающий за планирование продуктов и разработку пользовательского интерфейса платформы HelloAgents. У него общительный характер, он хорош в общении и всегда может мыслить с точки зрения пользователя. Он любит обсуждать дизайн продукта и потребности пользователей и часто спрашивает «почему».
 
 ```python
 npc_li = {
@@ -247,9 +247,9 @@ npc_li = {
 }
 ```
 
-**Wang Wu - UI Designer**
+**Ван Ву — дизайнер пользовательского интерфейса**
 
-Wang Wu is a creative UI designer responsible for interface design and visual presentation of the HelloAgents framework. He has a gentle personality, unique aesthetics, and keen perception of color and layout. He likes to discuss design concepts and aesthetics, and often shares design inspiration.
+Ван Ву — креативный дизайнер пользовательского интерфейса, отвечающий за дизайн интерфейса и визуальное представление платформы HelloAgents. У него нежный характер, уникальная эстетика, острое восприятие цвета и планировки. Он любит обсуждать концепции дизайна и эстетику и часто делится дизайнерскими вдохновениями.
 
 ```python
 npc_wang = {
@@ -260,24 +260,24 @@ npc_wang = {
 }
 ```
 
-These three NPCs have distinct characteristics. Players can choose to interact with different NPCs based on their interests. Zhang San can teach you programming skills, Li Si can discuss product design with you, and Wang Wu can share design inspiration.
+Эти три NPC имеют разные характеристики. Игроки могут взаимодействовать с разными NPC в зависимости от своих интересов. Чжан Сан может научить вас навыкам программирования, Ли Си может обсудить с вами дизайн продукта, а Ван Ву может поделиться вдохновением для дизайна.
 
-### 15.2.3 Memory System Integration
+### 15.2.3 Интеграция системы памяти
 
-The memory system is the key to NPC intelligence. An NPC that can remember past conversations will make players feel more realistic and interesting. We use HelloAgents' `WorkingMemory` and `EpisodicMemory` to construct short-term and long-term memory.
+Система памяти является ключом к интеллекту NPC. NPC, который может помнить прошлые разговоры, заставит игроков чувствовать себя более реалистично и интересно. Мы используем HelloAgents`WorkingMemory`и`EpisodicMemory`формировать кратковременную и долговременную память.
 
-Short-term memory stores recent conversation content with limited capacity and automatic cleanup over time. Its role is to maintain dialogue coherence, allowing NPCs to understand context. For example, when a player says "What color is it?", the NPC needs to find from short-term memory what "it" refers to.
+Кратковременная память хранит содержание последних разговоров с ограниченным объемом и автоматической очисткой с течением времени. Его роль — поддерживать связность диалога, позволяя NPC понимать контекст. Например, когда игрок говорит: «Какого это цвета?», NPC должен найти в кратковременной памяти, к чему относится это слово.
 
-Long-term memory stores all conversation history, using vector databases for semantic retrieval. When a player mentions a topic, the NPC can retrieve relevant historical conversations from long-term memory, recalling previously discussed content. For example, when a player says "Do you remember the project we discussed last time?", the NPC can find relevant conversation records from long-term memory.
+Долговременная память хранит всю историю разговоров, используя для семантического поиска векторные базы данных. Когда игрок упоминает тему, NPC может извлечь соответствующие исторические разговоры из долговременной памяти, вспоминая ранее обсуждавшийся контент. Например, когда игрок говорит: «Ты помнишь проект, который мы обсуждали в прошлый раз?», NPC может найти соответствующие записи разговора в долговременной памяти.
 
-The architecture of the memory system is shown in Figure 15.6:
+Архитектура системы памяти показана на рисунке 15.6:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-6.png" alt="" width="85%"/>
-  <p>Figure 15.6 Memory System Architecture</p>
+  <p>Рисунок 15.6 Архитектура системы памяти</p>
 </div>
 
-In actual use, the Agent first obtains recent conversations from short-term memory, then retrieves relevant historical conversations from long-term memory, sends this information together to the LLM, and generates more accurate and personalized replies.
+При фактическом использовании агент сначала получает недавние разговоры из кратковременной памяти, затем извлекает соответствующие исторические разговоры из долговременной памяти, отправляет эту информацию вместе в LLM и генерирует более точные и персонализированные ответы.
 
 ```python
 # Agent's dialogue processing flow
@@ -306,22 +306,22 @@ def process_dialogue(agent, player_message):
     return reply
 ```
 
-This process ensures that NPCs can remember interaction history with players and reflect it in conversations.
+Этот процесс гарантирует, что NPC смогут запомнить историю взаимодействия с игроками и отразить ее в разговорах.
 
-### 15.2.4 Batch Dialogue Generation: Light Load Mode
+### 15.2.4 Пакетная генерация диалогов: режим легкой загрузки
 
-In actual operation, a problem was quickly discovered: when multiple players simultaneously converse with different NPCs, the back-end needs to concurrently process multiple LLM requests. Each request needs to call the API, which not only increases costs but may also cause request failures or delays due to concurrency limits.
+В реальной работе быстро обнаружилась проблема: когда несколько игроков одновременно общаются с разными NPC, серверной части необходимо одновременно обрабатывать несколько запросов LLM. Каждый запрос должен вызывать API, что не только увеличивает затраты, но также может привести к сбоям или задержкам запросов из-за ограничений параллелизма.
 
-To solve this problem, we designed a **batch dialogue generation system**. The core idea is: merge multiple NPC dialogue requests into one LLM call, letting the LLM generate all NPC replies at once. This is like a restaurant's "pre-made dishes" - prepared in batches in advance, used directly when needed, greatly reducing costs and latency.
+Чтобы решить эту проблему, мы разработали **систему пакетной генерации диалогов**. Основная идея заключается в следующем: объединить несколько диалоговых запросов NPC в один вызов LLM, позволяя LLM генерировать ответы всех NPC одновременно. Это похоже на «готовые блюда» ресторана: они готовятся партиями заранее и используются непосредственно при необходимости, что значительно снижает затраты и задержки.
 
-The workflow of batch generation is shown in Figure 15.7:
+Рабочий процесс создания пакета показан на рисунке 15.7:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-7.png" alt="" width="85%"/>
-  <p>Figure 15.7 Batch Generation vs Traditional Mode</p>
+  <p>Рисунок 15.7. Пакетная генерация в сравнении с традиционным режимом</p>
 </div>
 
-The implementation of the batch generator is very clever. We build a special prompt requiring the LLM to generate all NPC dialogues at once and return them in JSON format. This way, one API call can obtain all NPC replies, reducing costs to 1/3 of the original and significantly reducing latency.
+Реализация пакетного генератора очень умна. Мы создаем специальную подсказку, требующую от LLM одновременно генерировать все диалоги NPC и возвращать их в формате JSON. Таким образом, один вызов API может получить все ответы NPC, что снижает затраты до 1/3 от исходных и значительно снижает задержку.
 
 ```python
 class NPCBatchGenerator:
@@ -394,24 +394,24 @@ Please generate (only return JSON, no other content):
         return prompt
 ```
 
-The key to this design is the construction of the prompt. We explicitly require the LLM to return JSON format and provide example output. The LLM will strictly generate replies according to this format, and we only need to parse the JSON to obtain all NPC dialogues.
+Ключом к этому дизайну является построение подсказки. Мы явно требуем, чтобы LLM возвращал формат JSON и предоставлял пример вывода. LLM будет генерировать ответы строго в соответствии с этим форматом, и нам нужно только проанализировать JSON, чтобы получить все диалоги NPC.
 
-Batch generation has an additional benefit: all NPC dialogues are generated in the same context, so they have a certain degree of correlation. For example, if Zhang San is debugging a bug, Li Si might mention helping to take a look; if Wang Wu is designing an interface, Zhang San might say he'll check the design draft later. This makes the atmosphere of the entire office more realistic and coherent.
+Пакетная генерация имеет дополнительное преимущество: все диалоги NPC генерируются в одном и том же контексте, поэтому они имеют определенную степень корреляции. Например, если Чжан Сан исправляет ошибку, Ли Си может упомянуть, что помог ее проверить; если Ван Ву разрабатывает интерфейс, Чжан Сан может сказать, что проверит проект позже. Это делает атмосферу всего офиса более реалистичной и целостной.
 
-Of course, batch generation also has some limitations. It is more suitable for generating NPC "background dialogues" or "self-talk" rather than direct interactions with players. For player-initiated conversations, we still use individual Agents to process them to ensure personalized and accurate replies. Batch generation is mainly used in the following scenarios:
+Конечно, пакетная генерация также имеет некоторые ограничения. Он больше подходит для создания «фоновых диалогов» или «разговоров с самим собой» NPC, а не для прямого взаимодействия с игроками. Для разговоров, инициированных игроками, мы по-прежнему используем отдельных агентов для их обработки и обеспечения персонализированных и точных ответов. Пакетная генерация в основном используется в следующих сценариях:
 
-1. **NPC background dialogues**: What NPCs are doing and saying when players enter the scene
-2. **Timed updates**: Update NPC status and dialogues at regular intervals
-3. **Scene atmosphere**: Generate different dialogues based on time (morning, noon, evening)
-4. **Cost reduction**: Use batch generation to reduce API call frequency in high-concurrency scenarios
+1. **Фоновые диалоги NPC**: что делают и говорят NPC, когда игроки выходят на сцену.
+2. **Обновления по времени**: регулярно обновляйте статус и диалоги NPC.
+3. **Атмосфера сцены**: создание разных диалогов в зависимости от времени (утро, полдень, вечер).
+4. **Снижение затрат**. Используйте пакетную генерацию, чтобы снизить частоту вызовов API в сценариях с высоким уровнем параллелизма.
 
-**Hybrid Mode: Batch Generation + Instant Response**
+**Гибридный режим: пакетная генерация + мгновенный ответ**
 
-In actual implementation, we adopted a hybrid mode that combines batch generation and instant response. This design is very clever, ensuring both efficiency and interaction quality.
+В реальной реализации мы использовали гибридный режим, сочетающий в себе пакетную генерацию и мгновенный ответ. Этот дизайн очень продуман, обеспечивая как эффективность, так и качество взаимодействия.
 
-Specifically, the system periodically runs batch generation in the background, generating "background dialogues" for all NPCs in the current scene. These dialogues are cached, and when players approach NPCs but haven't initiated interaction yet, NPCs will display these background dialogues, such as "Debugging code...", "Reading product documentation...", etc. This makes NPCs appear "alive" rather than static models.
+В частности, система периодически запускает пакетную генерацию в фоновом режиме, генерируя «фоновые диалоги» для всех NPC в текущей сцене. Эти диалоги кэшируются, и когда игроки приближаются к NPC, но еще не начали взаимодействие, NPC будут отображать эти фоновые диалоги, такие как «Отладка кода...», «Чтение документации продукта...» и т. д. Благодаря этому NPC кажутся «живыми», а не статическими моделями.
 
-However, when a player presses the E key to initiate interaction, the system immediately switches to instant response mode. At this point, the back-end calls the NPC's dedicated Agent, generating personalized replies based on the player's specific message, historical memory, and affection level. This process is real-time, ensuring that NPC replies are highly relevant to player input.
+Однако когда игрок нажимает клавишу E для начала взаимодействия, система немедленно переключается в режим мгновенного ответа. На этом этапе серверная часть вызывает выделенного агента NPC, генерируя персонализированные ответы на основе конкретного сообщения игрока, его исторической памяти и уровня привязанности. Этот процесс происходит в режиме реального времени, что гарантирует, что ответы NPC будут максимально соответствовать вкладу игрока.
 
 ```python
 # Hybrid mode implementation in main.py
@@ -463,53 +463,53 @@ async def background_dialogue_update():
         await asyncio.sleep(300)
 ```
 
-The advantages of this hybrid mode are very obvious:
+Преимущества этого гибридного режима весьма очевидны:
 
-1. **Cost reduction**: Background dialogues use batch generation, one call generates all NPC dialogues, low cost
-2. **Quality assurance**: Player interactions use instant response, each reply is personalized, high quality
-3. **Enhanced experience**: NPCs always have "background dialogues", appearing very lively; player interactions have accurate replies, good experience
-4. **Flexible adjustment**: Can dynamically adjust batch generation frequency based on server load
+1. **Снижение затрат**: для фоновых диалогов используется пакетная генерация, один вызов генерирует все диалоги NPC, низкая стоимость.
+2. **Гарантия качества**: при взаимодействии с игроком используется мгновенный ответ, каждый ответ персонализирован, высокое качество.
+3. **Улучшенный опыт**: у NPC всегда есть «фоновые диалоги», которые выглядят очень оживленно; взаимодействие игроков имеет точные ответы, хороший опыт
+4. **Гибкая настройка**: можно динамически регулировать частоту создания пакетов в зависимости от нагрузки на сервер.
 
-Through the combination of batch generation and instant response, we implemented an NPC system that is both efficient and intelligent. Under normal circumstances, players don't feel any difference, but back-end costs and performance are significantly optimized. This design approach can also be applied to other scenarios requiring a large number of AI calls.
+Благодаря сочетанию пакетной генерации и мгновенного реагирования мы внедрили эффективную и интеллектуальную систему NPC. В обычных обстоятельствах игроки не ощущают никакой разницы, но затраты на серверную часть и производительность значительно оптимизированы. Этот подход к проектированию также можно применить к другим сценариям, требующим большого количества вызовов ИИ.
 
-## 15.3 Affection System Design
+## 15.3 Проектирование системы привязанности
 
-### 15.3.1 Affection Level Classification
+### 15.3.1 Классификация уровней воздействия
 
-In Cyber Town, NPC attitudes towards players change with interactions. We designed a five-level affection system, from stranger to close friend, with each level having different score ranges and corresponding behavioral performances.
+В Кибер-городе отношение NPC к игрокам меняется в зависимости от взаимодействия. Мы разработали пятиуровневую систему привязанности: от незнакомца до близкого друга, причем каждый уровень имеет разные диапазоны оценок и соответствующие поведенческие характеристики.
 
-The core idea of the affection system is: by quantifying the relationship between NPCs and players, make NPC replies more realistic and layered. When players first enter the game, all NPCs have a stranger attitude towards players, with replies being polite but distant. As conversations progress, if players behave friendly, NPC affection will gradually increase, and replies will become more cordial and detailed.
+Основная идея системы привязанности заключается в следующем: путем количественной оценки отношений между NPC и игроками сделать ответы NPC более реалистичными и многоуровневыми. Когда игроки впервые входят в игру, все NPC относятся к игрокам как-то странно, отвечая вежливо, но отстраненно. По мере развития разговора, если игроки будут вести себя дружелюбно, привязанность NPC будет постепенно возрастать, а ответы станут более сердечными и подробными.
 
-We divide affection into five levels, each corresponding to a score range, as shown in Figure 15.8:
+Мы делим привязанность на пять уровней, каждый из которых соответствует диапазону оценок, как показано на рисунке 15.8:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-8.png" alt="" width="85%"/>
-  <p>Figure 15.8 Affection Level Classification</p>
+  <p>Рисунок 15.8 Классификация уровней воздействия</p>
 </div>
 
-- **Stranger (0-20 points)**: NPC just met the player, attitude is polite but maintains distance. Replies are brief, won't actively share personal information.
+- **Незнакомец (0–20 очков)**: NPC только что встретил игрока, отношение вежливое, но соблюдает дистанцию. Ответы краткие, личная информация активно не разглашается.
 
-- **Familiar (21-40 points)**: NPC starts to remember the player, willing to have simple exchanges. Replies become more natural, occasionally sharing some work-related information.
+- **Знакомый (21-40 очков)**: NPC начинает запоминать игрока и готов к простым обменам. Ответы становятся более естественными, иногда мы делимся некоторой информацией, связанной с работой.
 
-- **Friendly (41-60 points)**: NPC treats the player as a friend, willing to share more information. Replies are more detailed, will actively ask about the player's situation.
+- **Дружелюбие (41–60 очков)**: NPC относится к игроку как к другу и готов поделиться дополнительной информацией. Ответы более подробные, будут активно спрашивать о ситуации игрока.
 
-- **Intimate (61-80 points)**: NPC trusts the player very much, willing to share private topics. Replies are full of enthusiasm, will provide help and advice to the player.
+- **Интимный (61-80 очков)**: NPC очень доверяет игроку и готов поделиться личными темами. Ответы полны энтузиазма, предоставят помощь и совет игроку.
 
-- **Close Friend (81-100 points)**: NPC treats the player as the best friend, talks about everything. Replies are very cordial, will share inner thoughts and feelings.
+- **Близкий друг (81-100 очков)**: NPC относится к игроку как к лучшему другу, говорит обо всем. Ответы очень сердечные, поделятся сокровенными мыслями и чувствами.
 
-This design allows players to clearly feel the change in their relationship with NPCs, and also provides a foundation for subsequent gameplay. For example, only after reaching a certain affection level will NPCs share certain special information or provide special tasks.
+Такой дизайн позволяет игрокам отчетливо почувствовать изменение своих отношений с неигровыми персонажами, а также обеспечивает основу для последующего игрового процесса. Например, только после достижения определенного уровня привязанности NPC будут делиться определенной специальной информацией или предоставлять особые задания.
 
-### 15.3.2 Affection Calculation Logic
+### 15.3.2 Логика расчета привязанности
 
-Affection calculation needs to consider multiple factors. We can't simply add a fixed score for each conversation, which would make the system appear mechanical and unrealistic. A good affection system should be able to identify the player's attitude and dynamically adjust scores based on conversation content.
+При расчете привязанности необходимо учитывать множество факторов. Мы не можем просто добавить фиксированную оценку для каждого разговора, в результате чего система будет выглядеть механической и нереалистичной. Хорошая система привязанности должна уметь определять отношение игрока и динамически корректировать оценки в зависимости от содержания разговора.
 
-In Cyber Town, we use LLM to analyze conversation content, judging whether the player's attitude is friendly, neutral, or unfriendly. Then we adjust the affection score based on the judgment result. This process is automatic, players don't need to deliberately choose options, making interactions more natural.
+В Кибер-городе мы используем LLM для анализа содержания разговоров и определения того, является ли отношение игрока дружелюбным, нейтральным или недружелюбным. Затем мы корректируем оценку привязанности на основе результата суждения. Этот процесс происходит автоматически, игрокам не нужно сознательно выбирать варианты, что делает взаимодействие более естественным.
 
-The affection calculation process is shown in Figure 15.9:
+Процесс расчета воздействия показан на рисунке 15.9:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-9.png" alt="" width="85%"/>
-  <p>Figure 15.9 Affection Calculation Process</p>
+  <p>Рисунок 15.9 Процесс расчета влияния</p>
 </div>
 
 ```python
@@ -586,13 +586,13 @@ Only return the number, no other content."""
             return "Close Friend"
 ```
 
-This implementation uses LLM to analyze conversation content, automatically judging the player's attitude and adjusting affection. This design makes the affection system more intelligent and natural, players don't need to deliberately please NPCs, just communicate normally.
+Эта реализация использует LLM для анализа содержания разговора, автоматически оценивая отношение игрока и корректируя привязанность. Такой дизайн делает систему привязанности более интеллектуальной и естественной, игрокам не нужно намеренно угождать NPC, они просто нормально общаются.
 
-### 15.3.3 Affection Affects Dialogue
+### 15.3.3 Привязанность влияет на диалог
 
-Affection is not just a number, it should truly affect NPC behavior. In Cyber Town, we modify NPC system prompts to let NPCs adjust reply styles based on current affection levels.
+Привязанность — это не просто число, она действительно должна влиять на поведение NPC. В Кибергороде мы модифицируем системные подсказки NPC, чтобы они могли настраивать стили ответов в зависимости от текущего уровня привязанности.
 
-When affection is low, NPCs maintain a polite but distant attitude. When affection increases, NPCs become more enthusiastic and talkative. This change is achieved by dynamically adjusting system prompts.
+Когда привязанность низкая, NPC сохраняют вежливое, но отстраненное отношение. Когда привязанность возрастает, NPC становятся более восторженными и разговорчивыми. Это изменение достигается за счет динамической настройки системных подсказок.
 
 ```python
 def create_npc_agent_with_affinity(npc_id: str, name: str, role: str,
@@ -629,22 +629,22 @@ Please reply naturally based on your role, personality, and relationship with th
     return agent
 ```
 
-This design makes NPC behavior change dynamically with affection. Players can clearly feel that as interactions increase, NPC attitudes towards them are gradually changing, greatly enhancing the game's immersion and fun.
+Благодаря такому дизайну поведение NPC динамически меняется в зависимости от привязанности. Игроки могут ясно почувствовать, что по мере увеличения количества взаимодействий отношение к ним NPC постепенно меняется, что значительно повышает погружение в игру и делает ее интереснее.
 
-## 15.4 Back-End Service Implementation
+## 15.4 Реализация серверной службы
 
-### 15.4.1 FastAPI Application Structure
+### 15.4.1 Структура приложения FastAPI
 
-The back-end of Cyber Town is built using the FastAPI framework, responsible for handling requests from the Godot front-end, calling HelloAgents' NPC Agents, managing NPC state and affection, and recording logs. A clear application structure makes code easier to maintain and extend.
+Серверная часть Cyber ​​Town построена с использованием инфраструктуры FastAPI и отвечает за обработку запросов от внешнего интерфейса Godot, вызов агентов NPC HelloAgents, управление состоянием и привязанностью NPC, а также запись журналов. Четкая структура приложения упрощает поддержку и расширение кода.
 
-Our FastAPI application adopts a modular design, separating different functions into different files, as shown in Figure 15.10:
+Наше приложение FastAPI имеет модульную конструкцию, разделяя различные функции на разные файлы, как показано на рисунке 15.10:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-10.png" alt="" width="85%"/>
-  <p>Figure 15.10 Back-End Application Structure</p>
+  <p>Рисунок 15.10 Структура внутреннего приложения</p>
 </div>
 
-Let's start with `main.py`, the entry file for the FastAPI application:
+Начнем с`main.py`, входной файл для приложения FastAPI:
 
 ```python
 from fastapi import FastAPI, HTTPException
@@ -715,15 +715,15 @@ if __name__ == "__main__":
     )
 ```
 
-This main program file defines the basic structure of the FastAPI application, configures CORS middleware to allow cross-origin requests, and initializes各个managers on startup. Next we will implement specific API routes.
+Этот основной программный файл определяет базовую структуру приложения FastAPI, настраивает промежуточное программное обеспечение CORS для разрешения запросов между источниками и инициализирует диспетчеры приложений при запуске. Далее мы реализуем определенные маршруты API.
 
-### 15.4.2 API Route Design
+### 15.4.2 Проектирование маршрутов API
 
-The back-end of Cyber Town needs to provide several core API endpoints to handle requests from the Godot front-end. We add these routes to `main.py`.
+Серверная часть Cyber ​​Town должна предоставить несколько основных конечных точек API для обработки запросов от внешнего интерфейса Godot. Мы добавляем эти маршруты в`main.py`.
 
-**Get NPC Status**
+**Получить статус NPC**
 
-This API returns the current status of all NPCs, including location, whether busy, etc.:
+Этот API возвращает текущий статус всех NPC, включая местоположение, занятость и т. д.:
 
 ```python
 from models import NPCStatusResponse
@@ -743,9 +743,9 @@ async def get_single_npc_status(npc_id: str):
     return npc
 ```
 
-**Dialogue Interface**
+**Диалоговый интерфейс**
 
-This is the most core API, handling player-NPC conversations:
+Это самый основной API, обрабатывающий разговоры между игроком и NPC:
 
 ```python
 from models import DialogueRequest, DialogueResponse
@@ -808,9 +808,9 @@ async def dialogue(request: DialogueRequest):
         state_manager.set_npc_busy(request.npc_id, False)
 ```
 
-**Affection Query**
+**Запрос о привязанности**
 
-This API allows querying player-NPC affection:
+Этот API позволяет запрашивать привязанность игрока к NPC:
 
 ```python
 from models import AffinityInfo
@@ -825,18 +825,18 @@ async def get_affinity(npc_id: str, player_name: str):
     return affinity
 ```
 
-The API route call flow is shown in Figure 15.11:
+Поток вызова маршрута API показан на рисунке 15.11:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-11.png" alt="" width="85%"/>
-  <p>Figure 15.11 API Call Flow</p>
+  <p>Рисунок 15.11. Процесс вызова API</p>
 </div>
 
-### 15.4.3 State Management and Logging System
+### 15.4.3 Система управления состоянием и регистрации
 
-**State Manager**
+**Государственный менеджер**
 
-The state manager is responsible for tracking the current state of each NPC, including location, whether busy, current action, etc. This is important for preventing concurrency issues, such as avoiding an NPC talking with multiple players simultaneously.
+Менеджер состояния отвечает за отслеживание текущего состояния каждого NPC, включая местоположение, занятость, текущие действия и т. д. Это важно для предотвращения проблем с параллелизмом, например, чтобы NPC не разговаривал с несколькими игроками одновременно.
 
 ```python
 # state_manager.py
@@ -905,9 +905,9 @@ class StateManager:
         return len(self.npc_states)
 ```
 
-**Logging System**
+**Система регистрации**
 
-The logging system implements dual output: console and file. This makes it convenient to view in real-time and save historical records.
+Система журналирования реализует двойной вывод: консольный и файловый. Это позволяет удобно просматривать в режиме реального времени и сохранять исторические записи.
 
 ```python
 # logger.py
@@ -973,27 +973,27 @@ Interaction count: {affinity_info['interaction_count']}
         self.logger.error(error_message)
 ```
 
-This logging system displays dialogue content in real-time on the console while saving it to files. Each day's logs are saved in separate files for easy subsequent analysis.
+Эта система журналирования отображает содержимое диалога в режиме реального времени на консоли, сохраняя его в файлы. Журналы каждого дня сохраняются в отдельных файлах для удобства последующего анализа.
 
-### 15.4.4 Understanding Godot's Scene System
+### 15.4.4 Понимание системы сцен Годо
 
-Before starting to build game scenes, we need to first understand Godot's core concepts - Scene and Node. This is the biggest difference between Godot and other game engines, and also one of its most powerful features.
+Прежде чем приступить к созданию игровых сцен, нам необходимо сначала понять основные концепции Godot — Scene и Node. Это самое большое отличие Godot от других игровых движков, а также одна из его самых мощных функций.
 
-**What is a Node?**
+**Что такое узел?**
 
-Nodes are the most basic building blocks in Godot. You can think of nodes as Lego bricks, each node has a specific function. For example, Sprite2D nodes are used to display images, AudioStreamPlayer nodes are used to play audio, and CharacterBody2D nodes are used to handle character physics movement. Godot provides hundreds of different types of nodes, each focusing on doing one thing well.
+Узлы — это самые основные строительные блоки в Godot. Вы можете думать об узлах как о кубиках Lego, каждый узел имеет определенную функцию. Например, узлы Sprite2D используются для отображения изображений, узлы AudioStreamPlayer используются для воспроизведения звука, а узлы CharacterBody2D используются для управления физическим движением персонажей. Godot предоставляет сотни различных типов узлов, каждый из которых ориентирован на хорошее выполнение одной задачи.
 
-Nodes can form parent-child relationships, forming a tree structure. Parent nodes can affect child nodes, for example, moving a parent node will simultaneously move all child nodes, hiding a parent node will simultaneously hide all child nodes. This hierarchical relationship allows us to easily organize and manage complex game objects.
+Узлы могут формировать отношения родитель-потомок, образуя древовидную структуру. Родительские узлы могут влиять на дочерние узлы, например, перемещение родительского узла приведет к одновременному перемещению всех дочерних узлов, скрытие родительского узла одновременно скроет все дочерние узлы. Эти иерархические отношения позволяют нам легко организовывать сложные игровые объекты и управлять ими.
 
-**What is a Scene?**
+**Что такое сцена?**
 
-A scene is a collection of nodes, saved in a .tscn file. You can think of a scene as a "prefab". For example, we can create a "player" scene containing all related nodes such as character sprites, collision bodies, sound effects, etc. Then use this scene multiple times in the game, each use will create an independent instance.
+Сцена — это набор узлов, сохраненный в файле .tscn. Вы можете думать о сцене как о «префабе». Например, мы можем создать сцену «игрока», содержащую все связанные узлы, такие как спрайты персонажей, тела столкновений, звуковые эффекты и т. д. Затем использовать эту сцену в игре несколько раз, при каждом использовании будет создаваться независимый экземпляр.
 
-The power of scenes lies in their reusability and modularity. We can instantiate one scene within another scene, forming nested structures. For example, the main scene can contain player scenes, multiple NPC scenes, and UI scenes. Modifying the NPC scene will automatically affect all NPC instances, greatly simplifying development and maintenance.
+Сила сцен заключается в их возможности повторного использования и модульности. Мы можем создать экземпляр одной сцены внутри другой сцены, образуя вложенные структуры. Например, основная сцена может содержать сцены игроков, несколько сцен NPC и сцены пользовательского интерфейса. Изменение сцены NPC автоматически повлияет на все экземпляры NPC, что значительно упростит разработку и обслуживание.
 
-**A Simple Example**
+**Простой пример**
 
-Let's use a simple example to understand scenes and nodes. Suppose we want to create a "player" scene:
+Давайте воспользуемся простым примером, чтобы понять сцены и узлы. Предположим, мы хотим создать сцену «игрока»:
 
 ```
 Player (CharacterBody2D)  ← Root node, responsible for physics movement
@@ -1002,68 +1002,68 @@ Player (CharacterBody2D)  ← Root node, responsible for physics movement
 └─ Camera2D               ← Child node, camera follows player
 ```
 
-This scene contains 4 nodes forming a tree structure. CharacterBody2D is the root node, the other three are its child nodes. We can add scripts to each node to control its behavior, or add a script to the root node to coordinate all child nodes.
+Эта сцена содержит 4 узла, образующих древовидную структуру. CharacterBody2D — корневой узел, остальные три — его дочерние узлы. Мы можем добавить скрипты к каждому узлу, чтобы контролировать его поведение, или добавить скрипт к корневому узлу, чтобы координировать все дочерние узлы.
 
-When we instantiate this Player scene in the main scene, Godot creates a copy of this entire node tree. We can create multiple player instances, each instance is independent with its own position, state, and behavior.
+Когда мы создаем экземпляр этой сцены Player в главной сцене, Годо создает копию всего этого дерева узлов. Мы можем создать несколько экземпляров игрока, каждый из которых независим со своей позицией, состоянием и поведением.
 
-**Advantages of Scene Instantiation**
+**Преимущества создания экземпляра сцены**
 
-In Cyber Town, we have three NPCs: Zhang San, Li Si, and Wang Wu. Without using the scene system, we would need to create nodes, set properties, and write scripts for each NPC separately, leading to a lot of repetitive work. Using the scene system, we only need to create a generic NPC scene, then instantiate it three times, setting different names and role information through script parameters.
+В Кибер-городе есть три NPC: Чжан Сан, Ли Си и Ван Ву. Без использования системы сцен нам пришлось бы создавать узлы, устанавливать свойства и писать сценарии для каждого NPC отдельно, что приводило бы к большому количеству повторяющейся работы. Используя систему сцен, нам нужно всего лишь создать общую сцену NPC, а затем создать ее экземпляр три раза, задав разные имена и информацию о роли через параметры сценария.
 
-The benefit of this design is: if we want to add a new feature to all NPCs (such as displaying dialogue bubbles above their heads), we only need to modify the NPC scene, and all instances will automatically get this feature.
+Преимущество этого дизайна: если мы хотим добавить новую функцию ко всем NPC (например, отображение пузырей диалогов над их головами), нам нужно только изменить сцену NPC, и все экземпляры автоматически получат эту функцию.
 
-## 15.5 Godot Game Scene Construction
+## 15.5. Создание игровой сцены «Годо»
 
 **Why Choose Godot as the Game Engine?**
 
-Among many game engines, we chose Godot 4.5 as the front-end engine, mainly based on the following considerations:
+Среди множества игровых движков мы выбрали Godot 4.5 в качестве внешнего движка, главным образом, исходя из следующих соображений:
 
-(1) **Godot has natural advantages in 2D game development**. Cyber Town is a top-down 2D pixel-style game. Godot's 2D engine is very mature, providing node types specifically designed for 2D games such as TileMap, AnimatedSprite2D, CharacterBody2D, etc. Development efficiency is much higher than engines like Unity. Godot's Scene System allows us to encapsulate elements like players, NPCs, and UI into independent scenes, then instantiate them in the main scene. This component-based design is very suitable for our needs.
+(1) **Годо обладает естественными преимуществами в разработке 2D-игр**. Cyber ​​Town — это 2D-игра в пиксельном стиле с видом сверху. 2D-движок Godot очень развит и предоставляет типы узлов, специально разработанные для 2D-игр, такие как TileMap, AnimatedSprite2D, CharacterBody2D и т. д. Эффективность разработки намного выше, чем у таких движков, как Unity. Система сцен Godot позволяет нам инкапсулировать такие элементы, как игроки, неигровые персонажи и пользовательский интерфейс, в независимые сцены, а затем создавать их экземпляры в основной сцене. Этот компонентный дизайн очень подходит для наших нужд.
 
-(2) **Godot is completely open source and free**. Godot uses the MIT license, with no royalty fees or revenue sharing, which is very friendly for teaching projects and open source projects. You can freely modify the engine source code and commercialize games without worrying about licensing issues. In contrast, although Unity is powerful, it introduced a runtime fee policy in 2024, causing widespread controversy in the developer community.
+(2) **Godot имеет полностью открытый исходный код и бесплатен**. Godot использует лицензию MIT без лицензионных отчислений или распределения доходов, что очень удобно для учебных проектов и проектов с открытым исходным кодом. Вы можете свободно изменять исходный код движка и коммерциализировать игры, не беспокоясь о проблемах с лицензированием. Напротив, несмотря на то, что Unity является мощной платформой, в 2024 году она ввела политику взимания платы за выполнение, что вызвало широкую полемику в сообществе разработчиков.
 
-(3) **Godot has an extremely low learning cost**. Godot uses GDScript as its main scripting language, a dynamically typed language similar to Python with concise and easy-to-understand syntax and a very gentle learning curve. For readers already familiar with Python, learning GDScript has almost no barrier - variable declarations, function definitions, control flow, and other syntax are highly similar to Python. You can even start writing game scripts within a few hours. Godot's node tree structure is also very intuitive, you can visually see the scene's hierarchical relationships in the editor, which is very friendly for beginners.
+(3) **У Годо чрезвычайно низкая стоимость обучения**. Godot использует GDScript в качестве основного языка сценариев, динамически типизированного языка, похожего на Python, с кратким и простым для понимания синтаксисом и очень легкой кривой обучения. For readers already familiar with Python, learning GDScript has almost no barrier - variable declarations, function definitions, control flow, and other syntax are highly similar to Python. You can even start writing game scripts within a few hours. Древовидная структура узлов Godot также очень интуитивно понятна, вы можете визуально увидеть иерархические отношения сцены в редакторе, что очень удобно для новичков.
 
-(4) **Godot integrates very simply with Python back-ends**. Godot has a built-in HTTPRequest node that can easily communicate with FastAPI back-ends via HTTP. We only need to create an API client script encapsulating all API calls to invoke back-end AI capabilities in the game. This front-end and back-end separation architecture allows us to independently develop and test game logic and AI logic, greatly improving development efficiency.
+(4) **Godot очень просто интегрируется с серверной частью Python**. Godot имеет встроенный узел HTTPRequest, который может легко взаимодействовать с серверными модулями FastAPI через HTTP. Нам нужно всего лишь создать клиентский скрипт API, инкапсулирующий все вызовы API для вызова серверных возможностей ИИ в игре. Такая архитектура разделения внешнего и внутреннего компонентов позволяет нам независимо разрабатывать и тестировать игровую логику и логику искусственного интеллекта, что значительно повышает эффективность разработки.
 
-Of course, Godot also has some limitations. For example, Godot's 3D capabilities still lag behind Unreal Engine and Unity. If you want to develop large-scale 3D games, you may need to consider other engines. But for 2D games, indie games, and teaching projects, Godot is an excellent choice.
+Конечно, у Годо есть и некоторые ограничения. Например, 3D-возможности Godot по-прежнему отстают от Unreal Engine и Unity. Если вы хотите разрабатывать крупномасштабные 3D-игры, возможно, вам придется рассмотреть другие движки. Но для 2D-игр, инди-игр и обучающих проектов Godot — отличный выбор.
 
-### 15.5.1 Scene Design and Resource Organization
+### 15.5.1 Дизайн сцены и организация ресурсов
 
-After understanding Godot's scene system, let's look at Cyber Town's scene design. The entire game consists of four core scenes: Main (main scene), Player (player), NPC (non-player character), and DialogueUI (dialogue interface). Each scene is an independent module that can be edited and tested separately, then combined to form a complete game.
+Разобравшись с системой сцен Годо, давайте посмотрим на дизайн сцен Кибер-города. Вся игра состоит из четырех основных сцен: Main (основная сцена), Player (игрок), NPC (неигровой персонаж) и DialogueUI (диалоговый интерфейс). Каждая сцена представляет собой независимый модуль, который можно редактировать и тестировать отдельно, а затем объединять в полноценную игру.
 
-Cyber Town's scene organization adopts a modular design. We first create three basic scenes: Player (player), NPC (non-player character), and DialogueUI (dialogue interface). Then in Main (main scene), we instantiate and combine these scenes. It's particularly worth noting that the three NPCs (Zhang San, Li Si, Wang Wu) are all instances of the same NPC scene, just with different role information set through script parameters.
+Организация сцены Кибер-города имеет модульную конструкцию. Сначала мы создаем три базовые сцены: Player (игрок), NPC (неигровой персонаж) и DialogueUI (диалоговый интерфейс). Затем в Main (основная сцена) мы создаем экземпляры и объединяем эти сцены. Особо стоит отметить, что все три NPC (Чжан Сан, Ли Си, Ван Ву) являются экземплярами одной и той же сцены NPC, просто с разной ролевой информацией, заданной через параметры сценария.
 
-Let's first look at the structure of the four core scenes, as shown in Figure 15.12:
+Давайте сначала посмотрим на структуру четырех основных сцен, как показано на рисунке 15.12:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-12.png" alt="" width="85%"/>
-  <p>Figure 15.12 Four Core Scenes of Cyber Town</p>
+  <p>Рисунок 15.12. Четыре основных сцены кибергорода</p>
 </div>
 
-This diagram shows four independent scenes and their internal structures. **Scene 1 (Main)** is the main scene, containing background image (Sprite2D), player instance, NPCs organization node (with three NPC instances below), dialogue interface instance, walls organization node, and background music. Note that Player, NPC_Zhang, NPC_Li, NPC_Wang, and DialogueUI here are scene instances, not ordinary nodes. **Scene 2 (Player)** defines the player character structure, including animation, collision, camera, and two sound effect nodes. **Scene 3 (NPC)** is a generic template - Zhang San, Li Si, and Wang Wu are all instances of this scene, containing collision, animation, interaction area, and two labels. **Scene 4 (DialogueUI)** is a CanvasLayer node containing Panel and various UI elements.
+На этой диаграмме показаны четыре независимые сцены и их внутренняя структура. **Сцена 1 (основная)** — это основная сцена, содержащая фоновое изображение (Sprite2D), экземпляр игрока, узел организации NPC (с тремя экземплярами NPC ниже), экземпляр диалогового интерфейса, узел организации стен и фоновую музыку. Обратите внимание, что Player, NPC_Zhang, NPC_Li, NPC_Wang и DialogueUI здесь являются экземплярами сцены, а не обычными узлами. **Сцена 2 (Игрок)** определяет структуру персонажа игрока, включая анимацию, столкновение, камеру и два узла звуковых эффектов. **Сцена 3 (NPC)** — это общий шаблон. Чжан Сан, Ли Си и Ван Ву являются экземплярами этой сцены, содержащей столкновение, анимацию, область взаимодействия и две метки. **Сцена 4 (DialogueUI)** — это узел CanvasLayer, содержащий Panel и различные элементы пользовательского интерфейса.
 
-The scene instantiation process can be understood this way: We created the NPC.tscn scene file in the Godot editor, defining the NPC's node structure. Then in the Main scene, we "instantiated" this NPC scene three times, creating three independent copies named NPC_Zhang, NPC_Li, and NPC_Wang respectively. Each copy has its own position and state, but they share the same node structure. If we modify NPC.tscn, such as adding a new sound effect node to the NPC, all three instances will automatically get this sound effect.
+Процесс создания сцены можно понять следующим образом: мы создали файл сцены NPC.tscn в редакторе Godot, определяя структуру узла NPC. Затем в главной сцене мы трижды «создали экземпляр» этой сцены NPC, создав три независимые копии с именами NPC_Zhang, NPC_Li и NPC_Wang соответственно. Каждая копия имеет свою собственную позицию и состояние, но они имеют одну и ту же структуру узла. Если мы изменим NPC.tscn, например добавив к NPC новый узел звукового эффекта, все три экземпляра автоматически получат этот звуковой эффект.
 
-The steps to create these scenes in Godot are as follows:
+Шаги по созданию этих сцен в Godot следующие:
 
-1. **Create Player scene**: Create new scene, select CharacterBody2D as root node, add AnimatedSprite2D, CollisionShape2D, Camera2D, InteractSound, and RunningSound child nodes, save as Player.tscn.
+1. **Создание сцены игрока**: создайте новую сцену, выберите CharacterBody2D в качестве корневого узла, добавьте дочерние узлы AnimatedSprite2D, CollisionShape2D, Camera2D, InteractSound и RunningSound, сохраните как Player.tscn.
 
-2. **Create NPC scene**: Create new scene, select CharacterBody2D as root node, add CollisionShape2D, AnimatedSprite2D, InteractionArea (Area2D with CollisionShape2D below), NameLabel, and DialogueLabel child nodes, save as NPC.tscn.
+2. **Создание сцены NPC**: создайте новую сцену, выберите CharacterBody2D в качестве корневого узла, добавьте дочерние узлы CollisionShape2D, AnimatedSprite2D, InteractionArea (Area2D с CollisionShape2D ниже), NameLabel и DialogueLabel, сохраните как NPC.tscn.
 
-3. **Create DialogueUI scene**: Create new scene, select CanvasLayer as root node, add Panel child node, under Panel add NPCName, NPCTitle, DialogueText (RichTextLabel), PlayerInput (LineEdit), SendButton, and CloseButton, save as DialogueUI.tscn.
+3. **Создание сцены DialogueUI**: создайте новую сцену, выберите CanvasLayer в качестве корневого узла, добавьте дочерний узел Panel, в разделе Panel добавьте NPCName, NPTitle, DialogueText (RichTextLabel), PlayerInput (LineEdit), SendButton и CloseButton, сохраните как DialogueUI.tscn.
 
-4. **Create Main scene**: Create new scene, select Node2D as root node, add Background (Sprite2D) as background image, under Background add whale decoration, then instantiate Player scene, create NPCs node and instantiate NPC scene three times below it, instantiate DialogueUI scene, create Walls node for organizing wall collisions, finally add AudioStreamPlayer to play background music.
+4. **Создать главную сцену**: создайте новую сцену, выберите Node2D в качестве корневого узла, добавьте фон (Sprite2D) в качестве фонового изображения, в разделе «Фон» добавьте украшение кита, затем создайте экземпляр сцены Player, создайте узел NPC и трижды создайте экземпляр сцены NPC под ним, создайте экземпляр сцены DialogueUI, создайте узел Walls для организации столкновений со стенами, наконец, добавьте AudioStreamPlayer для воспроизведения фоновой музыки.
 
-The advantages of this scene organization method are: each scene is independent and can be tested separately; NPCs use instances of the same scene, modifying once affects all NPCs; scenes communicate through signals with low coupling, easy to maintain and extend.
+Преимущества такого метода организации сцен: каждая сцена независима и может тестироваться отдельно; NPC используют экземпляры одной и той же сцены, одно изменение влияет на всех NPC; Сцены обмениваются данными посредством сигналов с низкой связью, просты в обслуживании и расширении.
 
-### 15.5.2 Player Control Implementation
+### 15.5.2 Реализация управления игроком
 
-The player character is one of the most important elements in the game. We need to implement WASD movement control, animation switching, collision detection, interaction with NPCs, and sound effects system.
+Персонаж игрока — один из самых важных элементов в игре. Нам необходимо реализовать управление движением WASD, переключение анимации, обнаружение столкновений, взаимодействие с NPC и систему звуковых эффектов.
 
-The player scene structure includes: a CharacterBody2D as the root node, responsible for physics movement and collision; an AnimatedSprite2D displaying character animation; a CollisionShape2D defining collision shape; a Camera2D following the player; two AudioStreamPlayers playing interaction sound effects and walking sound effects respectively.
+Структура сцены игрока включает в себя: CharacterBody2D в качестве корневого узла, отвечающего за физическое движение и столкновение; AnimatedSprite2D, отображающий анимацию персонажей; CollisionShape2D, определяющий форму столкновения; Camera2D, следующий за игроком; два AudioStreamPlayer воспроизводят звуковые эффекты взаимодействия и звуковые эффекты ходьбы соответственно.
 
-The player control script `player.gd` implements movement, interaction, and sound effect logic:
+Скрипт управления плеером`player.gd`реализует логику движения, взаимодействия и звуковых эффектов:
 
 ```python
 extends CharacterBody2D
@@ -1226,15 +1226,15 @@ func stop_running_sound():
         is_playing_running_sound = false
 ```
 
-This script implements complete player control. Players use WASD keys (or arrow keys) to move, and the character plays corresponding 4-direction animations (walk_up/down/left/right) based on movement direction. When the player approaches an NPC, the NPC calls `set_nearby_npc()` to set itself as an interactable object, and the player can press the E key to trigger interaction. During interaction, sound effects play, and `call_group()` notifies the dialogue system to start conversation. During dialogue, `set_interacting(true)` disables player movement, which is restored after dialogue ends. Walking sound effects automatically play when the player moves and automatically stop when stopped.
+Этот скрипт реализует полный контроль над игроком. Игроки используют клавиши WASD (или клавиши со стрелками) для перемещения, а персонаж воспроизводит соответствующую анимацию в четырех направлениях (ходьба вверх/вниз/влево/вправо) в зависимости от направления движения. Когда игрок приближается к NPC, NPC вызывает`set_nearby_npc()`чтобы установить себя как интерактивный объект, и игрок может нажать клавишу E, чтобы вызвать взаимодействие. Во время взаимодействия воспроизводятся звуковые эффекты и`call_group()`уведомляет диалоговую систему о начале разговора. Во время диалога,`set_interacting(true)`отключает движение игрока, которое восстанавливается после завершения диалога. Звуковые эффекты ходьбы автоматически воспроизводятся, когда игрок движется, и автоматически прекращаются, когда он останавливается.
 
-### 15.5.3 NPC Behavior and Interaction
+### 15.5.3 Поведение и взаимодействие NPC
 
-NPCs need to implement three core functions: randomly patrol and wander in the scene, respond to player interactions, and display dialogue bubbles. We use Area2D to detect whether the player is near the NPC. When the player enters the interaction range, the player is notified, and pressing the E key starts the conversation.
+Неигровым персонажам необходимо реализовать три основные функции: случайное патрулирование и блуждание по сцене, реагирование на взаимодействия игроков и отображение пузырей диалогов. Мы используем Area2D, чтобы определить, находится ли игрок рядом с NPC. Когда игрок входит в зону взаимодействия, игрок получает уведомление, и нажатие клавиши E начинает разговор.
 
-The NPC scene structure includes: CharacterBody2D as root node; CollisionShape2D defines NPC collision shape; AnimatedSprite2D displays NPC animation; InteractionArea (Area2D) detects player entering interaction range, with CollisionShape2D below defining interaction range; NameLabel displays NPC name; DialogueLabel displays dialogue bubble.
+Структура сцены NPC включает в себя: CharacterBody2D в качестве корневого узла; CollisionShape2D определяет форму столкновения NPC; AnimatedSprite2D отображает анимацию NPC; InteractionArea (Area2D) обнаруживает, что игрок входит в диапазон взаимодействия, а CollisionShape2D ниже определяет диапазон взаимодействия; NameLabel отображает имя NPC; DialogueLabel отображает диалоговое окно.
 
-The NPC script `npc.gd` implements patrol, interaction, and dialogue bubble logic:
+Скрипт NPC`npc.gd`реализует логику патрулирования, взаимодействия и диалогового пузыря:
 
 ```python
 extends CharacterBody2D
@@ -1430,15 +1430,15 @@ func set_interacting(interacting: bool):
     is_interacting = interacting
 ```
 
-This script implements complete NPC behavior. NPCs randomly patrol within the `wander_range` around their spawn position, choosing a new target point and moving there every `wander_interval_min` to `wander_interval_max` seconds. During movement, 4-direction animations (walk_up/down/left/right) play, and upon reaching the target, they stop and play the idle animation. When a player enters the InteractionArea, the NPC calls the player's `set_nearby_npc(self)` method, setting itself as an interactable object. After the player presses the E key, the dialogue system calls the NPC's `set_interacting(true)` method, and the NPC stops moving. After dialogue ends, `set_interacting(false)` is called, and the NPC resumes patrol. The main scene periodically calls the `update_dialogue()` method to update the NPC's dialogue bubble, displaying autonomous dialogue content between NPCs.
+Этот скрипт реализует полное поведение NPC. NPC случайным образом патрулируют территорию.`wander_range`вокруг места своего появления, выбирая новую целевую точку и перемещаясь туда каждый раз.`wander_interval_min`к`wander_interval_max`секунды. Во время движения воспроизводится анимация в 4 направлениях (ходьба_вверх/вниз/влево/вправо), а при достижении цели они останавливаются и воспроизводят анимацию простоя. Когда игрок входит в область взаимодействия, NPC вызывает игрока`set_nearby_npc(self)`метод, устанавливающий себя как интерактивный объект. После того, как игрок нажмет клавишу E, диалоговая система вызывает NPC.`set_interacting(true)`метод, и NPC перестает двигаться. После завершения диалога`set_interacting(false)`вызывается, и NPC возобновляет патрулирование. Основная сцена периодически вызывает`update_dialogue()`метод обновления диалогового окна NPC, отображающий содержимое автономного диалога между NPC.
 
-## 15.6 Front-End and Back-End Communication Implementation
+## 15.6 Реализация внешней и внутренней связи
 
-### 15.6.1 API Client Encapsulation
+### 15.6.1 Инкапсуляция клиента API
 
-The Godot front-end needs to communicate with the FastAPI back-end via HTTP. We create an API client script `api_client.gd`, encapsulating all API calls, and set it as an AutoLoad (auto-load) singleton so other scripts can conveniently use it.
+Интерфейс Godot должен взаимодействовать с серверной частью FastAPI через HTTP. Создаем API-клиентский скрипт`api_client.gd`, инкапсулируя все вызовы API, и установить его как синглтон AutoLoad (автозагрузки), чтобы другие сценарии могли его удобно использовать.
 
-The API client uses Godot's HTTPRequest node to send HTTP requests. HTTPRequest is an asynchronous node that doesn't block the game after sending requests, but notifies request completion through signals. This ensures game fluidity - even with high network latency, there's no stuttering. We use the signal mechanism to notify other scripts of API responses rather than using await, allowing multiple scripts to simultaneously listen for the same API response.
+Клиент API использует узел HTTPRequest Godot для отправки HTTP-запросов. HTTPRequest — асинхронный узел, который не блокирует игру после отправки запросов, а уведомляет о завершении запроса посредством сигналов. Это обеспечивает плавность игры — даже при высокой задержке в сети нет подтормаживаний. Мы используем механизм сигналов для уведомления других сценариев об ответах API, а не с помощью await, что позволяет нескольким сценариям одновременно прослушивать один и тот же ответ API.
 
 ```python
 # api_client.gd
@@ -1579,22 +1579,22 @@ func _on_npcs_request_completed(_result: int, response_code: int, _headers: Pack
         npc_list_received.emit(npcs)
 ```
 
-This API client encapsulates three core functions: send chat request (`send_chat`), get NPC status (`get_npc_status`), and get NPC list (`get_npc_list`). All HTTP requests are asynchronous, notifying response results through signals. We created independent HTTPRequest nodes for each API, allowing multiple requests to be sent simultaneously without interfering with each other. API URLs are obtained from the Config singleton for convenient unified management. The dialogue system listens to the `chat_response_received` signal to receive NPC replies, and the main scene listens to the `npc_status_received` signal to update NPC dialogue bubbles.
+Этот API-клиент инкапсулирует три основные функции: отправить запрос в чат (`send_chat`), получить статус NPC (`get_npc_status`) и получить список NPC (`get_npc_list`). Все HTTP-запросы являются асинхронными и уведомляют о результатах ответа посредством сигналов. Мы создали независимые узлы HTTPRequest для каждого API, что позволяет отправлять несколько запросов одновременно, не мешая друг другу. URL-адреса API получаются из синглтона Config для удобного унифицированного управления. Диалоговая система слушает`chat_response_received`сигнал для получения ответов NPC, и основная сцена слушает`npc_status_received`сигнал для обновления диалоговых пузырей NPC.
 
-### 15.6.2 Dialogue UI Implementation
+### 15.6.2 Реализация диалогового пользовательского интерфейса
 
-The dialogue UI is the interface for player-NPC interaction. We need to design a simple and beautiful dialogue box containing NPC name, title, dialogue content display, input box, and buttons.
+Интерфейс диалога — это интерфейс взаимодействия игрока и NPC. Нам нужно создать простое и красивое диалоговое окно, содержащее имя NPC, заголовок, отображение содержимого диалога, поле ввода и кнопки.
 
-The dialogue UI structure is shown in Figure 15.13:
+Структура пользовательского интерфейса диалога показана на рисунке 15.13:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-13.png" alt="" width="85%"/>
-  <p>Figure 15.13 Dialogue UI Structure</p>
+  <p>Рисунок 15.13 Структура пользовательского интерфейса диалогового окна</p>
 </div>
 
-The dialogue UI design is very simple. DialogueUI is a CanvasLayer node, meaning it will always display on top of the game screen and won't be obscured by other game objects. Panel is the dialogue box background, anchored at the bottom of the screen. Under Panel are 6 UI elements placed directly: NPCName displays the NPC's name, NPCTitle displays the title, DialogueText uses RichTextLabel to display dialogue content (supports rich text format), PlayerInput is a LineEdit for player input, and SendButton and CloseButton are used to send messages and close the dialogue box respectively.
+Дизайн диалогового пользовательского интерфейса очень прост. DialogueUI — это узел CanvasLayer, то есть он всегда будет отображаться поверх игрового экрана и не будет закрыт другими игровыми объектами. Панель — это фон диалогового окна, закрепленный в нижней части экрана. В панели Panel размещены непосредственно 6 элементов пользовательского интерфейса: NPCName отображает имя NPC, NPTitle отображает заголовок, DialogueText использует RichTextLabel для отображения содержимого диалога (поддерживает расширенный текстовый формат), PlayerInput — это LineEdit для ввода данных игроком, а SendButton и CloseButton используются для отправки сообщений и закрытия диалогового окна соответственно.
 
-The dialogue UI script `dialogue_ui.gd` implements the dialogue interface logic:
+Скрипт диалогового пользовательского интерфейса`dialogue_ui.gd`реализует логику диалогового интерфейса:
 
 ```python
 # dialogue_ui.gd
@@ -1724,11 +1724,11 @@ func get_npc_title(npc_name: String) -> String:
     return titles.get(npc_name, "")
 ```
 
-This dialogue UI implements complete dialogue functionality. Players can input and send messages, and the UI uses RichTextLabel's append_text method to display dialogue content, supporting rich text format (colors, bold, etc.). All API calls are asynchronous, disabling the input box while waiting for responses to prevent duplicate sends. When the dialogue box is displayed, it notifies the player to enter interaction state, disabling movement, and restores movement when closed.
+This dialogue UI implements complete dialogue functionality. Players can input and send messages, and the UI uses RichTextLabel's append_text method to display dialogue content, supporting rich text format (colors, bold, etc.). All API calls are asynchronous, disabling the input box while waiting for responses to prevent duplicate sends. Когда отображается диалоговое окно, оно уведомляет игрока о необходимости войти в состояние взаимодействия, отключая движение, и восстанавливает движение при закрытии.
 
-### 15.6.3 Main Scene Integration
+### 15.6.3 Интеграция основной сцены
 
-Finally, we need to integrate all functions in the main scene: player control, NPC interaction, dialogue UI, and NPC status updates. The main scene script `main.gd` coordinates these components and periodically obtains NPC status from the back-end to update NPC dialogue bubbles.
+Наконец, нам нужно интегрировать все функции в основную сцену: управление игроком, взаимодействие с NPC, диалоговый интерфейс и обновление статуса NPC. Сценарий основной сцены`main.gd`координирует эти компоненты и периодически получает статус NPC из серверной части для обновления диалоговых пузырей NPC.
 
 ```python
 # main.gd
@@ -1794,88 +1794,88 @@ func get_npc_node(npc_name: String) -> Node2D:
             return null
 ```
 
-The core function of the main scene script is to periodically obtain NPC status from the back-end. In `_ready()`, we get a reference to the APIClient singleton and connect the `npc_status_received` signal. Then we immediately call `get_npc_status()` to get NPC status once. In `_process()`, we use a timer to call `get_npc_status()` every `Config.NPC_STATUS_UPDATE_INTERVAL` seconds (default 30 seconds). When NPC status updates are received, the `_on_npc_status_received()` callback function traverses all NPCs and calls their `update_dialogue()` method to update dialogue bubbles. This way, even if the player doesn't interact with NPCs, they can still see autonomous dialogue between NPCs.
+Основная функция сценария основной сцены — периодическое получение статуса NPC из серверной части. В`_ready()`, мы получаем ссылку на синглтон APIClient и подключаем`npc_status_received`сигнал. Тогда мы сразу звоним`get_npc_status()`чтобы получить статус NPC один раз. В`_process()`, мы используем таймер для вызова`get_npc_status()`каждый`Config.NPC_STATUS_UPDATE_INTERVAL`секунд (по умолчанию 30 секунд). При получении обновлений статуса NPC`_on_npc_status_received()`функция обратного вызова обходит всех NPC и вызывает их`update_dialogue()`метод обновления диалоговых пузырей. Таким образом, даже если игрок не взаимодействует с NPC, он все равно сможет видеть автономный диалог между NPC.
 
-The complete front-end and back-end communication process is shown in Figure 15.14:
+Полный процесс взаимодействия между интерфейсом и сервером показан на рисунке 15.14:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-14.png" alt="" width="85%"/>
-  <p>Figure 15.14 Complete Front-End and Back-End Communication Process</p>
+  <p>Рисунок 15.14. Полный процесс взаимодействия между внешним и внутренним сервером</p>
 </div>
 
-At this point, all front-end and back-end communication functions have been implemented. Players can move freely in the game, interact with NPCs, and have natural language conversations. Meanwhile, the main scene periodically obtains NPC status from the back-end, updates NPC dialogue bubbles, and displays autonomous dialogue between NPCs. The entire system uses a signal mechanism for communication, with loose coupling between components, making it easy to maintain and extend.
+На данный момент все функции внешнего и внутреннего взаимодействия реализованы. Игроки могут свободно перемещаться по игре, взаимодействовать с неигровыми персонажами и разговаривать на естественном языке. Между тем, основная сцена периодически получает статус NPC из серверной части, обновляет пузыри диалогов NPC и отображает автономный диалог между NPC. Вся система использует сигнальный механизм для связи со слабой связью между компонентами, что упрощает ее обслуживание и расширение.
 
-## 15.7 Summary and Outlook
+## 15.7 Резюме и перспективы
 
-### 15.7.1 Chapter Review
+### 15.7.1 Обзор главы
 
-In this chapter, we completed a full AI town project - Cyber Town. This project combines the HelloAgents framework with the Godot game engine to create a vibrant virtual world. Let's review the core content we learned.
+В этой главе мы завершили полноценный проект города с искусственным интеллектом — Кибергород. Этот проект объединяет платформу HelloAgents с игровым движком Godot для создания яркого виртуального мира. Давайте рассмотрим основной материал, который мы узнали.
 
-**Technical Architecture Design**
+**Технический архитектурный проект**
 
-We adopted a separated architecture of game engine + back-end service, separating front-end rendering, back-end logic, and AI intelligence into different layers. Godot handles game graphics and player interaction, FastAPI handles API services and state management, and HelloAgents handles NPC intelligence and memory systems. This layered design allows each part to be developed and tested independently, and also provides a good foundation for future expansion.
+Мы внедрили отдельную архитектуру игрового движка + серверную службу, разделив интерфейсный рендеринг, внутреннюю логику и искусственный интеллект на разные уровни. Godot отвечает за игровую графику и взаимодействие с игроками, FastAPI — за сервисы API и управление состоянием, а HelloAgents — за системы интеллекта и памяти NPC. Такая многоуровневая конструкция позволяет разрабатывать и тестировать каждую часть независимо, а также обеспечивает хорошую основу для будущего расширения.
 
 **NPC Agent System**
 
-We used HelloAgents' SimpleAgent to create independent agents for each NPC. Each NPC has its own role setting, personality traits, and memory system. Through carefully designed system prompts, we made Zhang San a rigorous Python engineer, Li Si a product manager good at communication, and Wang Wu a creative UI designer. These NPCs can not only understand player dialogue but also respond according to their role characteristics.
+Мы использовали SimpleAgent от HelloAgents, чтобы создать независимых агентов для каждого NPC. У каждого NPC есть своя ролевая установка, черты личности и система памяти. Благодаря тщательно разработанным системным подсказкам мы сделали Чжан Саня строгим инженером Python, Ли Си хорошим коммуникативным менеджером по продукту, а Ван Ву креативным дизайнером пользовательского интерфейса. Эти NPC могут не только понимать диалоги игроков, но и реагировать в соответствии со своими ролевыми характеристиками.
 
-**Memory and Affection System**
+**Система памяти и привязанности**
 
-We implemented a two-layer memory system: short-term memory maintains dialogue coherence, and long-term memory stores all interaction history. Through semantic retrieval in vector databases, NPCs can recall previously discussed topics. The affection system allows NPCs' attitudes toward players to change with interaction, from stranger to close friend, with different behavioral expressions at each level. These designs make NPCs appear more realistic and interesting.
+Мы реализовали двухслойную систему памяти: кратковременная память поддерживает связность диалогов, а долговременная память хранит всю историю взаимодействия. Благодаря семантическому поиску в векторных базах данных NPC могут вспомнить ранее обсуждавшиеся темы. Система привязанности позволяет неигровым персонажам меняться в зависимости от взаимодействия с игроками: от незнакомца до близкого друга, с разными проявлениями поведения на каждом уровне. Такой дизайн делает неигровых персонажей более реалистичными и интересными.
 
-**Game Scene Construction**
+**Построение игровой сцены**
 
-We used Godot to create a pixel-style office scene, implementing player control, NPC wandering, interaction detection, and dialogue UI. Through the modular design of the scene system, we can easily add new NPCs, new scenes, and new functions. GDScript's concise syntax makes game logic implementation intuitive and efficient.
+Мы использовали Godot для создания офисной сцены в пиксельном стиле, реализовав управление игроком, блуждание NPC, обнаружение взаимодействия и диалоговый интерфейс. Благодаря модульной конструкции системы сцен мы можем легко добавлять новых NPC, новые сцены и новые функции. Краткий синтаксис GDScript делает реализацию игровой логики интуитивно понятной и эффективной.
 
-**Front-End and Back-End Communication**
+**Внешняя и внутренняя связь**
 
-We used HTTP REST API to implement communication between the Godot front-end and FastAPI back-end. Through asynchronous requests and signal systems, we ensured game fluidity - even with high network latency, player experience is not affected. The API client encapsulation allows other scripts to conveniently call back-end services, and the dialogue UI implementation allows players to naturally communicate with NPCs.
+Мы использовали HTTP REST API для реализации связи между интерфейсом Godot и сервером FastAPI. С помощью асинхронных запросов и систем сигналов мы обеспечили плавность игры — даже при высокой задержке в сети на впечатления игроков это не влияет. Инкапсуляция клиента API позволяет другим сценариям удобно вызывать серверные службы, а реализация диалогового пользовательского интерфейса позволяет игрокам естественным образом общаться с NPC.
 
-The project's technology stack is shown in Figure 15.15:
+Технологический стек проекта показан на рисунке 15.15:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/15-figures/15-15.png" alt="" width="85%"/>
-  <p>Figure 15.15 Cyber Town Technology Stack</p>
+  <p>Рисунок 15.15. Технологический стек Кибергорода</p>
 </div>
 
-### 15.7.2 Extension Directions
+### 15.7.2 Указания по расширению
 
-Cyber Town is just a starting point - there are many directions for extension. These extensions can not only enhance game fun but also explore more possibilities for AI technology in games.
+Кибер-город — это только отправная точка, существует множество направлений для развития. Эти расширения могут не только повысить удовольствие от игры, но и раскрыть больше возможностей использования технологий искусственного интеллекта в играх.
 
-**(1) Multiplayer Online Support**
+**(1) Поддержка многопользовательской онлайн-игры**
 
-Currently, Cyber Town is a single-player game, but we can extend it to a multiplayer online game. Multiple players can simultaneously enter the same office and interact with NPCs and other players. This requires introducing WebSocket for real-time communication and databases to persist player data and NPC states. NPCs can remember interactions with different players and maintain independent affection levels for each player.
+В настоящее время Cyber ​​Town — это однопользовательская игра, но мы можем расширить ее до многопользовательской онлайн-игры. Несколько игроков могут одновременно войти в один и тот же офис и взаимодействовать с NPC и другими игроками. Это требует внедрения WebSocket для связи в реальном времени и баз данных для сохранения данных игроков и состояний NPC. NPC могут запоминать взаимодействие с разными игроками и поддерживать независимый уровень привязанности к каждому игроку.
 
-**(2) Quest System**
+**(2) Система квестов**
 
-We can design a quest system for NPCs. When a player's affection with an NPC reaches a certain level, the NPC will provide special quests. For example, Zhang San might ask the player to help debug code, Li Si might ask the player to collect user feedback, and Wang Wu might ask the player to evaluate design proposals. Completing quests can earn rewards and further increase affection.
+Мы можем разработать систему квестов для NPC. Когда привязанность игрока к NPC достигает определенного уровня, NPC предоставляет специальные квесты. Например, Чжан Сан может попросить игрока помочь в отладке кода, Ли Си может попросить игрока собрать отзывы пользователей, а Ван Ву может попросить игрока оценить предложения по дизайну. Выполнение квестов может принести награды и еще больше усилить привязанность.
 
-**(3) NPC-to-NPC Interaction**
+**(3) Взаимодействие между NPC**
 
-Currently, NPCs only interact with players, but we can enable NPCs to interact with each other. Zhang San can discuss product requirements with Li Si, Li Si can discuss interface design with Wang Wu, and Wang Wu can discuss technical implementation with Zhang San. These interactions can occur automatically in the background, and players can observe dialogue between NPCs, making the entire world appear more lively.
+В настоящее время NPC взаимодействуют только с игроками, но мы можем позволить NPC взаимодействовать друг с другом. Чжан Сан может обсудить требования к продукту с Ли Си, Ли Си может обсудить дизайн интерфейса с Ван Ву, а Ван Ву может обсудить техническую реализацию с Чжан Санем. Эти взаимодействия могут происходить автоматически в фоновом режиме, и игроки могут наблюдать за диалогами между NPC, что делает весь мир более оживленным.
 
-**(4) Emotion System**
+**(4) Система эмоций**
 
-In addition to affection, we can add a more complex emotion system for NPCs. NPCs can have different emotional states such as happy, sad, angry, and excited, which affect NPC reply style and behavior. For example, when an NPC is in a good mood, they'll be more willing to share information; when in a bad mood, they might be rather cold.
+Помимо привязанности, мы можем добавить более сложную систему эмоций для NPC. NPC могут находиться в разных эмоциональных состояниях, например, счастливых, грустных, злых и взволнованных, что влияет на стиль ответов и поведение NPC. Например, когда NPC в хорошем настроении, они охотнее делятся информацией; в плохом настроении они могут быть довольно холодными.
 
-**(5) Dynamic Event System**
+**(5) Динамическая система событий**
 
-We can design dynamic events to make the game world richer. For example, regularly hold team meetings where all NPCs and players gather to discuss project progress; or hold birthday parties celebrating an NPC's birthday; or emergency tasks requiring everyone's collaboration. These events can increase game variety and fun.
+Мы можем создавать динамические события, чтобы сделать игровой мир богаче. Например, регулярно проводите командные собрания, на которых собираются все NPC и игроки, чтобы обсудить ход проекта; или устраивать вечеринки по случаю дня рождения NPC; или чрезвычайные задачи, требующие сотрудничества каждого. Эти мероприятия могут сделать игру более разнообразной и увлекательной.
 
-**(6) Larger World**
+**(6) Большой мир**
 
-Currently, Cyber Town has only one office scene, but we can expand to a larger world. We can add different scenes like cafes, libraries, and parks, each with different NPCs and interaction methods. Players can move between different scenes and explore a broader virtual world.
+В настоящее время в Кибер-городе есть только одна офисная сцена, но мы можем расшириться до более крупного мира. Мы можем добавлять разные сцены, такие как кафе, библиотеки и парки, каждая со своими NPC и методами взаимодействия. Игроки могут перемещаться между разными сценами и исследовать более широкий виртуальный мир.
 
-**(7) Personalized Learning**
+**(7) Персонализированное обучение**
 
-NPCs can learn each player's preferences and habits. For example, if a player frequently discusses Python with Zhang San, the NPC will remember the player is interested in programming and will proactively share related content in the future. If a player likes playing games at night, the NPC will remember this time habit and be more active at night.
+NPC могут узнать предпочтения и привычки каждого игрока. Например, если игрок часто обсуждает Python с Чжан Санем, NPC запомнит, что игрок интересуется программированием, и будет активно делиться соответствующим контентом в будущем. Если игроку нравится играть в игры по ночам, NPC запомнит эту привычку и будет более активен ночью.
 
-### 15.7.3 Reflection and Outlook
+### 15.7.3 Размышления и перспективы
 
-Cyber Town demonstrates the enormous potential of AI technology in games. NPCs in traditional games are limited by preset dialogue trees and scripts, while AI NPCs can understand and generate natural language, having real conversations with players. This not only enhances game immersion but also brings new possibilities to game design.
+Кибер-город демонстрирует огромный потенциал технологий искусственного интеллекта в играх. NPC в традиционных играх ограничены предустановленными деревьями диалогов и сценариями, в то время как NPC с искусственным интеллектом могут понимать и генерировать естественный язык, ведя реальные разговоры с игроками. Это не только усиливает погружение в игру, но и открывает новые возможности для игрового дизайна.
 
-However, AI NPCs also face some challenges. First is the cost issue - each conversation requires calling the LLM API, which incurs certain fees. For large multiplayer online games, this cost could be very high. Second is the latency issue - LLM inference takes time, and if network latency is high, players might need to wait several seconds to see NPC replies. Finally, there's the content control issue - LLM-generated content may not be fully controllable, requiring well-designed prompts and content filtering mechanisms.
+Однако ИИ-НПЦ также сталкиваются с некоторыми проблемами. Во-первых, это проблема стоимости: каждый разговор требует вызова LLM API, за который взимается определенная плата. Для больших многопользовательских онлайн-игр эта стоимость может быть очень высокой. Во-вторых, это проблема с задержкой: вывод LLM требует времени, и если задержка в сети высока, игрокам может потребоваться подождать несколько секунд, чтобы увидеть ответы NPC. Наконец, существует проблема контроля контента: контент, созданный LLM, может быть не полностью управляемым, поэтому требуются хорошо продуманные подсказки и механизмы фильтрации контента.
 
-Despite these challenges, the future of AI NPCs remains full of promise. As LLM technology develops, inference speed will become faster and costs will become lower. Localized small LLMs are also developing rapidly - in the future, they may be able to run directly on players' devices, requiring no network requests at all. The combination of AI technology and games will bring players unprecedented experiences.
+Несмотря на эти проблемы, будущее AI-NPC остается многообещающим. По мере развития технологии LLM скорость вывода будет увеличиваться, а затраты уменьшаться. Локализованные небольшие LLM также быстро развиваются — в будущем они, возможно, смогут запускаться непосредственно на устройствах игроков, вообще не требуя сетевых запросов. Сочетание технологий искусственного интеллекта и игр принесет игрокам беспрецедентные впечатления.
 
-In Part 5's graduation project chapter, we will learn how to construct general agents using single agents and multi-agents - this will be your creative time, so stay tuned!
+В главе дипломного проекта пятой части мы узнаем, как создавать агенты общего назначения, используя одиночные агенты и мультиагенты. Это будет ваше творческое время, так что следите за обновлениями!

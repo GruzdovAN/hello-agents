@@ -5,11 +5,11 @@ import math
 from hello_agents import ToolRegistry
 
 def my_calculate(expression: str) -> str:
-    """简单的数学计算函数"""
+    """Простые функции математических вычислений"""
     if not expression.strip():
-        return "计算表达式不能为空"
+        return "Выражение расчета не может быть пустым."
 
-    # 支持的基本运算
+    # Поддерживаемые основные операции
     operators = {
         ast.Add: operator.add,      # +
         ast.Sub: operator.sub,      # -
@@ -17,7 +17,7 @@ def my_calculate(expression: str) -> str:
         ast.Div: operator.truediv,  # /
     }
 
-    # 支持的基本函数
+    # Поддерживаемые базовые функции
     functions = {
         'sqrt': math.sqrt,
         'pi': math.pi,
@@ -28,10 +28,10 @@ def my_calculate(expression: str) -> str:
         result = _eval_node(node.body, operators, functions)
         return str(result)
     except:
-        return "计算失败，请检查表达式格式"
+        return "Расчет не выполнен, проверьте формат выражения."
 
 def _eval_node(node, operators, functions):
-    """简化的表达式求值"""
+    """Упрощенная оценка выражения"""
     if isinstance(node, ast.Constant):
         return node.value
     elif isinstance(node, ast.BinOp):
@@ -49,13 +49,13 @@ def _eval_node(node, operators, functions):
             return functions[node.id]
 
 def create_calculator_registry():
-    """创建包含计算器的工具注册表"""
+    """Создайте реестр инструментов, содержащий калькулятор."""
     registry = ToolRegistry()
 
-    # 注册计算器函数
+    # Зарегистрируйте функцию калькулятора
     registry.register_function(
         name="my_calculator",
-        description="简单的数学计算工具，支持基本运算(+,-,*,/)和sqrt函数",
+        description="Простой инструмент математических вычислений, поддерживающий основные операции (+,-,*,/) и функцию sqrt.",
         func=my_calculate
     )
 

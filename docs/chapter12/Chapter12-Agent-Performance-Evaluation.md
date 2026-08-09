@@ -1,18 +1,18 @@
-# Chapter 12: Agent Performance Evaluation
+# Глава 12. Оценка производительности агентов
 
-In previous chapters, we built the core functionality of the HelloAgents framework, implementing various agent paradigms, tool systems, memory mechanisms, and reinforcement learning training. When building agent systems, we also need to solve a core problem: **How to objectively evaluate agent performance?** Specifically, we need to answer the following questions:
+В предыдущих главах мы создали основные функциональные возможности платформы HelloAgents, реализовав различные парадигмы агентов, системы инструментов, механизмы памяти и обучение с подкреплением. При построении агентских систем нам также необходимо решить основную проблему: **Как объективно оценить эффективность агентов?** В частности, нам необходимо ответить на следующие вопросы:
 
-1. Does the agent possess the expected capabilities?
-2. How does it perform on different tasks?
-3. What level is it at compared to other agents?
+1. Обладает ли агент ожидаемыми возможностями?
+2. Как он справляется с разными задачами?
+3. На каком уровне он находится по сравнению с другими агентами?
 
-This chapter will add a **Performance Evaluation System** to HelloAgents. We will deeply understand the theoretical foundation of agent evaluation and implement evaluation tools.
+В этой главе в HelloAgents будет добавлена ​​**Система оценки эффективности**. Мы глубоко поймем теоретическую основу оценки агентов и внедрим инструменты оценки.
 
-## 12.1 Agent Evaluation Fundamentals
+## 12.1 Основы оценки агентов
 
-### 12.1.1 Why Agent Evaluation is Needed
+### 12.1.1 Зачем нужна оценка агента
 
-We now have SimpleAgent, which already possesses powerful reasoning and tool invocation capabilities. Let's look at a typical usage scenario:
+Теперь у нас есть SimpleAgent, который уже обладает мощными возможностями рассуждения и вызова инструментов. Давайте рассмотрим типичный сценарий использования:
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -43,80 +43,80 @@ response = agent.run("What are the latest AI technology development trends?")
 print(f"\nAnswer: {response}")
 ```
 
-This agent can work normally, but we face a core problem: How to objectively evaluate its performance? When we optimize prompts or change LLM models, how do we know if there's real improvement? Before deploying to production environment, how do we ensure agent reliability? These questions all need to be solved through systematic evaluation.
+Этот агент может работать нормально, но мы сталкиваемся с основной проблемой: как объективно оценить его работу? Когда мы оптимизируем подсказки или меняем модели LLM, как мы узнаем, есть ли реальные улучшения? Как обеспечить надежность агента перед развертыванием в производственной среде? Все эти вопросы необходимо решать посредством систематической оценки.
 
-The core value of agent evaluation lies in providing standardized methods to measure agent capabilities. Through evaluation, we can quantify agent performance with specific numerical metrics, objectively compare the merits of different design solutions, promptly discover agent weaknesses in specific scenarios, and prove agent reliability to users.
+Основная ценность оценки агентов заключается в предоставлении стандартизированных методов измерения возможностей агентов. Посредством оценки мы можем количественно оценить производительность агента с помощью конкретных числовых показателей, объективно сравнить преимущества различных проектных решений, быстро обнаружить слабые места агента в конкретных сценариях и доказать пользователям надежность агента.
 
-Unlike traditional software testing, agent evaluation faces unique challenges. First is output uncertainty - the same question may have multiple correct answers, making it difficult to judge with simple right or wrong. Second is diversity of evaluation criteria - different tasks require different evaluation methods; tool invocation needs to check function signatures, while Q&A tasks need to evaluate semantic similarity. Finally is high evaluation cost - each evaluation requires numerous API calls, potentially costing hundreds of yuan or more.
+В отличие от традиционного тестирования программного обеспечения, оценка агентов сталкивается с уникальными проблемами. Во-первых, это неопределенность результатов: на один и тот же вопрос может быть несколько правильных ответов, что затрудняет простое определение правильного или неправильного ответа. Во-вторых, разнообразие критериев оценки: разные задачи требуют разных методов оценки; вызов инструмента должен проверять сигнатуры функций, а задачи вопросов и ответов должны оценивать семантическое сходство. Наконец, высокая стоимость оценки: каждая оценка требует многочисленных вызовов API, что потенциально может стоить сотни юаней и более.
 
-To address these challenges, academia and industry have proposed multiple standardized **Benchmarks**. These benchmarks provide unified datasets, evaluation metrics, and scoring methods, enabling us to evaluate and compare different agent systems under the same standards.
+Для решения этих проблем научные круги и промышленность предложили несколько стандартизированных **контрольных показателей**. Эти тесты предоставляют унифицированные наборы данных, метрики оценки и методы оценки, что позволяет нам оценивать и сравнивать различные агентные системы по одним и тем же стандартам.
 
-### 12.1.2 Overview of Mainstream Evaluation Benchmarks
+### 12.1.2 Обзор основных критериев оценки
 
-The agent evaluation field has seen the emergence of multiple influential benchmark tests. Below are some mainstream evaluation benchmarks and metrics:
+В области оценки агентов появилось множество влиятельных эталонных тестов. Ниже приведены некоторые основные критерии и показатели оценки:
 
-**(1) Tool Invocation Capability Evaluation**
+**(1) Оценка возможности вызова инструмента**
 
-Tool invocation is one of the core capabilities of agents. Agents need to understand user intent, select appropriate tools, and correctly construct function calls. Related evaluation benchmarks include:
+Вызов инструмента — одна из основных возможностей агентов. Агентам необходимо понимать намерения пользователя, выбирать подходящие инструменты и правильно создавать вызовы функций. Соответствующие критерии оценки включают в себя:
 
-- **BFCL (Berkeley Function Calling Leaderboard)**<sup>[1]</sup>: Launched by UC Berkeley, includes 1120+ test samples, covering four categories: simple, multiple, parallel, irrelevance, uses AST matching algorithm for evaluation, moderate dataset size, active community.
-- **ToolBench**<sup>[2]</sup>: Launched by Tsinghua University, includes 16000+ real API call scenarios, covering complex tool usage scenarios in the real world.
-- **API-Bank**<sup>[3]</sup>: Launched by Microsoft Research, includes 53 commonly used API tools, focuses on evaluating agent understanding and invocation of API documentation.
+- **BFCL (таблица лидеров вызовов функций Беркли)**<sup>[1]</sup>: запущен Калифорнийским университетом в Беркли и включает более 1120 тестовых образцов, охватывающих четыре категории: простые, множественные, параллельные, нерелевантные, использует алгоритм сопоставления AST для оценки, умеренный размер набора данных, активное сообщество.
+- **ToolBench**<sup>[2]</sup>: запущен Университетом Цинхуа и включает более 16 000 реальных сценариев вызовов API, охватывающих сложные сценарии использования инструментов в реальном мире.
+- **API-Bank**<sup>[3]</sup>: запущен компанией Microsoft Research и включает 53 часто используемых инструмента API. Основное внимание уделяется оценке понимания агентами и использованию документации API.
 
-**(2) General Capability Evaluation**
+**(2) Общая оценка возможностей**
 
-Evaluates agent comprehensive performance in real-world tasks, including multi-step reasoning, knowledge application, multimodal understanding, etc.:
+Оценивает комплексную производительность агента в реальных задачах, включая многоэтапное рассуждение, применение знаний, мультимодальное понимание и т. д.:
 
-- **GAIA (General AI Assistants)**<sup>[4]</sup>: Jointly launched by Meta AI and Hugging Face, includes 466 real-world problems, divided into Level 1/2/3 difficulty levels, evaluates multi-step reasoning, tool use, file processing, web browsing capabilities, uses Quasi Exact Match algorithm, tasks are realistic and comprehensive.
-- **AgentBench**<sup>[5]</sup>: Launched by Tsinghua University, includes 8 tasks in different domains, comprehensively evaluates agent general capabilities.
-- **WebArena**<sup>[6]</sup>: Launched by CMU, evaluates agent task completion and web interaction capabilities in real web environments.
+- **GAIA (Общие помощники по искусственному интеллекту)**<sup>[4]</sup>: запущено совместно Meta AI и Hugging Face, включает 466 реальных задач, разделенных на уровни сложности 1/2/3, оценивает многоэтапное рассуждение, использование инструментов, обработку файлов, возможности просмотра веб-страниц, использует алгоритм Quasi Exact Match, задачи реалистичны и полны.
+- **AgentBench**<sup>[5]</sup>: запущен Университетом Цинхуа, включает 8 задач в различных областях и всесторонне оценивает общие возможности агента.
+- **WebArena**<sup>[6]</sup>: запускается CMU и оценивает выполнение задач агента и возможности веб-взаимодействия в реальных веб-средах.
 
-**(3) Multi-Agent Collaboration Evaluation**
+**(3) Оценка многоагентного сотрудничества**
 
-Evaluates the ability of multiple agents to work collaboratively:
+Оценивает способность нескольких агентов работать совместно:
 
-- **ChatEval**<sup>[7]</sup>: Evaluates quality of multi-agent dialogue systems.
-- **SOTOPIA**<sup>[8]</sup>: Evaluates agent interaction capabilities in social scenarios.
-- **Custom Collaboration Scenarios**: Evaluation tasks designed according to specific application scenarios.
+- **ChatEval**<sup>[7]</sup>: оценивает качество многоагентных диалоговых систем.
+- **SOTOPIA**<sup>[8]</sup>: оценивает возможности взаимодействия агентов в социальных сценариях.
+- **Пользовательские сценарии сотрудничества**: задачи оценки, разработанные в соответствии с конкретными сценариями применения.
 
-**(4) Common Evaluation Metrics**
+**(4) Общие показатели оценки**
 
-Different benchmarks use different evaluation metrics, common ones include:
+В разных тестах используются разные метрики оценки, общие из них включают в себя:
 
-- **Accuracy Metrics**: Accuracy, Exact Match, F1 Score, used to measure answer correctness.
-- **Efficiency Metrics**: Response Time, Token Usage, used to measure execution efficiency.
-- **Robustness Metrics**: Error Rate, Failure Recovery, used to measure fault tolerance.
-- **Collaboration Metrics**: Communication Efficiency, Task Completion, used to measure collaboration effectiveness.
+- **Показатели точности**: точность, точное совпадение, оценка F1, используемые для измерения правильности ответов.
+- **Показатели эффективности**: время ответа, использование токена, используемые для измерения эффективности выполнения.
+- **Метрики надежности**: частота ошибок, восстановление после сбоев, используемые для измерения отказоустойчивости.
+- **Показатели сотрудничества**: эффективность общения, выполнение задач, используемые для измерения эффективности сотрудничества.
 
-### 12.1.3 HelloAgents Evaluation System Design
+### 12.1.3 Проектирование системы оценки HelloAgents
 
-Considering learning curve and practicality, this chapter will focus on the following evaluation scenarios:
+Учитывая кривую обучения и практичность, в этой главе основное внимание будет уделено следующим сценариям оценки:
 
-1. **BFCL**: Evaluate tool invocation capability
-   - Selection rationale: Moderate dataset size, clear evaluation metrics, active community
-   - Applicable scenarios: Evaluate agent function call accuracy
+1. **BFCL**: оценка возможности вызова инструмента.
+   - Обоснование выбора: умеренный размер набора данных, четкие показатели оценки, активное сообщество.
+   - Применимые сценарии: оценка точности вызова функций агента.
 
-2. **GAIA**: Evaluate general AI assistant capability
-   - Selection rationale: Realistic tasks, difficulty grading, strong comprehensiveness
-   - Applicable scenarios: Evaluate agent comprehensive problem-solving capability
+2. **GAIA**: оценка общих возможностей ИИ-помощника.
+   - Обоснование выбора: реалистичные задачи, градация сложности, высокая полнота.
+   - Применимые сценарии: оценка возможностей агента по комплексному решению проблем.
 
-3. **Data Generation Quality Evaluation**: Evaluate LLM-generated data quality
-   - Selection rationale: Through this case, experience complete demonstration of using Agent to create data and evaluate data
-   - Applicable scenarios: Evaluate quality of generated training data and test data
-   - Evaluation methods: LLM Judge, Win Rate, manual verification
+3. **Оценка качества генерации данных**: оценка качества данных, генерируемых LLM.
+   - Обоснование выбора: В этом случае вы получите полную демонстрацию использования агента для создания и оценки данных.
+   - Применимые сценарии: оценка качества сгенерированных данных обучения и тестовых данных.
+   - Методы оценки: судья LLM, процент побед, ручная проверка.
 
-Through these three evaluation scenarios, we will build a complete evaluation system. Figure 12.1 shows our evaluation system construction approach.
+Используя эти три сценария оценки, мы создадим полную систему оценки. На рис. 12.1 показан наш подход к построению системы оценки.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-1.png" alt="" width="85%"/>
-  <p>Figure 12.1 HelloAgents Evaluation System Architecture</p>
+  <p>Рисунок 12.1 Архитектура системы оценки HelloAgents</p>
 </div>
 
 
 
-### 12.1.4 Chapter Learning Objectives and Quick Experience
+### 12.1.4 Цели изучения главы и краткий опыт
 
-Let's first look at the learning content of Chapter 12:
+Давайте сначала посмотрим на учебное содержание главы 12:
 
 ```
 hello_agents/
@@ -143,7 +143,7 @@ hello_agents/
     └── win_rate_tool.py                # Win Rate tool
 ```
 
-For this chapter's content, the learning objective is to master the ability to apply evaluation tools. Let's first prepare the development environment:
+В рамках содержания этой главы целью обучения является овладение умением применять инструменты оценки. Сначала подготовим среду разработки:
 
 ```bash
 # Install HelloAgents framework (Chapter 12 version)
@@ -156,36 +156,36 @@ export HF_TOKEN="your_huggingface_token"     # For GAIA dataset (setup steps wil
 pip install "numpy==1.26.4" bfcl-eval
 ```
 
-In the following sections, we will deeply learn the detailed usage and introduction of each evaluation method.
+В следующих разделах мы подробно изучим подробное использование и представление каждого метода оценки.
 
-## 12.2 BFCL: Tool Invocation Capability Evaluation
+## 12.2 BFCL: оценка возможностей вызова инструмента
 
-### 12.2.1 BFCL Benchmark Introduction
+### 12.2.1 Введение в тест BFCL
 
-BFCL (Berkeley Function Calling Leaderboard) is a function calling capability evaluation benchmark launched by UC Berkeley<sup>[1]</sup>. In agent systems, tool calling is one of the core capabilities. Agents need to complete the following tasks:
+BFCL (Berkeley Function Calling Leaderboard) – это тест оценки возможностей вызова функций, запущенный Калифорнийским университетом в Беркли<sup>[1]</sup>. В агентских системах вызов инструментов является одной из основных возможностей. Агентам необходимо выполнить следующие задачи:
 
-1. **Understand Task Requirements**: Extract key information from user's natural language description
-2. **Select Appropriate Tools**: Choose the most suitable tool from available tool set
-3. **Construct Function Calls**: Correctly fill in function name and parameters
-4. **Handle Complex Scenarios**: Support advanced scenarios like multi-function calls, parallel calls
+1. **Понимание требований задачи**: извлечение ключевой информации из описания пользователя на естественном языке.
+2. **Выберите подходящие инструменты**: выберите наиболее подходящий инструмент из доступного набора инструментов.
+3. **Построение вызовов функций**: правильно заполните имя функции и параметры.
+4. **Обработка сложных сценариев**: поддержка расширенных сценариев, таких как многофункциональные вызовы и параллельные вызовы.
 
-The BFCL benchmark contains four evaluation categories with increasing difficulty. Starting from the most basic single function call (Simple), gradually increasing to scenarios requiring multiple function calls (Multiple), then to complex scenarios requiring parallel calls of multiple functions (Parallel), and finally to scenarios requiring judgment of whether function calls are needed (Irrelevance). These four categories cover various tool calling scenarios that agents may encounter in practical applications, as shown in Table 12.1:
+Тест BFCL содержит четыре категории оценки с возрастающей сложностью. Начиная с самого простого вызова одной функции (Простой), постепенно переходя к сценариям, требующим нескольких вызовов функций (Несколько), затем к сложным сценариям, требующим параллельных вызовов нескольких функций (Параллельный), и, наконец, к сценариям, требующим оценки необходимости вызова функций (Нерелевантность). Эти четыре категории охватывают различные сценарии вызова инструментов, с которыми агенты могут столкнуться в практических приложениях, как показано в Таблице 12.1:
 
 <div align="center">
-  <p>Table 12.1 Four Evaluation Categories in BFCL Benchmark</p>
+  <p>Таблица 12.1. Четыре категории оценки в тесте BFCL</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-1.png" alt="" width="85%"/>
 </div>
 
-The BFCL evaluation process follows standard benchmark testing procedures: first load dataset and select evaluation category, then run agent to obtain prediction results, next parse prediction results into Abstract Syntax Tree (AST), and finally judge whether predictions are correct through AST matching algorithm. The entire process traverses all test samples, ultimately calculating evaluation metrics like accuracy and generating evaluation reports. The complete evaluation process is shown in Figure 12.2:
+Процесс оценки BFCL следует стандартным процедурам эталонного тестирования: сначала загружается набор данных и выбирается категория оценки, затем запускается агент для получения результатов прогнозирования, затем анализируются результаты прогнозирования в абстрактном синтаксическом дереве (AST) и, наконец, судится о правильности прогнозов с помощью алгоритма сопоставления AST. Весь процесс охватывает все тестовые образцы, в конечном итоге рассчитывая показатели оценки, такие как точность, и создавая отчеты об оценке. Полный процесс оценки показан на рисунке 12.2:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-2.png" alt="" width="85%"/>
-  <p>Figure 12.2 BFCL Evaluation Process Diagram</p>
+  <p>Рисунок 12.2 Схема процесса оценки BFCL</p>
 </div>
 
-**(1) BFCL Dataset Structure**
+**(1) Структура набора данных BFCL**
 
-The BFCL dataset uses JSON format, with each test sample containing the following fields:
+Набор данных BFCL использует формат JSON, при этом каждый тестовый образец содержит следующие поля:
 
 ```json
 {
@@ -218,32 +218,32 @@ The BFCL dataset uses JSON format, with each test sample containing the followin
 }
 ```
 
-**Key Field Descriptions:**
+**Описание ключевых полей:**
 
-- `question`: User's natural language request
-- `function`: List of available functions (including function signatures and descriptions)
-- `ground_truth`: Standard answer (expected function call)
+- `вопрос`: запрос пользователя на естественном языке.
+- `function`: список доступных функций (включая сигнатуры и описания функций).
+- `ground_truth`: стандартный ответ (ожидаемый вызов функции)
 
-**(2) AST Matching Explanation**
+**(2) Объяснение соответствия AST**
 
-BFCL uses **AST Matching (Abstract Syntax Tree Matching)** as the core evaluation algorithm, so let's understand the evaluation strategy below.
+BFCL использует **Сопоставление AST (Сопоставление абстрактного синтаксического дерева)** в качестве основного алгоритма оценки, поэтому давайте разберемся в стратегии оценки, представленной ниже.
 
-BFCL uses Abstract Syntax Tree (AST) for intelligent matching, rather than simple string matching. The core idea of AST matching is: **Parse function calls into syntax trees, then compare tree structure and node values**.
+BFCL использует абстрактное синтаксическое дерево (AST) для интеллектуального сопоставления, а не простого сопоставления строк. Основная идея сопоставления AST заключается в следующем: **Разобрать вызовы функций в синтаксические деревья, затем сравнить древовидную структуру и значения узлов**.
 
-Given predicted function call $P$ and standard answer $G$, the AST matching function is defined as:
+Учитывая прогнозируемый вызов функции $P$ и стандартный ответ $G$, функция сопоставления AST определяется как:
 
 $$
 \text{AST\_Match}(P, G) = \begin{cases}
 1 & \text{if } \text{AST}(P) \equiv \text{AST}(G) \\
-0 & \text{otherwise}
-\end{cases}
+0 и \text{иначе}
+\end{случаи}
 $$
 
-Where $\text{AST}(x)$ represents parsing function call into abstract syntax tree, $\equiv$ represents syntax tree equivalence.
+Где $\text{AST}(x)$ представляет вызов функции синтаксического анализа в абстрактное синтаксическое дерево, $\equiv$ представляет эквивалентность синтаксического дерева.
 
-Two syntax trees are equivalent if they satisfy three core conditions: function names must be completely identical (exact match), parameter key-value pair sets are equal (ignoring order), and each parameter value is semantically equivalent (e.g., `2+3` is equivalent to `5`). In the specific matching process, function name matching requires exact string matching, for example `get_weather` and `get_temperature` are considered different functions. Parameter matching uses AST for intelligent comparison, allowing different parameter orders (`f(a=1, b=2)` is equivalent to `f(b=2, a=1)`), allowing equivalent expressions (`f(x=2+3)` is equivalent to `f(x=5)`), and also allowing different string representations (`f(s="hello")` is equivalent to `f(s='hello')`). For multi-function call scenarios, the matching algorithm requires calling the same number of functions, each function call must match, but call order can differ (using set matching).
+Два синтаксических дерева эквивалентны, если они удовлетворяют трем основным условиям: имена функций должны быть полностью идентичны (точное совпадение), наборы пар ключ-значение параметров равны (игнорируя порядок), и каждое значение параметра семантически эквивалентно (например,`2+3`эквивалентно`5`). В конкретном процессе сопоставления сопоставление имен функций требует точного сопоставления строк, например`get_weather`и`get_temperature`считаются разными функциями. Сопоставление параметров использует AST для интеллектуального сравнения, что позволяет использовать разные порядки параметров (`f(a=1, b=2)`эквивалентно`f(b=2, a=1)`), допуская эквивалентные выражения (`f(x=2+3)`эквивалентно`f(x=5)`), а также позволяет использовать различные строковые представления (`f(s="hello")`эквивалентно`f(s='hello')`). Для сценариев многофункционального вызова алгоритм сопоставления требует вызова одинакового количества функций, каждый вызов функции должен совпадать, но порядок вызовов может отличаться (с использованием сопоставления наборов).
 
-**AST Matching Examples:**
+**Примеры сопоставления AST:**
 
 ```python
 # Example 1: Different parameter order (match successful)
@@ -267,67 +267,67 @@ Standard: get_weather(city="Beijing")
 Result: ❌ Match failed
 ```
 
-**(3) BFCL Evaluation Metrics**
+**(3) Показатели оценки BFCL**
 
-BFCL uses the following metrics to evaluate agent performance:
+BFCL использует следующие показатели для оценки производительности агента:
 
-**1. Accuracy**
+**1. Точность**
 
-Accuracy is the most core metric, defined as the proportion of samples with successful AST matching:
+Точность — это самый основной показатель, определяемый как доля образцов с успешным сопоставлением AST:
 
 $$
 \text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \text{AST\_Match}(P_i, G_i)
 $$
 
-Where:
-- $N$ is the total number of samples
-- $P_i$ is the prediction result of the $i$-th sample
-- $G_i$ is the standard answer of the $i$-th sample
-- $\text{AST\_Match}(P_i, G_i) \in \{0, 1\}$ is the AST matching function
+Где:
+- $N$ — общее количество выборок
+- $P_i$ — результат предсказания $i$-й выборки
+- $G_i$ — стандартный ответ $i$-го образца
+- $\text{AST\_Match}(P_i, G_i) \in \{0, 1\}$ — функция сопоставления AST
 
-**2. AST Match Rate**
+**2. Коэффициент совпадения AST**
 
-Same as accuracy, emphasizing use of AST matching algorithm:
+То же, что и точность, с упором на использование алгоритма сопоставления AST:
 
 $$
-\text{AST Match Rate} = \text{Accuracy}
+\text{Коэффициент совпадения AST} = \text{Точность}
 $$
 
-**3. Category-wise Accuracy**
+**3. Точность по категориям**
 
-For each category $c \in \{\text{simple}, \text{multiple}, \text{parallel}, \ldots\}$, calculate the accuracy for that category:
+Для каждой категории $c \in \{\text{simple}, \text{multiple}, \text{parallel}, \ldots\}$ рассчитайте точность для этой категории:
 
 $$
 \text{Accuracy}_c = \frac{1}{|D_c|} \sum_{i \in D_c} \text{AST\_Match}(P_i, G_i)
 $$
 
-Where $D_c$ is the sample set of category $c$, $|D_c|$ is the number of samples in that category.
+Где $D_c$ — набор выборок категории $c$, $|D_c|$ — количество выборок в этой категории.
 
-**4. Weighted Accuracy**
+**4. Взвешенная точность**
 
-Considering difficulty weights of different categories:
-
-$$
-\text{Weighted Accuracy} = \sum_{c} w_c \cdot \text{Accuracy}_c
-$$
-
-Where $w_c$ is the weight of category $c$, satisfying $\sum_c w_c = 1$.
-
-**5. Error Rate**
-
-Proportion of samples that failed to correctly call functions:
+Учитывая веса сложности разных категорий:
 
 $$
-\text{Error Rate} = 1 - \text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} (1 - \text{AST\_Match}(P_i, G_i))
+\text{Взвешенная точность} = \sum_{c} w_c \cdot \text{Точность}_c
 $$
 
-**Metric Interpretation:**
+Где $w_c$ — вес категории $c$, удовлетворяющий условию $\sum_c w_c = 1$.
 
-- **Accuracy = 1.0**: All samples are completely correct
-- **Accuracy = 0.8**: 80% of samples correct, 20% of samples incorrect
-- **Accuracy = 0.0**: All samples are incorrect
+**5. Частота ошибок**
 
-**Category Accuracy Example:**
+Доля образцов, в которых не удалось правильно вызвать функции:
+
+$$
+\text{Коэффициент ошибок} = 1 - \text{Точность} = \frac{1}{N} \sum_{i=1}^{N} (1 - \text{AST\_Match}(P_i, G_i))
+$$
+
+**Метрическая интерпретация:**
+
+- **Точность = 1,0**: все образцы полностью верны.
+- **Точность = 0,8**: 80 % образцов верны, 20 % образцов неверны.
+- **Точность = 0,0**: все образцы неверны.
+
+**Пример точности категории:**
 
 ```python
 # Assume evaluation results
@@ -339,9 +339,9 @@ parallel_accuracy = 0.68    # Parallel category: 68% correct
 weighted_accuracy = (0.95 + 0.82 + 0.68) / 3 = 0.817
 ```
 
-**(4) BFCL Official Evaluation Tool**
+**(4) Официальный инструмент оценки BFCL**
 
-BFCL provides official CLI tool for evaluation:
+BFCL предоставляет официальный инструмент CLI для оценки:
 
 ```bash
 # Install BFCL evaluation tool
@@ -353,16 +353,16 @@ bfcl evaluate \
     --test-category simple_python
 ```
 
-Advantages of using the official evaluation tool: it uses the official AST matching algorithm, evaluation results are completely consistent with the leaderboard, supports all BFCL v4 categories, and can automatically generate detailed evaluation reports.
+Преимущества использования официального инструмента оценки: он использует официальный алгоритм сопоставления AST, результаты оценки полностью соответствуют таблице лидеров, поддерживают все категории BFCL v4 и могут автоматически генерировать подробные отчеты об оценке.
 
 
-### 12.2.2 Obtaining BFCL Dataset
+### 12.2.2 Получение набора данных BFCL
 
-The BFCL dataset can be obtained through the following methods:
+Набор данных BFCL можно получить следующими методами:
 
-**Method 1: Clone from Official GitHub Repository (Recommended)**
+**Метод 1: клонирование из официального репозитория GitHub (рекомендуется)**
 
-This is the most reliable method, obtaining complete dataset and ground truth:
+Это наиболее надежный метод, позволяющий получить полный набор данных и достоверную информацию:
 
 ```bash
 # Clone BFCL repository
@@ -378,11 +378,11 @@ ls bfcl_eval/data/possible_answer/
 # Output: BFCL_v4_simple_python.json  BFCL_v4_multiple.json  ...
 ```
 
-Reasons for recommending this method: it contains complete ground truth (standard answers), data format is completely consistent with official evaluation tool, can directly use official evaluation scripts, and supports BFCL v4 latest version.
+Причины, по которым рекомендуется этот метод: он содержит полную информацию (стандартные ответы), формат данных полностью соответствует официальному инструменту оценки, может напрямую использовать официальные сценарии оценки и поддерживает последнюю версию BFCL v4.
 
-**Method 2: Load Official Data Using HelloAgents**
+**Метод 2: загрузка официальных данных с помощью HelloAgents**
 
-After cloning repository, load data using HelloAgents:
+После клонирования репозитория загрузите данные с помощью HelloAgents:
 
 ```python
 from hello_agents.evaluation import BFCLDataset
@@ -403,14 +403,14 @@ print(f"✅ Loaded {len(dataset.ground_truth)} ground truth")
 # ✅ Loaded 400 ground truth
 ```
 
-The working principle of this loader is: first load test data from `bfcl_eval/data/`, then load ground truth from `bfcl_eval/data/possible_answer/`, next automatically merge test data and ground truth, and finally preserve original BFCL data format. BFCL v4 dataset categories can be viewed in Table 12.2.
+Принцип работы этого загрузчика: сначала загрузите данные теста из`bfcl_eval/data/`, затем загрузите основную информацию из`bfcl_eval/data/possible_answer/`, затем автоматически объединяет тестовые данные и наземные данные и, наконец, сохраняет исходный формат данных BFCL. Категории наборов данных BFCL v4 можно просмотреть в таблице 12.2.
 
 <div align="center">
-  <p>Table 12.2 Four Evaluation Categories in BFCL Benchmark</p>
+  <p>Таблица 12.2 Четыре категории оценки в тесте BFCL</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-2.png" alt="" width="85%"/>
 </div>
 
-You can also view available categories through code:
+Вы также можете просмотреть доступные категории с помощью кода:
 
 ```python
 # Get all supported categories
@@ -419,13 +419,13 @@ print(f"Supported categories: {categories}")
 # Output: ['simple_python', 'simple_java', 'simple_javascript', 'multiple', ...]
 ```
 
-### 12.2.3 Implementing BFCL Evaluation in HelloAgents
+### 12.2.3 Реализация оценки BFCL в HelloAgents
 
-Now let's see how to implement BFCL evaluation in the HelloAgents framework. We provide three usage methods:
+Теперь давайте посмотрим, как реализовать оценку BFCL в среде HelloAgents. Мы предоставляем три способа использования:
 
-**Method 1: Using BFCLEvaluationTool (Recommended)**
+**Метод 1: Использование BFCLEvaluationTool (рекомендуется)**
 
-This is the simplest method, completing evaluation, report generation, and official evaluation with one line of code:
+Это самый простой метод, завершающий оценку, создание отчета и официальную оценку с помощью одной строки кода:
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -450,7 +450,7 @@ print(f"Accuracy: {results['overall_accuracy']:.2%}")
 print(f"Correct: {results['correct_samples']}/{results['total_samples']}")
 ```
 
-**Run Output:**
+**Выполнить вывод:**
 
 ```
 ============================================================
@@ -516,9 +516,9 @@ Accuracy: 100.00%
 Correct: 5/5
 ```
 
-**Auto-generated Markdown Report:**
+**Отчет об уценке, создаваемый автоматически:**
 
-After evaluation completes, a detailed Markdown report is automatically generated, including:
+После завершения оценки автоматически создается подробный отчет Markdown, включающий:
 
 ```markdown
 # BFCL Evaluation Report
@@ -552,9 +552,9 @@ Accuracy: ███████████████████████�
 - ✅ Excellent performance! Agent shows outstanding tool calling capabilities.
 ```
 
-**Method 2: Using One-Click Evaluation Script**
+**Метод 2: использование сценария оценки в один клик**
 
-Suitable for quick command-line evaluation. In this chapter's accompanying code examples, we provide `04_run_bfcl_evaluation.py`, supporting direct command-line evaluation:
+Подходит для быстрой оценки из командной строки. В сопроводительных примерах кода этой главы мы предоставляем`04_run_bfcl_evaluation.py`, поддерживающий прямую оценку из командной строки:
 
 ```bash
 # Run evaluation script
@@ -567,11 +567,11 @@ python examples/04_run_bfcl_evaluation.py \
     --model-name "Qwen/Qwen3-8B"
 ```
 
-The script supports three parameters: `--category` specifies evaluation category (default simple_python), `--samples` specifies number of evaluation samples (default 5, 0 means all), `--model-name` specifies model name for BFCL official evaluation (default Qwen/Qwen3-8B).
+Скрипт поддерживает три параметра:`--category`указывает категорию оценки (по умолчанию simple_python),`--samples`указывает количество оценочных образцов (по умолчанию 5, 0 означает все),`--model-name`указывает название модели для официальной оценки BFCL (по умолчанию Qwen/Qwen3-8B).
 
-**Method 3: Directly Using Dataset and Evaluator**
+**Метод 3: непосредственное использование набора данных и средства оценки**
 
-Suitable for scenarios requiring custom evaluation process:
+Подходит для сценариев, требующих индивидуального процесса оценки:
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -609,23 +609,23 @@ evaluator.export_to_bfcl_format(
 )
 ```
 
-Through these three methods, we can choose appropriate evaluation methods based on different needs. If you just want to quickly understand agent performance, using BFCLEvaluationTool's one-click evaluation is most convenient; if you need batch evaluation or integration into CI/CD pipeline, using command-line scripts is more suitable; if you need deep customization of evaluation process or integration into your own system, directly using Dataset and Evaluator provides maximum flexibility.
+С помощью этих трех методов мы можем выбрать подходящие методы оценки, исходя из различных потребностей. Если вы просто хотите быстро оценить производительность агента, наиболее удобно использовать оценку одним щелчком мыши с помощью BFCLEvaluationTool; если вам нужна пакетная оценка или интеграция в конвейер CI/CD, лучше использовать сценарии командной строки; Если вам нужна глубокая настройка процесса оценки или интеграция в вашу собственную систему, непосредственное использование Dataset и Evaluator обеспечивает максимальную гибкость.
 
 
 
 
-### 12.2.4 BFCL Official Evaluation Tool Integration
+### 12.2.4 Интеграция официального инструмента оценки BFCL
 
-Previously we learned how to use HelloAgents' built-in evaluation functionality. In fact, `BFCLEvaluationTool` has **automatically integrated BFCL official evaluation tool**, allowing you to obtain authoritative, comparable evaluation results.
+Ранее мы узнали, как использовать встроенную функцию оценки HelloAgents. Фактически,`BFCLEvaluationTool`имеет **автоматически интегрированный официальный инструмент оценки BFCL**, позволяющий получать авторитетные и сопоставимые результаты оценки.
 
-The entire evaluation process includes four steps: first load test data from BFCL v4 dataset, then use HelloAgents to run evaluation and obtain agent prediction results, next export results to BFCL official format (JSONL), and finally use official evaluation script to calculate final scores. This process ensures evaluation results are completely consistent with BFCL leaderboard, as shown in Figure 12.3:
+Весь процесс оценки состоит из четырех этапов: сначала загрузите тестовые данные из набора данных BFCL v4, затем используйте HelloAgents для запуска оценки и получения результатов прогнозирования агента, затем экспортируйте результаты в официальный формат BFCL (JSONL) и, наконец, используйте официальный сценарий оценки для расчета окончательных оценок. Этот процесс гарантирует, что результаты оценки полностью соответствуют таблице лидеров BFCL, как показано на рисунке 12.3:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-3.png" alt="" width="85%"/>
-  <p>Figure 12.3 HelloAgents Loading BFCL Evaluation Process</p>
+  <p>Рисунок 12.3. HelloAgents загружает процесс оценки BFCL</p>
 </div>
 
-When using `BFCLEvaluationTool`, official evaluation **runs automatically** (enabled by default):
+При использовании`BFCLEvaluationTool`, официальная оценка **запускается автоматически** (включена по умолчанию):
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -648,7 +648,7 @@ results = bfcl_tool.run(
 )
 ```
 
-The tool automatically executes the complete evaluation process: first run HelloAgents evaluation to obtain prediction results, then export results to BFCL format and save to `evaluation_results/bfcl_official/` directory, next copy result file to `result/{model_name}/` directory to meet official evaluation tool requirements, then run BFCL official evaluation command to calculate scores, and finally display official evaluation results and generate Markdown format evaluation report.
+Инструмент автоматически выполняет полный процесс оценки: сначала запустите оценку HelloAgents, чтобы получить результаты прогнозирования, затем экспортируйте результаты в формат BFCL и сохраните их в формате BFCL.`evaluation_results/bfcl_official/`каталог, следующий файл результатов копирования в`result/{model_name}/`каталог для удовлетворения требований официального инструмента оценки, затем запустите официальную команду оценки BFCL для расчета баллов и, наконец, отобразите официальные результаты оценки и сгенерируйте отчет об оценке в формате Markdown.
 
 **Official Evaluation Output Example:**
 
@@ -675,7 +675,7 @@ Qwen/Qwen3-8B,100.00,100.00
    Correct: 5/5
 ```
 
-If you want to manually control the evaluation process, you can disable automatic official evaluation:
+Если вы хотите вручную контролировать процесс оценки, вы можете отключить автоматическую официальную оценку:
 
 ```python
 # Disable official evaluation
@@ -696,7 +696,7 @@ subprocess.run([
 ])
 ```
 
-You can also manually generate reports:
+Вы также можете создавать отчеты вручную:
 
 ```python
 # Run evaluation
@@ -714,13 +714,13 @@ print(report)
 
 
 
-### 12.2.5 Core Component Implementation Details
+### 12.2.5 Детали реализации основного компонента
 
-In previous sections, we learned how to use BFCL evaluation tools. Now let's dive into how HelloAgents evaluation system's core components are implemented. Understanding these implementation details not only helps you better use the evaluation system, but also allows you to customize and extend according to your own needs.
+В предыдущих разделах мы узнали, как использовать инструменты оценки BFCL. Теперь давайте углубимся в то, как реализованы основные компоненты системы оценки HelloAgents. Понимание этих деталей реализации не только поможет вам лучше использовать систему оценки, но также позволит настраивать и расширять ее в соответствии с вашими потребностями.
 
-**(1) BFCLDataset: Dataset Loader**
+**(1) BFCLDataset: загрузчик набора данных**
 
-BFCLDataset is responsible for loading and managing BFCL dataset:
+BFCLDataset отвечает за загрузку набора данных BFCL и управление им:
 
 ````python
 class BFCLDataset:
@@ -740,11 +740,11 @@ class BFCLDataset:
         return self._load_from_huggingface()
 ````
 
-Because BFCL's dataset is in the official repository, the recommended approach here is to directly clone a local copy for evaluation. Only when not found will it load from Hugging Face.
+Поскольку набор данных BFCL находится в официальном репозитории, рекомендуемым подходом здесь является прямое клонирование локальной копии для оценки. Только если он не найден, он будет загружаться из Hugging Face.
 
-**(2) BFCLEvaluator: Evaluation Executor**
+**(2) BFCLEvaluator: Исполнитель оценки**
 
-BFCLEvaluator is responsible for executing the evaluation process. Its core is the `evaluate()` method, which coordinates the entire evaluation process:
+BFCLEvaluator отвечает за выполнение процесса оценки. Его ядром является`evaluate()`метод, который координирует весь процесс оценки:
 
 ````python
 class BFCLEvaluator:
@@ -777,9 +777,9 @@ class BFCLEvaluator:
         return {"results": results, "total_samples": len(results)}
 ````
 
-This evaluator's design contains three core points: first is prompt construction, needing to convert questions and function definitions in dataset into prompts understandable by agent; second is function call extraction, needing to extract function calls from agent's response and support multiple formats (JSON, code blocks, etc.); finally is AST matching, using abstract syntax tree for function call comparison, which is more accurate than simple string matching.
+ Схема этого оценщика содержит три основных момента: во-первых, это построение подсказок, требующее преобразования вопросов и определений функций в наборе данных в подсказки, понятные агенту; во-вторых, извлечение вызовов функций, требующее извлечения вызовов функций из ответа агента и поддержки нескольких форматов (JSON, блоки кода и т. д.); наконец, это сопоставление AST, использующее абстрактное синтаксическое дерево для сравнения вызовов функций, что более точно, чем простое сопоставление строк.
 
-Let's look at the implementation of function call extraction:
+Давайте посмотрим на реализацию извлечения вызовов функций:
 
 ```python
 def _extract_function_calls(self, response: str) -> List[Dict[str, Any]]:
@@ -814,9 +814,9 @@ def _extract_function_calls(self, response: str) -> List[Dict[str, Any]]:
     return calls
 ```
 
-**(3) BFCLMetrics: Metrics Calculator**
+**(3) BFCLMetrics: Калькулятор показателей**
 
-BFCLMetrics is responsible for calculating various evaluation metrics:
+BFCLMetrics отвечает за расчет различных метрик оценки:
 
 ````python
 class BFCLMetrics:
@@ -833,9 +833,9 @@ class BFCLMetrics:
         }
 ````
 
-**AST Matching Implementation**:
+**Реализация сопоставления AST**:
 
-AST matching is the core technology of BFCL evaluation. It is more intelligent than simple string matching and can identify semantically equivalent function calls:
+Сопоставление AST — это основная технология оценки BFCL. Он более интеллектуален, чем простое сопоставление строк, и может идентифицировать семантически эквивалентные вызовы функций:
 
 ```python
 def _ast_match(self, pred_call: Dict, true_call: Dict) -> bool:
@@ -865,9 +865,9 @@ def _args_to_ast(self, args: Dict[str, Any]) -> ast.AST:
     return tree.body[0].value  # Return Call node
 ```
 
-**(4) Tool Encapsulation: BFCLEvaluationTool**
+**(4) Инкапсуляция инструмента: BFCLEvaluationTool**
 
-Finally, we encapsulate these components into a Tool so it can be directly called by agents:
+Наконец, мы инкапсулируем эти компоненты в инструмент, чтобы агенты могли напрямую вызывать его:
 
 ````python
 class BFCLEvaluationTool(Tool):
@@ -900,29 +900,29 @@ class BFCLEvaluationTool(Tool):
         return json.dumps(results, ensure_ascii=False)
 ````
 
-This tool's design follows three core principles: first inherit Tool base class to follow HelloAgents' tool specification, ensuring seamless integration with framework; second perform strict parameter validation, checking required parameters and providing friendly error prompts, improving user experience; finally format results, returning JSON string for easy parsing and display. Through this modular design, we implemented an evaluation system that is both easy to use and flexible. Users can directly use high-level Tool interface to quickly complete evaluation, or dive into low-level components for customization to meet special needs.
+Конструкция этого инструмента соответствует трем основным принципам: сначала наследовать базовый класс Tool, чтобы следовать спецификации инструмента HelloAgents, обеспечивая плавную интеграцию с платформой; во-вторых, выполнять строгую проверку параметров, проверять необходимые параметры и предоставлять понятные подсказки об ошибках, улучшая взаимодействие с пользователем; наконец, форматируйте результаты, возвращая строку JSON для удобного анализа и отображения. Благодаря этой модульной конструкции мы внедрили систему оценки, которая проста в использовании и гибка. Пользователи могут напрямую использовать интерфейс инструмента высокого уровня для быстрого выполнения оценки или погрузиться в низкоуровневые компоненты для настройки в соответствии с особыми потребностями.
 
-### 12.2.6 Extension and Optimization Recommendations
+### 12.2.6 Рекомендации по расширению и оптимизации
 
-Through previous learning, we have mastered how to use HelloAgents for BFCL evaluation. It should be noted that our current implementation is a simple reproduction based on SimpleAgent, mainly completing basic BFCL evaluation functionality. In practical applications, BFCL benchmark contains multiple difficulty levels and scenarios. To achieve higher scores on the leaderboard, further optimization and extension are needed.
+Благодаря предыдущему обучению мы научились использовать HelloAgents для оценки BFCL. Следует отметить, что наша текущая реализация представляет собой простую копию, основанную на SimpleAgent, в основном завершающую базовые функции оценки BFCL. В практических приложениях тест BFCL содержит несколько уровней сложности и сценариев. Для достижения более высоких результатов в таблице лидеров необходима дальнейшая оптимизация и расширение.
 
-**(1) Limitations of Current Implementation**
+**(1) Ограничения текущей реализации**
 
-Our current SimpleAgent implementation mainly focuses on building the evaluation process, with room for improvement in tool calling capabilities. SimpleAgent uses custom tool calling format `[TOOL_CALL:tool_name:parameters]`, which requires LLM to actively learn and use. In complex scenarios, performance may not match agents using native function calling. Additionally, we currently only test basic categories like simple_python. For more complex scenarios like multiple, parallel, irrelevance, targeted optimization is still needed.
+Наша текущая реализация SimpleAgent в основном ориентирована на построение процесса оценки с возможностью улучшения возможностей вызова инструментов. SimpleAgent использует собственный формат вызова инструментов.`[TOOL_CALL:tool_name:parameters]`, что требует активного изучения и использования LLM. В сложных сценариях производительность может не соответствовать агентам, использующим вызов собственных функций. Кроме того, в настоящее время мы тестируем только базовые категории, такие как simple_python. Для более сложных сценариев, таких как множественные, параллельные и нерелевантные сценарии, по-прежнему необходима целевая оптимизация.
 
-**(2) Directions for Improving BFCL Scores**
+**(2) Направления улучшения показателей BFCL**
 
-To further improve BFCL evaluation scores, you can start from the following directions. First is optimizing agent's tool calling capability - consider using LLMs that support native function calling (like GPT-4, Claude, etc.), or improve prompts to help LLM better understand tool calling format. Second is expanding tool library - BFCL tests involve various types of functions, you can pre-implement common tool types based on test dataset characteristics to improve agent's tool coverage. Third is designing different strategies for different difficulty levels - for example, in multiple scenarios agents need to plan multi-step tool calling sequences, in parallel scenarios they need to identify tool calls that can be executed in parallel, in irrelevance scenarios they need to judge whether tool calling is truly needed.
+Чтобы еще больше улучшить оценки BFCL, вы можете начать со следующих направлений. Во-первых, это оптимизация возможностей вызова инструментов агента: рассмотрите возможность использования LLM, которые поддерживают вызов собственных функций (например, GPT-4, Claude и т. д.), или улучшите подсказки, чтобы помочь LLM лучше понять формат вызова инструментов. Во-вторых, это расширение библиотеки инструментов: тесты BFCL включают в себя различные типы функций. Вы можете предварительно реализовать общие типы инструментов на основе характеристик набора тестовых данных, чтобы улучшить охват инструментов агента. В-третьих, это разработка различных стратегий для разных уровней сложности: например, в нескольких сценариях агентам необходимо планировать многоэтапные последовательности вызовов инструментов, в параллельных сценариях им необходимо идентифицировать вызовы инструментов, которые могут выполняться параллельно, в нерелевантных сценариях им нужно судить, действительно ли вызов инструментов необходим.
 
-**(3) Practice Recommendations**
+**(3) Практические рекомендации**
 
-For developers wanting to achieve better results on BFCL, the following practice strategies are recommended. First, start from simple category, ensure basic single function calls work stably - this is the foundation for subsequent optimization. Then, gradually test more complex categories like multiple, parallel, analyze failure cases, find agent's weak points. During optimization, you can refer to high-scoring models on BFCL leaderboard, learn their design ideas and optimization techniques. Meanwhile, it's recommended to use official evaluation tools for validation, ensuring optimized results are consistent with leaderboard standards.
+Разработчикам, желающим добиться лучших результатов в BFCL, рекомендуются следующие практические стратегии. Во-первых, начните с простой категории, убедитесь, что основные вызовы одиночных функций работают стабильно — это основа для последующей оптимизации. Затем постепенно тестируйте более сложные категории, такие как множественность, параллель, анализируйте случаи сбоев, находите слабые места агента. Во время оптимизации вы можете обращаться к моделям с высокими оценками в таблице лидеров BFCL, изучать их дизайнерские идеи и методы оптимизации. Между тем, для проверки рекомендуется использовать официальные инструменты оценки, чтобы обеспечить соответствие оптимизированных результатов стандартам таблицы лидеров.
 
-Here are some suggestions for further processing during evaluation:
+Вот несколько предложений по дальнейшей обработке во время оценки:
 
-**1. Progressive Evaluation**
+**1. Прогрессивная оценка**
 
-Start from small samples, gradually increase sample count:
+Начните с небольших выборок, постепенно увеличивая количество выборок:
 
 ```python
 # Step 1: Quick test (5 samples)
@@ -937,9 +937,9 @@ if results_medium['overall_accuracy'] > 0.8:
     results_full = bfcl_tool.run(agent, category="simple_python", max_samples=0)
 ```
 
-**2. Multi-Category Evaluation**
+**2. Многокатегорийная оценка**
 
-Evaluate tasks of different difficulties:
+Оценивайте задания разной сложности:
 
 ```python
 categories = ["simple_python", "multiple", "parallel", "irrelevance"]
@@ -950,9 +950,9 @@ for category in categories:
     print(f"Accuracy: {results['overall_accuracy']:.2%}")
 ```
 
-**3. Comparative Evaluation**
+**3. Сравнительная оценка**
 
-Compare agents with different configurations:
+Сравните агентов с разными конфигурациями:
 
 ```python
 # Configuration 1: Default prompt
@@ -969,51 +969,51 @@ print(f"Default configuration accuracy: {results1['overall_accuracy']:.2%}")
 print(f"Optimized configuration accuracy: {results2['overall_accuracy']:.2%}")
 ```
 
-If your evaluation results are good, consider submitting to BFCL official leaderboard!
+Если ваши результаты оценки хорошие, рассмотрите возможность подачи заявки в официальную таблицу лидеров BFCL!
 
-**Step 1: Prepare Submission Materials**
+**Шаг 1. Подготовьте материалы для подачи**
 
-1. Model description document
-2. Evaluation result files (all categories)
-3. Model access method (API or open-source link)
+1. Документ с описанием модели
+2. Файлы результатов оценки (все категории)
+3. Метод доступа к модели (API или ссылка с открытым исходным кодом)
 
-**Step 2: Submit to GitHub**
+**Шаг 2. Отправьте сообщение на GitHub**
 
-Visit BFCL official repository and submit Pull Request according to instructions:
+Посетите официальный репозиторий BFCL и отправьте запрос на включение согласно инструкциям:
 
-- Repository: https://github.com/ShishirPatil/gorilla
-- Submission guide: Refer to `CONTRIBUTING.md`
+- Репозиторий: https://github.com/SishirPatil/gorilla.
+- Руководство по подаче: см. `CONTRIBUTING.md`
 
-**Step 3: Wait for Review**
+**Шаг 3. Дождитесь проверки**
 
-BFCL team will review your submission and verify result accuracy. After approval, your model will appear on the official leaderboard!
+Команда BFCL рассмотрит вашу заявку и проверит точность результатов. После одобрения ваша модель появится в официальной таблице лидеров!
 
 
 
 ## 12.3 GAIA: General AI Assistant Capability Evaluation
 
-### 12.3.1 GAIA Benchmark Introduction
+### 12.3.1 Введение в тест GAIA
 
-GAIA (General AI Assistants) is an evaluation benchmark jointly launched by Meta AI and Hugging Face, focusing on evaluating AI assistants' **general capabilities**<sup>[2]</sup>. Unlike BFCL's focus on tool calling, GAIA evaluates agents' comprehensive performance in real-world tasks.
+GAIA (General AI Assistants) — это тест оценки, запущенный совместно Meta AI и Hugging Face и ориентированный на оценку **общих возможностей AI-помощников**<sup>[2]</sup>. В отличие от BFCL, ориентированного на вызов инструментов, GAIA оценивает комплексную производительность агентов при выполнении реальных задач.
 
-GAIA's design philosophy is: **Real-world problems often require comprehensive application of multiple capabilities**. An excellent AI assistant not only needs to call tools, but also needs to:
+Философия проектирования GAIA такова: **Реальные проблемы часто требуют комплексного применения множества возможностей**. Превосходному ИИ-помощнику нужно не только вызывать инструменты, но и:
 
-- **Multi-step Reasoning**: Decompose complex problems into multiple sub-problems
-- **Knowledge Application**: Utilize built-in knowledge and external knowledge bases
-- **Multimodal Understanding**: Process multiple inputs like text, images, files
-- **Web Browsing**: Obtain latest information from the internet
-- **File Operations**: Read and process files in various formats
+- **Многоэтапное рассуждение**: разбивайте сложные проблемы на несколько подзадач.
+- **Применение знаний**: используйте встроенные знания и внешние базы знаний.
+- **Многомодальное понимание**: обработка нескольких входных данных, таких как текст, изображения и файлы.
+- **Просмотр веб-страниц**: получайте самую свежую информацию из Интернета.
+- **Операции с файлами**: чтение и обработка файлов в различных форматах.
 
-**(1) GAIA Dataset Structure**
+**(1) Структура набора данных GAIA**
 
-After understanding GAIA's evaluation philosophy, let's dive into the specific structure of GAIA dataset. GAIA contains 466 carefully designed real-world problems. These problems are divided into three difficulty levels based on complexity and required reasoning steps, from simple zero-step reasoning tasks to difficult tasks requiring multi-step complex reasoning, comprehensively covering various scenarios agents may encounter in practical applications, as shown in Table 12.3:
+Поняв философию оценки GAIA, давайте углубимся в конкретную структуру набора данных GAIA. GAIA содержит 466 тщательно разработанных задач из реального мира. Эти задачи разделены на три уровня сложности в зависимости от сложности и требуемых шагов рассуждения: от простых задач рассуждения с нулевым шагом до сложных задач, требующих многоэтапного сложного рассуждения, всесторонне охватывающих различные сценарии, с которыми агенты могут столкнуться в практических приложениях, как показано в Таблице 12.3:
 
 <div align="center">
-  <p>Table 12.3 GAIA Dataset Difficulty Level Distribution</p>
+  <p>Таблица 12.3 Распределение уровней сложности набора данных GAIA</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-3.png" alt="" width="85%"/>
 </div>
 
-For GAIA dataset sample examples, refer to the code snippet below:
+Примеры наборов данных GAIA приведены в приведенном ниже фрагменте кода:
 
 ```json
 {
@@ -1036,31 +1036,31 @@ For GAIA dataset sample examples, refer to the code snippet below:
 }
 ```
 
-**Key Field Descriptions:**
-- `Question`: Question description
-- `Level`: Difficulty level (1-3)
-- `Final answer`: Standard answer (may be number, text, or file)
-- `file_name/file_path`: Attachment file (if any)
-- `Annotator Metadata`: Metadata provided by annotator (reasoning steps, required tools, etc.)
+**Описание ключевых полей:**
+-`Question`: Описание вопроса
+-`Level`: Уровень сложности (1-3)
+-`Final answer`: стандартный ответ (может быть числом, текстом или файлом).
+-`file_name/file_path`: Вложенный файл (если есть)
+-`Annotator Metadata`: Метаданные, предоставленные аннотатором (этапы рассуждения, необходимые инструменты и т. д.).
 
-**(2) Quasi Exact Match Introduction**
+**(2) Введение в квазиточное совпадение**
 
-GAIA uses **Quasi Exact Match** evaluation algorithm, which is GAIA's officially defined evaluation standard. The core idea of this algorithm is: **First normalize answers, then perform exact matching**.
+GAIA использует алгоритм оценки **Quasi Exact Match**, который является официально определенным стандартом оценки GAIA. Основная идея этого алгоритма: **Сначала нормализуйте ответы, затем выполните точное сопоставление**.
 
-Given predicted answer $A_{\text{pred}}$ and standard answer $A_{\text{true}}$, the quasi exact match function is defined as:
+Учитывая прогнозируемый ответ $A_{\text{pred}}$ и стандартный ответ $A_{\text{true}}$, функция квазиточного соответствия определяется как:
 
 $$
 \text{Quasi\_Exact\_Match}(A_{\text{pred}}, A_{\text{true}}) = \begin{cases}
 1 & \text{if } \mathcal{N}(A_{\text{pred}}) = \mathcal{N}(A_{\text{true}}) \\
-0 & \text{otherwise}
-\end{cases}
+0 и \text{иначе}
+\end{случаи}
 $$
 
-Where $\mathcal{N}(\cdot)$ is the normalization function, applying different rules based on answer type.
+Где $\mathcal{N}(\cdot)$ — функция нормализации, применяющая разные правила в зависимости от типа ответа.
 
-The normalization function applies different rules based on answer type. For numeric types, remove comma separators (`1,000` → `1000`) and unit symbols (`$100` → `100`, `50%` → `50`), for example `"$1,234.56"` normalizes to `"1234.56"`. For string types, convert to lowercase (`"Apple"` → `"apple"`), remove articles (`"the apple"` → `"apple"`), remove extra spaces (`"hello  world"` → `"hello world"`) and remove trailing punctuation (`"hello."` → `"hello"`), for example `"The United States"` normalizes to `"united states"`. For list types, split elements by comma, apply string normalization to each element, sort alphabetically then rejoin, for example `"Paris, London, Berlin"` normalizes to `"berlin,london,paris"`.
+Функция нормализации применяет разные правила в зависимости от типа ответа. Для числовых типов удалите разделители-запятые (`1,000`→`1000`) и символы единиц (`$100`→`100`, `50%`→`50`), например`"$1,234.56"`нормализуется до`"1234.56"`. Для строковых типов преобразуйте их в нижний регистр (`"Apple"`→`"apple"`), удалить статьи (`"the apple"`→`"apple"`), удалите лишние пробелы (`"hello  world"`→`"hello world"`) и удалите конечные знаки препинания (`"hello."`→`"hello"`), например`"The United States"`нормализуется до`"united states"`. Для типов списков разделите элементы запятой, примените нормализацию строк к каждому элементу, отсортируйте их в алфавитном порядке, а затем снова соедините, например`"Paris, London, Berlin"`нормализуется до`"berlin,london,paris"`.
 
-**Normalization Examples:**
+**Примеры нормализации:**
 
 ```python
 # Numeric answer
@@ -1076,72 +1076,72 @@ Original answer: "Paris, London, Berlin"
 Normalized: "berlin, london, paris"
 ```
 
-**(3) GAIA Evaluation Metrics**
+**(3) Показатели оценки GAIA**
 
-GAIA uses the following metrics to evaluate agent performance:
+GAIA использует следующие показатели для оценки производительности агентов:
 
-**1. Exact Match Rate**
+**1. Точный коэффициент совпадения**
 
-Exact match rate is GAIA's core metric, defined as the proportion of samples with successful quasi exact matching:
+Коэффициент точного совпадения — это основной показатель GAIA, определяемый как доля образцов с успешным квазиточным совпадением:
 
 $$
-\text{Exact Match Rate} = \frac{1}{N} \sum_{i=1}^{N} \text{Quasi\_Exact\_Match}(A_{\text{pred},i}, A_{\text{true},i})
+\text{Коэффициент точного совпадения} = \frac{1}{N} \sum_{i=1}^{N} \text{Quasi\_Exact\_Match}(A_{\text{pred},i}, A_{\text{true},i})
 $$
 
-Where:
-- $N$ is the total number of samples
-- $A_{\text{pred},i}$ is the predicted answer of the $i$-th sample
-- $A_{\text{true},i}$ is the standard answer of the $i$-th sample
-- $\text{Quasi\_Exact\_Match}(\cdot, \cdot) \in \{0, 1\}$ is the quasi exact match function
+Где:
+- $N$ — общее количество выборок
+- $A_{\text{pred},i}$ — предсказанный ответ $i$-й выборки
+- $A_{\text{true},i}$ — стандартный ответ $i$-го образца
+- $\text{Quasi\_Exact\_Match}(\cdot, \cdot) \in \{0, 1\}$ — функция квазиточного совпадения
 
-**2. Level-wise Accuracy**
+**2. Точность по уровням**
 
-For each difficulty level $\ell \in \{1, 2, 3\}$, calculate the accuracy for that level:
+Для каждого уровня сложности $\ell \in \{1, 2, 3\}$ рассчитайте точность для этого уровня:
 
 $$
 \text{Accuracy}_\ell = \frac{1}{|D_\ell|} \sum_{i \in D_\ell} \text{Quasi\_Exact\_Match}(A_{\text{pred},i}, A_{\text{true},i})
 $$
 
-Where $D_\ell$ is the sample set of difficulty level $\ell$, $|D_\ell|$ is the number of samples at that level.
+Где $D_\ell$ — набор выборок уровня сложности $\ell$, $|D_\ell|$ — количество выборок на этом уровне.
 
-**3. Difficulty Progression Drop Rate**
+**3. Скорость снижения уровня сложности**
 
-Measures agent's performance degradation as difficulty increases:
+Измеряет снижение производительности агента по мере увеличения сложности:
 
 $$
-\text{Drop Rate}_{\ell \to \ell+1} = \frac{\text{Accuracy}_\ell - \text{Accuracy}_{\ell+1}}{\text{Accuracy}_\ell}
+\text{Скорость падения}_{\ell \to \ell+1} = \frac{\text{Точность}_\ell - \text{Точность}_{\ell+1}}{\text{Точность}_\ell}
 $$
 
-- $\text{Drop Rate}_{1 \to 2}$: Drop rate from Level 1 to Level 2
-- $\text{Drop Rate}_{2 \to 3}$: Drop rate from Level 2 to Level 3
+- $\text{Скорость падения}_{1 \to 2}$: Скорость падения с уровня 1 на уровень 2.
+- $\text{Drop Rate}_{2 \to 3}$: Скорость падения с уровня 2 на уровень 3.
 
-**4. Average Reasoning Steps**
+**4. Среднее количество шагов рассуждения**
 
-Evaluates average number of steps required by agent to complete tasks:
+Оценивает среднее количество шагов, необходимых агенту для выполнения задач:
 
 $$
 \text{Avg Steps} = \frac{1}{N_{\text{correct}}} \sum_{i \in \text{Correct}} \text{steps}_i
 $$
 
-Where $N_{\text{correct}}$ is the number of correctly answered samples, $\text{steps}_i$ is the number of reasoning steps for the $i$-th sample.
+Где $N_{\text{correct}}$ — количество правильно ответивших образцов, $\text{steps}_i$ — количество шагов рассуждения для $i$-го образца.
 
-**Metric Interpretation:**
+**Метрическая интерпретация:**
 
-- **Exact Match Rate = 1.0**: All samples are completely correct
-- **Exact Match Rate = 0.5**: 50% of samples correct, 50% of samples incorrect
-- **Drop Rate = 0.3**: Difficulty increase causes 30% accuracy drop
-- **Drop Rate = 0.0**: Difficulty increase doesn't affect accuracy (ideal case)
+- **Точный коэффициент совпадения = 1,0**: все образцы полностью верны.
+- **Коэффициент точного совпадения = 0,5**: 50 % образцов верны, 50 % образцов неверны.
+- **Скорость падения = 0,3**: увеличение сложности приводит к снижению точности на 30%.
+- **Скорость выпадения = 0,0**: увеличение сложности не влияет на точность (идеальный случай).
 
-**Evaluation Example:**
+**Пример оценки:**
 
-Suppose we evaluated 10 samples, results can be referenced in Table 12.4:
+Предположим, мы оценили 10 образцов. Результаты можно найти в Таблице 12.4:
 
 <div align="center">
-  <p>Table 12.4 GAIA Dataset Difficulty Level Distribution</p>
+  <p>Таблица 12.4 Распределение уровней сложности набора данных GAIA</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-4.png" alt="" width="85%"/>
 </div>
 
-To calculate metrics for this case, refer to the Python script below:
+Чтобы рассчитать метрики для этого случая, обратитесь к сценарию Python ниже:
 
 ```python
 # 1. Exact match rate
@@ -1174,17 +1174,17 @@ print(f"Level 1→2 drop rate: {drop_rate_1_to_2:.2%}")  # 33.00%
 print(f"Level 2→3 drop rate: {drop_rate_2_to_3:.2%}")  # 25.00%
 ```
 
-**Result Analysis:**
+**Анализ результатов:**
 
-- **Overall Performance**: 70% exact match rate, good performance
-- **Difficulty Sensitivity**: 33% drop from Level 1 to Level 2, indicating significant degradation in medium difficulty tasks
-- **Capability Boundary**: Level 3 accuracy is 50%, indicating room for improvement in complex tasks
+- **Общая производительность**: 70 % точного соответствия, хорошая производительность.
+- **Чувствительность к сложности**: снижение на 33% с уровня 1 до уровня 2, что указывает на значительное ухудшение выполнения задач средней сложности.
+- **Граница возможностей**: точность уровня 3 составляет 50 %, что указывает на возможности для улучшения при выполнении сложных задач.
 
-The larger the drop rate, the more obvious the agent's capability degradation when handling complex tasks.
+Чем больше процент отбрасывания, тем более очевидно снижение возможностей агента при выполнении сложных задач.
 
-**(4) GAIA Official System Prompt**
+**(4) Официальная системная подсказка GAIA**
 
-GAIA requires using specific system prompt to ensure model output conforms to evaluation format:
+GAIA требует использования специального системного приглашения, чтобы гарантировать, что выходные данные модели соответствуют формату оценки:
 
 ```python
 GAIA_SYSTEM_PROMPT = """You are a general AI assistant. I will ask you a question. Report your thoughts, and finish your answer with the following template: FINAL ANSWER: [YOUR FINAL ANSWER].
@@ -1198,31 +1198,31 @@ If you are asked for a string, don't use articles, neither abbreviations (e.g. f
 If you are asked for a comma separated list, apply the above rules depending of whether the element to be put in the list is a number or a string."""
 ```
 
-GAIA has strict requirements for answer format: answers must be given in `FINAL ANSWER: [answer]` format; for numeric answers, don't use comma separators and unit symbols; for string answers, don't use articles and abbreviations; for list answers, use comma separation and arrange alphabetically.
+GAIA предъявляет строгие требования к формату ответов: ответы должны быть даны в`FINAL ANSWER: [answer]`формат; для числовых ответов не используйте разделители-запятые и символы единиц; для строковых ответов не используйте артикли и сокращения; для ответов в виде списка используйте запятую и располагайте их в алфавитном порядке.
 
-### 12.3.2 Obtaining GAIA Dataset
+### 12.3.2 Получение набора данных GAIA
 
-**Important Note**: GAIA is a **Gated Dataset**, requiring prior application for access permission on HuggingFace.
+**Важное примечание**: GAIA — это **закрытый набор данных**, для получения разрешения на доступ к HuggingFace требуется предварительное заявление.
 
-**Step 1: Apply for Access Permission**
+**Шаг 1. Подайте заявку на получение разрешения на доступ**
 
-1. Visit https://huggingface.co/datasets/gaia-benchmark/GAIA
-2. Click "Request access" button
-3. Fill out application form (usually approved within seconds)
-4. Get your HuggingFace Token: https://huggingface.co/settings/tokens
+1. Посетите https://huggingface.co/datasets/gaia-benchmark/GAIA.
+2. Нажмите кнопку «Запросить доступ».
+3. Заполните форму заявки (обычно утверждается в течение нескольких секунд)
+4. Получите свой токен HuggingFace: https://huggingface.co/settings/tokens
 
-**Step 2: Configure Environment Variables**
+**Шаг 2. Настройте переменные среды**
 
-Add your HuggingFace Token to `.env` file:
+Добавьте свой токен HuggingFace в`.env`файл:
 
 ```bash
 # HuggingFace API configuration
 HF_TOKEN=hf_your_token_here
 ```
 
-**Method 1: Automatic Download Using HelloAgents (Recommended)**
+**Метод 1: автоматическая загрузка с помощью HelloAgents (рекомендуется)**
 
-HelloAgents automatically handles GAIA dataset download and caching:
+HelloAgents автоматически обрабатывает загрузку и кэширование набора данных GAIA:
 
 ```python
 from hello_agents.evaluation import GAIADataset
@@ -1243,13 +1243,13 @@ print(f"Loaded {len(items)} test samples")
 # Output: Loaded 53 test samples (Level 1)
 ```
 
-**Working Principle**:
+**Принцип работы**:
 
-- On first run, uses `snapshot_download` to download entire dataset to `./data/gaia/`
-- Dataset contains 114 files (questions, images, PDFs, etc.)
-- Subsequent uses load directly from local, very fast
+- При первом запуске использует snapshot_download для загрузки всего набора данных в ./data/gaia/.
+- Набор данных содержит 114 файлов (вопросы, изображения, PDF-файлы и т. д.).
+- Последующие использования загружаются напрямую с локального компьютера, очень быстро.
 
-**Dataset Directory Structure**:
+**Структура каталогов набора данных**:
 ```
 ./data/gaia/
 ├── 2023/
@@ -1263,9 +1263,9 @@ print(f"Loaded {len(items)} test samples")
 └── README.md
 ```
 
-**Method 2: Manual Download**
+**Метод 2: Загрузка вручную**
 
-If you want to manually download the dataset:
+Если вы хотите вручную загрузить набор данных:
 
 ```python
 from huggingface_hub import snapshot_download
@@ -1283,7 +1283,7 @@ snapshot_download(
 )
 ```
 
-**View Dataset Statistics**:
+**Просмотр статистики набора данных**:
 
 ```python
 # View dataset statistics
@@ -1296,13 +1296,13 @@ print(f"Level distribution: {stats['level_distribution']}")
 ```
 
 
-### 12.3.3 Implementing GAIA Evaluation in HelloAgents
+### 12.3.3 Реализация оценки GAIA в HelloAgents
 
-Similar to BFCL, we provide two evaluation methods, **Method 1** is recommended.
+Как и в случае с BFCL, мы предлагаем два метода оценки. **Метод 1** рекомендуется.
 
-**Method 1: One-Click Evaluation Using GAIAEvaluationTool**
+**Метод 1: Оценка в один клик с использованием GAIAEvaluationTool**
 
-This is the simplest method, automatically completing dataset download, evaluation execution, result export, and report generation:
+Это самый простой метод, автоматически завершающий загрузку набора данных, выполнение оценки, экспорт результатов и создание отчета:
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -1345,7 +1345,7 @@ print(f"Partial match rate: {results['partial_match_rate']:.2%}")
 print(f"Correct: {results['exact_matches']}/{results['total_samples']}")
 ```
 
-**Run Results:**
+**Результаты запуска:**
 
 ```
 ============================================================
@@ -1399,13 +1399,13 @@ Step 3: Generate Evaluation Report
    Correct: 4/5
 ```
 
-After evaluation completes, three types of files are automatically generated: first is GAIA format result file (`evaluation_results/gaia_official/gaia_level1_result_*.jsonl`), using JSONL format (one JSON object per line), can be directly used for submission to GAIA leaderboard; second is submission guide file (`evaluation_results/gaia_official/SUBMISSION_GUIDE_*.md`), containing detailed submission steps, result file format description, and notes; finally is evaluation report (`evaluation_reports/gaia_report_*.md`), containing evaluation result summary, detailed metrics, sample details, and visualization charts.
+После завершения оценки автоматически создаются три типа файлов: первый — файл результатов в формате GAIA (`evaluation_results/gaia_official/gaia_level1_result_*.jsonl`), используя формат JSONL (по одному объекту JSON в строке), можно напрямую использовать для отправки в таблицу лидеров GAIA; второй — файл руководства по отправке (`evaluation_results/gaia_official/SUBMISSION_GUIDE_*.md`), содержащий подробные инструкции по отправке, описание формата файла результата и примечания; наконец-то отчет об оценке (`evaluation_reports/gaia_report_*.md`), содержащий сводку результатов оценки, подробные показатели, сведения об образцах и диаграммы визуализации.
 
-**Note**: If you find generated evaluation results unsatisfactory (e.g., low accuracy), this is normal. Although Level 1 is one-step reasoning tasks, agents still need tool calling capabilities (like search engine, calculator, etc.) to correctly answer questions. Our current SimpleAgent is mainly used to demonstrate evaluation process, with room for improvement in tool calling capabilities.
+**Примечание**. Если вы обнаружите, что полученные результаты оценки неудовлетворительны (например, низкая точность), это нормально. Хотя уровень 1 представляет собой одношаговые задачи на рассуждение, агентам по-прежнему необходимы возможности вызова инструментов (например, поисковой системы, калькулятора и т. д.), чтобы правильно отвечать на вопросы. Наш текущий SimpleAgent в основном используется для демонстрации процесса оценки, но есть возможности для улучшения возможностей вызова инструментов.
 
-**Method 2: Using Dataset + Evaluator (Flexible Customization)**
+**Метод 2: использование набора данных + оценщика (гибкая настройка)**
 
-If you need more fine-grained control, you can directly use low-level components:
+Если вам нужен более детальный контроль, вы можете напрямую использовать низкоуровневые компоненты:
 
 ```python
 from hello_agents.evaluation import GAIADataset, GAIAEvaluator
@@ -1429,7 +1429,7 @@ evaluator.export_to_gaia_format(
 )
 ```
 
-Generated evaluation report (`gaia_report_*.md`) can reference the file below:
+Созданный отчет об оценке (`gaia_report_*.md`) может ссылаться на файл ниже:
 
 ```markdown
 # GAIA Evaluation Report
@@ -1471,40 +1471,40 @@ Partial match: █████████████████████�
 - 💡 Suggest checking tool usage and multi-step reasoning capabilities.
 ```
 
-**Generated GAIA Format Results (`gaia_level1_result_*.jsonl`):**
+**Сгенерированные результаты в формате GAIA (`gaia_level1_result_*.jsonl`):**
 
 ```json
 {"task_id": "e1fc63a2-da7a-432f-be78-7c4a95598703", "model_answer": "24000", "reasoning_trace": "24000"}
 {"task_id": "8e867cd7-cff9-4e6c-867a-ff5ddc2550be", "model_answer": "3", "reasoning_trace": "3"}
 ```
 
-### 12.3.4 Submitting Results to GAIA Official Leaderboard
+### 12.3.4 Отправка результатов в официальную таблицу лидеров GAIA
 
-After running evaluation using GAIAEvaluationTool, files required for submission and detailed submission instructions are generated in `evaluation_results/gaia_official/` directory.
+После проведения оценки с помощью GAIAEvaluationTool в файле генерируются файлы, необходимые для отправки, и подробные инструкции по отправке.`evaluation_results/gaia_official/`каталог.
 
-1. **GAIA Format Result File**: `gaia_level1_result_*.jsonl`
+1. **Файл результатов формата GAIA**: `gaia_level1_result_*.jsonl`
    ```json
    {"task_id": "xxx", "model_answer": "answer", "reasoning_trace": "reasoning process"}
    {"task_id": "yyy", "model_answer": "answer", "reasoning_trace": "reasoning process"}
    ```
 
-2. **Submission Guide File**: `SUBMISSION_GUIDE_*.md`
+2. **Файл руководства по отправке**: `SUBMISSION_GUIDE_*.md`
 
-Open the automatically generated `SUBMISSION_GUIDE_*.md` file, which contains complete submission guide:
+Откройте автоматически созданный`SUBMISSION_GUIDE_*.md`файл, который содержит полное руководство по подаче:
 
-Specifically, open browser and visit:
+В частности, откройте браузер и посетите:
 ```
 https://huggingface.co/spaces/gaia-benchmark/leaderboard
 ```
 
-As shown in Figure 12.4, fill in information in submission form:
+Как показано на рисунке 12.4, заполните информацию в форме подачи:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-4.png" alt="" width="85%"/>
-  <p>Figure 12.4 GAIA Evaluation Process Diagram</p>
+  <p>Рисунок 12.4 Схема процесса оценки GAIA</p>
 </div>
 
-Before submission, you can manually check the generated JSONL file:
+Перед отправкой вы можете вручную проверить сгенерированный файл JSONL:
 
 ```python
 import json
@@ -1519,13 +1519,13 @@ with open("evaluation_results/gaia_official/gaia_level1_result_*.jsonl", "r") as
         print("-" * 50)
 ```
 
-### 12.3.5 Core Component Implementation Details
+### 12.3.5 Детали реализации основного компонента
 
-GAIA evaluation system implementation is similar to BFCL, but has some special designs for general capability evaluation.
+Реализация системы оценки GAIA аналогична BFCL, но имеет некоторые специальные конструкции для общей оценки возможностей.
 
-**(1) GAIADataset: Multimodal Data Loader**
+**(1) GAIADataset: мультимодальный загрузчик данных**
 
-The special feature of GAIA dataset is that it contains multimodal data (text, files, images, etc.):
+Особенностью набора данных GAIA является то, что он содержит мультимодальные данные (текст, файлы, изображения и т. д.):
 
 ````python
 class GAIADataset:
@@ -1582,9 +1582,9 @@ class GAIADataset:
         return items
 ````
 
-**(2) GAIAEvaluator: Implementing GAIA Official Evaluation Algorithm**
+**(2) GAIAEvaluator: реализация официального алгоритма оценки GAIA**
 
-GAIA evaluation uses **Quasi Exact Match** algorithm, requiring special answer normalization and matching logic:
+При оценке GAIA используется алгоритм **Quasi Exact Match**, требующий специальной нормализации ответов и логики сопоставления:
 
 ````python
 class GAIAEvaluator:
@@ -1629,7 +1629,7 @@ class GAIAEvaluator:
         return self._format_results(results)
 ````
 
-GAIA uses specific normalization rules to handle different types of answers:
+GAIA использует специальные правила нормализации для обработки различных типов ответов:
 
 ```python
 def _normalize_answer(self, answer: str) -> str:
@@ -1679,7 +1679,7 @@ def _normalize_single_answer(self, answer: str) -> str:
     return answer
 ```
 
-GAIA requires model output format to be `FINAL ANSWER: [answer]`:
+GAIA требует, чтобы выходной формат модели был`FINAL ANSWER: [answer]`:
 
 ```python
 def _extract_answer(self, response: str) -> str:
@@ -1719,7 +1719,7 @@ def _extract_answer(self, response: str) -> str:
     return response.strip()
 ```
 
-After evaluation completes, can export to JSONL format required by GAIA official:
+После завершения оценки можно экспортировать в формат JSONL, требуемый официальным представителем GAIA:
 
 ```python
 def export_to_gaia_format(
@@ -1749,9 +1749,9 @@ def export_to_gaia_format(
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
 ```
 
-**(3) GAIAEvaluationTool: One-Click Evaluation Tool**
+**(3) GAIAEvaluationTool: инструмент оценки в один клик**
 
-GAIAEvaluationTool encapsulates complete evaluation process, providing one-click evaluation functionality:
+GAIAEvaluationTool инкапсулирует полный процесс оценки, обеспечивая функциональность оценки одним щелчком мыши:
 
 ````python
 class GAIAEvaluationTool(Tool):
@@ -1788,7 +1788,7 @@ class GAIAEvaluationTool(Tool):
         return results
 ````
 
-GAIAEvaluationTool automatically generates evaluation report:
+GAIAEvaluationTool автоматически генерирует отчет об оценке:
 
 ```python
 def generate_report(
@@ -1840,116 +1840,116 @@ def generate_report(
     return report
 ```
 
-## 12.4 Data Generation Quality Evaluation
+## 12.4 Оценка качества генерации данных
 
-In AI system development, high-quality training data is the foundation of system performance. This section introduces how to use the HelloAgents framework to evaluate the quality of generated data, using AIME (American Invitational Mathematics Examination)<sup>[9]</sup> style mathematics problem generation as an example.
+При разработке систем искусственного интеллекта высококачественные обучающие данные являются основой производительности системы. В этом разделе рассказывается, как использовать платформу HelloAgents для оценки качества сгенерированных данных на примере создания математических задач в стиле AIME (American Invitational Mathematics Examination)<sup>[9]</sup>.
 
-AIME is a medium-difficulty mathematics competition hosted by the Mathematical Association of America (MAA), positioned between AMC 10/12 and the USA Mathematical Olympiad (USAMO). AIME problems have distinctive characteristics: each problem's answer is an integer between 0 and 999, problems cover multiple mathematical domains including algebra, geometry, number theory, combinatorics, and probability, require multi-step reasoning but don't involve advanced theory, and have moderate difficulty (equivalent to AIME problems 6-9). These characteristics make AIME problems an ideal benchmark for evaluating mathematics problem generation quality: unified answer format facilitates automated evaluation, and moderate difficulty is suitable for large-scale generation. We use the `TianHongZXY/aime-1983-2025` dataset on HuggingFace as reference, which contains over 900 AIME real problems from 1983 to 2025, providing rich reference samples for our generation and evaluation.
+AIME — это соревнование по математике средней сложности, проводимое Математической ассоциацией Америки (MAA), занимающее промежуточное положение между AMC 10/12 и Математической олимпиадой США (USAMO). Задачи AIME имеют отличительные характеристики: ответом каждой задачи является целое число от 0 до 999, задачи охватывают несколько математических областей, включая алгебру, геометрию, теорию чисел, комбинаторику и вероятность, требуют многоэтапных рассуждений, но не требуют сложной теории и имеют умеренную сложность (эквивалент задач AIME 6–9). Эти характеристики делают задачи AIME идеальным эталоном для оценки качества генерации математических задач: унифицированный формат ответов облегчает автоматическую оценку, а умеренная сложность подходит для крупномасштабной генерации. Мы используем`TianHongZXY/aime-1983-2025`набор данных HuggingFace в качестве эталона, который содержит более 900 реальных проблем AIME с 1983 по 2025 год, предоставляя богатые эталонные образцы для нашей генерации и оценки.
 
-### 12.4.1 Evaluation Methods Overview
+### 12.4.1 Обзор методов оценки
 
-In data generation quality evaluation, we adopt three complementary evaluation methods: LLM Judge, Win Rate, and Manual Verification. There are two important reasons for choosing these three methods. First, from a methodological perspective, these are commonly used automated evaluation schemes in the current agent field and mainstream practices in many academic papers, with broad recognition and practical foundation. Second, from an applicability perspective, these three methods are naturally suitable for our evaluation scenario: LLM Judge and Win Rate are used to evaluate problem generation quality (multi-dimensional evaluation from correctness, clarity, difficulty matching, etc.), while Manual Verification is used to evaluate answer generation quality (verifying answer accuracy through human experts), this division of labor is very reasonable and easy to understand.
+При оценке качества генерации данных мы используем три взаимодополняющих метода оценки: судья LLM, процент побед и ручная проверка. Есть две важные причины для выбора этих трех методов. Во-первых, с методологической точки зрения, это широко используемые автоматизированные схемы оценки в текущей области агентов и общепринятые практики во многих научных работах, имеющие широкое признание и практическое обоснование. Во-вторых, с точки зрения применимости, эти три метода естественным образом подходят для нашего сценария оценки: судья LLM и процент побед используются для оценки качества генерации задач (многомерная оценка по правильности, ясности, сопоставлению трудностей и т. д.), тогда как ручная проверка используется для оценки качества генерации ответов (проверка точности ответов с помощью экспертов), такое разделение труда очень разумно и легко для понимания.
 
-Below we introduce the specific implementation of these three evaluation methods in detail. The implementation flow of the entire case is shown in Figure 12.5:
+Ниже мы подробно представляем конкретную реализацию этих трех методов оценки. Ход реализации всего случая показан на рисунке 12.5:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-5.png" alt="" width="85%"/>
-  <p>Figure 12.5 Data Generation Quality Evaluation Flow Diagram</p>
+  <p>Рисунок 12.5 Блок-схема оценки качества генерации данных</p>
 </div>
 
-**(1) LLM Judge Evaluation**
+**(1) Оценка судьи LLM**
 
-**Design Motivation**: In data generation quality evaluation, we need to quickly and consistently evaluate the quality of a large number of generated problems. Traditional manual evaluation, although accurate, is costly and inefficient, making it difficult to meet the demands of large-scale data generation. LLM Judge, by using large language models as judges, can automatically evaluate the quality of generated data from multiple dimensions, not only greatly improving evaluation efficiency but also maintaining consistency in evaluation standards. More importantly, LLM Judge can provide detailed scoring reasons and improvement suggestions, helping us understand the strengths and weaknesses of generated data and providing direction for subsequent optimization.
+**Мотивация проектирования**: при оценке качества генерации данных нам необходимо быстро и последовательно оценить качество большого количества сгенерированных проблем. Традиционная ручная оценка, хотя и точна, является дорогостоящей и неэффективной, что затрудняет удовлетворение требований крупномасштабной генерации данных. LLM Judge, используя большие языковые модели в качестве судей, может автоматически оценивать качество сгенерированных данных по нескольким измерениям, что не только значительно повышает эффективность оценки, но и обеспечивает согласованность стандартов оценки. Что еще более важно, LLM Judge может предоставить подробные причины выставления оценок и предложения по улучшению, помогая нам понять сильные и слабые стороны сгенерированных данных и указывая направления для последующей оптимизации.
 
-In our implementation, LLM Judge evaluates AIME problem quality from four key dimensions:
+В нашей реализации LLM Judge оценивает качество задач AIME по четырем ключевым измерениям:
 
 <div align="center">
-  <p>Table 12.5 LLM Judge Evaluation Dimensions for AIME Problems</p>
+  <p>Таблица 12.5. Размеры оценки судьями LLM задач AIME</p>
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-5.png" alt="" width="85%"/>
 </div>
 
-After obtaining scores from four dimensions, we need to aggregate these scores into overall evaluation metrics. We define three key metrics to measure the quality level of generated problems:
+После получения оценок по четырем измерениям нам необходимо объединить эти оценки в общие показатели оценки. Мы определяем три ключевых показателя для измерения уровня качества создаваемых проблем:
 
-**Evaluation Metrics**:
+**Показатели оценки**:
 
-**1. Average Score**: Calculate the average score of all problems across four dimensions, reflecting the overall quality level of generated problems.
+**1. Средняя оценка**: подсчитайте среднюю оценку всех проблем по четырем измерениям, отражающую общий уровень качества создаваемых проблем.
 $$
-\text{Average Score} = \frac{1}{N} \sum_{i=1}^{N} \frac{\sum_{d=1}^{4} S_{i,d}}{4}
-$$
-
-**2. Pass Rate**: Count the proportion of problems with average score of 3.5 or above, reflecting basic quality assurance of generated problems.
-
-$$
-\text{Pass Rate} = \frac{|\{i : \text{Score}_i \geq 3.5\}|}{N}
+\text{Средний балл} = \frac{1}{N} \sum_{i=1}^{N} \frac{\sum_{d=1}^{4} S_{i,d}}{4}
 $$
 
-**3. Excellent Rate**: Count the proportion of problems with average score of 4.5 or above, reflecting the high-quality proportion of generated problems.
+**2. Проходной балл**: подсчитайте долю задач со средним баллом 3,5 или выше, что отражает базовую гарантию качества создаваемых задач.
 
 $$
-\text{Excellent Rate} = \frac{|\{i : \text{Score}_i \geq 4.5\}|}{N}
+\text{Проходной балл} = \frac{|\{i : \text{Score}_i \geq 3.5\}|}{N}
 $$
 
-Where:
-- $N$ is the total number of problems evaluated
-- $S_{i,d}$ is the score of the $i$-th problem on the $d$-th dimension (1-5 points)
-- $\text{Score}_i$ is the average score of the $i$-th problem (average of four dimension scores)
+**3. Оценка «отлично»**: подсчитайте долю задач со средним баллом 4,5 или выше, что отражает долю созданных задач высокого качества.
 
-These three metrics reflect generation quality from different angles: average score gives overall level, pass rate ensures basic quality, excellent rate measures high-quality output capability.
+$$
+\text{Отличная ставка} = \frac{|\{i : \text{Score}_i \geq 4,5\}|}{N}
+$$
 
-**(2) Win Rate Evaluation**
+Где:
+- $N$ — общее количество оцененных задач.
+- $S_{i,d}$ — оценка $i$-й задачи по $d$-му измерению (1-5 баллов)
+- $\text{Score}_i$ — средний балл $i$-й задачи (средний балл по четырем измерениям)
 
-**Design Motivation**: Although LLM Judge can provide multi-dimensional absolute scoring, we also need a relative evaluation metric to measure the quality gap between generated problems and real problems. Win Rate evaluation, through pairwise comparison, lets LLM directly judge which is better between generated problems and real problems. This relative comparison is more in line with human judgment habits than absolute scoring, and can more easily discover the relative advantages and disadvantages of generated problems. Ideally, if the quality of generated problems is close to real problems, Win Rate should be around 50% (i.e., generated problems and real problems each have 50% win rate). This metric is simple and intuitive, allowing quick judgment of the overall quality level of the generation system.
+Эти три показателя отражают качество генерации с разных точек зрения: средний балл показывает общий уровень, процент проходимости обеспечивает базовое качество, отличный показатель измеряет качество вывода.
 
-In our implementation, Win Rate evaluation is conducted through the flow shown in Figure 12.6:
+**(2) Оценка процента побед**
+
+**Мотивация дизайна**: Хотя LLM Judge может обеспечить многомерную абсолютную оценку, нам также нужен относительный показатель оценки, чтобы измерить разрыв в качестве между сгенерированными и реальными проблемами. Оценка процента побед посредством парного сравнения позволяет LLM напрямую судить о том, что лучше между сгенерированными и реальными проблемами. Это относительное сравнение больше соответствует привычкам человека в суждениях, чем абсолютная оценка, и позволяет легче обнаружить относительные преимущества и недостатки возникающих проблем. В идеале, если качество сгенерированных задач близко к реальным, процент побед должен составлять около 50 % (т. е. как сгенерированные, так и реальные проблемы имеют коэффициент выигрыша по 50 %). Этот показатель прост и интуитивно понятен и позволяет быстро оценить общий уровень качества системы генерации.
+
+В нашей реализации оценка процента выигрышей осуществляется по схеме, показанной на рис. 12.6:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-6.png" alt="" width="85%"/>
-  <p>Figure 12.6 Data Generation Quality Evaluation Flow Diagram</p>
+  <p>Рисунок 12.6 Блок-схема оценки качества генерации данных</p>
 </div>
 
-In pairwise comparison evaluation, each comparison produces three possible results: generated problem wins (Win), real problem wins (Loss), or tie (Tie). We evaluate the quality of generated problems by counting the proportions of these three results:
+При оценке попарного сравнения каждое сравнение дает три возможных результата: выигрыш в сгенерированной проблеме (Победа), выигрыш в реальной проблеме (Проигрыш) или ничья (Ничья). Мы оцениваем качество сгенерированных задач, посчитав пропорции этих трех результатов:
 
-**Evaluation Metrics**:
+**Показатели оценки**:
 
-**1. Win Rate**: Proportion of generated problems judged as better, reflecting advantages of generated problems relative to real problems.
-
-$$
-\text{Win Rate} = \frac{\text{Wins}}{\text{Total Comparisons}}
-$$
-
-**2. Loss Rate**: Proportion of real problems judged as better, reflecting disadvantages of generated problems relative to real problems.
+**1. Процент побед**: доля сгенерированных проблем, признанных лучшими, что отражает преимущества сгенерированных проблем по сравнению с реальными проблемами.
 
 $$
-\text{Loss Rate} = \frac{\text{Losses}}{\text{Total Comparisons}}
+\text{Процент побед} = \frac{\text{Выигрыши}}{\text{Всего сравнений}}
 $$
 
-**3. Tie Rate**: Proportion judged as equivalent quality, reflecting similarity between generated problems and real problems.
+**2. Коэффициент потерь**: доля реальных проблем, оцененных как лучшие, что отражает недостатки созданных проблем по сравнению с реальными проблемами.
 
 $$
-\text{Tie Rate} = \frac{\text{Ties}}{\text{Total Comparisons}}
+\text{Коэффициент потерь} = \frac{\text{Потери}}{\text{Всего сравнений}}
 $$
 
-Where Total Comparisons is the total number of comparisons, Wins, Losses, and Ties are the numbers of generated problem wins, losses, and ties respectively. These three metrics satisfy: Win Rate + Loss Rate + Tie Rate = 100%.
+**3. Ничья**: доля оценивается как эквивалентное качество, отражающее сходство между сгенерированными и реальными проблемами.
 
-**Ideal Result**: Win Rate ≈ 50% (indicating generation quality is close to real problems). If Win Rate is significantly lower than 50%, it indicates generated problem quality is inferior to real problems and generation strategy needs optimization; if Win Rate is significantly higher than 50%, it may indicate generated problems surpass real problems in some aspects, or there is bias in evaluation standards.
+$$
+\text{Связной коэффициент} = \frac{\text{Связи}}{\text{Общее количество сравнений}}
+$$
 
-**(3) Manual Verification**
+Где «Общее количество сравнений» — это общее количество сравнений, «Выигрыши», «Проигрыши» и «Ничьи» — это количество сгенерированных проблемных побед, проигрышей и ничьих соответственно. Эти три показателя удовлетворяют следующим критериям: процент побед + коэффициент проигрышей + коэффициент ничьей = 100%.
 
-**Design Motivation**: Although LLM Judge and Win Rate can automatically evaluate problem quality, for mathematical problems that require strict logical reasoning, manual verification is still indispensable. Especially when evaluating answer generation quality, human experts are needed to verify answer accuracy, solution step completeness, and mathematical reasoning rigor. Additionally, manual verification can discover issues that automated evaluation might miss, such as subjective factors like problem innovation and interest. To improve manual verification efficiency and experience, we developed a Gradio-based Web interface, allowing verifiers to conveniently browse problems, score, annotate status, and add comments, greatly lowering the barrier to manual verification.
+**Идеальный результат**: процент побед ≈ 50% (что указывает на качество генерации, близкое к реальным проблемам). Если процент побед значительно ниже 50%, это означает, что качество сгенерированных проблем уступает реальным проблемам и стратегия генерации требует оптимизации; Если процент побед значительно превышает 50%, это может указывать на то, что сгенерированные проблемы в некоторых аспектах превосходят реальные проблемы, или что в стандартах оценки существует предвзятость.
 
-In our implementation, manual verification is conducted through the following steps:
+**(3) Ручная проверка**
 
-1. Read problem, answer, solution
-2. Score (1-5 points): correctness, clarity, difficulty matching, completeness
-3. Annotate status:
-   - ✅ approved (passed)
-   - ❌ rejected (rejected)
-   - 🔄 needs_revision (needs revision)
-4. Add comments
+**Мотивация при проектировании**: Хотя LLM Judge и Winrate могут автоматически оценивать качество задач, для математических задач, требующих строгого логического рассуждения, ручная проверка по-прежнему необходима. Особенно при оценке качества генерации ответов необходимы эксперты для проверки точности ответов, полноты шагов решения и строгости математических рассуждений. Кроме того, ручная проверка может выявить проблемы, которые автоматическая оценка может пропустить, например субъективные факторы, такие как инновации в проблемах и интерес. Чтобы повысить эффективность и удобство ручной проверки, мы разработали веб-интерфейс на основе Gradio, позволяющий проверяющим удобно просматривать проблемы, оценивать, комментировать статус и добавлять комментарии, что значительно снижает барьер для ручной проверки.
 
-### 12.4.2 System Architecture
+В нашей реализации ручная проверка проводится в следующие этапы:
 
-Data generation and evaluation system adopts modular design:
+1. Прочитать задачу, ответ, решение
+2. Оценка (1-5 баллов): правильность, ясность, сложность соответствия, полнота.
+3. Статус аннотации:
+   - ✅ одобрено (принято)
+   - ❌ отклонено (отклонено)
+   - 🔄 Needs_revision (нужна доработка)
+4. Добавить комментарии
+
+### 12.4.2 Архитектура системы
+
+Система генерации и оценки данных имеет модульную конструкцию:
 
 ```
 data_generation/
@@ -1968,9 +1968,9 @@ data_generation/
         └── comprehensive_report.md
 ```
 
-The system contains four core components: First is AIMEGenerator (problem generator), using HelloAgents framework to generate AIME-style problems, supporting batch generation and progress saving, and automatically handling API rate limits; second is LLMJudgeTool (LLM Judge evaluation tool), providing 4-dimensional quality evaluation, automatically generating JSON results and Markdown reports; third is WinRateTool (Win Rate evaluation tool), calculating win rate, loss rate, and tie rate through pairwise comparison evaluation; finally is HumanVerificationUI (manual verification interface), based on Gradio Web interface, supporting scoring and status annotation.
+Система содержит четыре основных компонента: во-первых, это AIMEGenerator (генератор задач), использующий структуру HelloAgents для генерации задач в стиле AIME, поддерживающий пакетную генерацию и сохранение прогресса, а также автоматическую обработку ограничений скорости API; во-вторых, LLMJudgeTool (инструмент оценки LLM Judge), обеспечивающий четырехмерную оценку качества, автоматически генерирующий результаты JSON и отчеты Markdown; третий — WinRateTool (инструмент оценки процента выигрышей), рассчитывающий процент выигрышей, коэффициент проигрышей и коэффициент ничьей посредством оценки попарного сравнения; наконец, это HumanVerificationUI (интерфейс ручной проверки), основанный на веб-интерфейсе Gradio, поддерживающий оценку и аннотацию статуса.
 
-### 12.4.3 AIME Problem Generator Implementation
+### 12.4.3 Реализация генератора задач AIME
 
 ```python
 class AIMEGenerator:
@@ -1998,9 +1998,9 @@ class AIMEGenerator:
             self.reference_examples = list(dataset)
 ```
 
-Our goal is to generate a similar style dataset, so we randomly select reference examples from 900+ AIME real problems (1983-2025)
+Наша цель — создать набор данных аналогичного стиля, поэтому мы случайным образом выбираем эталонные примеры из более чем 900 реальных задач AIME (1983–2025 гг.).
 
-Generation prompt design (English):
+Создание подсказки по созданию дизайна (на английском языке):
 
 ```python
 GENERATION_PROMPT = """You are a professional mathematics competition problem designer, skilled in creating AIME (American Invitational Mathematics Examination) style problems.
@@ -2031,9 +2031,9 @@ Please output in the following JSON format:
 """
 ```
 
-We choose to generate problems in English for four important reasons: first is consistency with AIME real problems (AIME is an English competition, generating English problems is more reasonable), second is ensuring evaluation fairness (LLM Judge evaluation is fairer when English vs English), third is facilitating internationalization (English problems can be more widely used), and finally is avoiding translation issues (no need to worry about accuracy of Chinese-English translation).
+Мы решили создавать задачи на английском языке по четырем важным причинам: во-первых, это соответствие реальным проблемам AIME (AIME — это соревнование по английскому языку, создание задач на английском языке более разумно), во-вторых, обеспечение справедливости оценки (оценка судьи LLM более справедлива, когда английский или английский), в-третьих, содействие интернационализации (английские задачи могут использоваться более широко) и, наконец, избежание проблем с переводом (не нужно беспокоиться о точности китайско-английского перевода).
 
-Batch generation implementation:
+Реализация пакетной генерации:
 
 ```python
 def generate_and_save(self, num_problems: int = 30, output_dir: str = "data_generation/generated_data"):
@@ -2072,9 +2072,9 @@ def generate_and_save(self, num_problems: int = 30, output_dir: str = "data_gene
     return generated_data_path
 ```
 
-LaTeX mathematical formula support:
+Поддержка математических формул LaTeX:
 
-Generated AIME problems contain LaTeX mathematical formulas (such as `$\frac{a}{b}$`, `$\sqrt{x}$`), requiring special JSON parsing handling:
+Сгенерированные задачи AIME содержат математические формулы LaTeX (например,`$\frac{a}{b}$`, `$\sqrt{x}$`), требующий специальной обработки анализа JSON:
 
 ```python
 def _parse_response(self, response: str) -> Dict[str, Any]:
@@ -2082,25 +2082,25 @@ def _parse_response(self, response: str) -> Dict[str, Any]:
     import re
 
     # Extract JSON part
-    if "```json" in response:
-        json_str = response.split("```json")[1].split("```")[0].strip()
-    else:
-        json_str = response.strip()
+    if "```json» в ответ:
+        json_str = ответ.split("```json")[1].split("```")[0].strip()
+    еще:
+        json_str = ответ.полоса()
 
-    try:
-        problem_data = json.loads(json_str)
-    except json.JSONDecodeError:
-        # Fix LaTeX escape issue: convert \frac to \\frac
-        # Regular expression: find unescaped backslashes
-        fixed_json_str = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r'\\\\', json_str)
-        problem_data = json.loads(fixed_json_str)
+попробуйте:
+        проблемные_данные = json.loads(json_str)
+    кроме json.JSONDecodeError:
+        # Исправить проблему с выходом LaTeX: преобразовать \frac в \\frac
+        # Регулярное выражение: найти неэкранированную обратную косую черту
+        фиксированный_json_str = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r'\\\\', json_str)
+        проблемные_данные = json.loads(fixed_json_str)
 
-    return problem_data
+вернуть данные_проблемы
 ```
 
 Backslashes in LaTeX formulas (such as `\frac`, `\sqrt`) are illegal escape characters in JSON, causing parsing failure:
 ```
-Invalid \escape: line 4 column 185 (char 375)
+Недопустимый \escape: строка 4, столбец 185 (символ 375).
 ```
 
 By using regular expressions to replace unescaped backslashes with double backslashes, making them legal in JSON.
@@ -2109,285 +2109,284 @@ By using regular expressions to replace unescaped backslashes with double backsl
 
 LLM Judge tool uses LLM as judge to conduct multi-dimensional evaluation of generated problems.
 
-```python
-class LLMJudgeTool(Tool):
-    """LLM Judge evaluation tool"""
+```питон
+класс LLMJudgeTool(Инструмент):
+    """Инструмент оценки судей LLM"""
 
-    def run(self, params: Dict[str, Any]) -> str:
-        """Run LLM Judge evaluation"""
-        # 1. Load generated data
+def run(self, params: Dict[str, Any]) -> str:
+        """Провести оценку судьи LLM"""
+        # 1. Загрузка сгенерированных данных
         gen_dataset = AIDataset(dataset_type="generated", data_path=params["generated_data_path"])
         gen_problems = gen_dataset.load()
 
-        # 2. Load reference data (AIME 2025)
-        ref_dataset = AIDataset(dataset_type="real", year=2025)
+# 2. Загрузка справочных данных (AIME 2025)
+        ref_dataset = AIDataset(dataset_type="real", год=2025)
         ref_problems = ref_dataset.load()
 
-        # 3. Create evaluator
-        evaluator = LLMJudgeEvaluator(llm=self.llm, judge_model=params.get("judge_model", "gpt-4o"))
+# 3. Создать оценщик
+        evaluator = LLMJudgeEvaluator(llm=self.llm, Judge_model=params.get("judge_model", "gpt-4o"))
 
-        # 4. Run evaluation
-        results = evaluator.evaluate_batch(gen_problems, max_samples=params.get("max_samples"))
+# 4. Запустите оценку
+        результаты = evaluator.evaluate_batch(gen_problems, max_samples=params.get("max_samples"))
 
-        # 5. Save results
-        evaluator.export_results(results, result_file)
+# 5. Сохранить результаты
+        evaluator.export_results(результаты, файл_результата)
 
-        # 6. Generate report
-        self._generate_report(results, report_file)
+# 6. Создать отчет
+        self._generate_report(результаты, файл_отчета)
 
-        return json.dumps({"status": "success", "metrics": results["metrics"]})
+return json.dumps({"статус": "успех", "метрики": результаты["метрики"]})
 ```
 
 **Evaluation Prompt**:
 
-```python
-EVALUATION_PROMPT = """Please evaluate the quality of the following AIME mathematics problem.
+```питон
+EVALUATION_PROMPT = """Пожалуйста, оцените качество следующей математической задачи AIME.
 
-Problem:
-{problem}
+Проблема:
+{проблема}
 
-Answer: {answer}
+Ответ: {ответ}
 
-Solution:
-{solution}
+Решение:
+{решение}
 
-Please score from the following 4 dimensions (1-5 points):
+Пожалуйста, оцените по следующим 4 параметрам (1–5 баллов):
 
-1. **Correctness**: Is the mathematical logic correct, is the answer accurate
-2. **Clarity**: Is the problem statement clear, is the solution easy to understand
-3. **Difficulty Match**: Does the difficulty match AIME standards (medium to hard)
-4. **Completeness**: Are the solution steps complete, does it include necessary reasoning
+1. **Правильность**: правильна ли математическая логика, верен ли ответ.
+2. **Ясность**: ясна ли постановка задачи, легко ли понять решение?
+3. **Соответствие сложности**: соответствует ли сложность стандартам AIME (от средней до высокой)
+4. **Полнота**. Являются ли этапы решения завершенными, включает ли оно необходимое обоснование?
 
-Please output in the following JSON format:
+Пожалуйста, выведите данные в следующем формате JSON:
 {
-    "correctness": 5,
-    "clarity": 4,
-    "difficulty_match": 4,
-    "completeness": 5,
-    "comments": "Evaluation reason"
+    «правильность»: 5,
+    «ясность»: 4,
+    «difficulty_match»: 4,
+    «полнота»: 5,
+    "comments": "Причина оценки"
 }
 """
 ```
 
 **Evaluation Report Example**:
 
-```markdown
-# LLM Judge Evaluation Report
+```уценка
+# Отчет об оценке судьи LLM
 
-## Overall Score
+## Общий балл
 
-- **Average Total Score**: 4.2/5.0
-- **Pass Rate**: 85.0% (≥3.5 points)
-- **Excellent Rate**: 40.0% (≥4.5 points)
+- **Средний общий балл**: 4,2/5,0
+- **Процент сдачи**: 85,0% (≥3,5 баллов)
+- **Отличный рейтинг**: 40,0% (≥4,5 баллов)
 
-## Dimension Scores
+## Оценки измерений
 
-| Dimension | Average Score | Rating |
+| Размерность | Средний балл | Рейтинг |
 |------|--------|------|
-| Correctness | 4.3/5.0 | Good ⭐⭐⭐⭐ |
-| Clarity | 4.1/5.0 | Good ⭐⭐⭐⭐ |
-| Difficulty Match | 4.0/5.0 | Good ⭐⭐⭐⭐ |
-| Completeness | 4.4/5.0 | Good ⭐⭐⭐⭐ |
+| Корректность | 4,3/5,0 | Хорошо ⭐⭐⭐⭐ |
+| Ясность | 4,1/5,0 | Хорошо ⭐⭐⭐⭐ |
+| Матч сложности | 4.0/5.0 | Хорошо ⭐⭐⭐⭐ |
+| Полнота | 4,4/5,0 | Хорошо ⭐⭐⭐⭐ |
 ```
 
 ### 12.4.5 Win Rate Evaluation Tool
 
 Win Rate tool evaluates the quality of generated data relative to real problems through pairwise comparison.
 
-```python
-class WinRateTool(Tool):
-    """Win Rate evaluation tool"""
+```питон
+класс WinRateTool(Инструмент):
+    """Инструмент оценки винрейта"""
 
-    def run(self, params: Dict[str, Any]) -> str:
-        """Run Win Rate evaluation"""
-        # 1. Load generated data
+def run(self, params: Dict[str, Any]) -> str:
+        """Оценка процента побед"""
+        # 1. Загрузка сгенерированных данных
         gen_dataset = AIDataset(dataset_type="generated", data_path=params["generated_data_path"])
         gen_problems = gen_dataset.load()
 
-        # 2. Load reference data (AIME 2025)
-        ref_dataset = AIDataset(dataset_type="real", year=2025)
+# 2. Загрузка справочных данных (AIME 2025)
+        ref_dataset = AIDataset(dataset_type="real", год=2025)
         ref_problems = ref_dataset.load()
 
-        # 3. Create evaluator
-        evaluator = WinRateEvaluator(llm=self.llm, judge_model=params.get("judge_model", "gpt-4o"))
+# 3. Создать оценщик
+        evaluator = WinRateEvaluator(llm=self.llm, Judge_model=params.get("judge_model", "gpt-4o"))
 
-        # 4. Run evaluation
-        results = evaluator.evaluate_win_rate(gen_problems, ref_problems, num_comparisons=params.get("num_comparisons"))
+# 4. Запустите оценку
+        результаты = evaluator.evaluate_win_rate(gen_problems, ref_problems, num_comparisons=params.get("num_comparisons"))
 
-        # 5. Save results and report
-        evaluator.export_results(results, result_file)
-        self._generate_report(results, report_file)
+# 5. Сохранить результаты и сообщить
+        evaluator.export_results(результаты, файл_результата)
+        self._generate_report(результаты, файл_отчета)
 
-        return json.dumps({"status": "success", "metrics": results["metrics"]})
+return json.dumps({"статус": "успех", "метрики": результаты["метрики"]})
 ```
 
 AIDataset is responsible for loading generated data and AIME real problem data, supporting two data types:
 
-```python
-class AIDataset:
-    """AI dataset loader
+```питон
+класс AIDataset:
+    """Загрузчик набора данных AI
 
-    Supports two data types:
-    1. generated: Generated data (JSON format)
-    2. real: AIME real problems (loaded from HuggingFace)
+Поддерживает два типа данных:
+    1. сгенерировано: сгенерированные данные (формат JSON).
+    2. реальные: реальные проблемы AIME (загружается с HuggingFace)
     """
 
-    def __init__(
-        self,
-        dataset_type: str = "generated",
-        data_path: Optional[str] = None,
-        year: Optional[int] = None
+защита __init__(
+        сам,
+        dataset_type: str = "сгенерировано",
+        путь_данных: Необязательный[str] = Нет,
+        год: Необязательно[int] = Нет
     ):
         self.dataset_type = dataset_type
-        self.data_path = data_path
-        self.year = year  # Only for real type, default 2025
+        self.data_path = путь_к данным
+        self.year = год # Только для реального типа, по умолчанию 2025 год.
 
-    def load(self) -> List[Dict[str, Any]]:
-        """Load dataset"""
-        if self.dataset_type == "generated":
-            return self._load_generated_data()
-        elif self.dataset_type == "real":
-            return self._load_real_data()
+def load(self) -> List[Dict[str, Any]]:
+        """Загрузить набор данных"""
+        если self.dataset_type == "сгенерировано":
+            вернуть self._load_generated_data()
+        elif self.dataset_type == "реальный":
+            вернуть self._load_real_data()
 
-    def _load_real_data(self) -> List[Dict[str, Any]]:
-        """Load AIME 2025 real problems from HuggingFace"""
-        from huggingface_hub import snapshot_download
+def _load_real_data(self) -> List[Dict[str, Any]]:
+        """Загрузить реальные проблемы AIME 2025 из HuggingFace"""
+        из humgingface_hub импортировать снимок_загрузки
 
-        # Use AIME 2025 dataset
+# Используйте набор данных AIME 2025
         repo_id = "math-ai/aime25"
 
-        # Download dataset
+# Загрузить набор данных
         local_dir = snapshot_download(
             repo_id=repo_id,
-            repo_type="dataset"
+            repo_type="набор данных"
         )
 
-        # Read JSONL file
+# Читаем файл JSONL
         data_file = list(Path(local_dir).glob("*.jsonl"))[0]
-        data = []
-        with open(data_file, 'r', encoding='utf-8') as f:
-            for line in f:
-                if line.strip():
-                    data.append(json.loads(line))
+        данные = []
+        с open(data_file, 'r',coding='utf-8') как f:
+            для строки в f:
+                если линия.strip():
+                    data.append(json.loads(строка))
 
-        # Unify data format (AIME 2025 uses lowercase field names)
-        problems = []
-        for idx, item in enumerate(data):
-            problem = {
+# Унифицировать формат данных (AIME 2025 использует имена полей в нижнем регистре)
+        проблемы = []
+        для idx, элемент в перечислении (данные):
+            проблема = {
                 "problem_id": item.get("id", f"aime_2025_{idx}"),
-                "problem": item.get("problem", ""),
-                "answer": item.get("answer", ""),
-                "solution": item.get("solution", ""),  # AIME 2025 has no solution field
+                "проблема": item.get("проблема", ""),
+                "ответ": item.get("ответ", ""),
+                "solution": item.get("solution", ""), # AIME 2025 не имеет поля решения
             }
-            problems.append(problem)
+            проблемы.append(проблема)
 
-        return problems
+проблемы с возвратом
 ```
 
 We choose to use only AIME 2025 dataset for four reasons: first is data timeliness (2025 is the latest AIME competition data), second is simplified maintenance (maintaining only one dataset, code is more concise), third is unified format (JSONL format, field names unified to lowercase), and finally is sufficient representativeness (30 problems are enough to evaluate generation quality).
 
 **Comparison Prompt**:
 
-```python
-COMPARISON_PROMPT = """Please compare the quality of the following two AIME mathematics problems and judge which is better.
+```питон
+COMPARISON_PROMPT = """Пожалуйста, сравните качество следующих двух математических задач AIME и решите, какая из них лучше.
 
-【Problem A - Generated Problem】
-Problem: {problem_a}
-Answer: {answer_a}
-Solution: {solution_a}
+【Проблема А – сгенерированная проблема】
+Проблема: {problem_a}
+Ответ: {answer_a}
+Решение: {solution_a}
 
-【Problem B - AIME Real Problem】
-Problem: {problem_b}
-Answer: {answer_b}
-Solution: {solution_b}
+【Проблема B – настоящая проблема AIME】
+Проблема: {problem_b}
+Ответ: {answer_b}
+Решение: {solution_b}
 
-Please compare from the following aspects:
-1. Rigor of mathematical logic
-2. Clarity of problem statement
-3. Reasonableness of difficulty
-4. Completeness of solution
+Пожалуйста, сравните по следующим аспектам:
+1. Строгость математической логики
+2. Ясность постановки задачи
+3. Разумность сложности
+4. Полнота решения.
 
-Please output in the following JSON format:
+Пожалуйста, выведите данные в следующем формате JSON:
 {
-    "winner": "A" or "B" or "Tie",
-    "reason": "Judgment reason"
+    «победитель»: «А», «Б» или «Ничья»,
+    "reason": "Причина решения"
 }
 """
 ```
 
 **Evaluation Report Example**:
 
-```markdown
-# Win Rate Evaluation Report
+```уценка
+# Отчет об оценке процента побед
 
-## Win Rate Statistics
+## Статистика выигрышей
 
-| Metric | Value | Percentage |
+| Метрическая | Значение | Процент |
 |------|------|--------|
-| Generated Data Wins | 9 times | 45.0% |
-| AIME Real Problems Win | 8 times | 40.0% |
-| Tie | 3 times | 15.0% |
+| Сгенерированные данные выигрывают | 9 раз | 45,0% |
+| Победа AIME «Реальные проблемы» | 8 раз | 40,0% |
+| Галстук | 3 раза | 15,0% |
 
-**Win Rate**: 45.0%
+**Процент побед**: 45,0%
 
-✅ **Good**: Generated data quality is close to reference data (gap <10%).
+✅ **Хорошо**: качество полученных данных близко к эталонным (разрыв <10%).
 ```
 
 ### 12.4.6 Manual Verification Interface
 
 Use Gradio to create Web interface, supporting manual verification of generated problems.
 
-```python
-class HumanVerificationUI:
-    """Manual verification interface"""
+```питон
+класс HumanVerificationUI:
+    """Интерфейс ручной проверки"""
 
-    def launch(self, share: bool = False):
-        """Launch Gradio interface"""
-        with gr.Blocks(title="AIME Problem Manual Verification") as demo:
-            gr.Markdown("# 🎯 AIME Problem Manual Verification System")
+def launch(self, доля: bool = False):
+        """Запустить интерфейс Gradio"""
+        с gr.Blocks(title="Проверка вручную проблем AIME") в качестве демонстрации:
+            gr.Markdown("# 🎯 Система проверки руководства по проблемам AIME")
 
-            with gr.Row():
-                with gr.Column(scale=2):
-                    # Problem display area
-                    problem_text = gr.Textbox(label="Problem Description", lines=5, interactive=False)
-                    answer_text = gr.Textbox(label="Answer", interactive=False)
-                    solution_text = gr.Textbox(label="Solution Process", lines=10, interactive=False)
+с gr.Row():
+                с gr.Column(scale=2):
+                    # Проблемная область отображения
+                    проблемный_текст = gr.Textbox(label="Описание проблемы", строк=5, интерактивный=False)
+                    ответ_текст = gr.Textbox(label="Ответ", интерактивный=False)
+                    Solution_text = gr.Textbox(label="Процесс решения", строк=10, интерактивный=False)
 
-                with gr.Column(scale=1):
-                    # Scoring area
-                    correctness_slider = gr.Slider(1, 5, value=3, step=1, label="Correctness")
-                    clarity_slider = gr.Slider(1, 5, value=3, step=1, label="Clarity")
-                    difficulty_slider = gr.Slider(1, 5, value=3, step=1, label="Difficulty Match")
-                    completeness_slider = gr.Slider(1, 5, value=3, step=1, label="Completeness")
+с gr.Column(масштаб=1):
+                    # Зона подсчета очков
+                    корректность_слайдер = gr.Slider(1, 5, значение=3, шаг=1, метка="Правильность")
+                    ясность_слайдер = gr.Slider(1, 5, значение=3, шаг=1, label="Ясность")
+                    сложность_слайдер = gr.Slider(1, 5, значение=3, шаг=1, label="Соответствие сложности")
+                    Completeness_slider = gr.Slider(1, 5, значение=3, шаг=1, label="Полнота")
 
-                    # Status selection
+# Выбор статуса
                     status_radio = gr.Radio(
-                        choices=["approved", "rejected", "needs_revision"],
-                        value="approved",
-                        label="Status"
+                        choice=["одобрено", "отклонено", "needs_revision"],
+                        значение = «одобрено»,
+                        метка="Статус"
                     )
 
-                    # Verification button
-                    verify_btn = gr.Button("✅ Submit Verification", variant="primary")
+# Кнопка подтверждения
+                    verify_btn = gr.Button(" ✅ Отправить подтверждение",variant="primary")
 
-            demo.launch(share=share, server_name="127.0.0.1", server_port=7860)
+demo.launch(share=share, server_name="127.0.0.1", server_port=7860)
 ```
 
 **Usage Method**:
 
-```bash
-# Launch manual verification interface
-python data_generation/human_verification_ui.py data_generation/generated_data/aime_generated_XXXXXX.json
+```бить
+# Запускаем интерфейс ручной проверки
+python data_generation/human_verification_ui.py data_ogenic/generated_data/aime_generated_XXXXXX.json
 
-# Open browser and visit
-http://127.0.0.1:7860
+# Откройте браузер и посетитеhttp://127.0.0.1:7860
 ```
 
-The final effect can be referenced in Figure 12.7. For problem correctness, manual review is best:
+The final effect can be referenced in Рис. 12.7. For problem correctness, manual review is best:
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-7.png" alt="" width="85%"/>
-  <p>Figure 12.7 AIME Problem Manual Verification Page</p>
+  <p>Рис. 12.7 AIME Problem Manual Verification Page</p>
 </div>
 
 **Verification Process**:
@@ -2404,19 +2403,19 @@ The final effect can be referenced in Figure 12.7. For problem correctness, manu
 
 Verification results are automatically saved as `<data_path>_verifications.json`:
 
-```json
+```JSON
 {
   "gen_aime_1": {
     "problem_id": "gen_aime_1",
-    "scores": {
-      "correctness": 5,
-      "clarity": 4,
-      "difficulty_match": 4,
-      "completeness": 5
+    "баллы": {
+      «правильность»: 5,
+      «ясность»: 4,
+      «difficulty_match»: 4,
+      "полнота": 5
     },
-    "total_score": 4.5,
-    "status": "approved",
-    "comments": "Problem quality is very good, logic is rigorous",
+    "total_score": 4,5,
+    "статус": "одобрено",
+    "comments": "Качество задачи очень хорошее, логика строгая",
     "verified_at": "2025-01-10T12:00:00"
   }
 }
@@ -2426,337 +2425,337 @@ Verification results are automatically saved as `<data_path>_verifications.json`
 
 Integrate all evaluation methods into a complete flow.
 
-```python
-def run_complete_evaluation(
-    num_problems: int = 30,
-    delay_seconds: float = 3.0
+```питон
+защита run_complete_evaluation(
+    число_проблем: int = 30,
+    задержка_секунды: с плавающей запятой = 3,0
 ):
     """
-    Run complete evaluation flow
+    Запустите полный процесс оценки
 
-    Args:
-        num_problems: Number of problems to generate
-        delay_seconds: Delay between each generation (seconds), avoid API rate limit
+Аргументы:
+        num_problems: Количество проблем, которые нужно сгенерировать.
+        задержание_секунд: задержка между каждым поколением (в секундах), избегайте ограничения скорости API.
     """
-    # Step 1: Generate AIME problems
-    generator = AIMEGenerator(delay_seconds=delay_seconds)
-    generated_data_path = generator.generate_and_save(
+    # Шаг 1: Создайте проблемы AIME
+    генератор = AIMEGenerator(delay_секунды=delay_секунды)
+    сгенерированный_путь_данных = генератор.генерировать_и_сохранить(
         num_problems=num_problems,
-        output_dir="data_generation/generated_data"
+        output_dir="генерация_данных/сгенерированные_данные"
     )
 
-    # Step 2: Evaluation
-    # Create evaluation result directory
+# Шаг 2: Оценка
+    # Создать каталог результатов оценки
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    evaluation_dir = f"data_generation/evaluation_results/{timestamp}"
-    os.makedirs(evaluation_dir, exist_ok=True)
-    os.makedirs(os.path.join(evaluation_dir, "llm_judge"), exist_ok=True)
-    os.makedirs(os.path.join(evaluation_dir, "win_rate"), exist_ok=True)
+    Assessment_dir = f"data_generation/evaluation_results/{timestamp}"
+    os.madeirs(evaluation_dir, Exist_ok=True)
+    os.madeirs(os.path.join(evaluation_dir, "llm_judge"), Exist_ok=True)
+    os.madeirs(os.path.join(evaluation_dir, "win_rate"), Exist_ok=True)
 
-    # Create LLM
-    llm = HelloAgentsLLM()
+# Создать LLM
+    llm = ПриветАгентыLLM()
 
-    # Step 2.1: LLM Judge evaluation
-    llm_judge_result = None
-    try:
+# Шаг 2.1: Оценка судьи LLM
+    llm_judge_result = Нет
+    попробуйте:
         llm_judge_tool = LLMJudgeTool(llm=llm)
         llm_judge_result_json = llm_judge_tool.run({
-            "generated_data_path": generated_data_path,
-            "reference_year": 2025,
+            «сгенерированный_путь_данных»: сгенерированный_путь_данных,
+            «reference_year»: 2025,
             "max_samples": num_problems,
-            "output_dir": os.path.join(evaluation_dir, "llm_judge"),
+            «output_dir»: os.path.join(evaluation_dir, «llm_judge»),
             "judge_model": "gpt-4o"
         })
         llm_judge_result = json.loads(llm_judge_result_json)
-    except Exception as e:
-        print(f"❌ LLM Judge evaluation failed: {e}")
+    кроме исключения как e:
+        print(f"❌ Оценка судьи LLM не удалась: {e}")
 
-    # Step 2.2: Win Rate evaluation
-    win_rate_result = None
-    try:
+# Шаг 2.2: Оценка процента побед
+    win_rate_result = Нет
+    попробуйте:
         win_rate_tool = WinRateTool(llm=llm)
         win_rate_result_json = win_rate_tool.run({
-            "generated_data_path": generated_data_path,
-            "reference_year": 2025,
-            "num_comparisons": min(num_problems, 20),
-            "output_dir": os.path.join(evaluation_dir, "win_rate"),
+            «сгенерированный_путь_данных»: сгенерированный_путь_данных,
+            «reference_year»: 2025,
+            "количество_сравнений": мин(количество_проблем, 20),
+            «output_dir»: os.path.join(evaluation_dir, «win_rate»),
             "judge_model": "gpt-4o"
         })
         win_rate_result = json.loads(win_rate_result_json)
-    except Exception as e:
-        print(f"❌ Win Rate evaluation failed: {e}")
+    кроме исключения как e:
+        print(f"❌ Не удалось оценить процент побед: {e}")
 
-    # Step 3: Generate comprehensive report
-    comprehensive_report_path = None
-    if llm_judge_result or win_rate_result:
-        comprehensive_report_path = os.path.join(evaluation_dir, "comprehensive_report.md")
-        report = generate_comprehensive_report(
-            generated_data_path,
+# Шаг 3: Создайте подробный отчет
+    complex_report_path = Нет
+    если llm_judge_result или win_rate_result:
+        комплексный_репорт_путь = os.path.join(evaluation_dir, "comprehensive_report.md")
+        отчет =generate_comprehensive_report(
+            сгенерированный_путь_данных,
             llm_judge_result,
             win_rate_result
         )
-        with open(comprehensive_report_path, 'w', encoding='utf-8') as f:
-            f.write(report)
+        с open(comprehensive_report_path, 'w',coding='utf-8') как f:
+            f.write(отчет)
 
-    return {
-        "generated_data_path": generated_data_path,
+вернуть {
+        «сгенерированный_путь_данных»: сгенерированный_путь_данных,
         "llm_judge_result": llm_judge_result,
         "win_rate_result": win_rate_result,
-        "comprehensive_report_path": comprehensive_report_path
+        "comprehensive_report_path": всеобъемлющий_report_path
     }
 ```
 
 **Run Method**:
 
-```bash
-# Basic usage (default 3 second delay)
+```бить
+# Базовое использование (задержка по умолчанию 3 секунды)
 python data_generation/run_complete_evaluation.py 30
 
-# Custom delay (recommended 3-5 seconds, avoid API rate limit)
+# Пользовательская задержка (рекомендуется 3-5 секунд, избегайте ограничения скорости API)
 python data_generation/run_complete_evaluation.py 30 3.0
 
-# Parameter explanation:
-# - 30: Number of problems to generate
-# - 3.0: Delay between each generation (seconds)
+# Объяснение параметра:
+# - 30: Количество проблем, которые нужно создать
+# - 3.0: Задержка между каждым поколением (секунды)
 
-# Explanation:
-# - Generation phase: Randomly select reference examples from 900+ AIME real problems (1983-2025)
-# - Evaluation phase: Quality comparison with AIME 2025 real problems
-# - Dataset source: math-ai/aime25 (JSONL format)
+# Объяснение:
+# - Фаза генерации: случайным образом выберите эталонные примеры из более чем 900 реальных задач AIME (1983-2025 гг.).
+# - Этап оценки: сравнение качества с реальными проблемами AIME 2025.
+# - Источник набора данных: math-ai/aime25 (формат JSONL)
 ```
 
 **Output Example**:
 
 ```
-================================================================================
-🚀 AIME Data Generation and Evaluation Complete Flow
-================================================================================
+============================================================================
+🚀 Полный процесс создания и оценки данных AIME
+============================================================================
 
-Configuration:
-  - Number of problems to generate: 30
-  - API delay: 3.0 seconds/problem
-  - Generation reference data: TianHongZXY/aime-1983-2025 (900+ problems)
-  - Evaluation reference: AIME 2025 real problems
+Конфигурация:
+  - Количество проблем, которые нужно создать: 30
+  - Задержка API: 3,0 секунды/проблема
+  - Справочные данные поколения: TianHongZXY/aime-1983-2025 (более 900 проблем)
+  - Ссылка на оценку: реальные проблемы AIME 2025.
 
-================================================================================
-📝 Step 1: Generate AIME Problems
-================================================================================
-📚 Load AIME real problem dataset: TianHongZXY/aime-1983-2025
-   ✓ Loaded 963 reference problems
+============================================================================
+📝 Шаг 1: Создайте проблемы AIME
+============================================================================
+📚 Загрузите набор данных о реальных проблемах AIME: TianHongZXY/aime-1983-2025.
+   ✓ Загружено 963 справочных задачи
 
-🎯 Start generating AIME problems
-   Target quantity: 30
-   Generation model: gpt-4o
-   Delay setting: 3.0 seconds/problem
+🎯 Начните создавать проблемы AIME
+   Целевое количество: 30
+   Модель поколения: gpt-4o
+   Настройка задержки: 3,0 секунды/проблема.
 
-Generating AIME problems:  100%|██████████| 30/30 [01:30<00:00, 3.00s/problem, topic=Algebra, answer=123, time=3.0s]
+Создание проблем с AIME: 100%|██████████| 30/30 [01:30<00:00, 3,00 с/задача, тема=Алгебра, ответ=123, время=3,0 с]
 
-✅ Step 1 complete! Generated data saved at: data_generation/generated_data/aime_generated_20250110_120000.json
+✅Шаг 1 выполнен! Сгенерированные данные сохраняются по адресу: data_generated/generated_data/aime_generated_20250110_120000.json.
 
-🎯 Step 2.1: LLM Judge Evaluation (vs AIME 2025)
+🎯 Шаг 2.1: Оценка судьи LLM (по сравнению с AIME 2025)
 
-✅ LLM Judge evaluation complete!
-   Average total score: 4.2/5.0
-   Pass rate: 85.0%
+✅ Оценка судьи LLM завершена!
+   Средний общий балл: 4,2/5,0
+   Процент прохождения: 85,0%
 
-🏆 Step 2.2: Win Rate Evaluation (vs AIME 2025)
+🏆 Шаг 2.2: Оценка процента побед (по сравнению с AIME 2025)
 
-✅ Win Rate evaluation complete!
-   Win Rate: 45.0%
+✅ Оценка выигрыша завершена!
+   Вероятность выигрыша: 45,0%
 
-================================================================================
-📊 Step 3: Generate Comprehensive Report
-================================================================================
+============================================================================
+📊 Шаг 3: Создайте подробный отчет
+============================================================================
 
-✅ Comprehensive report saved: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
+✅ Комплексный отчет сохранен: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
 
-================================================================================
-🎉 Complete Evaluation Flow Finished!
-================================================================================
+============================================================================
+🎉 Полный процесс оценки завершен!
+============================================================================
 
-📁 Output Files:
-   - Generated data: data_generation/generated_data/aime_generated_20250110_120000.json
-   - Evaluation result directory: data_generation/evaluation_results/20250110_120000
-   - LLM Judge report: data_generation/evaluation_results/20250110_120000/llm_judge/llm_judge_report_20250110_120000.md
-   - Win Rate report: data_generation/evaluation_results/20250110_120000/win_rate/win_rate_report_20250110_120000.md
-   - Comprehensive report: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
+📁 Выходные файлы:
+   - Сгенерированные данные: data_generated/generated_data/aime_generated_20250110_120000.json.
+   - Каталог результатов оценки: data_generation/evaluation_results/20250110_120000.
+   - Отчет судьи LLM: data_generation/evaluation_results/20250110_120000/llm_judge/llm_judge_report_20250110_120000.md
+   - Отчет о проценте побед: data_generation/evaluation_results/20250110_120000/win_rate/win_rate_report_20250110_120000.md
+   - Комплексный отчет: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
 
-💡 Next Steps:
-   1. View comprehensive report: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
-   2. Run manual verification: python data_generation/human_verification_ui.py data_generation/generated_data/aime_generated_20250110_120000.json
+💡 Следующие шаги:
+   1. Просмотрите подробный отчет: data_generation/evaluation_results/20250110_120000/comprehensive_report.md.
+   2. Запустите проверку вручную: python data_generation/human_verification_ui.py data_generation/generated_data/aime_generated_20250110_120000.json
 ```
 
 ### 12.4.8 Comprehensive Evaluation Report
 
 The system automatically generates comprehensive evaluation reports, summarizing all evaluation results. Below is an example report:
 
-```markdown
-# AIME Data Generation and Evaluation Comprehensive Report
+```уценка
+# Комплексный отчет AIME по созданию и оценке данных
 
-## 1. Basic Information
+## 1. Основная информация
 
-- **Generation Time**: 2025-01-10 12:00:00
-- **Number of Generated Problems**: 30
-- **Reference AIME Year**: 2025
+- **Время генерации**: 10 января 2025 г., 12:00:00.
+- **Количество созданных проблем**: 30
+- **Справочный год AIME**: 2025 г.
 
-## 2. Data Generation Statistics
+## 2. Статистика формирования данных
 
-### Topic Distribution
+### Распределение тем
 
-| Topic | Quantity | Proportion |
+| Тема | Количество | Пропорция |
 |------|------|------|
-| Algebra | 10 | 33.3% |
-| Geometry | 8 | 26.7% |
-| Number Theory | 7 | 23.3% |
-| Combinatorics | 3 | 10.0% |
-| Probability | 2 | 6.7% |
+| Алгебра | 10 | 33,3% |
+| Геометрия | 8 | 26,7% |
+| Теория чисел | 7 | 23,3% |
+| Комбинаторика | 3 | 10,0% |
+| Вероятность | 2 | 6,7% |
 
-## 3. LLM Judge Evaluation Results
+## 3. Результаты оценки судей LLM
 
-### Overall Score
+### Общий балл
 
-- **Average Total Score**: 4.2/5.0
-- **Pass Rate**: 85.0% (≥3.5 points)
-- **Excellent Rate**: 40.0% (≥4.5 points)
+- **Средний общий балл**: 4,2/5,0
+- **Процент сдачи**: 85,0% (≥3,5 баллов)
+- **Отличный рейтинг**: 40,0% (≥4,5 баллов)
 
-### Dimension Scores
+### Оценки измерений
 
-| Dimension | Average Score | Rating |
+| Размерность | Средний балл | Рейтинг |
 |------|--------|------|
-| Correctness | 4.3/5.0 | Good ⭐⭐⭐⭐ |
-| Clarity | 4.1/5.0 | Good ⭐⭐⭐⭐ |
-| Difficulty Match | 4.0/5.0 | Good ⭐⭐⭐⭐ |
-| Completeness | 4.4/5.0 | Good ⭐⭐⭐⭐ |
+| Корректность | 4,3/5,0 | Хорошо ⭐⭐⭐⭐ |
+| Ясность | 4,1/5,0 | Хорошо ⭐⭐⭐⭐ |
+| Матч сложности | 4.0/5.0 | Хорошо ⭐⭐⭐⭐ |
+| Полнота | 4,4/5,0 | Хорошо ⭐⭐⭐⭐ |
 
-## 4. Win Rate Evaluation Results
+## 4. Результаты оценки процента выигрышей
 
-### Win Rate Statistics
+### Статистика выигрышей
 
-| Metric | Value | Percentage |
+| Метрическая | Значение | Процент |
 |------|------|--------|
-| Generated Data Wins | 9 times | 45.0% |
-| AIME Real Problems Win | 8 times | 40.0% |
-| Tie | 3 times | 15.0% |
+| Сгенерированные данные выигрывают | 9 раз | 45,0% |
+| Победа AIME «Реальные проблемы» | 8 раз | 40,0% |
+| Галстук | 3 раза | 15,0% |
 
-**Win Rate**: 45.0%
+**Процент побед**: 45,0%
 
-✅ **Good**: Generated data quality is close to reference data (gap <10%).
+✅ **Хорошо**: качество полученных данных близко к эталонным (разрыв <10%).
 
-## 5. Comprehensive Conclusion
+## 5. Комплексное заключение
 
-Based on the results of LLM Judge and Win Rate evaluation methods:
+По результатам оценки LLM Judge и WinRate:
 
-1. **LLM Judge Evaluation**: Average quality of generated data is **4.2/5.0**
-2. **Win Rate Evaluation**: Win rate of generated data relative to AIME 2025 real problems is **45.0%**
+1. **Оценка судьи LLM**: Среднее качество сгенерированных данных — **4,2/5,0**.
+2. **Оценка процента побед**: Процент выигрышей сгенерированных данных относительно реальных проблем AIME 2025 составляет **45,0%**
 
-✅ **Conclusion**: Generated data quality is **excellent**, reaching or exceeding AIME real problem level. Can be used for practical applications.
+✅ **Вывод**: Качество сгенерированных данных **отличное**, достигая или превосходя реальный уровень проблемы AIME. Может использоваться для практических целей.
 
-## 6. Improvement Suggestions
+## 6. Предложения по улучшению
 
-- ✅ Continue maintaining current generation strategy
-- ✅ Can consider increasing generation quantity
-- ✅ Recommend manual verification to ensure quality
+- ✅ Продолжать поддерживать текущую стратегию генерации
+- ✅ Можно рассмотреть возможность увеличения количества генерации
+- ✅ Рекомендую ручную проверку для обеспечения качества
 
-## 7. Next Steps
+## 7. Следующие шаги
 
-1. **Manual Verification**: Run `python data_generation/human_verification_ui.py <data_path>` for manual verification
-2. **View Detailed Results**:
-   - LLM Judge detailed report
-   - Win Rate detailed report
-3. **Data Usage**: If quality is satisfactory, generated data can be used for training or testing
+1. **Проверка вручную**: Запустите`python data_generation/human_verification_ui.py <data_path>`для ручной проверки
+2. **Просмотреть подробные результаты**:
+   - Подробный отчет судьи LLM
+   - Подробный отчет о проценте побед
+3. **Использование данных**: если качество удовлетворительное, сгенерированные данные можно использовать для обучения или тестирования.
 ```
 
-Based on practical usage experience, summarize the following content:
+Основываясь на практическом опыте использования, суммируйте следующее содержание:
 
-In data generation, use appropriate delay time (2-3 seconds) to avoid API rate limits, enable checkpoint saving to avoid interruption losses, first test with small batches (10) to confirm no issues before large-scale generation, and regularly check generation quality to adjust prompts in time. In evaluation strategy, recommend combining LLM Judge and Win Rate methods, where LLM Judge is used for absolute quality evaluation, Win Rate for relative quality comparison, and manual verification for final quality control. For quality standards, recommend LLM Judge average score above 4.0/5.0, Win Rate above 45% (close to 50%), pass rate above 80%, and manual verification pass rate above 90%. In iterative optimization, adjust generation prompts based on evaluation results, analyze common issues in low-scoring problems, reference advantages of high-scoring problems, and continuously improve generation strategy.
+При создании данных используйте подходящее время задержки (2–3 секунды), чтобы избежать ограничений скорости API, включите сохранение контрольных точек, чтобы избежать потерь из-за прерываний, сначала тестируйте небольшими пакетами (10), чтобы подтвердить отсутствие проблем перед крупномасштабной генерацией, и регулярно проверяйте качество генерации, чтобы вовремя корректировать подсказки. В стратегии оценки рекомендуется сочетать методы LLM Judge и Winrate, где LLM Judge используется для абсолютной оценки качества, Winrate для сравнения относительного качества и ручная проверка для окончательного контроля качества. В отношении стандартов качества рекомендуется средний балл судьи LLM выше 4,0/5,0, процент побед выше 45 % (близко к 50 %), процент успешных попыток выше 80 % и процент успешных проверок вручную выше 90 %. При итеративной оптимизации корректируйте подсказки для генерации на основе результатов оценки, анализируйте общие проблемы в задачах с низкой оценкой, ссылайтесь на преимущества задач с высокой оценкой и постоянно совершенствуйте стратегию генерации.
 
-Through learning this section, we have mastered how to use the HelloAgents framework for data generation quality evaluation, including three methods: LLM Judge evaluation, Win Rate evaluation, and manual verification. This complete evaluation system can ensure high quality of generated data, providing reliable data support for AI system training and testing.
+Изучив этот раздел, мы научились использовать платформу HelloAgents для оценки качества генерации данных, включая три метода: оценку LLM Judge, оценку процента побед и ручную проверку. Эта комплексная система оценки может гарантировать высокое качество генерируемых данных, обеспечивая надежную поддержку данных для обучения и тестирования систем искусственного интеллекта.
 
-For LLM Judge and Win Rate evaluation, HelloAgents has also integrated tools and provided complete example code. If you are interested in the specific implementation details of these two evaluation methods, you can also refer to the example code.
+Для оценки LLM Judge и Win Rank HelloAgents также интегрировал инструменты и предоставил полный пример кода. Если вас интересуют конкретные детали реализации этих двух методов оценки, вы также можете обратиться к примеру кода.
 
-## 12.5 Chapter Summary
+## 12.5 Краткое содержание главы
 
-In this chapter, we built a complete performance evaluation system for the HelloAgents framework. Let's review the core content learned:
+В этой главе мы создали полную систему оценки производительности для платформы HelloAgents. Давайте рассмотрим основной изученный материал:
 
-**(1) Evaluation System Overview**
+**(1) Обзор системы оценки**
 
-We established a three-tier evaluation system, comprehensively covering different capability dimensions of agents. First is tool calling capability evaluation (BFCL), focusing on evaluating agent function calling accuracy, including simple, multiple, parallel, irrelevance four categories, using AST matching technology for precise evaluation. Second is general capability evaluation (GAIA), evaluating agent comprehensive problem-solving capabilities, including three difficulty levels with 466 real-world problems, focusing on multi-step reasoning, tool usage, file processing and other capabilities. Third is data generation quality evaluation (AIME), evaluating LLM-generated data quality, using LLM Judge and Win Rate methods, supporting manual verification and comprehensive report generation, ensuring generated data reaches reference data quality standards.
+Мы создали трехуровневую систему оценки, всесторонне охватывающую различные аспекты возможностей агентов. Во-первых, это оценка возможностей вызова инструментов (BFCL), в которой основное внимание уделяется оценке точности вызова функций агента, включая четыре категории простых, множественных, параллельных и нерелевантных, с использованием технологии сопоставления AST для точной оценки. Во-вторых, это общая оценка возможностей (GAIA), оценивающая возможности агента по комплексному решению проблем, включая три уровня сложности с 466 реальными проблемами, с упором на многоэтапное рассуждение, использование инструментов, обработку файлов и другие возможности. В-третьих, это оценка качества генерации данных (AIME), оценка качества данных, генерируемых LLM, с использованием методов LLM Judge и Win Rank, поддержка ручной проверки и создание комплексных отчетов, обеспечивающая соответствие сгенерированных данных эталонным стандартам качества данных.
 
-**(2) Core Technical Points**
+**(2) Основные технические моменты**
 
-In technical implementation, we adopted six core technical points. First is modular design, evaluation system adopts three-tier architecture: data layer (Dataset responsible for data loading and management), evaluation layer (Evaluator responsible for executing evaluation flow), and metrics layer (Metrics responsible for calculating various evaluation metrics). Second is tool encapsulation, all evaluation functions are encapsulated as Tools, can be directly called by agents, integrated into workflows, or used through unified interface. Third is AST matching technology, using abstract syntax tree matching for function calls, more intelligent than simple string matching, able to ignore parameter order, recognize equivalent expressions, and ignore format differences. Fourth is multimodal support, GAIA evaluation supports text questions, attachment files, image inputs and other multimodal data. Fifth is LLM Judge evaluation, using LLM as judge to evaluate generated data quality, providing multi-dimensional scoring (correctness, clarity, difficulty matching, completeness), automated evaluation flow, detailed evaluation reports, and supporting custom evaluation dimensions and standards. Sixth is Win Rate comparison evaluation, evaluating generation quality through pairwise comparison (generated data vs reference data), LLM judges which is better and calculates win rate statistics, close to 50% indicates equivalent quality.
+В технической реализации мы приняли шесть основных технических моментов. Во-первых, это модульная конструкция, система оценки имеет трехуровневую архитектуру: уровень данных (набор данных, отвечающий за загрузку данных и управление ими), уровень оценки (оценщик, отвечающий за выполнение потока оценки) и уровень метрик (метрики, отвечающие за расчет различных метрик оценки). Во-вторых, это инкапсуляция инструментов: все функции оценки инкапсулируются как инструменты, могут напрямую вызываться агентами, интегрироваться в рабочие процессы или использоваться через унифицированный интерфейс. В-третьих, это технология сопоставления AST, использующая сопоставление абстрактного синтаксического дерева для вызовов функций, более интеллектуальная, чем простое сопоставление строк, способная игнорировать порядок параметров, распознавать эквивалентные выражения и игнорировать различия в формате. В-четвертых, это мультимодальная поддержка: оценка GAIA поддерживает текстовые вопросы, вложенные файлы, входные изображения и другие мультимодальные данные. В-пятых, это оценка LLM Judge, использующая LLM в качестве судьи для оценки качества сгенерированных данных, обеспечивающая многомерную оценку (правильность, ясность, соответствие сложности, полнота), автоматизированный процесс оценки, подробные отчеты об оценке и поддержку пользовательских параметров и стандартов оценки. В-шестых, это оценка сравнения выигрышей, оценивающая качество генерации посредством парного сравнения (сгенерированные данные и справочные данные), LLM определяет, что лучше, и рассчитывает статистику выигрышей, близкое к 50% указывает на эквивалентное качество.
 
-**(3) Extension Directions**
+**(3) Инструкции по продлению**
 
-Based on this chapter's evaluation system, you can extend in four directions. First is adding new evaluation benchmarks, can refer to BFCL and GAIA implementation patterns, implement Dataset, Evaluator, Metrics three components, and encapsulate as Tool for use. Second is custom evaluation metrics, add new metric calculation methods in Metrics class, design metrics according to specific application scenarios. Third is integration into CI/CD flow, automatically run evaluation on code commits, set performance thresholds to prevent performance degradation, generate evaluation reports and archive. Fourth is extending data generation evaluation, support more data types (code, dialogue, documents, etc.), add more evaluation dimensions (innovation, diversity, etc.), integrate more reference datasets, support multi-model comparison evaluation.
+Основываясь на системе оценки, описанной в этой главе, вы можете развиваться в четырех направлениях. Во-первых, это добавление новых тестов оценки, возможность ссылаться на шаблоны реализации BFCL и GAIA, реализация трех компонентов Dataset, Evaluator, Metrics и инкапсуляция в качестве инструмента для использования. Во-вторых, это пользовательские метрики оценки, добавление новых методов расчета метрик в класс Metrics, разработка метрик в соответствии с конкретными сценариями приложений. В-третьих, это интеграция в поток CI/CD, автоматический запуск оценки при фиксации кода, установка пороговых значений производительности для предотвращения снижения производительности, создание отчетов об оценке и их архивирование. В-четвертых, это расширение оценки генерации данных, поддержка большего количества типов данных (код, диалог, документы и т. д.), добавление большего количества измерений оценки (инновации, разнообразие и т. д.), интеграция большего количества справочных наборов данных, поддержка оценки сравнения нескольких моделей.
 
-**Congratulations on completing Chapter 12!** 🎉
+**Поздравляем с завершением главы 12!** 🎉
 
-Evaluation is an important part of agent development, it allows us to:
+Оценка — важная часть разработки агента, она позволяет нам:
 
-- Objectively measure agent capabilities
-- Discover and fix issues
-- Continuously improve systems
+- Объективно измеряйте возможности агента
+- Обнаруживайте и устраняйте проблемы
+- Постоянно совершенствовать системы
 
-In the next chapter, we will explore how to apply the HelloAgents framework to actual projects.
+В следующей главе мы рассмотрим, как применить платформу HelloAgents к реальным проектам.
 
-**Keep going!** 💪
+**Продолжайте!** 💪
 
-## Exercises
+## Упражнения
 
-> **Hint**: Some exercises have no standard answers, focusing on cultivating learners' comprehensive understanding and practical ability in agent performance evaluation.
+> **Подсказка**: некоторые упражнения не имеют стандартных ответов и направлены на развитие у учащихся всестороннего понимания и практических навыков в оценке эффективности работы агентов.
 
-1. This chapter introduced multiple agent evaluation benchmarks. Please analyze:
+1. В этой главе представлены несколько критериев оценки агентов. Пожалуйста, проанализируйте:
 
-   - In Section 12.1.2, BFCL, GAIA, AgentBench and other evaluation benchmarks were introduced. Please compare BFCL and GAIA: What core capabilities of agents do they evaluate respectively? Why does BFCL use AST matching algorithm while GAIA uses Quasi Exact Match? What are the advantages and disadvantages of these two evaluation methods?
-   - Suppose you want to build an "intelligent customer service system" that needs to evaluate the following capabilities: (1) accuracy of understanding user intent; (2) correctness of calling backend APIs; (3) friendliness and professionalism of responses; (4) robustness in handling exceptional situations. Please select or design appropriate evaluation metrics and methods for each capability.
-   - In Section 12.1.1, it was mentioned that agent evaluation faces three major challenges: "output uncertainty", "evaluation standard diversity", and "high evaluation cost". Please propose specific solutions for each challenge and analyze the feasibility and limitations of the solutions.
+   - В разделе 12.1.2 были представлены BFCL, GAIA, AgentBench и другие тесты оценки. Пожалуйста, сравните BFCL и GAIA: какие основные возможности агентов они оценивают соответственно? Почему BFCL использует алгоритм сопоставления AST, а GAIA использует Quasi Exact Match? Каковы преимущества и недостатки этих двух методов оценки?
+   - Предположим, вы хотите построить «интеллектуальную систему обслуживания клиентов», которой необходимо оценить следующие возможности: (1) точность понимания намерений пользователя; (2) корректность вызова серверных API; (3) дружелюбие и профессионализм ответов; (4) устойчивость в исключительных ситуациях. Пожалуйста, выберите или разработайте соответствующие показатели и методы оценки для каждой возможности.
+   - В разделе 12.1.1 было упомянуто, что оценка агентов сталкивается с тремя основными проблемами: «неопределенность результатов», «разнообразие стандартов оценки» и «высокая стоимость оценки». Пожалуйста, предложите конкретные решения для каждой проблемы и проанализируйте осуществимость и ограничения решений.
 
-2. BFCL (Berkeley Function Calling Leaderboard) is an important benchmark for evaluating tool calling capabilities. Based on Section 12.2 content, please think deeply:
+2. BFCL (Berkeley Function Calling Leaderboard) — важный ориентир для оценки возможностей вызова инструментов. Основываясь на содержании раздела 12.2, пожалуйста, глубоко подумайте:
 
-   > **Hint**: This is a hands-on practice question, actual operation is recommended
+> **Подсказка**: это практический вопрос, рекомендуется реальная работа.
 
-   - In the AST matching algorithm in Section 12.2.3, we judge whether function calls are correct by comparing abstract syntax trees. Please analyze: Why is AST matching more suitable than simple string matching? In what situations might AST matching produce misjudgments (false positives or false negatives)? How to improve the AST matching algorithm to increase accuracy?
-   - BFCL dataset contains four categories: simple, multiple, parallel, irrelevance. Please design 2-3 new test samples for each category, requiring ability to test boundary cases or error-prone scenarios under that category.
-   - Please extend the BFCL evaluator based on the code in Section 12.2.4, adding the following functions: (1) support evaluating execution order of tool calls (for multiple tool calls with dependencies); (2) evaluate tool calling efficiency (such as whether minimum number of calls was used); (3) generate detailed error analysis report (such as which types of errors are most common).
+   - В алгоритме сопоставления AST, описанном в разделе 12.2.3, мы оцениваем корректность вызовов функций путем сравнения абстрактных синтаксических деревьев. Пожалуйста, проанализируйте: почему сопоставление AST более подходит, чем простое сопоставление строк? В каких ситуациях сопоставление AST может привести к ошибочным оценкам (ложноположительные или ложноотрицательные результаты)? Как улучшить алгоритм сопоставления AST, чтобы повысить точность?
+   - Набор данных BFCL содержит четыре категории: простые, множественные, параллельные и нерелевантные. Разработайте 2–3 новых тестовых образца для каждой категории, требующих возможности тестировать граничные случаи или сценарии, подверженные ошибкам, в этой категории.
+   - Пожалуйста, расширьте оценщик BFCL на основе кода из раздела 12.2.4, добавив следующие функции: (1) поддержка оценки порядка выполнения вызовов инструментов (для нескольких вызовов инструментов с зависимостями); (2) оценить эффективность вызова инструментов (например, использовалось ли минимальное количество вызовов); (3) создать подробный отчет об анализе ошибок (например, какие типы ошибок наиболее распространены).
 
-3. GAIA (General AI Assistants) evaluates agent comprehensive capabilities. Based on Section 12.3 content, please complete the following extension practice:
+3. GAIA (General AI Assistants) оценивает комплексные возможности агента. В соответствии с содержанием раздела 12.3 выполните следующую практику расширения:
 
-   > **Hint**: This is a hands-on practice question, actual operation is recommended
+> **Подсказка**: это практический вопрос, рекомендуется реальная работа.
 
-   - In Section 12.3.2, three difficulty levels of GAIA (Level 1/2/3) were introduced. Please analyze: What are the differences between these three levels in task complexity, required capabilities, evaluation standards, etc.? If designing Level 4 (ultra-high difficulty), what types of tasks should it include?
-   - GAIA uses "Quasi Exact Match" algorithm to evaluate answer correctness. Please analyze: How does this method handle answer diversity (such as "42", "forty-two", "42.0" should all be considered correct)? In what situations might quasi exact match not be sufficient? Please design a more intelligent answer matching algorithm that can handle semantically equivalent answers.
-   - Please implement a "custom GAIA evaluation set" based on the code in Section 12.3.4: select a specific domain (such as medical, legal, financial), design 10 real-world questions, and implement complete evaluation flow. Require questions to cover different difficulty levels, and provide standard answers and scoring criteria.
+   - В разделе 12.3.2 были введены три уровня сложности GAIA (уровень 1/2/3). Пожалуйста, проанализируйте: каковы различия между этими тремя уровнями по сложности задач, требуемым возможностям, стандартам оценки и т. д.? Если разрабатывается уровень 4 (сверхвысокая сложность), какие типы задач он должен включать?
+   - GAIA использует алгоритм «Квазиточное совпадение» для оценки правильности ответов. Пожалуйста, проанализируйте: как этот метод обрабатывает разнообразие ответов (например, «42», «сорок два», «42,0» следует считать правильными)? В каких ситуациях квазиточное совпадение может оказаться недостаточным? Пожалуйста, разработайте более интеллектуальный алгоритм сопоставления ответов, который сможет обрабатывать семантически эквивалентные ответы.
+   - Пожалуйста, внедрите «пользовательский набор оценок GAIA» на основе кода из раздела 12.3.4: выберите конкретную область (например, медицинскую, юридическую, финансовую), разработайте 10 реальных вопросов и реализуйте полный поток оценки. Требуйте, чтобы вопросы охватывали различные уровни сложности, а также предоставляли стандартные ответы и критерии оценки.
 
-4. LLM Judge is an emerging method of using large language models for evaluation. Based on Section 12.4 content, please analyze in depth:
+4. LLM Judge — это новый метод использования больших языковых моделей для оценки. Основываясь на содержании раздела 12.4, пожалуйста, подробно проанализируйте:
 
-   - In Section 12.4.2, we used GPT-4 as judge to evaluate agent response quality. Please analyze: What advantages does LLM Judge have compared to traditional rule matching or metric calculation? What potential biases or limitations does it have (such as preference for certain response styles, sensitivity to length)?
-   - LLM Judge scoring criteria design is crucial. Please design detailed scoring criteria (including scoring dimensions, weights, examples) for the following three different evaluation scenarios: (1) code generation quality evaluation; (2) creative writing quality evaluation; (3) technical documentation quality evaluation.
-   - In Section 12.4.3, it was mentioned that multiple LLM Judges can be used for "jury-style" evaluation. Please design a "multi-judge evaluation system": using 3-5 different LLMs (such as GPT-4, Claude, Qwen) as judges, how to aggregate their scores? How to handle disagreements between judges? How to detect and filter abnormal scores?
+   - В разделе 12.4.2 мы использовали GPT-4 в качестве критерия для оценки качества ответа агента. Пожалуйста, проанализируйте: какие преимущества имеет LLM Judge по сравнению с традиционным сопоставлением правил или расчетом показателей? Какие потенциальные предубеждения или ограничения у него есть (например, предпочтение определенных стилей ответов, чувствительность к длине)?
+   - Разработка критериев оценки судей LLM имеет решающее значение. Разработайте подробные критерии оценки (включая параметры оценки, веса, примеры) для следующих трех различных сценариев оценки: (1) оценка качества генерации кода; (2) оценка качества творческого письма; (3) оценка качества технической документации.
+   - В разделе 12.4.3 было упомянуто, что для оценки «в стиле жюри» можно использовать несколько судей LLM. Пожалуйста, разработайте «систему оценки с участием нескольких судей»: используя 3-5 разных LLM (таких как GPT-4, Claude, Qwen) в качестве судей, как суммировать их баллы? Как разрешать разногласия между судьями? Как обнаружить и отфильтровать ненормальные оценки?
 
-5. Practical application of agent evaluation needs to consider multiple aspects. Please think:
+5. Практическое применение оценки агентов должно учитывать множество аспектов. Пожалуйста, подумайте:
 
-   - In actual projects, evaluation often needs to balance between "evaluation cost" and "evaluation quality". Please design a "tiered evaluation strategy": (1) quick evaluation (low cost, for daily development iteration); (2) standard evaluation (medium cost, for pre-release); (3) comprehensive evaluation (high cost, for major updates or public release). What evaluation items should each tier include? How to design evaluation flow?
-   - Agent performance may change over time (such as changes in dependent external APIs, changes in user needs). Please design a "continuous evaluation system": able to periodically automatically run evaluation, monitor agent performance change trends, and alert in time when performance declines. What components should this system include? How to design alert rules?
-   - Evaluation results need to be presented clearly to different audiences (such as developers, product managers, users). Please design an "evaluation report generation system": able to automatically generate reports with different levels of detail based on audience type. What technical details should developer reports include? What business metrics should product manager reports highlight? How should user reports be simplified and visualized?
+   - В реальных проектах оценка часто требует баланса между «стоимостью оценки» и «качеством оценки». Пожалуйста, разработайте «стратегию многоуровневой оценки»: (1) быстрая оценка (низкая стоимость, для ежедневной итерации разработки); (2) стандартная оценка (средняя стоимость, для предварительной версии); (3) комплексная оценка (высокая стоимость крупных обновлений или публичного выпуска). Какие элементы оценки должен включать каждый уровень? Как спроектировать поток оценки?
+   - Производительность агента может меняться со временем (например, изменения в зависимых внешних API, изменения в потребностях пользователей). Пожалуйста, разработайте «систему непрерывной оценки»: способную периодически автоматически запускать оценку, отслеживать тенденции изменения производительности агентов и вовремя предупреждать, когда производительность снижается. Какие компоненты должна включать в себя эта система? Как разработать правила оповещений?
+   - Результаты оценки должны быть четко представлены различным аудиториям (например, разработчикам, менеджерам по продуктам, пользователям). Пожалуйста, разработайте «систему создания отчетов об оценке»: способную автоматически генерировать отчеты с разным уровнем детализации в зависимости от типа аудитории. Какие технические подробности должны включать отчеты разработчиков? Какие бизнес-показатели должны освещаться в отчетах менеджера по продукту? Как следует упростить и визуализировать пользовательские отчеты?
 
-## References
+## Ссылки
 
-[1] Patil, S. G., Zhang, T., Wang, X., & Gonzalez, J. E. (2023). Gorilla: Large Language Model Connected with Massive APIs. arXiv preprint arXiv:2305.15334.
+[1] Патил С.Г., Чжан Т., Ван Х. и Гонсалес Дж. Э. (2023). Gorilla: большая языковая модель, связанная с массивными API. Препринт arXiv arXiv:2305.15334.
 
-[2] Qin, Y., Liang, S., Ye, Y., Zhu, K., Yan, L., Lu, Y., ... & Sun, M. (2023). ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs. arXiv preprint arXiv:2307.16789.
+[2] Цинь Ю., Лян С., Е Ю., Чжу К., Ян Л., Лу Ю., ... и Сунь М. (2023). ToolLLM: использование больших языковых моделей для освоения более 16 000 реальных API. Препринт arXiv arXiv:2307.16789.
 
-[3] Li, M., Zhao, Y., Yu, B., Song, F., Li, H., Yu, H., ... & Li, Y. (2023). Api-bank: A comprehensive benchmark for tool-augmented llms. arXiv preprint arXiv:2304.08244.
+[3] Ли, М., Чжао, Ю., Ю, Б., Сун, Ф., Ли, Х., Ю, Х., ... и Ли, Ю. (2023). Api-bank: Комплексный тест для фильмов с инструментальными дополнениями. Препринт arXiv arXiv:2304.08244.
 
-[4] Mialon, G., Dessì, R., Lomeli, M., Nalmpantis, C., Pasunuru, R., Raileanu, R., ... & Scialom, T. (2023). GAIA: a benchmark for General AI Assistants. arXiv preprint arXiv:2311.12983.
+[4] Миалон Г., Десси Р., Ломели М., Налмпантис К., Пасунуру Р., Раиляну Р., ... и Сиалом Т. (2023). GAIA: эталон для помощников общего назначения по искусственному интеллекту. Препринт arXiv arXiv:2311.12983.
 
-[5] Liu, X., Yu, H., Zhang, H., Xu, Y., Lei, X., Lai, H., ... & Zhang, D. (2023). AgentBench: Evaluating LLMs as Agents. arXiv preprint arXiv:2308.03688.
+[5] Лю, X., Ю, Х., Чжан, Х., Сюй, Ю., Лэй, X., Лай, Х., ... и Чжан, Д. (2023). AgentBench: Оценка LLM как агентов. Препринт arXiv arXiv:2308.03688.
 
-[6] Zhou, S., Xu, F. F., Zhu, H., Zhou, X., Lo, R., Sridhar, A., ... & Neubig, G. (2023). WebArena: A Realistic Web Environment for Building Autonomous Agents. arXiv preprint arXiv:2307.13854.
+[6] Чжоу С., Сюй Ф.Ф., Чжу Х., Чжоу Х., Ло Р., Шридхар А., ... и Нойбиг Г. (2023). WebArena: реалистичная веб-среда для создания автономных агентов. Препринт arXiv arXiv:2307.13854.
 
-[7] Chan, C. M., Chen, W., Su, Y., Yu, J., Xue, W., Zhang, S., ... & Liu, Z. (2023). ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate. arXiv preprint arXiv:2308.07201.
+[7] Чан, К.М., Чен, В., Су, Ю., Ю, Дж., Сюэ, В., Чжан, С., ... и Лю, З. (2023). ChatEval: К лучшим оценщикам на основе LLM посредством многоагентных дебатов. Препринт arXiv arXiv:2308.07201.
 
-[8] Zhou, X., Zhu, H., Mathur, L., Zhang, R., Yu, H., Qi, Z., ... & Neubig, G. (2023). SOTOPIA: Interactive Evaluation for Social Intelligence in Language Agents. arXiv preprint arXiv:2310.11667.
+[8] Чжоу, Х., Чжу, Х., Матур, Л., Чжан, Р., Ю, Х., Ци, З., ... и Нойбиг, Г. (2023). SOTOPIA: Интерактивная оценка социального интеллекта языковых агентов. Препринт arXiv arXiv:2310.11667.
 
-[9] Mathematical Association of America. (2024). American Invitational Mathematics Examination (AIME). Retrieved from https://www.maa.org/math-competitions/invitational-competitions/aime
+[9] Математическая ассоциация Америки. (2024). Американский пригласительный экзамен по математике (AIME). Получено изhttps://www.maa.org/math-competitions/invitational-competitions/aime
 

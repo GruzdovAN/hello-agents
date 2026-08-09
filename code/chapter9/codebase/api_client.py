@@ -1,6 +1,6 @@
 """
-API客户端模块
-用于与外部API交互
+Клиентский модуль API
+Для взаимодействия с внешними API
 """
 
 import requests
@@ -8,15 +8,15 @@ from typing import Dict, Any, Optional
 
 
 class APIClient:
-    """API客户端基类"""
+    """Базовый класс клиента API"""
     
     def __init__(self, base_url: str, api_key: Optional[str] = None):
         """
-        初始化API客户端
+        Инициализировать API-клиент
         
-        Args:
-            base_url: API基础URL
-            api_key: API密钥
+        Аргументы:
+            base_url: базовый URL-адрес API
+            api_key: ключ API
         """
         self.base_url = base_url
         self.api_key = api_key
@@ -29,16 +29,16 @@ class APIClient:
     
     def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        发送GET请求
+        Отправить GET-запрос
         
-        Args:
-            endpoint: API端点
-            params: 查询参数
+        Аргументы:
+            конечная точка: конечная точка API
+            параметры: параметры запроса
             
-        Returns:
-            响应数据
+        Возврат:
+            данные ответа
         """
-        # TODO: 添加重试逻辑
+        # TODO: Добавить логику повтора
         url = f"{self.base_url}/{endpoint}"
         response = self.session.get(url, params=params)
         response.raise_for_status()
@@ -46,16 +46,16 @@ class APIClient:
     
     def post(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        发送POST请求
+        Отправить POST-запрос
         
-        Args:
-            endpoint: API端点
-            data: 请求数据
+        Аргументы:
+            конечная точка: конечная точка API
+            данные: запросить данные
             
-        Returns:
-            响应数据
+        Возврат:
+            данные ответа
         """
-        # TODO: 添加错误处理
+        # TODO: Добавить обработку ошибок
         url = f"{self.base_url}/{endpoint}"
         response = self.session.post(url, json=data)
         response.raise_for_status()
@@ -63,14 +63,14 @@ class APIClient:
     
     def put(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        发送PUT请求
+        Отправить запрос PUT
         
-        Args:
-            endpoint: API端点
-            data: 请求数据
+        Аргументы:
+            конечная точка: конечная точка API
+            данные: запросить данные
             
-        Returns:
-            响应数据
+        Возврат:
+            данные ответа
         """
         url = f"{self.base_url}/{endpoint}"
         response = self.session.put(url, json=data)
@@ -79,12 +79,12 @@ class APIClient:
     
     def delete(self, endpoint: str) -> None:
         """
-        发送DELETE请求
+        Отправить запрос на УДАЛЕНИЕ
         
-        Args:
-            endpoint: API端点
+        Аргументы:
+            конечная точка: конечная точка API
         """
-        # TODO: 添加确认机制
+        # TODO: Добавить механизм подтверждения
         url = f"{self.base_url}/{endpoint}"
         response = self.session.delete(url)
         response.raise_for_status()

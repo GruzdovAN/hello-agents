@@ -1,4 +1,4 @@
-"""赛博小镇 FastAPI 后端主程序"""
+"""Основная программа бэкэнда Cyber ​​Town FastAPI"""
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,46 +13,46 @@ from models import (
 from agents import get_npc_manager
 from state_manager import get_state_manager
 
-# 生命周期管理
+# управление жизненным циклом
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期管理"""
-    # 启动时
+    """Управление жизненным циклом приложений"""
+    # При запуске
     print("\n" + "="*60)
-    print("🎮 赛博小镇后端服务启动中...")
+    print("🎮 Запускается серверная служба Cyber ​​Town...")
     print("="*60)
     
-    # 验证配置
+    # Проверьте конфигурацию
     settings.validate()
     
-    # 初始化NPC管理器
+    # Инициализировать менеджера NPC
     npc_manager = get_npc_manager()
     
-    # 初始化并启动状态管理器
+    # Инициализируйте и запустите менеджер состояний
     state_manager = get_state_manager(settings.NPC_UPDATE_INTERVAL)
     await state_manager.start()
     
-    print("\n✅ 所有服务已启动!")
-    print(f"📡 API地址: http://{settings.API_HOST}:{settings.API_PORT}")
-    print(f"📚 API文档: http://{settings.API_HOST}:{settings.API_PORT}/docs")
+    print("\n✔Все услуги активированы!")
+    print(f"📡 Адрес API: http://{settings.API_HOST}:{settings.API_PORT}")
+    print(f"📚 Документация по API: http://{settings.API_HOST}:{settings.API_PORT}/docs.")
     print("="*60 + "\n")
     
     yield
     
-    # 关闭时
-    print("\n🛑 正在关闭服务...")
+    # когда закрыто
+    print("\n🛑 Закрытие службы...")
     await state_manager.stop()
-    print("✅ 服务已关闭\n")
+    print("✅ Сервис закрыт\n")
 
-# 创建FastAPI应用
+# Создать приложение FastAPI
 app = FastAPI(
     title=settings.API_TITLE,
     version=settings.API_VERSION,
-    description="赛博小镇 - 基于HelloAgents的AI NPC对话系统",
+    description="Cyber ​​Town - диалоговая система AI NPC на основе HelloAgents",
     lifespan=lifespan
 )
 
-# CORS配置
+# Конфигурация CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -61,12 +61,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 获取全局实例
+# Получить глобальный экземпляр
 npc_manager = None
 state_manager = None
 
 def get_managers():
-    """获取管理器实例"""
+    """Получить экземпляр менеджера"""
     global npc_manager, state_manager
     if npc_manager is None:
         npc_manager = get_npc_manager()
@@ -74,16 +74,16 @@ def get_managers():
         state_manager = get_state_manager()
     return npc_manager, state_manager
 
-# ==================== API路由 ====================
+# =================== API-маршрутизация ====================
 
 @app.get("/")
 async def root():
-    """根路径 - API信息"""
+    """Корневой путь — информация API"""
     return {
         "service": settings.API_TITLE,
         "version": settings.API_VERSION,
         "status": "running",
-        "features": ["AI对话", "NPC记忆系统", "好感度系统", "批量状态更新"],
+        "features": ["разговор с ИИ", "Система памяти NPC", "Система льгот", "Пакетные обновления статуса"],
         "endpoints": {
             "docs": "/docs",
             "chat": "/chat",
@@ -97,27 +97,27 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """健康检查"""
+    """проверка здоровья"""
     return {"status": "healthy", "timestamp": "now"}
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_with_npc(request: ChatRequest):
-    """与NPC对话接口
+    """Диалоговый интерфейс с NPC
     
-    玩家与指定NPC进行实时对话,使用独立的Agent处理
+    Игроки общаются в режиме реального времени с назначенными NPC, используя независимую обработку агентов.
     """
     npc_mgr, _ = get_managers()
     
-    # 验证NPC是否存在
+    # Убедитесь, что NPC существует
     npc_info = npc_mgr.get_npc_info(request.npc_name)
     if not npc_info:
         raise HTTPException(
             status_code=404,
-            detail=f"NPC '{request.npc_name}' 不存在"
+            detail=f"NPC '{request.npc_name}' не существует"
         )
     
     try:
-        # 调用NPC Agent处理对话
+        # Вызовите NPC-агента для ведения диалога.
         response_text = npc_mgr.chat(request.npc_name, request.message)
         
         return ChatResponse(
@@ -130,12 +130,12 @@ async def chat_with_npc(request: ChatRequest):
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"对话处理失败: {str(e)}"
+            detail=f"Не удалось обработать разговор: {str(e)}"
         )
 
 @app.get("/npcs", response_model=NPCListResponse)
 async def list_npcs():
-    """获取所有NPC列表"""
+    """Получить список всех NPC"""
     npc_mgr, _ = get_managers()
     
     npcs_data = npc_mgr.get_all_npcs()
@@ -148,9 +148,9 @@ async def list_npcs():
 
 @app.get("/npcs/status", response_model=NPCStatusResponse)
 async def get_npcs_status():
-    """获取所有NPC的当前状态
+    """Получить текущий статус всех NPC
     
-    返回批量生成的NPC对话内容,用于显示NPC的自主行为
+    Возвращает пакетно сгенерированное содержимое диалога NPC, используемое для отображения автономного поведения NPC.
     """
     _, state_mgr = get_managers()
     
@@ -164,9 +164,9 @@ async def get_npcs_status():
 
 @app.post("/npcs/status/refresh")
 async def refresh_npcs_status():
-    """强制刷新NPC状态
+    """Принудительно обновить статус NPC
     
-    立即触发一次批量对话生成
+    Немедленно запустить пакетную генерацию диалога
     """
     _, state_mgr = get_managers()
     
@@ -174,23 +174,23 @@ async def refresh_npcs_status():
     state = state_mgr.get_current_state()
     
     return {
-        "message": "NPC状态已刷新",
+        "message": "Статус NPC обновлен.",
         "dialogues": state["dialogues"]
     }
 
 @app.get("/npcs/{npc_name}")
 async def get_npc_info(npc_name: str):
-    """获取指定NPC的详细信息"""
+    """Получить подробную информацию об указанном NPC"""
     npc_mgr, state_mgr = get_managers()
 
     npc_info = npc_mgr.get_npc_info(npc_name)
     if not npc_info:
         raise HTTPException(
             status_code=404,
-            detail=f"NPC '{npc_name}' 不存在"
+            detail=f"NPC '{npc_name}' не существует"
         )
 
-    # 添加当前对话
+    # Добавить текущий разговор
     current_dialogue = state_mgr.get_npc_dialogue(npc_name)
     npc_info["current_dialogue"] = current_dialogue
 
@@ -198,23 +198,23 @@ async def get_npc_info(npc_name: str):
 
 @app.get("/npcs/{npc_name}/memories")
 async def get_npc_memories(npc_name: str, limit: int = 10):
-    """获取NPC的记忆列表
+    """Получите список воспоминаний NPC.
 
-    Args:
-        npc_name: NPC名称
-        limit: 返回的记忆数量限制 (默认10条)
+    Аргументы:
+        npc_name: имяNPC
+        предел: Ограничение на количество возвращаемых воспоминаний (по умолчанию 10).
 
-    Returns:
-        NPC的记忆列表
+    Возврат:
+        Список воспоминаний NPC
     """
     npc_mgr, _ = get_managers()
 
-    # 验证NPC是否存在
+    # Убедитесь, что NPC существует
     npc_info = npc_mgr.get_npc_info(npc_name)
     if not npc_info:
         raise HTTPException(
             status_code=404,
-            detail=f"NPC '{npc_name}' 不存在"
+            detail=f"NPC '{npc_name}' не существует"
         )
 
     try:
@@ -229,35 +229,35 @@ async def get_npc_memories(npc_name: str, limit: int = 10):
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"获取记忆失败: {str(e)}"
+            detail=f"Не удалось получить память: {str(e)}"
         )
 
 @app.delete("/npcs/{npc_name}/memories")
 async def clear_npc_memories(npc_name: str, memory_type: str = None):
-    """清空NPC的记忆 (用于测试)
+    """Очистить память NPC (для тестирования)
 
-    Args:
-        npc_name: NPC名称
-        memory_type: 记忆类型 (working/episodic), 不指定则清空所有
+    Аргументы:
+        npc_name: имя NPC
+        Memory_type: тип памяти (рабочая/эпизодическая), если не указан, все будет очищено
 
-    Returns:
-        操作结果
+    Возврат:
+        Результат операции
     """
     npc_mgr, _ = get_managers()
 
-    # 验证NPC是否存在
+    # Убедитесь, что NPC существует
     npc_info = npc_mgr.get_npc_info(npc_name)
     if not npc_info:
         raise HTTPException(
             status_code=404,
-            detail=f"NPC '{npc_name}' 不存在"
+            detail=f"NPC '{npc_name}' не существует"
         )
 
     try:
         npc_mgr.clear_npc_memory(npc_name, memory_type)
 
         return {
-            "message": f"已清空{npc_name}的记忆",
+            "message": f"Память {npc_name} очищена.",
             "npc_name": npc_name,
             "memory_type": memory_type or "all"
         }
@@ -265,28 +265,28 @@ async def clear_npc_memories(npc_name: str, memory_type: str = None):
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"清空记忆失败: {str(e)}"
+            detail=f"Не удалось очистить память: {str(e)}"
         )
 
 @app.get("/npcs/{npc_name}/affinity")
 async def get_npc_affinity(npc_name: str, player_id: str = "player"):
-    """获取NPC对玩家的好感度
+    """Получите благосклонность NPC к игроку.
 
-    Args:
-        npc_name: NPC名称
-        player_id: 玩家ID (默认为"player")
+    Аргументы:
+        npc_name: имя NPC
+        player_id: идентификатор игрока (по умолчанию «игрок»)
 
-    Returns:
-        好感度信息
+    Возврат:
+        Информация о благоприятности
     """
     npc_mgr, _ = get_managers()
 
-    # 验证NPC是否存在
+    # Убедитесь, что NPC существует
     npc_info = npc_mgr.get_npc_info(npc_name)
     if not npc_info:
         raise HTTPException(
             status_code=404,
-            detail=f"NPC '{npc_name}' 不存在"
+            detail=f"NPC '{npc_name}' не существует"
         )
 
     try:
@@ -301,18 +301,18 @@ async def get_npc_affinity(npc_name: str, player_id: str = "player"):
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"获取好感度失败: {str(e)}"
+            detail=f"Не удалось получить благосклонность: {str(e)}"
         )
 
 @app.get("/affinities")
 async def get_all_affinities(player_id: str = "player"):
-    """获取所有NPC对玩家的好感度
+    """Получите благосклонность всех NPC к игроку.
 
-    Args:
-        player_id: 玩家ID (默认为"player")
+    Аргументы:
+        player_id: идентификатор игрока (по умолчанию «игрок»)
 
-    Returns:
-        所有NPC的好感度信息
+    Возврат:
+        Информация о благосклонности всех NPC
     """
     npc_mgr, _ = get_managers()
 
@@ -327,36 +327,36 @@ async def get_all_affinities(player_id: str = "player"):
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"获取好感度失败: {str(e)}"
+            detail=f"Не удалось получить благосклонность: {str(e)}"
         )
 
 @app.put("/npcs/{npc_name}/affinity")
 async def set_npc_affinity(npc_name: str, affinity: float, player_id: str = "player"):
-    """设置NPC对玩家的好感度 (用于测试)
+    """Установите благосклонность NPC к игроку (для тестирования)
 
-    Args:
-        npc_name: NPC名称
-        affinity: 好感度值 (0-100)
-        player_id: 玩家ID (默认为"player")
+    Аргументы:
+        npc_name: имя NPC
+        близость: значение благосклонности (0-100)
+        player_id: идентификатор игрока (по умолчанию «игрок»)
 
-    Returns:
-        操作结果
+    Возврат:
+        Результат операции
     """
     npc_mgr, _ = get_managers()
 
-    # 验证NPC是否存在
+    # Убедитесь, что NPC существует
     npc_info = npc_mgr.get_npc_info(npc_name)
     if not npc_info:
         raise HTTPException(
             status_code=404,
-            detail=f"NPC '{npc_name}' 不存在"
+            detail=f"NPC '{npc_name}' не существует"
         )
 
-    # 验证好感度范围
+    # Проверьте диапазон предпочтительности
     if affinity < 0 or affinity > 100:
         raise HTTPException(
             status_code=400,
-            detail="好感度必须在0-100之间"
+            detail="Предпочтительность должна находиться в диапазоне 0–100."
         )
 
     try:
@@ -364,7 +364,7 @@ async def set_npc_affinity(npc_name: str, affinity: float, player_id: str = "pla
         affinity_info = npc_mgr.get_npc_affinity(npc_name, player_id)
 
         return {
-            "message": f"已设置{npc_name}对玩家的好感度",
+            "message": f"Установлено благосклонность {npc_name} к игроку.",
             "npc_name": npc_name,
             "player_id": player_id,
             **affinity_info
@@ -373,21 +373,21 @@ async def set_npc_affinity(npc_name: str, affinity: float, player_id: str = "pla
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"设置好感度失败: {str(e)}"
+            detail=f"Не удалось установить предпочтение: {str(e)}"
         )
 
-# ==================== 主程序入口 ====================
+# =================== Вход в основную программу ===================
 
 if __name__ == "__main__":
-    print("\n🚀 启动赛博小镇后端服务...")
-    print(f"📍 监听地址: {settings.API_HOST}:{settings.API_PORT}")
-    print(f"📖 访问文档: http://localhost:{settings.API_PORT}/docs\n")
+    print("\n🚀 Запустите серверную службу Cyber ​​Town...")
+    print(f"📍 Адрес прослушивания: {settings.API_HOST}:{settings.API_PORT}")
+    print(f"📖Доступ к документации: http://localhost:{settings.API_PORT}/docs\n.")
     
     uvicorn.run(
         "main:app",
         host=settings.API_HOST,
         port=settings.API_PORT,
-        reload=True,  # 开发模式自动重载
+        reload=True,  # Автоперезагрузка режима разработки
         log_level="info"
     )
 

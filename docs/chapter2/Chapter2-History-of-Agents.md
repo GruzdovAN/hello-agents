@@ -1,149 +1,149 @@
-# Chapter 2: History of Agents
+# Глава 2. История агентов
 
-To deeply understand why modern agents present their current form and the origins of their core design philosophies, this chapter will trace back through history: starting from the classical era of artificial intelligence, exploring how the earliest "intelligence" was defined within rule systems of logic and symbols; then witnessing the major shift from single, centralized intelligence models to distributed, collaborative intelligence thinking; and finally understanding how the "learning" paradigm completely transformed the way agents acquire capabilities, giving birth to the modern agents we see today.
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-00.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.1 The evolutionary ladder of AI agents</p>
-</div>
-
-As shown in Figure 2.1, **the emergence of each new paradigm is to solve the core "pain points" or fundamental limitations of the previous generation paradigm.** While new solutions bring capability leaps, they also introduce new "limitations" that are difficult to overcome at the time, which in turn lay the groundwork for the birth of the next generation paradigm. Understanding this "problem-driven" iterative process helps us more profoundly grasp the deep reasons and historical inevitability behind modern agent technology choices.
-
-## 2.1 Early Agents Based on Symbols and Logic
-
-Early explorations in the field of artificial intelligence were deeply influenced by mathematical logic and fundamental principles of computer science. In that era, researchers generally held a belief: human intelligence, especially logical reasoning ability, could be captured and reproduced by formalized symbolic systems. This core idea gave birth to the first important paradigm of artificial intelligence—Symbolicism, also known as "Logic AI" or "Traditional AI."
-
-In the view of symbolicism, the core of intelligent behavior is operating on symbols based on a set of explicit rules. Therefore, an agent can be viewed as a physical symbol system: it represents the external world through internal symbols and plans actions through logical reasoning. The "wisdom" of agents in this era came entirely from knowledge bases and reasoning rules pre-coded by designers, rather than acquired through autonomous learning.
-
-### 2.1.1 Physical Symbol System Hypothesis
-
-The theoretical foundation of the symbolicism era was the **Physical Symbol System Hypothesis (PSSH)**<sup>[1]</sup>, jointly proposed by **Allen Newell** and **Herbert A. Simon** in 1976. These two Turing Award winners provided theoretical guidance and criteria for implementing general artificial intelligence on computers through this hypothesis.
-
-The hypothesis contains two core assertions:
-
-1. **Sufficiency Assertion**: Any physical symbol system has sufficient means to produce general intelligent behavior.
-2. **Necessity Assertion**: Any system capable of exhibiting general intelligent behavior must essentially be a physical symbol system.
-
-A physical symbol system here refers to a system that can exist in the physical world, composed of a set of distinguishable symbols and a series of processes that operate on these symbols, with constituent elements as shown in Figure 2.2. These symbols can be combined into more complex structures (such as expressions), while processes can create, modify, copy, and destroy these symbol structures.
+Чтобы глубже понять, почему современные агенты имеют именно такой вид и откуда взялись их ключевые принципы проектирования, в этой главе мы отслеживаем историю: начиная с классической эпохи искусственного интеллекта — как ранний «интеллект» достигается в соответствии с правилами логики и символов; затем мы увидим важный переход от единой централизованной модели интеллекта к распределенному, коллективному мышлению; и наконец поймём, как парадигма «обучения» полностью изменила способ обретения способностей агентами и породила современных агентов, которые мы видим сегодня.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-0.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.2 Constituent elements of a physical symbol system</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-00.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.1 Лестница эволюции ИИ-агентов</p>
 </div>
 
-In short, PSSH boldly declared: **The essence of intelligence is the computation and processing of symbols.**
+Как показано на рис. 2.1, **появление новой парадигмы связано с каждым принципиальным «болевыми точками» или фундаментальными ограничениями предыдущих.** Новые решения дают скачок возможностей, но одновременно вводят новые «ограничения», которые трудно преодолеть в тот момент, — и тем самым предложенным почву для следующей парадигмы. Понимание этого «проблемно-ориентированного» итеративного процесса помогает глубже осознать разум и историческую неизбежность технических явлений в области современных агентов.
 
-This hypothesis had far-reaching influence. It transformed the study of the vague and complex philosophical problem of human mind into a concrete problem that could be engineered and implemented on computers. It instilled strong confidence in early artificial intelligence researchers that as long as we could find the right way to represent knowledge and design effective reasoning algorithms, we could definitely create machine intelligence comparable to humans. Almost all research in the symbolicism era, from expert systems to automated planning, was conducted under the guidance of this hypothesis.
+## 2.1 Ранние агенты на основе символов и логики
 
-### 2.1.2 Expert Systems
+Ранние исследования в области искусственного интеллекта в значительной степени основывались на математической логике и базовых принципах информатики. В ту эпоху исследователи обычно разделяли убеждения: человеческий интеллект, особенно способный к логическому рассуждению, можно зафиксировать и воспроизвести формализованными символьными цепочками. Эта идея породила первую последнюю парадигму ИИ — символизм, также известный как «логический ИИ» или «традиционный ИИ».
 
-Under the direct influence of the physical symbol system hypothesis, **Expert Systems** became the most important and successful application achievement of the symbolicism era. The core goal of expert systems was to simulate the ability of human experts to solve problems in specific domains. By encoding expert knowledge and experience into computer programs, they could provide conclusions or recommendations comparable to or even surpassing human experts when facing similar problems.
+С точки зрения символизма, суть разумного поведения — операции над символами по явным правилам. Поэтому агента можно рассматривать как физическую символическую систему: он представляет собой внешний мир, разделенный символами, и планирует действия через логический вывод. «Мудрость» агентов мирового лидера исходила из базовых знаний и правил рассуждения, заранее закодированных проектировщиками, а не из автономного обучения.
 
-A typical expert system usually consists of several core components including a knowledge base, inference engine, and user interface, with a general architecture as shown in Figure 2.3.
+### 2.1.1 Гипотеза физико-символической системы
+
+Теоретическая основа эпохи символизма стала **гипотезой физической символической системы (Physical Symbol System Hypothesis, PSSH)**<sup>[1]</sup>, совместно выдвинутая **Алленом Ньюэллом** и **Гербертом А. Саймоном** в 1976 году. Эти два лауреата премии Тьюринга дали общие ориентиры и критерии для реализации всеобщего искусственного интеллекта на компьютерах.
+
+Гипотеза содержит два ключевых положения:
+
+1. **Утверждение о достаточности**: любая символьная система изображений обеспечивает средства для порождения общего разумного поведения.
+2. **Утверждение о необходимости**: любая система, способ перехода к общему разумному действию, по сути, должна быть символической физической системой.
+
+Под системой физических символов здесь понимается система, существующая в современном мире, состоящая из набора различных символов и процессов, которые над ними оперируют; составные элементы показаны на рис. 2.2. Символы можно комбинировать в более сложные структуры (например, выражения), а процессы — создавать, изменять, копировать и уничтожать эти структуры.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-1.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.3 General architecture of expert systems</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-0.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.2 Составные элементы физико-символической системы</p>
 </div>
 
-This architecture clearly embodies the design philosophy of separating knowledge from reasoning, an important characteristic of symbolicism AI.
+Коротко говоря, ПСШ смело заявила: **суть интеллекта — вычисление и обработка символов.**
 
-**Knowledge Base and Inference Engine**
+Гипотеза оказала глубокое влияние. Она превратила исследование расплывчатой ​​философской проблемы человеческого разума в конкретную инженерную задачу, решаемую на компьютерах. Она вселила в быстрое рассмотрение II уверенности: если найти правильный способ представления знаний и спроектировать эффективные алгоритмы результатов, можно создать машинный интеллект, последовательный с человеческим фактором. Почти все исследования эпох, символические — от экспертных систем дотизма планирования, — велись под ее руководством.
 
-The "intelligence" of expert systems mainly comes from its two core components: the knowledge base and the inference engine.
+### 2.1.2 Экспертные системы
 
-- **Knowledge Base**: This is the knowledge storage center of the expert system, used to store domain expert knowledge and experience. **Knowledge Representation** is key to building a knowledge base. In expert systems, the most commonly used knowledge representation method is **Production Rules**, i.e., a series of conditional statements in "IF-THEN" form. For example: IF patient has fever symptoms AND cough THEN may have respiratory infection. These rules associate specific situations (IF part, conditions) with corresponding conclusions or actions (THEN part, conclusions). A complex expert system may contain hundreds or thousands of such rules, collectively forming a vast knowledge network.
-- **Inference Engine**: The inference engine is the core computational engine of the expert system. It is a general program whose task is to find and apply relevant rules in the knowledge base based on facts provided by users, thereby deriving new conclusions. The inference engine mainly works in two ways:
-  - **Forward Chaining**: Starting from known facts, continuously matching the IF parts of rules, triggering THEN part conclusions, and adding new conclusions to the fact base until finally deriving the goal or no new rules can be matched. This is a "data-driven" reasoning approach.
-  - **Backward Chaining**: Starting from a hypothetical goal (such as "does the patient have pneumonia"), finding rules that can derive that goal, then taking the IF part of that rule as a new sub-goal, recursing in this way until all sub-goals can be proven by known facts. This is a "goal-driven" reasoning approach.
+Под влиянием влияния модели физической символической системы **экспертные системы** стали наиболее важными и наиболее успешными прикладными достижениями эпохи символизма. Их цель — имитировать способность медицинских экспертов решать проблемы в конкретной области. Закодировав экспертные знания и опыт работы в программе, такие системы могут давать выводы или рекомендации, сравнимые с экспертами или даже превосходящие их.
 
-**Application Case and Analysis: MYCIN System**
-
-MYCIN is one of the most famous and influential expert systems in history, developed by Stanford University in the 1970s<sup>[2]</sup>. It was designed to assist doctors in diagnosing bacterial blood infections and recommending appropriate antibiotic treatment plans.
-
-- **Working Principle**: MYCIN collected patient symptoms, medical history, and test results through question-and-answer interactions with doctors. Its knowledge base contained about 600 "IF-THEN" rules provided by medical experts. The inference engine mainly worked in backward chaining: starting from the highest goal of "determining the pathogen," it backward-derived what evidence and conditions were needed, then asked doctors questions to obtain this information. Its simplified workflow is shown in Figure 2.4.
+Типичная экспертная система обычно состоит из нескольких компонентов, включая технические средства, выходные механизмы и пользовательский интерфейс; Общая архитектура показана на рис. 2.3.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-2.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.4 Schematic diagram of MYCIN backward chaining reasoning process</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-1.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.3 Общая архитектура экспертных систем</p>
 </div>
 
-- **Uncertainty Handling**: Medical diagnosis is full of uncertainty. An important innovation of MYCIN was introducing the concept of **Certainty Factor (CF)**, using a numerical value between -1 and 1 to represent the credibility of a conclusion. This enabled the system to handle uncertain, ambiguous medical knowledge and provide diagnostic results with credibility assessments, which was closer to the real world than simple Boolean logic.
-- **Achievements and Significance**: In an evaluation, MYCIN's performance in blood infection diagnosis exceeded that of non-specialist doctors and even reached the level of human experts. Its success eloquently proved the validity of the physical symbol system hypothesis: through careful knowledge engineering and symbolic reasoning, machines could indeed exhibit excellent "intelligence" in highly complex professional domains. MYCIN was not only a milestone in the development history of expert systems but also paved the way for subsequent commercial applications of artificial intelligence in various vertical domains.
+Эта архитектура ясно воплощает в себе принцип разделения знаний и разделения — последнюю черту символического II.
 
-### 2.1.3 SHRDLU
+**База знаний и механизмов производства**
 
-If expert systems demonstrated the "depth" of symbolic AI in professional domains, then the SHRDLU project<sup>[3]</sup> developed by **Terry Winograd** from 1968-1970 achieved a revolutionary breakthrough in "breadth." As shown in Figure 2.5, SHRDLU aimed to build a comprehensive intelligent agent that could interact fluently with humans through natural language in the micro-environment of the "blocks world." The "blocks world" is a simulated three-dimensional virtual space containing blocks of different shapes, colors, and sizes, as well as a virtual robotic arm that can grasp and move them. Users issue commands or ask questions to SHRDLU in natural language, and SHRDLU executes actions in the virtual world or provides text responses.
+Экспертная система «Интеллект» в своей основе опирается на два ядра: базовые знания и механизмы вывода.
+
+- **База знаний**: хранилище знаний экспертной системы — предметные знания и опыт экспертов. **Представление знаний** — ключ к построению базы. Самый распространённый способ — **производственные правила**, то есть условные операторы вида «ЕСЛИ–ТО». Например: ЕСЛИ у пациента от жара и кашель ТО возможная респираторная инфекция. Правила связывают ситуации (часть ЕСЛИ — условия) с выводами или действиями (часть ТО). Сложная система может поддерживать тысячи таких правил, образуя обширную сеть знаний.
+- **Механизм вывода**: источник вычислительной экспертной системы. Это общая программа, которая по фактам, полученным пользователем, применяет соответствующие правила, основанные на знаниях, и выводит новые выводы. Основные режимы работы:
+  - **Прямой вывод (прямая цепочка)**: на основе известных фактов непрерывность сопоставляется с частью правил ЕСЛИ, срабатывает часть ТО, новые выводы включаются в основу фактов — до достижения или целей, пока не соблюдаются применимые правила. Это рассуждение «управляемые данные».
+  - **Обратный вывод (обратное связывание)**: от гипотетической цели (например, «есть ли у пациента пневмония») ищутся правила, из цели которых следует; части ЕСЛИ таких правил становятся новыми подцелями, и так рекурсивно, пока все подцели не подтверждаются известными фактами. Это рассуждение «управляемое Цель».
+
+**Пример и разбор: система MYCIN**
+
+MYCIN — одна из самых известных и влиятельных экспертных систем в истории, разработанная в Стэнфордском университете в 1970-х<sup>[2]</sup>. Она позволила врачам диагностировать бактериальные инфекции крови и исключить подходящую антибиотикотерапию.
+
+- **Принцип работы**: MYCIN через диалог с врачом собирал симптомы, анамнез и анализ результатов. База знаний около 600 правил «ЕСЛИ–ТО» от медицинских экспертов. Механизм результата в основном работал в режиме обратного результата: из высшей цели «определить возбудитель» система шла назад — какое свидетельство и какие условия нужны — и задавала вопросы врачу. Упрощённая схема показана на рис. 2.4.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-3.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.5 SHRDLU's "blocks world" interaction interface</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-2.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.4 Схема обратного вывода в MYCIN</p>
 </div>
 
-SHRDLU attracted widespread attention at the time mainly because it was the first to integrate multiple independent artificial intelligence modules (such as language parsing, planning, memory) into a unified system and make them work collaboratively:
+- **Обработка неопределённости**: медицинская диагностика полной неопределённости. Важное нововведение MYCIN — **коэффициент достоверности (фактор достоверности, CF)**: число от −1 до 1, отражающее правдоподобие результата. Система может работать с нечёткими схемами и давать диагнозы с оценкой достоверности — ближе к реальности, чем простая булева логика.
+- **Достижения и значение**: в одной из оценок MYCIN превзошел врачей-неспециалистов в диагностике показателей крови и даже достиг уровня экспертизы. Успех убедительно подтвердил гипотезу физической символической системы: благодаря выдающимся инженерным знаниям и символическому выводу машины действительно могут выйти на «высокий интеллект» в сложных профессиональных областях. MYCIN стал лидером в истории экспертных систем и проложил путь коммерческим применениям в вертикальных доменах.
 
-- **Natural Language Understanding**: SHRDLU could parse structurally complex and ambiguous English sentences. It could not only understand direct commands (such as `Pick up a big red block.`) but also handle more complex instructions, such as:
-  - Reference resolution: `Find a block which is taller than the one you are holding and put it into the box.` In this instruction, the system needs to understand that `the one you are holding` refers to the object currently grasped by the robotic arm.
-  - Contextual memory: Users could say `Grasp the pyramid.`, then ask `What does the box contain?`, and the system could answer by connecting the context.
-- **Planning and Action**: After understanding instructions, SHRDLU could autonomously plan a series of necessary actions to complete tasks. For example, if the instruction was "put the blue block on the red block," and there was already another green block on the red block, the system would plan the action sequence of "first move the green block away, then put the blue block on."
-- **Memory and Q&A**: SHRDLU had memory about its environment and its own behavior. Users could ask questions about this, such as:
-  - Inquiring about world state: `Is there a large block behind a pyramid?`
-  - Inquiring about behavior history: `Did you touch any pyramid before you put the green one on the little cube?`
-  - Inquiring about behavior motivation: `Why did you pick up the red block?` SHRDLU could answer: `BECAUSE YOU ASKED ME TO.`
+### 2.1.3 ШРДЛУ
 
-SHRDLU's historical status and influence are mainly reflected in three aspects:
+Если экспертные системы «глубины» символического ИИ в профессиональных областях, то проект SHRDLU<sup>[3]</sup>, разработанный **Терри Виноградом** в 1968–1970 годах, дал революционный прорыв в «широте». Как показано на рис. 2.5, цель SHRDLU — построить целостного интеллектуального агента, свободно взаимодействующего с людьми на естественном языке в микросреде «мира кубиков». «Мир кубиков» — симулированное трехмерное виртуальное пространство с блоками разных форм, цветов и размеров и алгоритмов автоматически робота, способной их захватывать и перемещать. Пользователь отдает команды или задает вопросы на естественном языке, SHRDLU выполняет действия в виртуальном мире или отвечает текстом.
 
-- **Paradigm of Comprehensive Intelligence**: Before SHRDLU, AI research mostly focused on single functions. It was the first to integrate multiple AI modules such as language understanding, reasoning planning, and action memory into a unified system. Its "perceive-think-act" closed-loop design laid the foundation for modern agent research.
-- **Popularization of Micro-World Research Methods**: Its success proved the feasibility of exploring and verifying basic principles of complex agents in a simplified environment with clear rules, a method that profoundly influenced subsequent robotics and AI planning research.
-- **Optimism and Reflection Triggered**: SHRDLU's success sparked early optimistic expectations for AGI, but its capabilities were strictly limited to the blocks world. This limitation triggered long-term speculation in the AI field about the difference between "symbol processing" and "true understanding," revealing deep challenges on the path to general intelligence.
+<div align="center">
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-3.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.5 Интерфейс взаимодействия SHRDLU в «мире кубиков»</p>
+</div>
 
-### 2.1.4 Fundamental Challenges Facing Symbolicism
+SHRDLU привлекает широкое внимание прежде всего к тому, что впервые включил несколько независимых модулей ИИ (разработка языка, планирование, планирование) в единую систему памяти и заставил их работать согласованно:
 
-Despite significant achievements in early projects, starting from the 1980s, symbolic AI encountered fundamental difficulties inherent in its methodology when moving from "micro-worlds" to the open, complex real world. These difficulties can mainly be summarized into two major categories:
+- **Понимание естественного языка**: SHRDLU мог разобрать структурно сложные и неоднозначные английские предложения. Это касается не только прямых команд (например, «Поднимите большой красный блок»), но и более сложных инструкций, например:
+  - Разрешение референций: `Найдите блок, который выше того, который вы держите, и поместите его в коробку.` Здесь система должна понять, что `тот, который вы держите` — объект, который сейчас держит руку робота.
+  - Контекстная память: пользователь мог сказать `Взять пирамиду`, затем спросить `Что находится в ящике?`, и система проверки связала контекст.
+- **Планирование и действие**: по инструкции SHRDLU может самостоятельно планировать последовательности движений. Например, при команде «положи синий кубик на красный», если на красном уже лежит зелёный, система планировала: «сначала убери зелёный, затем положи синий».
+- **Память и вопросы–ответы**: SHRDLU помнил об обращении и своем поведении. Можно было спросить, например:
+  - О состоянии мира: `Есть ли за пирамидой большой блок?`
+  - Об исторических действиях: `Ты трогал какую-нибудь пирамиду, прежде чем положить зеленую на маленький кубик?`
+  - О мотивации действий: «Почему ты взял красный блок?» SHRDLU мог ответить: «ПОТОМУ ЧТО ВЫ МЕНЯ ПРОСИЛИ».
 
-**(1) Common-sense Knowledge and Knowledge Acquisition Bottleneck**
+Исторический статус и влияние SHRDLU отражаются в трех аспектах:
 
-The "intelligence" of symbolic agents depends entirely on the quality and completeness of their knowledge bases. However, how to build a knowledge base that can support real-world interaction has proven to be an extremely arduous task, mainly reflected in two aspects:
+- **Парадигма целостности интеллекта**: в исследованиях SHRDLU ИИ чаще всего сосредотачивались на отдельных функциях. Впервые он установил понимание языка, обсуждение и планирование, запоминание действий в единой системе. Замкнутый цикл «восприятие–мышление–воздействие» заложил основу современных исследований агентов.
+- **Популяризация метода микромиров**: успех показал, что базовые принципы сложных агентов можно обнаружить и проверить в упрощённой среде с блеском света; метод глубокого исследования научных исследований робототехники и планирования в ИИ.
+- **Оптимизм и последующая рефлексия**: успех SHRDLU породил ранние оптимистичные ожидания AGI, но его возможности были жёстко ограничены кубиками мира. Это ограничение вызвало долгие размышления в ИИ о разнице между «обработкой символов» и «настоящим пониманием» и обнажило глубокие вызовы на пути к общему интеллекту.
 
-- **Knowledge Acquisition Bottleneck**: The knowledge of expert systems needs to be constructed by human experts and knowledge engineers through tedious processes of interviews, refinement, and encoding. This process is costly, time-consuming, and difficult to scale. More importantly, much of human expert knowledge is implicit and intuitive, difficult to be clearly expressed as "IF-THEN" rules. Attempting to manually symbolize all knowledge of the entire world is considered an almost impossible task.
-- **Common-sense Problem**: Human behavior relies on a vast background of common sense (for example, "water is wet," "ropes can pull but not push"), but symbolic systems know nothing about this unless explicitly encoded. Establishing a complete knowledge base for broad, vague common sense remains a major challenge to this day. The Cyc project<sup>[4]</sup>, after decades of effort, still has very limited results and applications.
+### 2.1.4 Фундаментальные вызовы символизма
 
-**(2) Frame Problem and System Brittleness**
+Несмотря на успехи в реализации проектов, с 1980-х годов символический ИИ при годовом переходе от «микромиров» к открытому сложному миру впервые столкнулся с фундаментальными трудностями своей методологии. Их можно провести в одной большой группе:
 
-In addition to knowledge-level challenges, symbolicism also encountered logical dilemmas when dealing with a dynamically changing world.
+**(1) Здравый смысл и узкое место приобретения знаний**
 
-- **Frame Problem**: In a dynamic world, how to efficiently determine what things have not changed after an agent executes an action is a logical puzzle<sup>[5]</sup>. Explicitly declaring all invariant states for each action is computationally infeasible, yet humans can effortlessly ignore irrelevant changes.
-- **Brittleness**: Symbolic systems rely entirely on preset rules, making their behavior very "brittle." Once encountering any minor change or new situation outside the rules, the system may completely fail, unable to adapt flexibly like humans. SHRDLU's success was precisely because it operated in a closed world with complete rules, while the real world is full of exceptions.
+Символические агенты «Интеллекта» зависят от качества и полноты базовых знаний. Однако строительство объектов, достаточных для взаимодействия с реальным миром, оказалось весьма трудоемким:
 
-## 2.2 Building Rule-Based Chatbots
+- **Узкое место приобретения знаний**: знания экспертных систем необходимо создавать экспертами и инженерами посредством долгих опросов, уточнения и кодирования. Процесс дорогой, долгий и плохо масштабируется. Более того, многое из экспертного знания неявно и скрыто — его трудно выражают блески стандарта «ЕСЛИ–ТО». Попытка вручную символизировать все мировые знания считается почти невыполнимой.
+- **Проблема здравого смысла**: человеческое поведение основано на мощном фоне разумного понимания (например, «вода мокрая», «верёвкой можно тянуть, но не толкать»), символической системе об этом ничего не известно, пока это явно не закодировано. Постройте настоящие помещения для широкого, размытого разумного смысла — вызов до сих пор. Проект Cyc<sup>[4]</sup> после достижения успеха дал очень ограниченные результаты и применение.
 
-After exploring the theoretical challenges of symbolicism, in this section we will intuitively experience how rule-based systems work through a specific programming practice. We will attempt to reproduce ELIZA, an extremely influential early chatbot in the history of artificial intelligence.
+**(2) Проблема каркаса и хрупкости системы**
 
-### 2.2.1 ELIZA's Design Philosophy
+Помимо вызовов на уровне знаний, символизм сталкивается с логическими дилеммами в движении меняющегося мира.
 
-ELIZA was a computer program released in 1966 by MIT computer scientist **Joseph Weizenbaum**<sup>[6]</sup>, one of the famous early attempts in the field of natural language processing. ELIZA was not a single program but a framework that could execute different "scripts." Among them, the most widely known and successful script was "DOCTOR," which imitated a Rogerian non-directive psychotherapist.
+- **Проблема фрейма (Frame Issue)**: в динамическом мире как эффективно определить, что *не* изменилось после действия агента — логическая загадка<sup>[5]</sup>. Явно заявляю о каждом действии, что все неизменные состояния кажутся нереалистичными, тогда как человек без труда пропускает нерелевантные изменения.
+- **Хрупкость**: символические системы управления основаны на заранее заданных правилах, поэтому их поведение очень «хрупкое». Любое мелкое изменение или новая ситуация вне правил может полностью вывести систему из строя — она не способна гибко адаптироваться, как человек. Успех SHRDLU основывался на замкнутом мире с полными правилами, тогда как реальный мир был изолирован.
 
-ELIZA's working method was extremely clever: it never directly answered questions or provided information but identified keywords in user input, then applied a set of preset transformation rules to convert user statements into open-ended questions. For example, when a user said "I am sad about my boyfriend," ELIZA might identify the keyword "I am sad about..." and apply a rule to generate the response: "Why are you sad about your boyfriend?"
+## 2.2 Создание чат-бота по правилам
 
-Weizenbaum's design philosophy was not to create an agent that could truly "understand" human emotions; on the contrary, he wanted to prove that through some simple sentence transformation techniques, machines could create an illusion of "intelligence" and "empathy" without understanding the conversation content at all. However, to his surprise, many people who interacted with ELIZA (including his secretary) developed emotional dependence on it, deeply believing it could understand them.
+После концептуальных вызовов символизма в этом разделе мы на примере посмотрим, как работают системы по правилам. Мы полагаемпробы воспроизвести ELIZA — самый влиятельный и ранний чат-бот в истории II.
 
-The practical goal of this section is to reproduce ELIZA's core mechanism to deeply understand the advantages and fundamental limitations of this rule-driven approach.
+### 2.2.1 Философия дизайна ELIZA
 
-### 2.2.2 Pattern Matching and Text Substitution
+ELIZA — компьютерная программа, выпущенная в 1966 году учёным Массачусетского технологического института **Джозефом Вайценбаумом**<sup>[6]</sup>, одна из известных простых методик в области обработки естественного языка. ЭЛИЗА — не одна программа, а фреймворк, способный выполнять разные «скрипты». Самый известный и успешный — «ВРАЧ», имитировавший роджерианского недирективного психотерапевта.
 
-ELIZA's algorithm flow is based on **Pattern Matching and Text Substitution**, which can be clearly decomposed into the following four steps:
+Метод ELIZA был крайне остроумен: она никогда не проверяла прямо и не сообщала информацию, а распознавала ключевые слова при вводе пользователем и по заранее заданным правилам превращала высказывания в открытые вопросы. Например, если пользователь говорил «Мне грустно из-за моего парня», ELIZA выбирает «Мне грустно из-за...» и по правилу ответа: «Почему ты грустишь из-за своего парня?»
 
-1. **Keyword Identification and Ranking:** The rule base sets a priority for each keyword (such as `mother`, `dreamed`, `depressed`). When input contains multiple keywords, the program selects the rule corresponding to the keyword with the highest priority for processing.
-2. **Decomposition Rules:** After finding a keyword, the program uses decomposition rules with wildcards (`*`) to capture the rest of the sentence.
-   1. **Rule Example**: `* my *`
-   2. **User Input**: `"My mother is afraid of me"`
-   3. **Capture Result**: `["", "mother is afraid of me"]`
-3. **Reassembly Rules:** The program selects one from a set of reassembly rules associated with the decomposition rule to generate a response (usually randomly selected to increase diversity), and optionally uses the content captured in the previous step.
-   1. **Rule Example**: `"Tell me more about your family."`
-   2. **Generated Output**: `"Tell me more about your family."`
-4. **Pronoun Conversion:** Before reassembly, the program performs simple pronoun conversion (such as `I` → `you`, `my` → `your`) to maintain conversation coherence.
+Цель Вайценбаума не была создать агента, действительно «понимающего» эмоции; напротив, он хотел показать, что машина с простым преобразованием предложений может создать иллюзию «интеллекта» и «эмпатии», совершенно не понимая содержания разговора. К его удивлению, все, кто общался с ЭЛИЗОЙ (включая его секретаря), начали волноваться от нее и искренне верили, что она их понимает.
 
-The entire workflow can be represented by a simple pseudocode idea:
+Практическая цель этого раздела — воспроизвести мощный механизм ELIZA, чтобы добиться прогресса и фундаментальных ограничений такого уровня в правилах.
+
+### 2.2.2 Сопоставление с образцом и текстовая подстановка
+
+Алгоритм ELIZA основан на **сопоставлении с образцом и текстовой подстановкой** и разбивается на четыре шага:
+
+1. **Поиск ключевых слов и ранжирование:** в основе ошибок у каждого ключевого слова (например, `мать`, `мечталось`, `депрессия`) задан приоритет. Если во введении нескольких ключевых слов, вы преобразуете правило с указанием приоритета.
+2. **Правила декомпозиции:** найдя ключевое слово, программа с помощью правил с подстановочными знаками (`*`) захватывает остаток предложения.
+   1. **Пример правил**: `*мой*`
+   2. **Ввод пользователя**: `"Моя мама меня боится"`
+   3. **Результат захвата**: `["", "мама меня боится"]`
+3. **Правила сборки:** программа выбирает одно из правил сборки (обычно случайно, для разнообразия) и при необходимости использует захваченный ранее фрагмент.
+   1. **Пример правил**: «Расскажи мне больше о своей семье».
+   2. **Сгенерированный вывод**: `"Расскажите мне больше о своей семье."`
+4. **Преобразование мест:** перед сборкой выполняется простая замена мест (например, `Я` → `ты`, `мой` → `твой`), чтобы сохранить связность диалога.
+
+Весь процесс можно описать простой псевдокодной идеей:
 
 ```Python
 FUNCTION generate_response(user_input):
@@ -169,11 +169,11 @@ FUNCTION generate_response(user_input):
     RETURN response
 ```
 
-Through this mechanism, ELIZA successfully simplified the complex natural language understanding problem into an operable, rule-based pattern matching game.
+Благодаря этому механизму ELIZA успешно свела сложную задачу понимания естественного языка в управляемой игре в парламенте с образцами по правилам.
 
-### 2.2.3 Implementation of Core Logic
+### 2.2.3 Реализация логики ядра
 
-Now, we will transform the technical principles described in the previous section into a simple, runnable Python function. The following code implements a mini version of ELIZA, which contains a small set of rules but is sufficient to demonstrate its core working mechanism.
+Теперь перенесём описанные принципы в простую исполняемую функцию на Python. Ниже приведен код реализации мини-версии ELIZA: достаточно нескольких правил, чтобы продемонстрировать мощный механизм.
 
 ```Python
 import re
@@ -274,290 +274,289 @@ You: quit
 Therapist: Goodbye. It was nice talking to you.
 ```
 
-Through the above programming practice, we can intuitively summarize the fundamental limitations of rule-driven systems, which are direct confirmations of the theoretical challenges of symbolicism discussed in Section `2.1.4`:
+На этом примере можно суммировать фундаментальные ограничения системы правил — прямое подтверждение концептуальных вызовов символизма из раздела.`2.1.4`:
 
-- **Lack of Semantic Understanding**: The system does not understand word meanings. For example, when faced with the input "I am **not** happy," it will still mechanically match the `I am (.*)` rule and generate a semantically incorrect response because it cannot understand the role of the negation word "not."
-- **No Contextual Memory**: The system is **stateless**, with each response based only on the current single sentence input, unable to conduct coherent multi-turn conversations.
-- **Rule Scalability Problem**: Attempting to add more rules leads to explosive growth in the rule base size, and conflict management and priority handling between rules become extremely complex, ultimately making the system difficult to maintain.
+- **Отсутствие семантического понимания**: система не понимает значения слов. Например, на вводе «Я **не** счастлив» она всё равно механически срабатывает по правилу «Я (.*)» и выдаёт семантически неверный ответ, не понимая отрицания «не».
+- **Нет контекстной памяти**: система **без состояния**; Каждый ответ основан только на текущем одном предложении, связный многоходовой диалог невозможен.
+- **Проблема масштабирования правил**: добавлены новые правила, ведущие к взрывоопасной зоне; Решение конфликтов и приоритетов усложняется, и система становится трудно поддерживаемой.
 
-However, despite these obvious defects, ELIZA produced the famous "**ELIZA effect**" at the time, with many users believing it could understand them. This illusion of intelligence mainly stemmed from its clever conversation strategies (such as playing a passive questioner, using open-ended templates) and humans' innate emotional projection psychology.
+Однако при всех очевидных доказательствах ELIZA в свое время породила знаменитый «**эффект ELIZA**»: многие пользователи верили, что она их понимает. Иллюзия интеллекта пришла в основном от хитрых методов диалога (пассивный вопрошающий, открывающий шаблоны) и от врожденной склонности людей проецировать эмоции.
 
-ELIZA's practice clearly revealed the core contradiction of the symbolicism approach: the system's seemingly intelligent performance depends entirely on rules pre-coded by designers. However, facing the infinite possibilities of real-world language, this exhaustive method is destined to be unscalable. The system has no true understanding, only executing symbol operations, which is the root of its brittleness.
+Практика ELIZA четко выявила главное противоречие в символизме: отображаемый интеллектуальный результат процессора зависит от заранее закодированных правил проектировщика. Перед бесконечным разнообразием реального языка такой действенный метод не масштабируется. В системе нет настоящего понимания — только операции над символами; в этом корень ее хрупкости.
 
-## 2.3 Marvin Minsky's Society of Mind
+## 2.3 «Общество разума» Марвина Минского
 
-The exploration of symbolicism and ELIZA's practice jointly pointed to a problem: a single, centralized reasoning engine built through preset rules seems difficult to lead to true intelligence. No matter how large the rule base, the system always appears rigid and brittle when facing the ambiguity, complexity, and infinite changes of the real world. This dilemma prompted some top thinkers to reflect on the most fundamental design philosophy of artificial intelligence. Among them, **Marvin Minsky** did not continue trying to add more rules to a single reasoning core but proposed a revolutionary question in his book **"The Society of Mind"**<sup>[7]</sup>: "What magical trick makes us intelligent? The trick is that there is no trick. The power of intelligence stems from our vast diversity, not from any single, perfect principle."
+Исследования символизма и практики ELIZA вместе указывают на проблему: единый централизованный процесс обсуждения заранее заданных правил, по-видимому, плохо ведет к современному интеллекту. Какая бы большая ни была база правил, система остается жёсткой и хрупкой перед неоднозначностью, сложностью и бесконечной изменчивостью реального мира. Эта дилемма заставила ведущих мыслителей пересмотреть самые основы философии проектирования ИИ. Среди них **Марвин Минский** не стал добавлять ещё больше правил в одно ядро ​​рассуждения, а в книге **«Общество разума»**<sup>[7]</sup> задал революционный вопрос: «Какой магический трюк делает нас разумными? Трюк в том, что трюка нет. Сила интеллекта — в нашем огромном разнообразии, а не в каком-то одном совершенном принципе».
 
-### 2.3.1 Reflection on Single Holistic Intelligence Models
+### 2.3.1 Критика единой целостности модели интеллекта
 
-From the 1970s to the 1980s, the limitations of symbolicism became increasingly apparent. Although expert systems achieved success in highly vertical domains, they could not possess child-like common sense; although SHRDLU could perform excellently in a closed blocks world, it could not understand anything outside that world; although ELIZA could imitate conversation, it knew nothing about the conversation content itself. These systems all followed a top-down design approach: an omniscient central processor that processes information and makes decisions according to a unified set of logical rules.
+С 1970-х по 1980-е ограничения символизма стали всё явственнее. Экспертные системы преуспевали в узких вертикальных темах, но не обладали детским здравым смыслом; SHRDLU отлично работал в различных кубиках мира, но ничего вне его; ЭЛИЗА имитировала разговор, ничего не известно о его содержании. Все эти системы отслеживают завершение проектирования: всеведущий центральный процессор обрабатывает информацию и принимает решения на основе единого набора логических правил.
 
-Facing this universal failure, Minsky began to raise a series of fundamental questions:
+Перед этим повсеместным тупиком Минский начал задавать фундаментальные вопросы:
 
-- **What is "understanding"?** When we say we understand a story, is this a single ability? Or is it actually the result of dozens of different mental processes working together, such as visualization ability, logical reasoning ability, emotional resonance ability, and social relationship common sense?
-- **What is "common sense"?** Is common sense a huge knowledge base containing millions of logical rules (as attempted by the Cyc project)? Or is it a distributed network woven from countless specific experiences and simple rule fragments?
-- **How should agents be built?** Should we continue pursuing a perfect, unified logical system, or should we acknowledge that intelligence itself is an "imperfect" hodgepodge composed of many functionally different, even conflicting simple parts?
+- **Что такое «понимание»?** Когда мы говорим, что понимаем историю, — это одна способность? Или результаты разных интеллектуальных процессов: визуализации, логического рассуждения, эмоционального резонанса, разумного понимания социальных отношений?
+- **Что такое «здравый смысл»?** Это огромная база с миллионами логических правил (как реализован проект Cyc)? Или распределенная сеть из перечисленных конкретных опытов и фрагментов простых правил?
+- **Как построить агентов?** Продолжать искать совершенную единую логическую систему — или признать, что интеллект сам по себе «несовершенная» смесь многих функциональных, даже конфликтующих простых частей?
 
-These questions directly addressed the core drawbacks of single holistic intelligence models. Such models attempt to solve all problems with a unified representation and reasoning mechanism, but this is far from how we observe natural intelligence (especially human intelligence) operating. Minsky believed that forcibly cramming diverse mental activities into a rigid logical framework was the root cause of early artificial intelligence research stagnation.
+Эти вопросы били в корне нарушают целостность модели интеллекта. Такая модель пытается решить все задачи единым представлением и механизмом обсуждения, но это далеко от того, как мы наблюдаем (особенно человеческий) интеллект. Немецкий считал, что насильственно втискивать разнообразие умственной деятельности в жёсткий логический каркас — корень застоя перед исследованием ИИ.
 
-Based on this reflection, Minsky proposed a subversive conception: he no longer viewed the mind as a pyramid-like hierarchical structure but saw it as a flattened "society" full of interaction and collaboration.
+Исходя из этого размышления, Минский предложил переворот: разум — не пирамидальная иерархия, а уплощённое «общество», полное взаимодействие и сотрудничество.
 
-### 2.3.2 Intelligence as Collaboration
+### 2.3.2 Интеллект как сотрудничество
 
-In Minsky's theoretical framework, the definition of an agent differs from the modern agents we discussed in Chapter 1. Here, an agent refers to an extremely simple, specialized mental process that is itself "mindless." For example, a `LINE-FINDER` agent responsible for identifying lines, or a `GRASP` agent responsible for grasping.
+В теории определение минского агента отличается от современных агентов главы 1. Здесь агент — предельно простой, специализированный интеллектуальный процесс, сам по себе «без сознания». Например, агент`LINE-FINDER`, учитывайте выделение линий, или агента`GRASP`, что означает захват.
 
-These simple agents are organized to form more powerful **Agencies**. An agency is a group of agents working together to complete a more complex task. For example, a `BUILD` agency responsible for building blocks might be composed of multiple lower-level agents or agencies such as `SEE`, `FIND`, `GET`, and `PUT`. They influence each other through decentralized activation and inhibition signals, forming dynamic control flow.
+Простые агенты организуются в более мощные **агентства (Агенства)**. Агентство — группа агентов, совместно решающих более сложную задачу. Например, агентство`BUILD`для сборки кубиков может состоять из агентов или агентств нижнего уровня:`SEE`, `FIND`, `GET`, `PUT`. Они направляют друг друга через децентрализованные сигналы активации и торможения, формируя движущий поток управления.
 
-**Emergence** is key to understanding the society of mind theory. Complex, purposeful intelligent behavior is not pre-planned by some high-level agent but spontaneously arises from local interactions among numerous simple bottom-level agents.
+**Эмерджентность** — ключ к пониманию идей общества разума. Сложное целенаправленное разумное поведение, не запланированное заранее неким высокоуровневым агентом, спонтанно возникает из-за локальных взаимодействий с увеличением количества простых агентов нижнего уровня.
 
-Let's use the classic "building a block tower" task as an example to illustrate this process, as shown in Figure 2.6. When a high-level goal (such as "I want to build a tower") appears, it activates a high-level agency called `BUILD-TOWER`.
+Классический пример — задача «построить башню из кубиков», показанная на рис. 2.6. Когда появляется высокоуровневая цель (например, «хочу построить башню»), активируется высокоуровневое агентство.`BUILD-TOWER`.
 
-1. The `BUILD-TOWER` agency doesn't know how to execute specific physical actions; its only role is to activate its subordinate agencies, such as `BUILDER`.
-2. The `BUILDER` agency is also very simple; it might only contain loop logic: as long as the tower isn't finished, activate the `ADD-BLOCK` agency.
-3. The `ADD-BLOCK` agency is responsible for coordinating more specific subtasks; it sequentially activates three sub-agencies: `FIND-BLOCK`, `GET-BLOCK`, and `PUT-ON-TOP`.
-4. Each sub-agency is composed of even lower-level agents. For example, the `GET-BLOCK` agency activates the `SEE-SHAPE` agent in the visual system and the `REACH` and `GRASP` agents in the motor system.
+1. Агентство `BUILD-TOWER` не знает, как осуществлять конкретные физические действия; его роль — активировать подчинённые агентства, например `СТРОИТЕЛЬ`.
+2. Агентство `СТРОИТЕЛЬ` тоже простое; в нем может быть лишь логика цикла: пока башня не готова, активировать агентство `ADD-BLOCK`.
+3. Агентство «ADD-BLOCK» координирует более конкретные подзадачи и последовательно активирует три субагента: «FIND-BLOCK», «GET-BLOCK» и «PUT-ON-TOP».
+4. Наше субагентство состоит из ещё более низкоуровневых агентов. Например, GET-BLOCK активирует агенты SEE-SHAPE в зрительной системе и агенты REACH и GRASP в моторной.
 
-In this process, no single agent or agency has a global plan for the entire task. `GRASP` is only responsible for grasping; it doesn't know what a tower is; `BUILDER` is only responsible for looping; it doesn't know how to control the arm. However, when this society composed of countless "mindless" agents interacts through simple activation and inhibition rules, a seemingly highly intelligent behavior—building a block tower—naturally emerges.
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-4.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.6 Schematic diagram of the emergence mechanism of block tower building behavior in the "society of mind"</p>
-</div>
-
-### 2.3.3 Theoretical Inspiration for Multi-Agent Systems
-
-The most far-reaching influence of the society of mind theory is that it provided an important conceptual foundation for **Distributed Artificial Intelligence (DAI)** and later **Multi-Agent Systems (MAS)**. It prompted researchers to think:
-
-**If intelligence within a mind emerges through collaboration of numerous simple agents, then can more powerful "collective intelligence" also emerge through collaboration among multiple independent, physically separated computational entities (computers, robots)?**
-
-The raising of this question directly shifted research focus from "how to build an omnipotent single agent" to "how to design an efficiently collaborating agent group." Specifically, the society of mind directly inspired MAS research in the following aspects:
-
-- **Decentralized Control**: The core of the theory is that there is no central controller. This idea was completely inherited by the MAS field, and how to design coordination mechanisms and task allocation strategies without central nodes became one of the core research topics of MAS.
-- **Emergent Computation**: Solutions to complex problems can spontaneously arise from simple local interaction rules. This inspired numerous emergence-based algorithms in MAS, such as ant colony algorithms and particle swarm optimization, for solving complex optimization and search problems.
-- **Agent Sociality**: Minsky's theory emphasized interactions between agents (activation, inhibition). The MAS field further expanded this, systematically studying communication languages between agents (such as ACL), interaction protocols (such as contract nets), negotiation strategies, trust models, and even organizational structures, thereby constructing true computational societies.
-
-It can be said that Minsky's "society of mind" theory provided an important analytical framework for AI researchers to understand the internal structure of "collective intelligence." It provided later researchers with a completely new perspective to explore complex systems composed of independent, autonomous, socially capable computational agents, formally opening the prelude to multi-agent system research.
-
-## 2.4 Evolution of Learning Paradigms and Modern Agents
-
-The "society of mind" theory discussed earlier pointed the way for collective intelligence and decentralized collaboration at the philosophical level, but the implementation path remained unclear. Meanwhile, the fundamental challenges exposed by symbolicism in dealing with real-world complexity also indicated that truly robust intelligence could not be built solely on pre-coded rules.
-
-These two threads jointly pointed to a question: If intelligence cannot be completely designed, can it be learned?
-
-This question opened the "learning" era of artificial intelligence. Its core goal was no longer to manually encode knowledge but to build systems that could automatically acquire knowledge and capabilities from experience and data. This section will trace the evolution of this paradigm: from the learning foundation laid by connectionism, to interactive learning achieved by reinforcement learning, to modern agents driven by large language models today.
-
-### 2.4.1 From Symbols to Connections
-
-As a direct response to the limitations of symbolicism, **Connectionism** re-emerged in the 1980s. Unlike symbolicism's top-down design philosophy relying on explicit logical rules, connectionism is a bottom-up approach inspired by mimicking the neural network structure of biological brains<sup>[8]</sup>. Its core ideas can be summarized as follows:
-
-1. **Distributed Representation of Knowledge**: Knowledge is not stored in some knowledge base in the form of explicit symbols or rules but is stored in a distributed manner in the form of connection weights between numerous simple processing units (i.e., artificial neurons). The connection pattern of the entire network itself constitutes knowledge.
-2. **Simple Processing Units**: Each neuron only performs very simple computations, such as receiving weighted inputs from other neurons, processing them through an activation function, and then outputting results to the next neuron.
-3. **Adjusting Weights Through Learning**: The system's intelligence does not come from complex programs pre-written by designers but from the "learning" process. By being exposed to numerous samples, the system automatically and iteratively adjusts connection weights between neurons according to some learning algorithm (such as backpropagation), gradually making the entire network's output approach the desired target.
-
-Under this paradigm, agents are no longer passive logical reasoning machines executing rules but adaptive systems capable of self-optimization through experience. As shown in Figure 2.7, this represents a fundamental shift in the core idea of building agents. Symbolicism attempted to explicitly encode human knowledge to machines, while connectionism attempted to create machines that could learn knowledge like humans.
+В этом процессе ни один агент или агентство не имеет глобального плана для всей задачи.`GRASP`только хватает и не знает, что такое башня-башня;`BUILDER`только крутит цикл и не знает, как управлять рукой. Но когда общество из бесчисленных «бессознательных» агентов взаимодействует по простым правилам активации и торможения, естественным образом возвращается внешнее высокоинтеллектуальное поведение — строительство башни из кубиков.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-5.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.7 Comparison of symbolicism and connectionism paradigms</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-4.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.6 Схема эмерджентного механизма строительства башни из кубиков в «обществе разума»</p>
 </div>
 
-The rise of connectionism, especially the success of deep learning in the 21st century, endowed agents with powerful perception and pattern recognition capabilities, enabling them to directly understand the world from raw data (such as images, sounds, text), which was unimaginable in the symbolicism era. However, how to enable agents to learn to make optimal sequential decisions in dynamic interactions with the environment required supplementation from another learning paradigm.
+### 2.3.3 Теоретическое вдохновение для мультиагентных систем
 
-### 2.4.2 Agents Based on Reinforcement Learning
+Самое дальнее влияние теории общества разума — в том, что она дала основные концептуальные основы **распределённому искусственному интеллекту (DAI)** и позже **мультиагентным системам (Multi-Agent Systems, MAS)**. Она сделала размышление:
 
-Connectionism mainly solved perception problems (for example, "What's in this picture?"), but the more core task of agents is decision-making (for example, "What should I do in this situation?"). **Reinforcement Learning (RL)** is precisely the learning paradigm focused on solving sequential decision problems. It does not directly learn from labeled static datasets but learns how to maximize its long-term benefits through direct interaction between agents and the environment, learning through "trial and error."
+**Если интеллект внутри разума возникает в результате сотрудничества большого количества простых агентов, то не может ли более современный «коллективный интеллект» возникнуть в результате сотрудничества нескольких независимых физических разделенных вычислительных сущностей (компьютеров, роботов)?**
 
-Taking AlphaGo as an example, its core self-play learning process is a classic embodiment of reinforcement learning<sup>[9]</sup>. In this process, AlphaGo (the agent) observes the current board layout (environment state) and decides where to place the next stone (action). After a game ends, based on the win-loss result, it receives a clear signal: winning is a positive reward, losing is a negative reward. Through millions of such self-play sessions, AlphaGo continuously adjusts its internal strategy, gradually learning which actions to choose in which board situations are most likely to lead to final victory. This process is completely autonomous, not relying on direct guidance from human game records.
+Постановка этого вопроса сместила фокус с «как построить всемогущего одиночного агента» на «как спроектировать эффективно сотрудничающую группу агентов». Конкретно разумное общество вдохновило исследование MAS в следующих аспектах:
 
-This learning mechanism of optimizing one's own behavior through interaction with the environment and based on feedback signals is the core framework of reinforcement learning. Below we will detail its basic constituent elements and working mode.
+- **Децентрализованное управление**: во мнении нет центрального контроллера. Идея полностью унаследована полем MAS; Проектирование соглашений о координации и распределении задач без центральных узлов стало одним из ключевых тем.
+- **Эмерджентные вычисления**: решения сложных задач могут спонтанно возникать из простых локальных правил взаимодействия. Это вдохновило множество алгоритмов на эмерджентность в MAS — например, муравьиные алгоритмы и оптимизацию числа частиц — для оптимизации и поиска сложных задач.
+- **Социальность агентов**: теория Минского подчёркивала взаимодействие агентов (активация, торможение). Поле расширения MAS — это система изучения языков общения (например, ACL), протоколы взаимодействия (например, контрактные сети), стратегический подход, модели доверия и даже организационные структуры — построены вычислительные общества.
 
-The reinforcement learning framework can be described by several core elements:
+Можно предположить, что «общество разума» Минского дало исследователям ИИ экономического аналитического каркаса для понимания внутренней структуры «коллективного интеллекта». Он открыл новый взгляд на сложную систему из независимых, автономных, социальных вычислительных агентов и формально открыл прелюдию к исследованию мультиагентных систем.
 
-- **Agent**: The learner and decision-maker. In AlphaGo's example, it's its decision-making program.
-- **Environment**: Everything external to the agent, the object with which the agent interacts. For AlphaGo, it's the rules of Go and the opponent.
-- **State (S)**: A specific description of the environment at a certain moment, the basis for the agent's decision-making. For example, the current positions of all stones on the board.
-- **Action (A)**: Operations the agent can take based on the current state. For example, placing a stone at a legal position on the board.
-- **Reward (R)**: A scalar signal fed back to the agent by the environment after the agent executes an action, used to evaluate the quality of that action in a specific state. For example, at the end of a game, victory receives a +1 reward, defeat receives a -1 reward.
+## 2.4 Эволюция парадигмы обучения и современных агентов
 
-Based on the above core elements, reinforcement learning agents continuously iterate in a "perceive-act-learn" closed loop, with their working mode shown in Figure 2.8.
+Теория «общества разума» определила философский путь к коллективному интеллекту и децентрализованному сотрудничеству, но путь реализации стабильным и неясным. Сочетание фундаментальных вызовов, символизирующих перед сложностью устойчивого развития мира: по-настоящему устойчивый интеллект можно развивать только на заранее закодированных правилах.
+
+Обе линии сходятся в вопросе: если интеллект невозможно полностью спроектировать, можно ли его обучить?
+
+Этот вопрос открыл период «обучения» в ИИ. Цель уже не кодировать знания вручную, а построить систему, автоматически приобретающую знания и способности на основе опыта и данных. В этом разделе мы отслеживаем эволюцию парадигмы: от основ обучения, заложенной коннекционизма, к интерактивному обучению в подкреплении и к современным агентам на больших языковых моделях.
+
+### 2.4.1 От символов к связям
+
+Как прямой ответ на ограничения символизма, в 1980-х вновь поднялся **коннекционизм**. В отличие от нисходящей философии символизма с явными логическими принципами, коннекционизм — восходящий подход, вдохновлённый имитацией нейронных сетей биологического мозга<sup>[8]</sup>. Его ключевые идеи:
+
+1. **Распределённое представление знаний**: знания хранятся не в виде явных символов или правил в базе, а распределённо — во весах связей между множеством простых единиц обработки (искусственных нейронов). Схема связей во всей сети и есть знание.
+2. **Простые методы обработки**: каждый нейрон выполняет очень простые вычисления: принимает взвешенные входы от других нейронов, обрабатывает их пониженную эффективность и выдает результат следующему.
+3. **Настройка весов через обучение**: интеллектуальные системы не из заранее написанных сложных программ, а из процесса «обучения». В множестве приведена система по алгоритму обучения (например, обратному распространению ошибок), автоматически итеративно регулирует весовые зависимости, постепенно постепенно выводя сеть к желаемой цели.
+
+В этой парадигме агент — уже не пассивная машина логического вывода по правилам, адаптивная система, способная к самооптимизации посредством опыта. Как показано на рис. 2.7, это фундаментальный шаг в идее построения агентов. Символизм использовался для передачи энергетического знания; коннекционизм — создавать машины, способные изучать знания, как люди.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-6.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.8 Core interaction loop of reinforcement learning</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-5.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.7 Сравнение парадигмы символизма и коннекционизма</p>
 </div>
 
-The specific steps of this loop are as follows:
+Подъём коннекционизма, успех особенно глубокого обучения в XXI веке, наделил агентов мощными способностями восприятия и обнаружения паттернов: они могли напрямую понимать мир по сырым данным (изображениям, звуку, тексту) — немыслимо в эпоху символизма. Однако, чтобы агент научился принимать оптимальные последовательные решения в условиях неопределенности, нужна была еще одна парадигма обучения.
 
-1. At time step t, the agent observes the current state $S_{t}$ of the environment.
-2. Based on state $S_{t}$, the agent selects an action $A_{t}$ according to its internal **Policy (π)** and executes it. A policy is essentially a mapping from states to actions, defining the agent's behavior.
-3. After receiving action $A_{t}$, the environment transitions to a new state $S_{t+1}$.
-4. Simultaneously, the environment feeds back an immediate reward $R_{t+1}$ to the agent.
-5. The agent uses this feedback (new state $S_{t+1}$ and reward $R_{t+1}$) to update and optimize its internal policy to make better decisions in the future. This update process is learning.
+### 2.4.2 Агенты на основе обучения с подкреплением
 
-The agent's learning goal is not to maximize the immediate reward at a certain time step but to maximize the **Cumulative Reward** from the current moment to the future, also called **Return**. This means the agent needs to have "foresight"; sometimes to obtain greater future rewards, it needs to sacrifice current immediate rewards (for example, the "sacrifice" strategy in Go). Through continuous exploration, feedback collection, and policy optimization in the above loop, the agent can ultimately learn to make autonomous decisions and long-term planning in complex dynamic environments.
+Коннекционизм в основном решал задачи восприятия (например, «что на этой картинке?»), но более активная задача агента — принятия решений (например, «что мне делать в этой ситуации?»). **Обучение с поддержанием (Reinforcement Learning, RL)** — парадигма, комплексная на последовательных решениях. Оно учится не на размеченных статических наборах дат, а через прямое взаимодействие агента с обеспечением — методом «проб и ошибок», максимизируя долгосрочную выгоду.
 
-### 2.4.3 Pre-training Based on Large-Scale Data
+В основе AlphaGo лежат самоигры — классическое воплощение обучения с подкреплением<sup>[9]</sup>. AlphaGo (агент) наблюдает текущую позицию на доске (состояние окружающей среды) и решает, куда поставить следующий камень (действие). По итогам результата приходит яркий сигнал: победа — положительная награда, поражение — отрицательная. Через миллионы участников самоигры AlphaGo непрерывно устанавливает внутренний тренд и постепенно учится, какие действия в любых позициях с наибольшей вероятностью приводят к победе. Процесс полностью автономен и не опирается на прямое руководство партией народа.
 
-Reinforcement learning endowed agents with the ability to learn decision-making strategies from interactions, but this typically requires massive task-specific interaction data, resulting in agents lacking prior knowledge at the beginning of learning and needing to build understanding of tasks from scratch. Whether it's the common sense that symbolicism attempted to manually encode or the background knowledge humans rely on when making decisions, both are missing in RL agents. How to enable agents to have broad understanding of the world before starting to learn specific tasks? The solution to this problem ultimately emerged in the field of **Natural Language Processing (NLP)**, with its core being **Pre-training** based on large-scale data.
+Оптимизация собственного поведения через взаимодействие со внешними сигналами и сигналами внешней связи — ядро ​​каркаса обучения с креплениями. Ниже — его базовые элементы и режим работы.
 
-**From Specific Tasks to General Models**
+Каркас обучения с креплением к следующим ключевым элементам:
 
-Before the emergence of the pre-training paradigm, traditional natural language processing models were typically trained from scratch independently for single specific tasks (such as sentiment analysis, machine translation) on specially annotated small to medium-scale datasets. This mode led to several problems: models had narrow knowledge scope, difficulty generalizing knowledge learned in one task to another, and each new task required substantial human effort for data annotation. The proposal of the Pre-training and Fine-tuning paradigm completely changed this situation. Its core idea is divided into two steps:
+- **Агент**: обучающий и принимающий решения. В принципе AlphaGo — это программа принятия решений.
+- **Среда**: всё внешнее по отношению к агенту, объект взаимодействия. Для AlphaGo — правила го и соперника.
+- **Состояние (S)**: конкретное описание среды в данный момент времени, основа для решений агента. Например, текущая позиция всех камней на доске.
+- **Действие (A)**: операции, которые агент может совершать в современном состоянии. Например, поставьте камень на подходящую длину клеток.
+- **Награда (R)**: скалярный сигнал от среды после действия агента, оценивающий качество этого действия в данном состоянии. Например, в конце партии победа дает +1, поражение -1.
 
-1. **Pre-training Phase**: First, train a super-large-scale neural network model on a general corpus containing internet-level massive text data through **Self-supervised Learning**. The goal of this phase is not to complete any specific task but to learn the inherent patterns, grammatical structures, factual knowledge, and contextual logic of language itself. The most common objective is "predicting the next word."
-2. **Fine-tuning Phase**: After completing pre-training, this model has already learned rich knowledge related to the dataset. Subsequently, for specific downstream tasks, only a small amount of annotated data for that task is needed to fine-tune the model, allowing it to adapt to the corresponding task.
-
-As shown in Figure 2.9, this intuitively demonstrates the complete process of pre-training and fine-tuning: general text data forms a foundation model through self-supervised learning, then fine-tuning with specific task data ultimately adapts to various downstream tasks.
+На этих элементах агента обучения с подкреплением непрерывно повторяется цикл «восприятие–действие–обучение»; Режим работы показан на рис. 2.8.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-7.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.9 Schematic diagram of the "pre-training-fine-tuning" paradigm</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-6.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.8 Ядро цикла в обучении с подкреплением</p>
 </div>
 
-**Birth of Large Language Models and Emergent Abilities**
+Конкретные шаги цикла:
 
-Through pre-training on trillions of texts, the neural network weights of large language models have actually constructed a highly compressed implicit model of world knowledge. It solves the most troublesome "knowledge acquisition bottleneck" problem of the symbolicism era in a completely new way. More surprisingly, when the model's scale (number of parameters, data volume, computation) crosses a certain threshold, they begin to exhibit unexpected **Emergent Abilities** that were not directly trained, such as:
+1. В момент времени агент t наблюдает за текущим состоянием окружающей среды $S_{t}$.
+2. На основе состояния $S_{t}$ агент по внутренней **политике (Policy, π)** выбирает действие $A_{t}$ и выполняет его. Политика — по сути, причина происходящего в действии, определяющая поведение агента.
+3. Получив действие $A_{t}$, окружающая среда переходит в новое состояние $S_{t+1}$.
+4. Такая среда возвращает агенту немедленную награду $R_{t+1}$.
+5. Агент использует эту обратную связь (новое состояние $S_{t+1}$ и награду $R_{t+1}$), чтобы обновить и усовершенствовать внутреннюю политику для принятия лучших решений в будущем. Этот процесс обновления и есть обучение.
 
-- **In-context Learning**: Without adjusting model weights, just by providing **a few examples (Few-shot)** or even **zero examples (Zero-shot)** in the input, the model can understand and complete new tasks.
-- **Chain-of-Thought** Reasoning: By guiding the model to output step-by-step reasoning processes before answering complex questions, its accuracy on logic, arithmetic, and common-sense reasoning tasks can be significantly improved.
+Цель обучения агента — не максимизировать немедленную награду на одном шаге, а максимизировать **кумулятивную награду** от текущего момента в будущем, а также институциональную **возвратом (Возврат)**. Значит, агенту нужна «дальновидность»: иногда ради большей опасности придется столкнуться с текущей ситуацией (например, стратегия «жертвы» в го). Посредством непрерывного исследования, сбора обратной связи и оптимизации политики в этом цикле агент в конечном итоге учится принимать автономные решения и планировать время в сложных условиях среды.
 
-The emergence of these abilities marks that LLMs are no longer just language models; they have evolved into components playing dual roles as both massive knowledge bases and general reasoning engines.
+### 2.4.3 Предобучение больших данных
 
-At this point, in the long river of agent development history, several key technical puzzle pieces have all appeared: symbolicism provided the framework for logical reasoning, connectionism and reinforcement learning provided learning and decision-making capabilities, while large language models provided unprecedented world knowledge and general reasoning capabilities obtained through pre-training. In the next section, we will see how these technologies are integrated in the design of modern agents.
+Обучение с поддержкой дало агентам возможность изучить стратегические решения на основе взаимодействий, но обычно требует огромных объемов взаимодействия данных под конкретной задачей: на ранних этапах обучения у агента нет априорных знаний, задачи понимания строятся с нуля. И здравый смысл, который символизм пытался кодировать вручную, и фоновые знания, на которых основываются люди при решениях, у RL-агентов отсутствуют. Как дать агенту широкое понимание мира для решения этих задач? Ответ в итоге пришёл из **обработки естественного языка (Natural Language Processing, NLP)** — в виде **предобучения (Pre-training)** на больших данных.
 
-### 2.4.4 Agents Based on Large Language Models
+**От начала задачи к общим моделям**
 
-With the rapid development of large language model technology, LLM-centric agents have become a new paradigm in the field of artificial intelligence. They can not only understand and generate human language but, more importantly, can autonomously perceive, plan, decide, and execute tasks through interaction with the environment.
+В парадигме подготовки традиционных моделей НЛП обычно обучались с нуля отдельно под одной задачей (анализ тональности, машинный перевод) на специально размеченных наборах дат среднего и среднего размера. Это очень узкому охвату знаний, трудному переносу знаний между задачами и большими затратами на разметку под каждой новой задачей. Парадигма предобучения и дообучения (Предварительная тренировка и тонкая настройка) полностью изменила ситуацию. Ее идея — в два шага:
+
+1. **Фаза обучения**: сначала в общем корпусе интернет-масштаба обучают сверхбольшую нейронную сеть через **самообучение с самоконтролем (самообучение)**. Цель фазы — неконкретная задача, а формирование внутренних закономерностей языка: грамматики, фактов, контекстной логики. Самая частная цель — «предсказать следующее слово».
+2. **Фаза обучения**: после предобучения модели уже несёт богатые знания, связанные с данными. Затем для решения последующих задач достаточно небольшого объема размеченных данных, чтобы дообучить модель и адаптировать ее к задаче.
+
+Как показано на рис. 2.9, как видно, происходит процесс предобучения и дообучения: общие текстовые данные через самообучение представляют собой базовую модель, затем дообучение полных данных конкретной задачи адаптирует ее к различным последующим задачам.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-8.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.10 Core component architecture of LLM-driven agents</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-7.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.9 Схема парадигмы «предобучение–дообучение»</p>
 </div>
 
-As described in Chapter 1, the interaction between agents and the environment can be abstracted as a core loop. LLM-driven agents complete tasks through a continuously iterative closed-loop process where multiple modules work together. This process follows the architecture shown in Figure 2.10, with specific steps as follows:
+**Рождение больших языковых моделей и новых способностей**
 
-1. **Perception**: The process begins with the **Perception Module**. It receives raw input from the **Environment** through sensors, forming **Observations**. This observation information (such as user instructions, data returned by APIs, or changes in environment state) is the starting point for agent decision-making and will be passed to the thinking stage after processing.
-2. **Thought**: This is the cognitive core of the agent, corresponding to the collaborative work of the **Planning Module** and **Large Language Model (LLM)** in the diagram.
-   - **Planning and Decomposition**: First, the planning module receives observation information and formulates high-level strategies. Through mechanisms such as **Reflection** and **Self-criticism**, it decomposes macro goals into more specific, executable steps.
-   - **Reasoning and Decision-making**: Subsequently, the **LLM** as the hub receives instructions from the planning module and interacts with the **Memory** module to integrate historical information. The LLM performs deep reasoning and ultimately decides on the specific operation to execute next, typically manifested as a **Tool Call**.
-3. **Action**: After decision-making is complete, the action stage begins, managed by the **Execution Module**. Tool call instructions generated by the LLM are sent to the execution module. This module parses instructions, selects and calls appropriate tools from the **Tool Use** toolbox (such as code executors, search engines, APIs, etc.) to interact with the environment or execute tasks. This actual interaction with the environment is the agent's **Action**.
-4. **Observation** and Loop: Actions change the environment's state and produce results.
-   - After tool execution, a **Tool Result** is returned to the LLM, constituting direct feedback on the action's effect. Simultaneously, the agent's action changes the environment, producing a completely new **environment state**.
-   - This "tool result" and "new environment state" together constitute a new round of **Observation**. This new observation is captured again by the perception module, while the LLM **updates memory (Memory Update)** based on action results, thus initiating the next round of the "perceive-think-act" loop.
+Посредством предобучения в триллионах текстов вес нейронной сети большой языковой модели фактически строит сильно сжатую неявную модель знаний о мире. Так по-новому решается самая болезненная проблема эпохи символизма — «узкое место приобретения знаний». Еще удивительнее: когда масштабные модели (множество параметров, объем данных, расчеты) пересекают порог, неожиданные **эмерджентные способности** науки, таким образом, непосредственно не учатся, например:
 
-This modular collaborative mechanism and continuous iterative loop constitute the core workflow of LLM-driven agents solving complex problems.
+- **Обучение в девяти (In-context Learning)**: без изменений весов моделей, лишь немного во вводе **несколько примеров (Несколько кадров)** или даже **ноль примеров (Нулевой выстрел)**, модель понимает и выполняет новые задачи.
+- **Цепочка рассуждений (Цепочка мыслей)**: направляющая модель ведет пошаговый ход рассуждения перед ответом на сложный вопрос, можно заметно повысить точность задач логики, арифметики и здравого смысла.
 
-### 2.4.5 Overview of Key Milestones in Agent Development
+Появление этих способностей означает, что LLM — уже не просто языковые модели; Они разработали компоненты с двойной ролью: большую базу знаний и общий движок рассуждения.
 
-The development history of artificial intelligence agents is not a straight single-lane road but a process of interweaving, competition, and fusion of several core ideological schools over more than half a century. Understanding this process helps us gain insight into the profound origins of current agent architecture paradigm formation.
+К этому моменту в истории агентов были установлены основные технические «пазлы»: символизм дального каркасного логического рассуждения, коннекционизм и обучение с подкреплением — способности учиться и решения, большие языковые модели — беспрецедентные знания о мире и общие способности рассуждения, полученные посредством предобучения. В следующем разделе мы увидим, как эти технологии объединяются в дизайне современных агентов.
 
-Among these, three major trends dominated research paradigms in different periods:
+### 2.4.4 Агенты на основе больших языковых моделей
 
-1. **Symbolism**: Represented by pioneers such as **Herbert A. Simon** and **Marvin Minsky**, believing that the core of intelligence lies in symbol manipulation and logical reasoning. This idea gave birth to SHRDLU, which could understand natural language instructions, knowledge-driven expert systems, and the "Deep Blue" computer that achieved great success in chess.
-2. **Connectionism**: Its inspiration comes from simulating brain neural networks. Although early development was limited, under the promotion of researchers such as **Geoffrey Hinton**, the backpropagation algorithm laid the foundation for the revival of neural networks. Eventually, with the arrival of the deep learning era, this idea became mainstream through models such as convolutional neural networks and Transformers.
-3. **Behaviorism**: Emphasizing that agents learn optimal strategies through interaction with the environment and trial and error, its modern incarnation is reinforcement learning. From early TD-Gammon to AlphaGo, which combined with deep learning and defeated top human players, this school endowed agents with the ability to learn complex decision-making behaviors from experience.
-
-Entering the 2020s, these ideological schools have deeply integrated in unprecedented ways. Large language models represented by the GPT series are themselves products of connectionism but have become the core "brain" for executing symbolic reasoning, tool invocation, and planning decisions, forming a modern agent architecture combining neural and symbolic approaches. To systematically review this development context, Figure 2.11 below organizes key theories, projects, and events in the development history of artificial intelligence agents from the 1950s to the present, providing readers with a clear global overview as a consolidation of this chapter's knowledge.
+С быстрым развитием технологий больших языковых моделей агенты с LLM в центре стали новой парадигмой в ИИ. Они не только понимают и поддерживают человеческий язык, но — что самое важное — могут самостоятельно воспринимать, планировать, решать и выполнять задачи через взаимодействие в соответствии с требованиями.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-9.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.11 Timeline of agent development evolution (incomplete version)</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-8.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.10 Архитектура ключевых компонентов агентов LLM</p>
 </div>
 
-Thanks to breakthroughs in large language models, the agent technology stack presents unprecedented activity and diversity. Figure 2.12 shows a typical full view of the current AI Agent field technology stack, covering all aspects from underlying models to upper-layer applications.
+Как указано в главе 1, взаимодействие агента с определением можно абстрагировать как ядовой цикл. Агенты LLM решают задачу через непрерывный итерирующий замкнутый процесс, в котором совместно работают несколько модулей. Процесс следует архитектуре на рис. 2,10; шаги такие:
+
+1. **Восприятие**: процесс начинается с **модуля восприятия**. Он принимает сырой ввод из **среды** через сенсоры, образуя **наблюдения (наблюдения)**. Эта информация (инструкции пользователя, данные от API, изменение состояния окружающей среды) — отправная точка решения агента; после обработки она перешла на этап мышления.
+2. **Мышление**: когнитивное ядро ​​агента — совместная работа **модуля планирования** и **большой языковой модели (LLM)** по схеме.
+   - **Планирование и декомпозиция**: сначала модуль планирования учитывает наблюдения и формулирует стратегии верхнего уровня. Через механизмы **рефлексии** и **самокритики** макроцели разворачиваются на более конкретные, выполняемые шаги.
+   - **Распределение и принятие решений**: затем **LLM** как хаб получает инструкцию от модуля планирования и взаимодействует с модулем **памяти (Память)**, интегрируя историю. LLM выполняет более глубокое рассуждение и в итоге определяет, какую конкретную операцию выбрать дальше — обычно это отображается как **вызов инструмента (Tool Call)**.
+3. **Действие**: после решения начинается этап действия, которым управляет **модуль исполнения**. Инструкции по вызовам инструментов от LLM передаются в исполнении модуля. Он разбирает инструкции, выбирает и предлагает подходящие инструменты из набора **Использование инструментов** (исполнители кода, поисковые системы, API и т.д.), взаимодействие для обеспечения или выполнения задач. Это реальное взаимодействие со наблюдением и есть **действие (Action)** агента.
+4. **Наблюдение** и цикл: действия меняют состояние окружающей среды и дают результаты.
+   - После выполнения инструмента **результат инструмента (Tool Result)** возвращается LLM — прямая обратная связь об эффекте действия. Одновременное действие агента меняет среду, акции нового **состояния окружающей среды**.
+   - «Результат инструмента» и «новое состояние среды» вместе предусматривают новый раунд **наблюдения**. Это новое наблюдение снова захватывает модуль восприятия, а LLM **обновляет память (Обновление памяти)** по результатам действия — и запускает следующий виток цикла «восприятие–мышление–действие».
+
+Этот модульный совместный механизм и непрерывный итеративный цикл включают в себя основной рабочий процесс агентов на LLM при условии выполнения сложных задач.
+
+### 2.4.5 Обзор ведущих агентов по развитию
+
+История ИИ-агентов — не прямая однополосная дорога, а переплетение, конкуренция и слияние нескольких идейных школ за более чем полвека. Понимание этого процесса помогает увидеть глубокие истоки нынешней парадигмы построения агентов.
+
+В разные периоды в исследовательских парадигмах доминировали три основные тенденции:
+
+1. **Символизм**: представлен такими пионерами, как **Герберт А. Саймон** и **Марвин Минский**; острый интеллект — манипуляции символами и логический вывод. Для этого — SHRDLU, понимающий инструкцию на естественном языке, экспертные системы знаний и компьютер «Deep Blue», добившийся большого успеха в шахматах.
+2. **Коннекционизм**: вдохновение — имитация нейронных сетей мозга. Раннее развитие было ограничено, но усилия были направлены наподобие **Джеффри Хинтона** алгоритма обратного распространения, заложившего основы возрождения нейросетей. В эпоху глубокого обучения идея стала мейнстримом через свёрточные сети, Трансформеры и другие модели.
+3. **Бихевиоризм**: акцент на том, что агент учит оптимальные стратегии через взаимодействие со следствием, пробами и ошибками; современное воплощение — обучение с поддержанием. На раннем этапе TD-Gammon и AlphaGo, соединившего внутреннее обучение и победившего лучших игроков-людей, эта школа надела агентов интеллектуального развития, развивающих сложное последовательность решений на основе опыта.
+
+В 2020-х эти школы глубоко интегрировались по-новому. Большие языковые модели вроде серии GPT сами по себе — продукты коннекционизма, но стали атомами-«мозгами» для символического рассуждения, инструментов вызова и решений планирования, образующих современную архитектуру агентов, сочетающую нейронное и символическое. Чтобы систематически обозреть этот контекст развития, рис. 2.11 ниже упорядочивает ключевые теории, проекты и события в истории ИИ-агентов с 1950-х до наших дней, позволяя читателю яркий глобальный обзор как закрепление материала главы.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-10.png" alt="Figure description" width="90%"/>
-  <p>Figure 2.12 Overview of AI Agent technology stack</p>
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-9.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.11 Временная школа эволюции агентов (неполная версия)</p>
 </div>
 
-This technology stack diagram was released by Letta in November 2024<sup>[10]</sup>. It layers and categorizes AI agent-related tools, platforms, and services, providing valuable reference for understanding current market landscape and technology selection.
+Благодаря прорывам больших языковых моделей стек технологий агентов обеспечивает беспрецедентную активность и разнообразие. Рис. 2.12 Показывает типичный полный вид текущего технологического поля поля AI Agent — от опасных моделей до верхних приложений.
 
-## 2.5 Chapter Summary
+<div align="center">
+  <img src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/2-figures/1757246501849-10.png" alt="Рис. description" width="90%"/>
+  <p>Рис. 2.12 Обзор технологической стеки AI Agent</p>
+</div>
 
-This chapter reviewed the historical context of agent development, exploring the process from birth to evolution of its core ideas, covering several key paradigm revolutions in the field of artificial intelligence:
+Эта схема стека опубликована Letta в скале в 2024 году<sup>[10]</sup>. Она послойно классифицирует инструменты, платформы и сервисы, связанные с ИИ-агентами, и дает ценный ориентир для понимания современного рыночного ландшафта и выбора технологий.
 
-- **Exploration and Limitations of Symbolicism**: Starting from the classical era of artificial intelligence, this chapter explained how early agents represented by expert systems attempted to simulate intelligence through "knowledge + reasoning." By personally building a rule-based chatbot, we deeply experienced the capability boundaries of this paradigm and the fundamental challenges it faced.
-- **Emergence of Distributed Intelligence Thinking**: Explored Marvin Minsky's "society of mind" theory. This revolutionary idea revealed that complex holistic intelligence can emerge from interactions of simple local units, providing important philosophical inspiration for subsequent multi-agent system research.
-- **Evolution of Learning Paradigms**: Witnessed fundamental changes in how agents acquire capabilities. From connectionism endowing agents with the ability to perceive the world, to reinforcement learning enabling them to learn optimal decision-making in interactions with the environment, to large language models (LLMs) based on large-scale data pre-training providing them with unprecedented world knowledge and general reasoning capabilities.
-- **Birth of Modern Agents**: Finally, we analyzed LLM-driven agents. Through analysis of their core components (models, memory, planning, tools, etc.) and working principles, we understood how various technical ideas in history achieved technological integration in modern Agent architecture.
+## 2.5 Резюме главы
 
-Through this chapter's learning, we not only understand where the modern agents introduced in Chapter 1 came from but also established a macro cognitive framework about agent technology evolution. We can discover that agent development is not simple technical iteration but a thought revolution about how to define "intelligence," acquire "knowledge," and make "decisions."
+В этой главе мы рассматриваем исторический контекст развития агентов, процессов рождения и эволюции их ключевых идей, охватывающих несколько парадигмальных революций в ИИ:
 
-Since the core of modern agents is large language models, deeply understanding their underlying principles is crucial. The next chapter will focus on large language models themselves, exploring their basic concepts, laying a solid foundation for subsequent advanced applications in multi-agent systems.
+- **Исследования и ограничения символизма**: начиная с классической эпохи II, глава объяснила, как ранние агенты в лице экспертных систем пытались имитировать интеллект посредством «знания + рассуждения». Построив чат-бота по правилам, мы на примере ощутили границы этой парадигмы и фундаментальных вызовов.
+- **Появление идей распределённого интеллекта**: рассмотрение теории «общества разума» Марвина Минского. Эта революционная идея показала, что сложная целостность интеллекта может возникнуть из взаимодействий простых локальных элементов, что является важным философским вдохновением для последующих исследований мультиагентных систем.
+- **Эволюционная парадигма обучения**: мы видим фундаментальные изменения в том, как агенты обретают способности. От коннекционизма, наделившего агентов восприятия мира, к обучению с подкреплением, позволившему обучать оптимальные решения в режиме ожидания, и к большим языковым моделям (LLM) при обучении больших данных, он дал беспрецедентные знания о мире и общие способности рассуждения.
+- **Рождение современных агентов**: наконец, выбраны агенты на степень магистра права. Посредством анализа основных компонентов (модели, памяти, планирования, инструментов и т. д.) и продолжения работы мы поняли, как исторические технические идеи проникли в современную архитектуру Agent.
 
-## Exercises
+Изучая главу, мы не только понимаем, откуда взялись современные агенты из главы 1, но и выстроили макроскопическую когнитивную рамку эволюции агентов технологий. Развитие агентов — не просто техническая итерация, это революционная мысль о том, как определить «интеллект», получить «знания» и принять «решения».
 
-> **Note**: Some of the following exercises do not have standard answers, aiming to help learners establish systematic understanding of agent development history and cultivate "learning from history" technical insight.
+Благодаря этому современные агенты — большие языковые модели, глубокое понимание их критического преобразования. Следующая глава концентрируется на отдельных больших языковых моделях, их базовых понятиях — заложив прочную основу для углубления продвинутых применений в мультиагентных знаниях.
 
-1. The Physical Symbol System Hypothesis<sup>[1]</sup> is the theoretical cornerstone of the symbolicism era. Please analyze:
+## Упражнения
 
-   - What do the "sufficiency assertion" and "necessity assertion" of this hypothesis mean?
-   - Combined with this chapter's content, explain which problems encountered by symbolic agents in practice challenged the "sufficiency" of this hypothesis?
-   - Do large language model-driven agents conform to the Physical Symbol System Hypothesis?
+> **Примечание**: в части следующих упражнений нет эталонных ответов; цель — помочь составить системное понимание истории развития агентов и воспитать техническую проницательность «учиться в истории».
 
-2. The expert system MYCIN<sup>[2]</sup> achieved significant success in the medical diagnosis field but was ultimately not widely applied in clinical practice. Please think:
+1. Гипотеза физической символической системы<sup>[1]</sup> — теоретический краеугольный камень эпохи символизма. Проанализируйте:
 
-   > **Hint**: Can analyze from multiple perspectives including technology, ethics, law, user acceptance, etc.
+   - Что означают «утверждение о достаточности» и «утверждение о необходимости» этой гипотезы?
+   - Опираясь на содержание главы, объясните: какие проблемы, с которыми столкнулись известные символические агенты, оспорили «достаточность» гипотезы?
+   - Соответствуют ли агенты больших языковых моделей моделирующим физическую символическую систему?
 
-   - Besides the "knowledge acquisition bottleneck" and "brittleness" mentioned in this chapter, what other factors might have hindered the application of expert systems in high-risk fields like medicine?
-   - If you were to design a medical diagnosis agent now, how would you design the system to overcome MYCIN's limitations?
-   - In which vertical domains are rule-based expert systems still a better choice than deep learning today? Please give examples.
+2. Экспертная система MYCIN<sup>[2]</sup> добилась заметных успехов в медицинской диагностике, но в итоге не получила широкого клинического применения. Подумайте:
 
-3. In Section 2.2, we implemented a simplified version of the ELIZA chatbot. Please expand on this basis:
+> **Подсказка**: можно анализировать с разных сторон — технологии, этика, право, подготовка пользователей и т.д.
 
-   > **Hint**: This is a hands-on practice question; actual code writing is recommended
+   - Помимо «узкого места приобретения знаний» и «крупкости», упомянутых в главе, какие еще факторы могут стимулировать применение экспертных систем в высокорисковых областях вроде медицины?
+   - Если бы вы сейчас спроектировали агента медицинского врача, как бы вы спроектировали систему, чтобы ограничить ограничения MYCIN?
+   - В каких вертикальных областях системы правил сегодня всё ещё лучше глубокого обучения? Приведите примеры.
 
-   - Add 3-5 new rules to ELIZA to enable it to handle more diverse conversation scenarios (such as discussing work, study, hobbies, etc.)
-   - Implement a simple "contextual memory" function: allow ELIZA to remember key information mentioned by users in conversations (such as name, age, occupation) and reference it in subsequent conversations
-   - Compare your expanded ELIZA with [ChatGPT](https://chatgpt.com/), listing at least 3 dimensions of essential differences
-   - Why does the rule-based approach encounter "combinatorial explosion" problems and difficulty in scaling and maintenance when handling open-domain conversations? Can you explain using mathematical methods?
+3. В разделе 2.2 мы реализовали упрощённую версию чат-бота ELIZA. Расширьте ее:
 
-4. Marvin Minsky proposed a revolutionary viewpoint in the "society of mind" theory<sup>[7]</sup>: intelligence stems from collaboration of numerous simple agents, not a single perfect system.
+> **Подсказка**: это практическое задание; рекомендуется писать код
 
-   - In the Figure 2.6 "building a block tower" example, what would happen to the entire system if the `GRASP` agent suddenly failed? What are the advantages and disadvantages of this decentralized architecture?
-   - Compare the "society of mind" theory with some current multi-agent systems (such as [CAMEL-Workforce](https://docs.camel-ai.org/key_modules/workforce), [MetaGPT](https://github.com/FoundationAgents/MetaGPT), [CrewAI](https://github.com/crewAIInc/crewAI)), what connections and differences exist between them?
-   - Marvin Minsky believed agents could be "mindless" simple processes, yet current large language models and agents often possess powerful reasoning capabilities. Does this mean the "society of mind" theory is no longer applicable in the large language model era?
+   - Добавьте 3–5 новых правил в ELIZA, чтобы она обработала более разнообразные сценарии диалога (работа, учёба, хобби и т.д.)
+   - Реализуйте простую «контекстную память»: пусть ELIZA запоминает ключевую информацию из разговора (имя, возраст, профессия) и использует ее в больших репликах.
+   - Сравните вашу расширенную ELIZA с [ChatGPT](https://chatgpt.com/), перечислив не менее 3 измерений сущностных языков.
+   - Почему подход к правилам сталкивается с «комбинаторным взрывом» и трудностями масштабирования и сопровождения в открытых диалогах? Можно ли объяснить это математически?
 
-5. Reinforcement learning and supervised learning are two different learning paradigms. Please analyze:
+4. Марвин Минский в группах «общества разума»<sup>[7]</sup> выдвинул революционный тезис: развитие интеллекта из сотрудничества в распространении простых агентов, а не из одной совершенной системы.
 
-   - Use AlphaGo's example to explain how reinforcement learning's "trial-and-error learning" mechanism works
-   - Why is reinforcement learning particularly suitable for sequential decision problems? What is the essential difference in data requirements between it and supervised learning?
-   - Now we need to train an agent to play Super Mario. If using supervised learning and reinforcement learning respectively, what data is needed for each? Which method is more suitable for this task?
-   - In the training process of large language models, what key role does reinforcement learning play?
+   - В духе «строительства башен из кубиков» на рис. 2.6 все что произойдет с системой, если агент `GRASP` внезапно скажет? Каковы плюсы и минусы этой децентрализованной структуры?
+   - Сравните выводы «общества разума» с современными мультиагентными цепями (например, [CAMEL-Workforce](https://docs.camel-ai.org/key_modules/workforce), [MetaGPT](https://github.com/FoundationAgents/MetaGPT), [CrewAI](https://github.com/crewAIInc/crewAI)): какие связи и различия между ними?
+   - Марвин Минский считал, что агенты могут быть «бессознательными» простыми процессами, тогда как нынешние большие языковые модели и агенты часто обладают мощными способностями рассуждения. Означает ли это, что теория «общества разума» больше не применима в эпоху больших языковых моделей?
 
-6. The pre-training-fine-tuning paradigm is an important breakthrough in the modern artificial intelligence field. Please think deeply:
+5. Обучение с подкреплением и обучение с учителем — разные парадигмы. Проанализируйте:
 
-   - Why does pre-training solve the "knowledge acquisition bottleneck" problem of the symbolicism era? What is the essential difference in knowledge representation methods?
-   - Most knowledge of pre-trained models comes from internet data; what problems might this bring? How to mitigate these problems?
-   - Do you think the "pre-training-fine-tuning" paradigm might be replaced by some new paradigm? Or will it exist long-term?
+   - По принципу AlphaGo объяснимо, как работает механизм «обучения через пробы и ошибки» в обучении с подкреплением.
+   - Почему обучение с подкреплением особенно подходит для задач последовательных решений? В чем суть требований к данным по сравнению с обучением с учителем?
+   - Нужно научить агента играть в Супер Марио. Если вы используете обучение с учителем и обучение с подкреплением, какие данные нужны в каждом конкретном случае? Какой метод лучше всего подходит для этой задачи?
+   - Какую ключевую роль играет обучение с подкреплением в процессе изучения больших языковых моделей?
 
-7. Suppose you want to design an "intelligent code review assistant" that can automatically review code submissions (Pull Requests), summarize code implementation logic, check code quality, discover potential bugs, and propose improvement suggestions.
+6. Парадигма предобучения–дообучения — кратковременный современный прорыв II. Подумайте глубже:
 
-   - If designing this system in the symbolicism era (1980s), how would you implement it? What difficulties would you encounter?
-   - If in the deep learning era without large language models (around 2015), how would you implement it?
-   - In the current era of large language models and agents, how would you design this agent's architecture? What modules should it include (refer to Figure 2.10)?
-   - Comparing these three eras' solutions, explain how agent technology evolution made this task change from "almost impossible" to "feasible"
+   - Почему предобучение решает проблему «узкого места приобретения знаний» эпохи символизма? В чём сущностное обоснование Как представление знаний?
+   - Большая часть знаний о предобученных моделях поступает из интернет-данных; какие проблемы это может вызвать? Как их смягчить?
+   - Считаете ли вы, что парадигма «предобучение–дообучение» может быть заменена новой, или она существует долго?
 
-## References
+7. Предполагается, что вы хотите спроектировать «умное ассистентское обновление кода», который автоматически затем отправляет код (Pull Requests), суммирует логику реализации, затем качество, находит потенциальные баги и предлагает улучшение.
 
-[1] NEWELL A, SIMON H A. Computer science as empirical inquiry: symbols and search[J]. Communications of the ACM, 1976, 19(3): 113-126.
+   - Если проектировать эту систему в эпоху символизма (1980-е), как бы вы ее реализовали? С какими трудностями столкнулся бы?
+   - Если бы в эпоху глубокого обучения без больших языковых моделей (около 2015 г.), как бы вы ее реализовали?
+   - В нынешнем эпоху больших языковых моделей и агентов, как бы вы спроектировали архитектуру этого агента? Какие модули она должна включать (см. рис. 2.10)?
+   - Сравнив решения трех эпох, объясните, как эволюция технологий агентов сделала эту задачу переходом от «почти невозможного» к «осуществимому»
 
-[2] BUCHANAN B G, SHORTLIFFE E H, ed. Rule-based expert systems: the MYCIN experiments of the Stanford Heuristic Programming Project[M]. Reading, Mass.: Addison-Wesley, 1984.
+## Литература
 
-[3] WINOGRAD T. Understanding natural language[M]. New York: Academic Press, 1972.
+[1] НЬЮЭЛЛ А., САЙМОН Х. А. Информатика как эмпирическое исследование: символы и поиск [J]. Сообщения ACM, 1976, 19(3): 113–126.
 
-[4] LENAT D B, GUHA R V. Cyc: a midterm report[J]. AI magazine, 1990, 11(3): 32.
+[2] Бьюкенен Б.Г., ШОРТЛИФФ Э.Х., изд. Экспертные системы, основанные на правилах: эксперименты MYCIN Стэнфордского проекта эвристического программирования [M]. Ридинг, Массачусетс: Аддисон-Уэсли, 1984.
 
-[5] MCCARTHY J, HAYES P J. Some philosophical problems from the standpoint of artificial intelligence[C]//MELTZER B, MICHIE D, ed. Machine intelligence 4. Edinburgh: Edinburgh University Press, 1969: 463-502.
+[3] ВИНОГРАД Т. Понимание естественного языка[М]. Нью-Йорк: Академик Пресс, 1972.
 
-[6] WEIZENBAUM J. ELIZA: a computer program for the study of natural language communication between man and machine[J]. Communications of the ACM, 1966, 9(1): 36-45.
+[4] ЛЕНАТ Д.Б., ГУХА Р.В. Цик: промежуточный отчет[J]. Журнал AI, 1990, 11(3): 32.
 
-[7] MINSKY M. The society of mind[M]. New York: Simon & Schuster, 1986.
+[5] МАККАРТИ Дж., ХЕЙС П. Дж. Некоторые философские проблемы с точки зрения искусственного интеллекта[C]//MELTZER B, MICHIE D, изд. Машинный интеллект 4. Эдинбург: Издательство Эдинбургского университета, 1969: 463–502.
 
-[8] RUMELHART D E, MCCLELLAND J L, PDP RESEARCH GROUP. Parallel distributed processing: explorations in the microstructure of cognition[M]. Cambridge, MA: MIT Press, 1986.
+[6] ВАЙЦЕНБАУМ Дж. ЭЛИЗА: компьютерная программа для изучения естественного языка общения между человеком и машиной[J]. Сообщения ACM, 1966, 9 (1): 36–45.
 
-[9] SILVER D, HUANG A, MADDISON C J, ed. Mastering the game of Go with deep neural networks and tree search[J]. Nature, 2016, 529(7587): 484-489.
+[7] МИНСКИЙ М. Общество разума[М]. Нью-Йорк: Саймон и Шустер, 1986.
 
-[10] LETTA. The AI agents stack[EB/OL]. (2024-11) [2025-09-07]. https://www.letta.com/blog/ai-agents-stack.
+[8] РУМЕЛЬХАРТ Д. Э., МАККЛЕЛЛАНД Дж. Л., ИССЛЕДОВАТЕЛЬСКАЯ ГРУППА НДП. Параллельная распределенная обработка: исследования микроструктуры познания [M]. Кембридж, Массачусетс: MIT Press, 1986.
 
+[9] СИЛЬВЕР Д., ХУАН А., МЭДДИСОН С.Дж., изд. Освоение игры в го с помощью глубоких нейронных сетей и поиска по дереву[J]. Природа, 2016, 529(7587): 484-489.
+
+[10] ЛЕТТА. Агенты ИИ складывают [EB/OL]. (2024-11) [2025-09-07].https://www.letta.com/blog/ai-agents-stack.

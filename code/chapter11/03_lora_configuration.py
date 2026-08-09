@@ -1,13 +1,13 @@
 """
-示例3: LoRA配置和使用
-演示如何通过RLTrainingTool配置和使用LoRA进行参数高效微调
+Пример 3: Конфигурация и использование LoRA
+Продемонстрируйте, как настроить и использовать LoRA для эффективной точной настройки параметров с помощью RLTrainingTool.
 """
 
 import sys
 from pathlib import Path
 import json
 
-# 添加项目路径
+# Добавить путь к проекту
 project_root = Path(__file__).parent.parent / "HelloAgents"
 sys.path.insert(0, str(project_root))
 
@@ -15,22 +15,22 @@ from hello_agents.tools import RLTrainingTool
 
 
 # ============================================================================
-# 示例1: 基础LoRA配置
+# Пример 1. Базовая конфигурация LoRA
 # ============================================================================
 
 def basic_lora_config():
     """
-    最基础的LoRA配置
+    Самая базовая конфигурация LoRA
     
-    LoRA (Low-Rank Adaptation):
-    - 只训练少量额外参数
-    - 减少60-80%显存占用
-    - 提升2-3倍训练速度
-    - 模型文件只有~10MB
+    LoRA (Адаптация низкого ранга):
+    - Тренируйте только несколько дополнительных параметров
+    - Уменьшить использование видеопамяти на 60-80%
+    - Увеличить скорость обучения в 2-3 раза
+    - Файл модели весит всего ~10 МБ.
     """
     tool = RLTrainingTool()
     
-    # 使用RLTrainingTool进行SFT训练,启用LoRA
+    # Обучение SFT с использованием RLTrainingTool, поддержка LoRA
     config = {
         "action": "train",
         "algorithm": "sft",
@@ -39,20 +39,20 @@ def basic_lora_config():
         "max_samples": 100,
         "num_epochs": 1,
         
-        # LoRA配置
-        "use_lora": True,           # 启用LoRA
-        "lora_r": 16,               # LoRA秩(rank)
-        "lora_alpha": 32,           # 缩放因子(通常是r的2倍)
+        # Конфигурация ЛоРА
+        "use_lora": True,           # Включить ЛоРА
+        "lora_r": 16,               # ранг ЛоРА
+        "lora_alpha": 32,           # Коэффициент масштабирования (обычно 2 раза в r)
     }
     
-    print("基础LoRA配置:")
-    print(f"  模型: {config['model_name']}")
+    print("Базовая конфигурация LoRA:")
+    print(f"  Модель: {config['model_name']}")
     print(f"  use_lora: {config['use_lora']}")
     print(f"  lora_r: {config['lora_r']}")
     print(f"  lora_alpha: {config['lora_alpha']}")
-    print(f"  目标模块: ['q_proj', 'v_proj'] (默认)")
+    print(f"  Целевые модули: ['q_proj', 'v_proj'] (по умолчанию)")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # print(json.dumps(json.loads(result), indent=2, ensure_ascii=False))
     
@@ -60,45 +60,45 @@ def basic_lora_config():
 
 
 # ============================================================================
-# 示例2: 不同LoRA秩的对比
+# Пример 2: Сравнение различных рангов LoRA
 # ============================================================================
 
 def compare_lora_ranks():
     """
-    对比不同LoRA秩的配置
+    Сравните конфигурации разных рангов LoRA
     
-    LoRA秩(r)的选择:
-    - r=8: 较小参数量,适合快速实验
-    - r=16: 推荐值,平衡性能和效率
-    - r=32: 较大参数量,追求更好性能
+    Выбор ранга LoRA(r):
+    - r=8: небольшое количество параметров, подходит для быстрых экспериментов.
+    - r=16: рекомендуемое значение, обеспечивающее баланс производительности и эффективности.
+    - r=32: большее количество параметров, стремление к лучшей производительности.
     """
     configs = {
-        "r=8 (快速实验)": {
+        "r=8 (быстрый эксперимент)": {
             "lora_r": 8,
             "lora_alpha": 16,
             "params": "~16K"
         },
-        "r=16 (推荐)": {
+        "r=16 (рекомендуется)": {
             "lora_r": 16,
             "lora_alpha": 32,
             "params": "~32K"
         },
-        "r=32 (高性能)": {
+        "r=32 (высокая производительность)": {
             "lora_r": 32,
             "lora_alpha": 64,
             "params": "~65K"
         },
     }
     
-    print("不同LoRA秩的对比:")
+    print("Сравнение разных рангов LoRA:")
     for name, config in configs.items():
         print(f"\n{name}:")
         print(f"  lora_r: {config['lora_r']}")
         print(f"  lora_alpha: {config['lora_alpha']}")
-        print(f"  预估参数量: {config['params']}")
+        print(f"  Примерное количество параметров: {config['params']}")
     
-    # 实际训练示例
-    print("\n训练示例 (r=16):")
+    # Пример практического обучения
+    print("\nОбучающий пример (r=16):")
     print("""
     tool = RLTrainingTool()
     result = tool.run({
@@ -117,42 +117,42 @@ def compare_lora_ranks():
 
 
 # ============================================================================
-# 示例3: LoRA vs 完整微调对比
+# Пример 3: сравнение LoRA и полной тонкой настройки
 # ============================================================================
 
 def compare_lora_vs_full_finetuning():
     """
-    对比LoRA和完整微调的配置
+    Сравнение LoRA и полностью настроенных конфигураций
     """
-    print("LoRA vs 完整微调对比:")
-    print("\nLoRA微调:")
-    print("  显存占用: ~4GB (0.5B模型)")
-    print("  训练速度: 快(2-3x)")
-    print("  模型大小: ~10MB")
+    print("Сравнение LoRA и полной тонкой настройки:")
+    print("\nТонкая настройка LoRA:")
+    print("  Использование видеопамяти: ~4 ГБ (модель 0,5Б)")
+    print("  Скорость обучения: быстрая (2-3 раза)")
+    print("  Размер модели: ~10 МБ")
     print("  batch_size: 8")
     print("  use_lora: True")
     
-    print("\n完整微调:")
-    print("  显存占用: ~14GB (0.5B模型)")
-    print("  训练速度: 慢")
-    print("  模型大小: ~1GB")
+    print("\nПолная тонкая настройка:")
+    print("  Использование видеопамяти: ~14 ГБ (модель 0,5Б)")
+    print("  Скорость обучения: медленная")
+    print("  Размер модели: ~ 1 ГБ")
     print("  batch_size: 2")
     print("  use_lora: False")
     
-    print("\n推荐: 使用LoRA进行微调")
+    print("\nРекомендуется: используйте LoRA для точной настройки.")
 
 
 # ============================================================================
-# 示例4: 实际训练配置示例
+# Пример 4: Пример фактической конфигурации обучения
 # ============================================================================
 
 def practical_training_configs():
     """
-    实际训练中的推荐配置
+    Рекомендуемая конфигурация для реального обучения
     """
     tool = RLTrainingTool()
     
-    # 快速训练配置
+    # Быстрая настройка обучения
     quick_config = {
         "action": "train",
         "algorithm": "sft",
@@ -166,7 +166,7 @@ def practical_training_configs():
         "lora_alpha": 16,
     }
     
-    # 标准训练配置
+    # Стандартная конфигурация обучения
     standard_config = {
         "action": "train",
         "algorithm": "sft",
@@ -181,13 +181,13 @@ def practical_training_configs():
         "learning_rate": 5e-5,
     }
     
-    # 高质量训练配置
+    # Высококачественная конфигурация обучения
     high_quality_config = {
         "action": "train",
         "algorithm": "sft",
         "model_name": "Qwen/Qwen3-0.6B",
         "output_dir": "./output/high_quality",
-        "max_samples": None,  # 使用全部数据
+        "max_samples": None,  # Использовать все данные
         "num_epochs": 5,
         "batch_size": 2,
         "use_lora": True,
@@ -196,26 +196,26 @@ def practical_training_configs():
         "learning_rate": 3e-5,
     }
     
-    print("实际训练配置示例:")
-    print("\n1. 快速实验配置:")
-    print(f"   样本数: {quick_config['max_samples']}")
+    print("Фактический пример конфигурации обучения:")
+    print("\n1. Быстрая экспериментальная конфигурация:")
+    print(f"   Количество образцов: {quick_config['max_samples']}")
     print(f"   epochs: {quick_config['num_epochs']}")
     print(f"   lora_r: {quick_config['lora_r']}")
     print(f"   batch_size: {quick_config['batch_size']}")
     
-    print("\n2. 标准训练配置:")
-    print(f"   样本数: {standard_config['max_samples']}")
+    print("\n2. Стандартная конфигурация обучения:")
+    print(f"   Количество образцов: {standard_config['max_samples']}")
     print(f"   epochs: {standard_config['num_epochs']}")
     print(f"   lora_r: {standard_config['lora_r']}")
     print(f"   batch_size: {standard_config['batch_size']}")
     
-    print("\n3. 高质量训练配置:")
-    print(f"   样本数: 全部 (max_samples=None)")
+    print("\n3. Качественная конфигурация обучения:")
+    print(f"   Количество образцов: Все (max_samples=Нет)")
     print(f"   epochs: {high_quality_config['num_epochs']}")
     print(f"   lora_r: {high_quality_config['lora_r']}")
     print(f"   batch_size: {high_quality_config['batch_size']}")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(quick_config)
     # print(json.dumps(json.loads(result), indent=2, ensure_ascii=False))
     
@@ -223,39 +223,39 @@ def practical_training_configs():
 
 
 # ============================================================================
-# 示例5: LoRA参数调优建议
+# Пример 5: Рекомендации по настройке параметров LoRA
 # ============================================================================
 
 def lora_tuning_guidelines():
     """
-    LoRA参数调优建议
+    Рекомендации по настройке параметров LoRA
     """
     guidelines = {
-        "lora_r (秩)": {
-            "推荐值": 16,
-            "范围": "8-32",
-            "说明": "越大性能越好,但参数量和训练时间也越多",
-            "选择建议": {
-                "快速实验": 8,
-                "平衡性能": 16,
-                "追求性能": 32,
+        "lora_r (ранг)": {
+            "Рекомендуемое значение": 16,
+            "объем": "8-32",
+            "иллюстрировать": "Чем больше значение, тем лучше производительность, но при этом увеличивается количество параметров и время обучения.",
+            "Выберите предложения": {
+                "Быстрый эксперимент": 8,
+                "Сбалансированная производительность": 16,
+                "стремление к производительности": 32,
             }
         },
-        "lora_alpha (缩放因子)": {
-            "推荐值": 32,
-            "范围": "16-64",
-            "说明": "通常设置为lora_r的2倍",
-            "公式": "lora_alpha = 2 * lora_r"
+        "lora_alpha (коэффициент масштабирования)": {
+            "Рекомендуемое значение": 32,
+            "объем": "16-64",
+            "иллюстрировать": "Обычно устанавливается в 2 раза lora_r",
+            "формула": "lora_alpha = 2 * lora_r"
         },
-        "max_samples (样本数)": {
-            "快速实验": 100,
-            "标准训练": 1000,
-            "完整训练": "None (全部数据)",
-            "说明": "None表示使用全部数据",
+        "max_samples (количество образцов)": {
+            "Быстрый эксперимент": 100,
+            "Стандартное обучение": 1000,
+            "Полное обучение": "Нет (все данные)",
+            "иллюстрировать": "Нет означает использовать все данные",
         },
     }
     
-    print("LoRA参数调优建议:")
+    print("Рекомендации по настройке параметров LoRA:")
     for param, info in guidelines.items():
         print(f"\n{param}:")
         for key, value in info.items():
@@ -270,32 +270,32 @@ def lora_tuning_guidelines():
 
 
 # ============================================================================
-# 主函数
+# основная функция
 # ============================================================================
 
 if __name__ == "__main__":
     print("="*80)
-    print("示例1: 基础LoRA配置")
+    print("Пример 1. Базовая конфигурация LoRA")
     print("="*80)
     basic_lora_config()
     
     print("\n" + "="*80)
-    print("示例2: 不同LoRA秩的对比")
+    print("Пример 2: Сравнение различных рангов LoRA")
     print("="*80)
     compare_lora_ranks()
     
     print("\n" + "="*80)
-    print("示例3: LoRA vs 完整微调对比")
+    print("Пример 3: сравнение LoRA и полной тонкой настройки")
     print("="*80)
     compare_lora_vs_full_finetuning()
     
     print("\n" + "="*80)
-    print("示例4: 实际训练配置示例")
+    print("Пример 4: Пример фактической конфигурации обучения")
     print("="*80)
     practical_training_configs()
     
     print("\n" + "="*80)
-    print("示例5: LoRA参数调优建议")
+    print("Пример 5: Рекомендации по настройке параметров LoRA")
     print("="*80)
     lora_tuning_guidelines()
 

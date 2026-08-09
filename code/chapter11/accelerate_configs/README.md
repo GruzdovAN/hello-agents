@@ -1,190 +1,180 @@
-# Accelerate配置文件说明
+# Ускорить описание файла конфигурации
 
-本目录包含用于分布式训练的Accelerate配置文件。
+Этот каталог содержит файлы конфигурации Accelerate для распределенного обучения.
 
-## 配置文件列表
+## Список файлов конфигурации
 
 ### 1. multi_gpu_ddp.yaml
-**数据并行(DDP)** - 最简单的多GPU训练方案
+**Параллелизм данных (DDP)** — простейшее решение для обучения с использованием нескольких графических процессоров.
 
-- **适用场景**: 单机多卡(2-8卡)
-- **优点**: 简单、速度快
-- **缺点**: 每个GPU需要完整模型副本
-- **显存需求**: 与单GPU相同
+- **Применимые сценарии**: одна машина с несколькими картами (2–8 карт).
+- **Преимущества**: Просто и быстро.
+- **Недостаток**: требуется полная копия модели для каждого графического процессора.
+- **Требования к видеопамяти**: такие же, как для одного графического процессора.
 
-**使用方法**:
-```bash
+**Как использовать**:```bash
 accelerate launch --config_file accelerate_configs/multi_gpu_ddp.yaml train_script.py
 ```
 
 ### 2. deepspeed_zero2.yaml
-**DeepSpeed ZeRO-2** - 优化器状态分片
+**DeepSpeed ZeRO-2** — сегментирование состояния оптимизатора
 
-- **适用场景**: 中等规模模型(1B-7B)
-- **优点**: 降低显存占用,支持更大batch size
-- **缺点**: 比DDP稍慢
-- **显存节省**: ~30%
+- **Применимые сценарии**: Модель среднего масштаба (1B-7B).
+- **Преимущества**: сокращение использования видеопамяти и поддержка большего размера пакета.
+- **Недостатки**: немного медленнее, чем DDP.
+- **Экономия видеопамяти**: ~30%
 
-**使用方法**:
-```bash
+**Как использовать**:```bash
 accelerate launch --config_file accelerate_configs/deepspeed_zero2.yaml train_script.py
 ```
 
 ### 3. deepspeed_zero3.yaml
-**DeepSpeed ZeRO-3** - 完整模型分片
+**DeepSpeed ZeRO-3** — Полное сегментирование модели
 
-- **适用场景**: 大规模模型(>7B)
-- **优点**: 最大程度降低显存占用
-- **缺点**: 通信开销较大
-- **显存节省**: ~50%
+- **Применимые сценарии**: крупномасштабные модели (>7B).
+- **Преимущества**: Минимизация использования видеопамяти.
+- **Недостатки**: большие затраты на связь.
+- **Экономия видеопамяти**: ~50%
 
-**使用方法**:
-```bash
+**Как использовать**:```bash
 accelerate launch --config_file accelerate_configs/deepspeed_zero3.yaml train_script.py
 ```
 
-## 快速开始
+## Быстрый старт
 
-### 1. 安装依赖
+### 1. Установите зависимости
 
 ```bash
 pip install accelerate deepspeed
 ```
 
-### 2. 配置Accelerate
+### 2. Настройте ускорение
 
-**方式1: 使用配置文件**(推荐)
-```bash
+**Способ 1: использовать файл конфигурации** (рекомендуется)```bash
 accelerate launch --config_file accelerate_configs/multi_gpu_ddp.yaml your_script.py
 ```
 
-**方式2: 交互式配置**
-```bash
+**Метод 2: Интерактивная настройка**```bash
 accelerate config
 ```
 
-**方式3: 命令行参数**
-```bash
+**Метод 3: Параметры командной строки**```bash
 accelerate launch --num_processes 4 --mixed_precision fp16 your_script.py
 ```
 
-### 3. 运行训练
+### 3. Проведите тренировку
 
 ```bash
-# DDP训练(4卡)
+# Обучение DDP (4 карты)
 accelerate launch --config_file accelerate_configs/multi_gpu_ddp.yaml 07_distributed_training.py
 
-# DeepSpeed ZeRO-2训练(4卡)
+# Обучение DeepSpeed ​​ZeRO-2 (4 карты)
 accelerate launch --config_file accelerate_configs/deepspeed_zero2.yaml 07_distributed_training.py
 
-# DeepSpeed ZeRO-3训练(4卡)
+# Обучение DeepSpeed ​​ZeRO-3 (4 карты)
 accelerate launch --config_file accelerate_configs/deepspeed_zero3.yaml 07_distributed_training.py
 ```
 
-## 配置参数说明
+## Описание параметра конфигурации
 
-### 通用参数
+### Общие параметры
 
-- `compute_environment`: 计算环境(LOCAL_MACHINE/AMAZON_SAGEMAKER等)
-- `distributed_type`: 分布式类型(MULTI_GPU/DEEPSPEED/FSDP等)
-- `num_processes`: 总进程数(通常等于GPU数量)
-- `machine_rank`: 机器编号(主节点为0)
-- `num_machines`: 机器数量
-- `gpu_ids`: 使用的GPU ID(all表示使用所有GPU)
-- `mixed_precision`: 混合精度训练(no/fp16/bf16)
+- `compute_environment`: вычислительная среда (LOCAL_MACHINE/AMAZON_SAGEMAKER и т. д.).
+- `distributed_type`: распределенный тип (MULTI_GPU/DEEPSPEED/FSDP и т. д.)
+- `num_processes`: общее количество процессов (обычно равно количеству графических процессоров)
+- `machine_rank`: номер машины (главный узел равен 0)
+- `num_machines`: количество машин
+- `gpu_ids`: используемый идентификатор графического процессора (все означает использование всех графических процессоров)
+- `mixed_precision`: обучение смешанной точности (no/fp16/bf16)
 
-### DeepSpeed参数
+###Параметры DeepSpeed
 
-- `zero_stage`: ZeRO优化级别(1/2/3)
-  - ZeRO-1: 优化器状态分片
-  - ZeRO-2: 优化器状态+梯度分片
-  - ZeRO-3: 优化器状态+梯度+模型参数分片
+- `zero_stage`: уровень оптимизации ZeroRO (1/2/3)
+  - ZeRO-1: сегментирование состояния оптимизатора
+  - ZeRO-2: состояние оптимизатора + шардинг градиента
+  - ZeRO-3: состояние оптимизатора + градиент + сегментирование параметров модели.
 
-- `offload_optimizer_device`: 优化器状态卸载设备(none/cpu/nvme)
-- `offload_param_device`: 模型参数卸载设备(none/cpu/nvme)
-- `gradient_accumulation_steps`: 梯度累积步数
-- `gradient_clipping`: 梯度裁剪阈值
-- `zero3_init_flag`: ZeRO-3初始化标志
+- `offload_optimizer_device`: устройство разгрузки состояния оптимизатора (нет/cpu/nvme)
+- `offload_param_device`: устройство разгрузки параметров модели (нет/cpu/nvme)
+- `gradient_accumulation_steps`: шаги накопления градиента.
+- `gradient_clipping`: порог отсечения градиента.
+- `zero3_init_flag`: флаг инициализации ZeRO-3.
 
-## 性能调优建议
+## Рекомендации по настройке производительности
 
-### 1. Batch Size调整
+### 1. Регулировка размера пакета
 
-分布式训练时,总batch size = `per_device_batch_size × num_gpus × gradient_accumulation_steps`
+Во время распределенного обучения общий размер пакета = `per_device_batch_size × num_gpus ×gradient_accumulation_steps`
 
-**示例**:
-```python
-# 单GPU: batch_size=4, gradient_accumulation=4, 总batch=16
-# 4GPU DDP: batch_size=4, gradient_accumulation=1, 总batch=16
+**Пример**:```python
+# Один графический процессор: размер пакета = 4, градиент_накопление = 4, общий размер пакета = 16.
+# DDP с 4 графическими процессорами: размер пакета = 4, градиент_накопление = 1, общий размер пакета = 16
 ```
 
-### 2. 学习率缩放
+### 2. Масштабирование скорости обучения
 
-使用线性缩放规则:
-```python
+Используйте правила линейного масштабирования:```python
 lr_new = lr_base × sqrt(total_batch_size_new / total_batch_size_base)
 ```
 
-### 3. 混合精度训练
+### 3. Тренировка смешанной точности
 
-- **fp16**: 适合大多数场景,速度快
-- **bf16**: 适合Ampere架构(A100/A6000),数值稳定性更好
-- **no**: 不使用混合精度,精度最高但速度慢
+- **fp16**: подходит для большинства сценариев, быстро.
+- **bf16**: подходит для архитектуры Ampere (A100/A6000), с лучшей числовой стабильностью.
+- **нет**: не используйте смешанную точность, высочайшую точность, но низкую скорость.
 
-### 4. 梯度累积
+### 4. Накопление градиента
 
-当显存不足时,可以增大`gradient_accumulation_steps`:
-```yaml
+Когда видеопамяти недостаточно, вы можете увеличить «gradient_accumulation_steps»:```yaml
 deepspeed_config:
-  gradient_accumulation_steps: 8  # 增大累积步数
+  gradient_accumulation_steps: 8  # Увеличение совокупного количества шагов
 ```
 
-## 常见问题
+## ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ
 
-### Q1: 如何查看当前使用的配置?
+### Q1: Как просмотреть используемую в данный момент конфигурацию?
 
 ```bash
 accelerate env
 ```
 
-### Q2: 多卡训练速度没有线性提升?
+### Q2: В Доке нет линейного улучшения скорости обучения?
 
-**可能原因**:
-- 通信开销过大
-- 数据加载瓶颈
-- batch size太小
+**Возможные причины**:
+- Чрезмерные затраты на общение.
+- Узкое место при загрузке данных.
+-размер партии слишком мал
 
-**解决方法**:
-- 增大batch size
-- 使用更快的数据加载器
-- 检查网络带宽
+**Решение**:
+- Увеличение размера партии
+- Используйте более быстрый загрузчик данных
+- Проверьте пропускную способность сети
 
-### Q3: DeepSpeed训练卡住?
+### Q3: Тренировка DeepSpeed ​​застряла?
 
-**可能原因**:
-- 模型初始化问题
-- 通信超时
+**Возможные причины**:
+- Проблема инициализации модели.
+- Тайм-аут связи
 
-**解决方法**:
-```bash
-# 启用调试日志
+**Решение**:```bash
+# Включить ведение журнала отладки
 export ACCELERATE_LOG_LEVEL=INFO
 export NCCL_DEBUG=INFO
 
-# 增加超时时间
+# Увеличить таймаут
 export NCCL_TIMEOUT=1800
 ```
 
-### Q4: 如何在多节点上训练?
+### Q4: Как тренироваться на нескольких узлах?
 
-1. 在所有节点上安装相同的环境
-2. 配置SSH免密登录
-3. 修改配置文件中的`num_machines`和`main_process_ip`
-4. 在每个节点上运行相同的命令
+1. Установите одну и ту же среду на всех узлах.
+2. Настройте вход по SSH без пароля.
+3. Измените `num_machines` и `main_process_ip` в файле конфигурации.
+4. Запустите одну и ту же команду на каждом узле.
 
-## 参考资源
+## Справочные ресурсы
 
-- [Accelerate文档](https://huggingface.co/docs/accelerate)
-- [DeepSpeed文档](https://www.deepspeed.ai/)
-- [TRL分布式训练指南](https://huggingface.co/docs/trl/customization)
+- [Документация Accelerate](https://huggingface.co/docs/accelerate)
+- [Документация DeepSpeed](https://www.deepspeed.ai/)
+- [Руководство по распределенному обучению TRL] (https://huggingface.co/docs/trl/customization)
 

@@ -1,7 +1,7 @@
 import re
 import random
 
-# 定义规则库：模式(正则表达式) -> 响应模板列表
+# Определите базу правил: шаблон (регулярное выражение) -> список шаблонов ответов.
 rules = {
     r'I need (.*)': [
         "Why do you need {0}?",
@@ -40,7 +40,7 @@ rules = {
     ]
 }
 
-# 定义代词转换规则
+# Определить правила преобразования местоимений
 pronoun_swap = {
     "i": "you", "you": "i", "me": "you", "my": "your",
     "am": "are", "are": "am", "was": "were", "i'd": "you would",
@@ -50,7 +50,7 @@ pronoun_swap = {
 
 def swap_pronouns(phrase):
     """
-    对输入短语中的代词进行第一/第二人称转换
+    Преобразование местоимений во входной фразе в первое/второе лицо
     """
     words = phrase.lower().split()
     swapped_words = [pronoun_swap.get(word, word) for word in words]
@@ -58,22 +58,22 @@ def swap_pronouns(phrase):
 
 def respond(user_input):
     """
-    根据规则库生成响应
+    Генерируйте ответы на основе базы правил
     """
     for pattern, responses in rules.items():
         match = re.search(pattern, user_input, re.IGNORECASE)
         if match:
-            # 捕获匹配到的部分
+            # Захватите соответствующую часть
             captured_group = match.group(1) if match.groups() else ''
-            # 进行代词转换
+            # выполнить замену местоимений
             swapped_group = swap_pronouns(captured_group)
-            # 从模板中随机选择一个并格式化
+            # Выберите случайный вариант из шаблона и отформатируйте его.
             response = random.choice(responses).format(swapped_group)
             return response
-    # 如果没有匹配任何特定规则，使用最后的通配符规则
+    # Если ни одно конкретное правило не соответствует, используется последнее правило с подстановочными знаками.
     return random.choice(rules[r'.*'])
 
-# 主聊天循环
+# основной цикл чата
 if __name__ == '__main__':
     print("Therapist: Hello! How can I help you today?")
     while True:

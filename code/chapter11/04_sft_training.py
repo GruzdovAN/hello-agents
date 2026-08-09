@@ -1,14 +1,14 @@
 """
-示例4: SFT训练完整流程
+Пример 4: Полный процесс обучения SFT
 
-演示如何使用RLTrainingTool进行SFT监督微调
+Демонстрирует, как использовать RLTrainingTool для контролируемой точной настройки SFT.
 """
 
 import sys
 from pathlib import Path
 import json
 
-# 添加项目路径
+# Добавить путь к проекту
 project_root = Path(__file__).parent.parent / "HelloAgents"
 sys.path.insert(0, str(project_root))
 
@@ -16,14 +16,14 @@ from hello_agents.tools import RLTrainingTool
 
 
 # ============================================================================
-# 示例1: 最简单的SFT训练
+# Пример 1: Простейшее обучение SFT
 # ============================================================================
 
 def minimal_sft_training():
     """
-    最简单的SFT训练示例
+    Простейший пример обучения SFT
     
-    只需要调用RLTrainingTool即可
+    Просто позвоните в RLTrainingTool
     """
     tool = RLTrainingTool()
     
@@ -36,31 +36,31 @@ def minimal_sft_training():
         "num_epochs": 1,
     }
     
-    print("最简单的SFT训练:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: {config['max_samples']}")
-    print(f"  训练轮数: {config['num_epochs']}")
+    print("Простейшее обучение SFT:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: {config['max_samples']}")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 训练完成! 模型保存在: {result_dict['output_dir']}")
+    # print(f"\n© Обучение завершено! Модель сохранена в папке: {result_dict['output_dir']}")
     
     return config
 
 
 # ============================================================================
-# 示例2: 标准SFT训练配置
+# Пример 2: Стандартная конфигурация обучения SFT
 # ============================================================================
 
 def standard_sft_training():
     """
-    标准的SFT训练配置
+    Стандартная конфигурация обучения SFT
     
-    包含:
-    - LoRA参数高效微调
-    - 合理的训练参数
-    - 使用部分数据集
+    Содержит:
+    - Эффективная точная настройка параметров LoRA
+    - Разумные параметры обучения
+    - Использовать часть набора данных
     """
     tool = RLTrainingTool()
     
@@ -68,50 +68,50 @@ def standard_sft_training():
         "action": "train",
         "algorithm": "sft",
         
-        # 模型配置
+        # Конфигурация модели
         "model_name": "Qwen/Qwen3-0.6B",
         "output_dir": "./output/sft_standard",
         
-        # 数据配置
-        "max_samples": 1000,  # 使用1000个样本
+        # Конфигурация данных
+        "max_samples": 1000,  # Используйте 1000 образцов
         
-        # 训练配置
+        # конфигурация обучения
         "num_epochs": 3,
         "batch_size": 4,
         "learning_rate": 5e-5,
         
-        # LoRA配置
+        # Конфигурация ЛоРА
         "use_lora": True,
         "lora_r": 16,
         "lora_alpha": 32,
     }
     
-    print("标准SFT训练配置:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: {config['max_samples']}")
-    print(f"  训练轮数: {config['num_epochs']}")
+    print("Стандартная конфигурация обучения SFT:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: {config['max_samples']}")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
     print(f"  batch_size: {config['batch_size']}")
     print(f"  learning_rate: {config['learning_rate']}")
-    print(f"  LoRA秩: {config['lora_r']}")
+    print(f"  Ранг LoRA: {config['lora_r']}")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 训练完成!")
-    # print(f"📁 模型保存在: {result_dict['output_dir']}")
+    # print(f"\n© Обучение завершено!")
+    # print(f"📁 Модель сохранена в: {result_dict['output_dir']}")
     
     return config
 
 
 # ============================================================================
-# 示例3: 完整数据集训练
+# Пример 3: Обучение полному набору данных
 # ============================================================================
 
 def full_dataset_training():
     """
-    使用完整数据集进行训练
+    Тренируйтесь, используя полный набор данных
     
-    max_samples=None 表示使用全部数据
+    max_samples=None означает использование всех данных
     """
     tool = RLTrainingTool()
     
@@ -121,8 +121,8 @@ def full_dataset_training():
         "model_name": "Qwen/Qwen3-0.6B",
         "output_dir": "./output/sft_full",
         
-        # 使用全部数据
-        "max_samples": None,  # None = 使用全部数据
+        # Использовать все данные
+        "max_samples": None,  # Нет = использовать все данные
         
         "num_epochs": 3,
         "batch_size": 4,
@@ -132,53 +132,53 @@ def full_dataset_training():
         "lora_alpha": 32,
     }
     
-    print("完整数据集训练:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: 全部 (max_samples=None)")
-    print(f"  训练轮数: {config['num_epochs']}")
-    print(f"  预计样本数: ~7500 (GSM8K训练集)")
+    print("Полное обучение набору данных:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: Все (max_samples=Нет)")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
+    print(f"  Примерное количество образцов: ~7500 (обучающий набор GSM8K)")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 训练完成!")
+    # print(f"\n© Обучение завершено!")
     
     return config
 
 
 # ============================================================================
-# 示例4: 不同学习率的对比
+# Пример 4: Сравнение различных скоростей обучения
 # ============================================================================
 
 def compare_learning_rates():
     """
-    对比不同学习率的训练效果
+    Сравните эффект обучения при различных скоростях обучения
     
-    常用学习率:
-    - 1e-5: 保守,适合微调已经很好的模型
-    - 5e-5: 推荐,平衡学习速度和稳定性
-    - 1e-4: 激进,适合快速实验
+    Часто используемые темпы обучения:
+    - 1e-5: Консервативный, подходит для тонкой настройки и без того хорошей модели.
+    - 5e-5: рекомендуется, сочетает скорость обучения и стабильность.
+    - 1e-4: Радикальный, подходит для быстрых экспериментов.
     """
     learning_rates = {
-        "保守 (1e-5)": 1e-5,
-        "推荐 (5e-5)": 5e-5,
-        "激进 (1e-4)": 1e-4,
+        "Консервативный (1e-5)": 1e-5,
+        "Рекомендуется (5e-5)": 5e-5,
+        "Радикал (1e-4)": 1e-4,
     }
     
-    print("不同学习率的对比:")
+    print("Сравнение различных скоростей обучения:")
     for name, lr in learning_rates.items():
         print(f"\n{name}:")
         print(f"  learning_rate: {lr}")
-        print(f"  适用场景: ", end="")
+        print(f"  Применимые сценарии: ", end="")
         if lr == 1e-5:
-            print("模型已经很好,只需微调")
+            print("Модель уже хороша, просто требуется доработка.")
         elif lr == 5e-5:
-            print("标准训练,推荐使用")
+            print("Стандартное обучение, рекомендуется")
         else:
-            print("快速实验(可能不稳定)")
+            print("Быстрый эксперимент (возможно, нестабильный)")
     
-    # 训练示例
-    print("\n训练示例 (推荐学习率):")
+    # Пример обучения
+    print("\nПример обучения (рекомендуемая скорость обучения):")
     tool = RLTrainingTool()
     config = {
         "action": "train",
@@ -197,17 +197,17 @@ def compare_learning_rates():
 
 
 # ============================================================================
-# 示例5: 显存优化配置
+# Пример 5: Настройка оптимизации видеопамяти
 # ============================================================================
 
 def memory_optimized_training():
     """
-    显存优化配置
+    Конфигурация оптимизации видеопамяти
     
-    适用于显存受限的情况:
-    - 使用LoRA
-    - 减小batch size
-    - 使用较小的LoRA秩
+    Подходит для ситуаций, когда видеопамять ограничена:
+    - Используйте ЛоРА
+    - Уменьшить размер партии
+    - Используйте меньший ранг LoRA.
     """
     tool = RLTrainingTool()
     
@@ -217,37 +217,37 @@ def memory_optimized_training():
         "model_name": "Qwen/Qwen3-0.6B",
         "output_dir": "./output/sft_memory_opt",
         
-        # 显存优化
+        # Оптимизация видеопамяти
         "max_samples": 1000,
         "num_epochs": 3,
-        "batch_size": 1,  # 最小batch size
+        "batch_size": 1,  # Минимальный размер партии
         "learning_rate": 5e-5,
         
-        # LoRA配置
+        # Конфигурация ЛоРА
         "use_lora": True,
-        "lora_r": 8,  # 使用较小的秩
+        "lora_r": 8,  # Используйте меньший ранг
         "lora_alpha": 16,
     }
     
-    print("显存优化配置:")
-    print(f"  batch_size: {config['batch_size']} (最小)")
-    print(f"  lora_r: {config['lora_r']} (较小)")
+    print("Конфигурация оптимизации памяти:")
+    print(f"  пакетный_размер: {config['batch_size']} (минимум)")
+    print(f"  lora_r: {config['lora_r']} (меньше)")
     print(f"  use_lora: {config['use_lora']}")
-    print(f"  预计显存占用: ~3-4GB")
+    print(f"  Примерное использование видеопамяти: ~3-4 ГБ")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     
     return config
 
 
 # ============================================================================
-# 示例6: 实际训练示例
+# Пример 6: Фактический пример обучения
 # ============================================================================
 
 def practical_training_example():
     """
-    实际训练示例 - 可以直接运行
+    Фактический пример обучения — можно запустить напрямую
     """
     tool = RLTrainingTool()
     
@@ -257,70 +257,70 @@ def practical_training_example():
         "model_name": "Qwen/Qwen3-0.6B",
         "output_dir": "./output/sft_practical",
         
-        # 使用较少样本进行快速测试
+        # Быстрое тестирование с использованием меньшего количества образцов
         "max_samples": 100,
         "num_epochs": 1,
         "batch_size": 4,
         "learning_rate": 5e-5,
         
-        # 使用LoRA
+        # Использование ЛоРА
         "use_lora": True,
         "lora_r": 16,
         "lora_alpha": 32,
     }
     
-    print("实际训练示例:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: {config['max_samples']}")
-    print(f"  训练轮数: {config['num_epochs']}")
-    print(f"  输出目录: {config['output_dir']}")
+    print("Пример практического обучения:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: {config['max_samples']}")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
+    print(f"  Выходной каталог: {config['output_dir']}")
     
-    print("\n💡 提示: 取消下面的注释以开始训练")
+    print("\n💡 Совет: раскомментируйте ниже, чтобы начать обучение.")
     print("# result = tool.run(config)")
     print("# result_dict = json.loads(result)")
-    print("# print(f'✅ 训练完成! 模型保存在: {result_dict[\"output_dir\"]}')")
+    print("# print(f' ✅ Обучение завершено! Модель сохранена в: {result_dict[\"output_dir\"]}')")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 训练完成!")
-    # print(f"📁 模型保存在: {result_dict['output_dir']}")
+    # print(f"\n© Обучение завершено!")
+    # print(f"📁 Модель сохранена в: {result_dict['output_dir']}")
     
     return config
 
 
 # ============================================================================
-# 主函数
+# основная функция
 # ============================================================================
 
 if __name__ == "__main__":
     print("="*80)
-    print("示例1: 最简单的SFT训练")
+    print("Пример 1: Простейшее обучение SFT")
     print("="*80)
     minimal_sft_training()
     
     print("\n" + "="*80)
-    print("示例2: 标准SFT训练配置")
+    print("Пример 2: Стандартная конфигурация обучения SFT")
     print("="*80)
     standard_sft_training()
     
     print("\n" + "="*80)
-    print("示例3: 完整数据集训练")
+    print("Пример 3: Обучение полному набору данных")
     print("="*80)
     full_dataset_training()
     
     print("\n" + "="*80)
-    print("示例4: 不同学习率的对比")
+    print("Пример 4: Сравнение различных скоростей обучения")
     print("="*80)
     compare_learning_rates()
     
     print("\n" + "="*80)
-    print("示例5: 显存优化配置")
+    print("Пример 5: Настройка оптимизации видеопамяти")
     print("="*80)
     memory_optimized_training()
     
     print("\n" + "="*80)
-    print("示例6: 实际训练示例")
+    print("Пример 6: Фактический пример обучения")
     print("="*80)
     practical_training_example()
 

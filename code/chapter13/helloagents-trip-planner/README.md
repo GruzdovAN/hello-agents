@@ -1,159 +1,150 @@
-# HelloAgents智能旅行助手 🌍✈️
+#HelloAgents Интеллектуальный помощник для путешествий 🌍✈️
 
-基于HelloAgents框架构建的智能旅行规划助手,集成高德地图MCP服务,提供个性化的旅行计划生成。
+Интеллектуальный помощник по планированию поездок, созданный на основе платформы HelloAgents, интегрированный с сервисом Amap MCP для создания персонализированного плана поездки.
 
-## ✨ 功能特点
+## ✨ Особенности
 
-- 🤖 **AI驱动的旅行规划**: 基于HelloAgents框架的SimpleAgent,智能生成详细的多日旅程
-- 🗺️ **高德地图集成**: 通过MCP协议接入高德地图服务,支持景点搜索、路线规划、天气查询
-- 🧠 **智能工具调用**: Agent自动调用高德地图MCP工具,获取实时POI、路线和天气信息
-- 🎨 **现代化前端**: Vue3 + TypeScript + Vite,响应式设计,流畅的用户体验
-- 📱 **完整功能**: 包含住宿、交通、餐饮和景点游览时间推荐
+- 🤖 **Планирование путешествий на основе искусственного интеллекта**: SimpleAgent на основе платформы HelloAgents интеллектуально генерирует подробные многодневные маршруты.
+- 🗺️ **Интеграция с Amap**: доступ к сервису Amap через протокол MCP, поддержка поиска достопримечательностей, планирования маршрута и запроса погоды.
+- 🧠 **Интеллектуальный вызов инструмента**: агент автоматически вызывает инструмент Amap MCP для получения POI, маршрута и информации о погоде в режиме реального времени.
+- 🎨 **Современный интерфейс**: Vue3 + TypeScript + Vite, адаптивный дизайн, удобство использования.
+- 📱 **Полная функция**: включает рекомендации по проживанию, транспорту, питанию и времени развлечений.
 
-## 🏗️ 技术栈
+## 🏗️ Стек технологий
 
-### 后端
-- **框架**: HelloAgents (基于SimpleAgent)
+### Бэкэнд
+- **Framework**: HelloAgents (на основе SimpleAgent).
 - **API**: FastAPI
-- **MCP工具**: amap-mcp-server (高德地图)
-- **LLM**: 支持多种LLM提供商(OpenAI, DeepSeek等)
+- **Инструмент MCP**: amap-mcp-server (Amap)
+- **LLM**: поддержка нескольких поставщиков LLM (OpenAI, DeepSeek и т. д.).
 
-### 前端
-- **框架**: Vue 3 + TypeScript
-- **构建工具**: Vite
-- **UI组件库**: Ant Design Vue
-- **地图服务**: 高德地图 JavaScript API
-- **HTTP客户端**: Axios
+### Фронтенд
+- **Рамка**: Vue 3 + TypeScript.
+- **Инструмент сборки**: Vite
+- **Библиотека компонентов пользовательского интерфейса**: Ant Design Vue.
+- **Картографический сервис**: Amap JavaScript API.
+- **HTTP-клиент**: Axios
 
-## 📁 项目结构
+## 📁 Структура проекта
 
 ```
 helloagents-trip-planner/
-├── backend/                    # 后端服务
+├── backend/                    # Серверные службы
 │   ├── app/
-│   │   ├── agents/            # Agent实现
+│   │   ├── agents/            # Реализация агента
 │   │   │   └── trip_planner_agent.py
-│   │   ├── api/               # FastAPI路由
+│   │   ├── api/               # Маршрутизация FastAPI
 │   │   │   ├── main.py
 │   │   │   └── routes/
 │   │   │       ├── trip.py
 │   │   │       └── map.py
-│   │   ├── services/          # 服务层
+│   │   ├── services/          # уровень обслуживания
 │   │   │   ├── amap_service.py
 │   │   │   └── llm_service.py
-│   │   ├── models/            # 数据模型
+│   │   ├── models/            # модель данных
 │   │   │   └── schemas.py
-│   │   └── config.py          # 配置管理
+│   │   └── config.py          # Управление конфигурацией
 │   ├── requirements.txt
 │   ├── .env.example
 │   └── .gitignore
-├── frontend/                   # 前端应用
+├── frontend/                   # Фронтальное приложение
 │   ├── src/
-│   │   ├── components/        # Vue组件
-│   │   ├── services/          # API服务
-│   │   ├── types/             # TypeScript类型
-│   │   └── views/             # 页面视图
+│   │   ├── components/        # Компоненты Vue
+│   │   ├── services/          # API-сервис
+│   │   ├── types/             # Типы TypeScript
+│   │   └── views/             # Просмотр страницы
 │   ├── package.json
 │   └── vite.config.ts
 └── README.md
 ```
 
-## 🚀 快速开始
+## 🚀 Быстрый старт
 
-### 前提条件
+### Предварительные условия
 
-- Python 3.10+
+-Питон 3.10+
 - Node.js 16+
-- 高德地图API密钥 (Web服务API和Web端(JS API))
-- LLM API密钥 (OpenAI/DeepSeek等)
+- Ключ Amap API (API веб-сервиса и веб-клиент (JS API))
+- Ключ API LLM (OpenAI/DeepSeek и т. д.)
 
-### 后端安装
+### Бэкэнд-установка
 
-1. 进入后端目录
-```bash
+1. Введите внутренний каталог.```bash
 cd backend
 ```
 
-2. 创建虚拟环境
-```bash
+2. Создайте виртуальную среду```bash
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-3. 安装依赖
-```bash
+3. Установите зависимости```bash
 pip install -r requirements.txt
 ```
 
-4. 配置环境变量
-```bash
+4. Настройте переменные среды```bash
 cp .env.example .env
-# 编辑.env文件,填入你的API密钥
+# Отредактируйте файл .env и введите свой ключ API.
 ```
 
-5. 启动后端服务
-```bash
+5. Запустите серверную службу.```bash
 uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 前端安装
+### Фронтальная установка
 
-1. 进入前端目录
-```bash
+1. Войдите в каталог внешнего интерфейса.```bash
 cd frontend
 ```
 
-2. 安装依赖
-```bash
+2. Установите зависимости```bash
 npm install
 ```
 
-3. 配置环境变量
-```bash
-# 创建.env文件, 填入高德地图Web API Key 和 Web端JS API Key
+3. Настройте переменные среды```bash
+# Создайте файл .env и заполните ключ веб-API Amap и ключ веб-интерфейса JS API.
 cp .env.example .env
 ```
 
-4. 启动开发服务器
-```bash
+4. Запустите сервер разработки.```bash
 npm run dev
 ```
 
-5. 打开浏览器访问 `http://localhost:5173`
+5. Откройте браузер и посетите `http://localhost:5173`.
 
-## 📝 使用指南
+## 📝 Руководство пользователя
 
-1. 在首页填写旅行信息:
-   - 目的地城市
-   - 旅行日期和天数
-   - 交通方式偏好
-   - 住宿偏好
-   - 旅行风格标签
+1. Заполните информацию о поездке на главной странице:
+   - Город назначения
+   - Даты и дни поездки
+   - Предпочтение по транспорту
+   - Предпочтения по размещению
+   - Теги стиля путешествия
 
-2. 点击"生成旅行计划"按钮
+2. Нажмите кнопку «Создать план путешествия».
 
-3. 系统将:
-   - 调用HelloAgents Agent生成初步计划
-   - Agent自动调用高德地图MCP工具搜索景点
-   - Agent获取天气信息和路线规划
-   - 整合所有信息生成完整行程
+3. Система будет:
+   - Позвоните агенту HelloAgents, чтобы составить предварительный план.
+   - Агент автоматически вызывает инструмент Amap MCP для поиска достопримечательностей.
+   - Агент получает информацию о погоде и планирование маршрута.
+   - Интегрируйте всю информацию для создания полного маршрута.
 
-4. 查看结果:
-   - 每日详细行程
-   - 景点信息与地图标记
-   - 交通路线规划
-   - 天气预报
-   - 餐饮推荐
+4. Просмотрите результаты:
+   - Подробный ежедневный маршрут
+   - Информация о достопримечательностях и маркеры на карте.
+   - Планирование маршрута перевозки.
+   - прогноз погоды
+   - Рекомендации по питанию
 
-## 🔧 核心实现
+## 🔧 Основная реализация
 
-### HelloAgents Agent集成
+### Интеграция агента HelloAgents
 
 ```python
 from hello_agents import SimpleAgent, HelloAgentsLLM
 from hello_agents.tools import MCPTool
 
-# 创建高德地图MCP工具
+# Создать инструмент Amap MCP
 amap_tool = MCPTool(
     name="amap",
     server_command=["uvx", "amap-mcp-server"],
@@ -161,52 +152,52 @@ amap_tool = MCPTool(
     auto_expand=True
 )
 
-# 创建旅行规划Agent
+# Создайте агента по планированию поездок
 agent = SimpleAgent(
-    name="旅行规划助手",
+    name="Помощник по планированию путешествий",
     llm=HelloAgentsLLM(),
-    system_prompt="你是一个专业的旅行规划助手..."
+    system_prompt="Вы профессиональный помощник по планированию путешествий..."
 )
 
-# 添加工具
+# Добавить инструмент
 agent.add_tool(amap_tool)
 ```
 
-### MCP工具调用
+### Вызов инструмента MCP
 
-Agent可以自动调用以下高德地图MCP工具:
-- `maps_text_search`: 搜索景点POI
-- `maps_weather`: 查询天气
-- `maps_direction_walking_by_address`: 步行路线规划
-- `maps_direction_driving_by_address`: 驾车路线规划
-- `maps_direction_transit_integrated_by_address`: 公共交通路线规划
+Агент может автоматически вызывать следующие инструменты Amap MCP:
+- `maps_text_search`: поиск достопримечательностей POI.
+- `maps_weather`: запрос погоды
+- `maps_direction_walking_by_address`: планирование пешеходного маршрута.
+- `maps_direction_driving_by_address`: планирование маршрута вождения.
+- `maps_direction_transit_integrated_by_address`: планирование маршрута общественного транспорта.
 
-## 📄 API文档
+## 📄 Документация по API
 
-启动后端服务后,访问 `http://localhost:8000/docs` 查看完整的API文档。
+После запуска серверной службы посетите http://localhost:8000/docs, чтобы просмотреть полную документацию по API.
 
-主要端点:
-- `POST /api/trip/plan` - 生成旅行计划
-- `GET /api/map/poi` - 搜索POI
-- `GET /api/map/weather` - 查询天气
-- `POST /api/map/route` - 规划路线
+Основная конечная точка:
+- `POST /api/trip/plan` - Создать план путешествия.
+- `GET /api/map/poi` - Поиск POI
+- `GET /api/map/weather` - Запросить погоду
+- `POST /api/map/route` - Планировать маршрут
 
-## 🤝 贡献指南
+## 🤝 Руководство по вкладу
 
-欢迎提交Pull Request或Issue!
+Добро пожаловать, чтобы отправить запрос на включение или проблему!
 
-## 📜 开源协议
+## 📜 Соглашение об открытом исходном коде
 
 CC BY-NC-SA 4.0
 
-## 🙏 致谢
+## 🙏 Благодарности
 
-- [HelloAgents](https://github.com/datawhalechina/Hello-Agents) - 智能体教程
-- [HelloAgents框架](https://github.com/jjyaoao/HelloAgents) - 智能体框架
-- [高德地图开放平台](https://lbs.amap.com/) - 地图服务
-- [amap-mcp-server](https://github.com/sugarforever/amap-mcp-server) - 高德地图MCP服务器
+- [HelloAgents](https://github.com/datawhalechina/Hello-Agents) - Учебное пособие для агентов
+- [HelloAgents Framework](https://github.com/jjyaoao/HelloAgents) - Платформа агента
+- [Открытая платформа Amap](https://lbs.amap.com/) - Картографический сервис
+— [amap-mcp-server](https://github.com/sugarforever/amap-mcp-server) — сервер Amap MCP
 
 ---
 
-**HelloAgents智能旅行助手** - 让旅行计划变得简单而智能 🌈
+**HelloAgents Smart Travel Assistant** — сделайте планирование поездки простым и разумным 🌈
 

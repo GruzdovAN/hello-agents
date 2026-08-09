@@ -1,13 +1,13 @@
 """
-CodebaseMaintainer - 代码库维护助手
+CodebaseMaintainer — помощник по обслуживанию кодовой базы
 
-完整的长程智能体实现，整合:
-1. ContextBuilder - 上下文管理
-2. NoteTool - 结构化笔记
-3. TerminalTool - 即时文件访问
-4. MemoryTool - 对话记忆
+Полная реализация агента дальнего действия, интегрирующая:
+1. ContextBuilder — управление контекстом
+2. NoteTool — структурированные заметки
+3. TerminalTool – мгновенный доступ к файлам
+4. MemoryTool — диалоговая память
 
-关键改进：使用 Agentic 方式，让 agent 自主决定使用哪些工具
+Ключевое улучшение: используйте агентный метод, чтобы позволить агенту решать, какие инструменты использовать.
 """
 
 from typing import Dict, Any, List, Optional
@@ -23,15 +23,15 @@ from hello_agents.core.message import Message
 
 
 class CodebaseMaintainer:
-    """代码库维护助手 - 长程智能体示例
+    """Помощник по обслуживанию кодовой базы — пример агента дальнего действия
 
-    整合 ContextBuilder + NoteTool + TerminalTool + MemoryTool
-    实现跨会话的代码库维护任务管理
+    Интеграция ContextBuilder + NoteTool + TerminalTool + MemoryTool
+    Внедрить межсессионное управление задачами по обслуживанию базы кода.
     
-    核心特性：
-    - Agent 自主使用工具探索代码库
-    - 不预定义工作流，完全基于 agent 决策
-    - 跨会话记忆和上下文管理
+    Основные возможности:
+    - Агент автономно использует инструменты для изучения кодовой базы.
+    - Нет предопределенного рабочего процесса, полностью основанного на принятии решений агентом.
+    - Межсессионная память и управление контекстом
     """
 
     def __init__(
@@ -44,10 +44,10 @@ class CodebaseMaintainer:
         self.codebase_path = codebase_path
         self.session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-        # 初始化 LLM
+        # Инициализировать LLM
         self.llm = llm or HelloAgentsLLM()
 
-        # 初始化工具
+        # Инструмент инициализации
         self.memory_tool = MemoryTool(
             user_id=project_name,
             memory_types=["working"]
@@ -55,10 +55,10 @@ class CodebaseMaintainer:
         self.note_tool = NoteTool(workspace=f"./{project_name}_notes")
         self.terminal_tool = TerminalTool(workspace=codebase_path, timeout=60)
 
-        # 初始化上下文构建器
+        # Инициализировать построитель контекста
         self.context_builder = ContextBuilder(
             memory_tool=self.memory_tool,
-            rag_tool=None,  # 本案例不使用 RAG
+            rag_tool=None,  # В этом случае не используется RAG
             config=ContextConfig(
                 max_tokens=4000,
                 reserve_ratio=0.15,
@@ -67,13 +67,13 @@ class CodebaseMaintainer:
             )
         )
 
-        # 创建工具注册表并注册工具
+        # Создайте реестр инструментов и зарегистрируйте инструменты.
         self.tool_registry = ToolRegistry()
         self.tool_registry.register_tool(self.terminal_tool)
         self.tool_registry.register_tool(self.note_tool)
         self.tool_registry.register_tool(self.memory_tool)
 
-        # 创建 Agent
+        # Создать агента
         self.agent = FunctionCallAgent(
             name="CodebaseMaintainer",
             llm=self.llm,
@@ -83,10 +83,10 @@ class CodebaseMaintainer:
             max_tool_iterations=30
         )
 
-        # 对话历史
+        # История разговоров
         self.conversation_history: List[Message] = []
 
-        # 统计信息
+        # Статистика
         self.stats = {
             "session_start": datetime.now(),
             "commands_executed": 0,
@@ -95,34 +95,34 @@ class CodebaseMaintainer:
             "tool_calls": 0
         }
 
-        print(f"✅ 代码库维护助手已初始化: {project_name} (Agentic Mode)")
-        print(f"📁 工作目录: {codebase_path}")
-        print(f"🆔 会话ID: {self.session_id}")
-        print(f"🔧 可用工具: {', '.join(self.tool_registry.list_tools())}")
+        print(f"✅ Инициализирован помощник по обслуживанию базы кода: {project_name} (агентный режим)")
+        print(f"📁 Рабочий каталог: {codebase_path}")
+        print(f"🆔 Идентификатор сеанса: {self.session_id}")
+        print(f"🔧 Доступные инструменты: {', '.join(self.tool_registry.list_tools())}")
 
     def run(self, user_input: str, mode: str = "auto") -> str:
-        """运行助手（Agentic 方式）
+        """Запустить Ассистент (Агентный режим)
 
-        Args:
-            user_input: 用户输入
-            mode: 运行模式提示（给 agent 提供方向性建议）
-                - "auto": 自动决策是否使用工具
-                - "explore": 建议 agent 侧重代码探索
-                - "analyze": 建议 agent 侧重问题分析
-                - "plan": 建议 agent 侧重任务规划
+        Аргументы:
+            user_input: пользовательский ввод
+            режим: подсказка рабочего режима (предоставление агенту рекомендаций по направлению)
+                - «авто»: автоматически решить, использовать ли инструмент.
+                - «исследовать»: агенту рекомендуется сосредоточиться на исследовании кода.
+                - «анализировать»: агенту рекомендуется сосредоточиться на анализе проблемы.
+                - «план»: агенту рекомендуется сосредоточиться на планировании задач.
 
-        Returns:
-            str: 助手的回答
+        Возврат:
+            ул: ответ ассистента
         """
         print(f"\n{'='*80}")
-        print(f"👤 用户: {user_input}")
+        print(f"👤 Пользователь: {user_input}")
         print(f"{'='*80}\n")
 
-        # 第一步: 检索相关笔记（为 agent 提供上下文）
+        # Шаг 1. Получите соответствующие заметки (предоставьте контекст агенту)
         relevant_notes = self._retrieve_relevant_notes(user_input)
         note_packets = self._notes_to_packets(relevant_notes)
 
-        # 第二步: 构建优化的上下文
+        # Шаг 2. Создайте контекст оптимизации
         context = self.context_builder.build(
             user_query=user_input,
             conversation_history=self.conversation_history,
@@ -130,60 +130,60 @@ class CodebaseMaintainer:
             additional_packets=note_packets
         )
 
-        # 第三步: 让 Agent 自主决策和使用工具
-        print("🤖 Agent 正在思考并决定使用哪些工具...\n")
+        # Шаг 3. Позвольте агенту самостоятельно принимать решения и использовать инструменты.
+        print("🤖Агент думает и решает, какие инструменты использовать...\n")
         
-        # 更新 agent 的系统提示（包含上下文）
+        # Системное приглашение агента обновления (включая контекст)
         self.agent.system_prompt = context
         
-        # 调用 agent（agent 会自主决定是否使用工具）
+        # Позвоните агенту (агент самостоятельно решит, использовать ли инструмент)
         response = self.agent.run(user_input)
 
-        # 第四步: 统计工具使用情况
+        # Шаг 4: Использование статистических инструментов
         self._track_tool_usage()
 
-        # 第五步: 更新对话历史
+        # Шаг 5. Обновите историю разговоров
         self._update_history(user_input, response)
 
-        print(f"\n🤖 助手: {response}\n")
+        print(f"\n🤖 Ассистент: {response}\n")
         print(f"{'='*80}\n")
 
         return response
 
     def _build_base_system_prompt(self) -> str:
-        """构建基础系统提示"""
-        return f"""你是 {self.project_name} 项目的代码库维护助手。
+        """Советы по созданию базовой системы"""
+        return f"""Вы помощник по обслуживанию кодовой базы проекта {self.project_name}.
 
-你的核心能力:
-1. 使用 TerminalTool 探索代码库
-   - 你可以执行任何 shell 命令: ls, cat, grep, find, git 等
-   - 工作目录: {self.codebase_path}
+Ваши основные компетенции:
+1. Используйте TerminalTool для изучения базы кода.
+   - Вы можете выполнить любую команду оболочки: ls, cat, grep, find, git и т. д.
+   - Рабочий каталог: {self.codebase_path}
    
-2. 使用 NoteTool 记录发现和任务
-   - 创建笔记记录重要发现
-   - 笔记类型: blocker(阻塞问题)、action(行动计划)、task_state(任务状态)、conclusion(结论)
+2. Используйте NoteTool для записи результатов и задач.
+   - Создавайте заметки для записи важных выводов.
+   - Типы заметок: блокировщик (проблема блокировки), действие (план действий), Task_state (статус задачи), заключение (заключение)
    
-3. 使用 MemoryTool 存储关键信息
-   - 记住重要的上下文信息
-   - 跨会话保持连贯性
+3. Используйте MemoryTool для хранения ключевой информации.
+   - Помните важную контекстную информацию
+   - Поддерживать преемственность между сеансами.
 
-当前会话ID: {self.session_id}
+Идентификатор текущего сеанса: {self.session_id}
 
-重要原则:
-- 你要自主决定使用哪些工具、执行什么命令
-- 探索代码库时，先了解整体结构，再深入细节
-- 发现重要信息时，主动使用 NoteTool 记录
-- 保持回答的专业性和实用性
+Важные принципы:
+- Вам придется самостоятельно решать, какие инструменты использовать и какие команды выполнять.
+- Изучая кодовую базу, начните с понимания общей структуры, прежде чем углубляться в детали.
+- При обнаружении важной информации активно используйте NoteTool для ее записи.
+- Держите свои ответы профессиональными и практичными
 """
 
     def _track_tool_usage(self):
-        """统计工具使用情况"""
-        # 从 agent 的执行历史中统计
+        """Использование статистического инструмента"""
+        # Статистика из истории выполнения агента
         if hasattr(self.agent, 'message_history'):
-            for msg in self.agent.message_history[-10:]:  # 只看最近10条
+            for msg in self.agent.message_history[-10:]:  # Просмотреть только последние 10 позиций
                 if msg.role == "tool":
                     self.stats["tool_calls"] += 1
-                    # 根据工具名统计
+                    # Статистика по названию инструмента
                     if "terminal" in str(msg.content).lower() or "command" in str(msg.content).lower():
                         self.stats["commands_executed"] += 1
                     elif "note" in str(msg.content).lower():
@@ -191,9 +191,9 @@ class CodebaseMaintainer:
                             self.stats["notes_created"] += 1
 
     def _retrieve_relevant_notes(self, query: str, limit: int = 3) -> List[Dict]:
-        """检索相关笔记"""
+        """Получить связанные заметки"""
         try:
-            # 优先检索 blocker
+            # Установите приоритет блокировщика поиска
             blockers_raw = self.note_tool.run({
                 "action": "list",
                 "note_type": "blocker",
@@ -201,7 +201,7 @@ class CodebaseMaintainer:
             })
             blockers = self._normalize_note_results(blockers_raw)
 
-            # 搜索相关笔记
+            # Поиск связанных заметок
             search_results_raw = self.note_tool.run({
                 "action": "search",
                 "query": query,
@@ -209,7 +209,7 @@ class CodebaseMaintainer:
             })
             search_results = self._normalize_note_results(search_results_raw)
 
-            # 合并去重
+            # Объединить и удалить дубликаты
             all_notes = {}
             for note in blockers + search_results:
                 if not isinstance(note, dict):
@@ -223,11 +223,11 @@ class CodebaseMaintainer:
             return list(all_notes.values())[:limit]
 
         except Exception as e:
-            print(f"[WARNING] 笔记检索失败: {e}")
+            print(f"[ВНИМАНИЕ] Не удалось получить заметку: {e}")
             return []
 
     def _normalize_note_results(self, result: Any) -> List[Dict]:
-        """将笔记工具的返回值转换为笔记字典列表"""
+        """Преобразование возвращаемого значения инструмента заметок в список словарей заметок."""
         if not result:
             return []
 
@@ -252,13 +252,13 @@ class CodebaseMaintainer:
         return []
 
     def _notes_to_packets(self, notes: List[Dict]) -> List[ContextPacket]:
-        """将笔记转换为上下文包"""
+        """Преобразование заметок в контекстные пакеты"""
         packets = []
 
         for note in notes:
             if not isinstance(note, dict):
                 continue
-            # 根据笔记类型设置不同的相关性分数
+            # Установите различные показатели релевантности в зависимости от типа заметки
             relevance_map = {
                 "blocker": 0.9,
                 "action": 0.8,
@@ -269,7 +269,7 @@ class CodebaseMaintainer:
             note_type = note.get('type', 'general')
             relevance = relevance_map.get(note_type, 0.6)
 
-            content = f"[笔记:{note.get('title', 'Untitled')}]\n类型: {note_type}\n\n{note.get('content', '')}"
+            content = f"[note:{note.get('title', 'Untitled')}]\nType: {note_type}\n\n{note.get('content', '')}"
             updated_at = note.get('updated_at')
             try:
                 note_timestamp = datetime.fromisoformat(updated_at) if updated_at else datetime.now()
@@ -291,41 +291,41 @@ class CodebaseMaintainer:
         return packets
 
     def _build_system_instructions(self, mode: str) -> str:
-        """构建系统指令（Agentic 方式）"""
+        """Инструкции по сборке системы (агентный режим)"""
         base_instructions = self._build_base_system_prompt()
 
         mode_hints = {
             "explore": """
-用户当前关注: 探索代码库
+В настоящее время пользователи сосредоточены на: Исследовании базы кода.
 
-建议策略:
-- 考虑使用 TerminalTool 了解代码结构（如 find, ls, tree）
-- 查看关键文件（如 README, 主要模块）
-- 将架构信息记录到笔记方便后续查阅
+Предлагаемые стратегии:
+- Рассмотрите возможность использования TerminalTool для понимания структуры кода (например, find, ls, Tree).
+- Просмотр ключевых файлов (таких как README, основные модули)
+- Записывать архитектурную информацию в примечания для последующего использования.
 """,
             "analyze": """
-用户当前关注: 分析代码质量
+В настоящее время пользователи сосредоточены на: Анализе качества кода.
 
-建议策略:
-- 考虑使用 grep 查找潜在问题（TODO, FIXME, BUG）
-- 分析代码复杂度和结构
-- 将发现的问题记录为 blocker 或 action 笔记
+Предлагаемые стратегии:
+– Рассмотрите возможность использования grep для поиска потенциальных проблем (TODO, FIXME, BUG).
+- Анализ сложности и структуры кода.
+- Записывайте обнаруженные проблемы в виде блокировщиков или заметок о действиях.
 """,
             "plan": """
-用户当前关注: 任务规划
+В настоящее время пользователи сосредоточены на: Планировании миссий.
 
-建议策略:
-- 回顾历史笔记了解当前进度
-- 基于已有信息制定行动计划
-- 创建或更新 task_state 类型的笔记
+Предлагаемые стратегии:
+- Просмотрите исторические заметки, чтобы понять текущий прогресс
+- Разработать план действий на основе имеющейся информации.
+- Создание или обновление заметок типа Task_state.
 """,
             "auto": """
-用户当前关注: 自由对话
+В настоящее время пользователи сосредоточены на: Свободном общении.
 
-建议策略:
-- 根据用户需求灵活决策
-- 在需要时主动使用工具获取信息
-- 不需要时可以直接回答
+Предлагаемые стратегии:
+- Гибкое принятие решений на основе потребностей пользователей
+- Активно использовать инструменты для получения информации, когда это необходимо.
+- Могу ответить прямо, когда это не нужно
 """
         }
 
@@ -333,7 +333,7 @@ class CodebaseMaintainer:
 
 
     def _update_history(self, user_input: str, response: str):
-        """更新对话历史"""
+        """Обновить историю разговоров"""
         self.conversation_history.append(
             Message(content=user_input, role="user", timestamp=datetime.now())
         )
@@ -341,36 +341,36 @@ class CodebaseMaintainer:
             Message(content=response, role="assistant", timestamp=datetime.now())
         )
 
-        # 限制历史长度(保留最近10轮对话)
+        # Ограничить длину истории (сохранить последние 10 раундов разговоров)
         if len(self.conversation_history) > 20:
             self.conversation_history = self.conversation_history[-20:]
 
-    # === 便捷方法 ===
+    # === Удобный метод ===
 
     def explore(self, target: str = ".") -> str:
-        """探索代码库（Agentic 方式）
+        """Изучите базу кода (агентский способ)
         
-        Agent 会自主决定使用哪些命令来探索代码库
+        Агент самостоятельно решает, какие команды использовать для исследования базы кода.
         """
-        return self.run(f"请探索 {target} 的代码结构，了解项目组织方式", mode="explore")
+        return self.run(f"Пожалуйста, изучите структуру кода {target}, чтобы понять, как организован проект.", mode="explore")
 
     def analyze(self, focus: str = "") -> str:
-        """分析代码质量（Agentic 方式）
+        """Анализ качества кода (агентный способ)
         
-        Agent 会自主决定如何分析代码质量
+        Агент самостоятельно решит, как анализировать качество кода
         """
-        query = f"请分析代码质量" + (f"，重点关注{focus}" if focus else "")
+        query = f"Пожалуйста, проанализируйте качество кода" + (f", сосредоточься на {focus}" if focus else "")
         return self.run(query, mode="analyze")
 
     def plan_next_steps(self) -> str:
-        """规划下一步任务（Agentic 方式）
+        """Планируйте следующую задачу (Агентный метод)
         
-        Agent 会查看历史笔记并规划下一步
+        Агент просмотрит исторические записи и спланирует следующие шаги.
         """
-        return self.run("根据我们之前的分析和当前进度，规划下一步任务", mode="plan")
+        return self.run("Планируйте следующие задачи на основе нашего предыдущего анализа и текущего прогресса.", mode="plan")
 
     def execute_command(self, command: str) -> str:
-        """执行终端命令"""
+        """Выполнить команду терминала"""
         result = self.terminal_tool.run({"command": command})
         self.stats["commands_executed"] += 1
         return result
@@ -382,7 +382,7 @@ class CodebaseMaintainer:
         note_type: str = "general",
         tags: List[str] = None
     ) -> str:
-        """创建笔记"""
+        """Создать заметку"""
         result = self.note_tool.run({
             "action": "create",
             "title": title,
@@ -394,10 +394,10 @@ class CodebaseMaintainer:
         return result
 
     def get_stats(self) -> Dict[str, Any]:
-        """获取统计信息"""
+        """Получить статистику"""
         duration = (datetime.now() - self.stats["session_start"]).total_seconds()
 
-        # 获取笔记摘要
+        # Получить сводку заметки
         try:
             note_summary = self.note_tool.run({"action": "summary"})
         except:
@@ -418,7 +418,7 @@ class CodebaseMaintainer:
         }
 
     def generate_report(self, save_to_file: bool = True) -> Dict[str, Any]:
-        """生成会话报告"""
+        """Создать отчет о сеансе"""
         report = self.get_stats()
 
         if save_to_file:
@@ -426,49 +426,49 @@ class CodebaseMaintainer:
             with open(report_file, 'w', encoding='utf-8') as f:
                 json.dump(report, f, ensure_ascii=False, indent=2, default=str)
             report["report_file"] = report_file
-            print(f"📄 报告已保存: {report_file}")
+            print(f"📄 Отчет сохранен: {report_file}")
 
         return report
 
 
 def main():
-    """主函数 - 演示 CodebaseMaintainer 的使用（Agentic 版本）
+    """Основная функция — демонстрирует использование CodebaseMaintainer (агентская версия).
     
-    在这个版本中：
-    - Agent 自主决定使用哪些工具
-    - 不预定义工作流
-    - Agent 根据需求灵活探索代码库
+    В этой версии:
+    - Агент самостоятельно решает, какие инструменты использовать
+    - Нет предопределенных рабочих процессов
+    - Агент гибко исследует кодовую базу в соответствии с потребностями
     """
     print("=" * 80)
-    print("CodebaseMaintainer 演示（Agentic 版本）")
+    print("Демо-версия CodebaseMaintainer (агентская версия)")
     print("=" * 80 + "\n")
 
-    # 初始化助手
+    # Помощник по инициализации
     maintainer = CodebaseMaintainer(
         project_name="my_flask_app",
         codebase_path="./my_flask_app",
         llm=HelloAgentsLLM()
     )
 
-    # 探索代码库（Agent 自主决定如何探索）
-    print("\n### 探索代码库（Agent 自主探索）###")
+    # Исследуйте базу кода (агент решает, как исследовать)
+    print("\n### Исследование базы кода (автономное исследование агента)###")
     response = maintainer.explore()
 
-    # 分析代码质量（Agent 自主决定分析方法）
-    print("\n### 分析代码质量（Agent 自主分析）###")
+    # Анализировать качество кода (Агент самостоятельно определяет метод анализа)
+    print("\n### Анализ качества кода (независимый от агента анализ)###")
     response = maintainer.analyze()
 
-    # 规划下一步（Agent 基于历史信息规划）
-    print("\n### 规划下一步任务（Agent 自主规划）###")
+    # Планируйте следующий шаг (планы агента основаны на исторической информации)
+    print("\n### Планирование следующей задачи (независимое планирование от агента)###")
     response = maintainer.plan_next_steps()
 
-    # 生成报告
-    print("\n### 生成会话报告 ###")
+    # Создать отчет
+    print("\n### Создать отчет о сеансе ###")
     report = maintainer.generate_report()
     print(json.dumps(report, indent=2, ensure_ascii=False))
 
     print("\n" + "=" * 80)
-    print("演示完成!")
+    print("Демонстрация завершена!")
     print("=" * 80)
 
 

@@ -1,16 +1,16 @@
 """
-10.3.3 使用 HelloAgents A2A 工具
-（3）创建Agent网络
+10.3.3 Использование инструмента HelloAgents A2A
+(3) Создать сеть агентов
 """
 
 from hello_agents.protocols import A2AServer, A2AClient
 import threading
 import time
 
-# 1. 创建多个Agent服务
+# 1. Создайте несколько служб агентов.
 researcher = A2AServer(
     name="researcher",
-    description="研究员"
+    description="исследователь"
 )
 
 @researcher.skill("research")
@@ -18,11 +18,11 @@ def do_research(text: str) -> str:
     import re
     match = re.search(r'research\s+(.+)', text, re.IGNORECASE)
     topic = match.group(1).strip() if match else text
-    return str({"topic": topic, "findings": f"{topic}的研究结果"})
+    return str({"topic": topic, "findings": f"Результаты исследования по {теме}"})
 
 writer = A2AServer(
     name="writer",
-    description="撰写员"
+    description="писатель"
 )
 
 @writer.skill("write")
@@ -31,20 +31,20 @@ def write_article(text: str) -> str:
     match = re.search(r'write\s+(.+)', text, re.IGNORECASE)
     content = match.group(1).strip() if match else text
     
-    # 尝试解析研究数据
+    # Попробуйте проанализировать данные исследования
     try:
         data = eval(content)
-        topic = data.get("topic", "未知主题")
-        findings = data.get("findings", "无研究结果")
+        topic = data.get("topic", "Неизвестная тема")
+        findings = data.get("findings", "Нет результатов исследований")
     except:
-        topic = "未知主题"
+        topic = "Неизвестная тема"
         findings = content
     
-    return f"# {topic}\n\n基于研究：{findings}\n\n文章内容..."
+    return f"# {topic}\n\nНа основе исследования: {результаты}\n\nСодержание статьи..."
 
 editor = A2AServer(
     name="editor",
-    description="编辑"
+    description="редактировать"
 )
 
 @editor.skill("edit")
@@ -54,39 +54,39 @@ def edit_article(text: str) -> str:
     article = match.group(1).strip() if match else text
     
     result = {
-        "article": article + "\n\n[已编辑优化]",
-        "feedback": "文章质量良好",
+        "article": article + "\n\n[Отредактировано и оптимизировано]",
+        "feedback": "Качество статьи хорошее",
         "approved": True
     }
     return str(result)
 
-# 2. 启动所有服务
+# 2. Запустите все службы
 threading.Thread(target=lambda: researcher.run(port=5000), daemon=True).start()
 threading.Thread(target=lambda: writer.run(port=5001), daemon=True).start()
 threading.Thread(target=lambda: editor.run(port=5002), daemon=True).start()
-time.sleep(2)  # 等待服务启动
+time.sleep(2)  # Подождите, пока служба запустится
 
-# 3. 创建客户端连接到各个Agent
+# 3. Создайте клиента для подключения к каждому агенту.
 researcher_client = A2AClient("http://localhost:5000")
 writer_client = A2AClient("http://localhost:5001")
 editor_client = A2AClient("http://localhost:5002")
 
-# 4. 协作流程
+# 4. Процесс сотрудничества
 def create_content(topic):
-    # 步骤1：研究
+    # Шаг 1: Исследование
     research = researcher_client.execute_skill("research", f"research {topic}")
     research_data = research.get('result', '')
     
-    # 步骤2：撰写
+    # Шаг 2: Напишите
     article = writer_client.execute_skill("write", f"write {research_data}")
     article_content = article.get('result', '')
     
-    # 步骤3：编辑
+    # Шаг 3: Редактировать
     final = editor_client.execute_skill("edit", f"edit {article_content}")
     return final.get('result', '')
 
-# 使用
+# использовать
 if __name__ == "__main__":
-    result = create_content("AI在医疗领域的应用")
-    print(f"\n最终结果：\n{result}")
+    result = create_content("Применение ИИ в медицинской сфере")
+    print(f"\nКонечный результат:\n{результат}")
 

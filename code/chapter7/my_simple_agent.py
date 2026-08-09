@@ -5,8 +5,8 @@ import re
 
 class MySimpleAgent(SimpleAgent):
     """
-    重写的简单对话Agent
-    展示如何基于框架基类构建自定义Agent
+    Переписан простой диалоговый агент.
+    Показывает, как создать собственный агент на основе базовых классов платформы.
     """
 
     def __init__(
@@ -21,114 +21,114 @@ class MySimpleAgent(SimpleAgent):
         super().__init__(name, llm, system_prompt, config)
         self.tool_registry = tool_registry
         self.enable_tool_calling = enable_tool_calling and tool_registry is not None
-        print(f"✅ {name} 初始化完成，工具调用: {'启用' if self.enable_tool_calling else '禁用'}")
+        print(f"✅ Инициализация {name} завершена, вызов инструмента: {'enable' if self.enable_tool_calling else 'disable'}")
     
     def run(self, input_text: str, max_tool_iterations: int = 3, **kwargs) -> str:
         """
-        重写的运行方法 - 实现简单对话逻辑，支持可选工具调用
+        Переписанный метод запуска — реализует простую логику диалога и поддерживает дополнительные вызовы инструментов.
         """
-        print(f"🤖 {self.name} 正在处理: {input_text}")
+        print(f"🤖 {self.name} обрабатывает: {input_text}")
 
-        # 构建消息列表
+        # Создать список сообщений
         messages = []
 
-        # 添加系统消息（可能包含工具信息）
+        # Добавить системные сообщения (могут содержать информацию об инструменте)
         enhanced_system_prompt = self._get_enhanced_system_prompt()
         messages.append({"role": "system", "content": enhanced_system_prompt})
 
-        # 添加历史消息
+        # Добавить историческое сообщение
         for msg in self._history:
             messages.append({"role": msg.role, "content": msg.content})
 
-        # 添加当前用户消息
+        # Добавить текущее сообщение пользователя
         messages.append({"role": "user", "content": input_text})
 
-        # 如果没有启用工具调用，使用简单对话逻辑
+        # Если вызов инструмента не включен, используйте простую логику диалога.
         if not self.enable_tool_calling:
             response = self.llm.invoke(messages, **kwargs)
             self.add_message(Message(input_text, "user"))
             self.add_message(Message(response, "assistant"))
-            print(f"✅ {self.name} 响应完成")
+            print(f"✅ Ответ {self.name} завершен")
             return response
 
-        # 支持多轮工具调用的逻辑
+        # Логика, поддерживающая несколько циклов вызовов инструментов
         return self._run_with_tools(messages, input_text, max_tool_iterations, **kwargs)
 
     def _get_enhanced_system_prompt(self) -> str:
-        """构建增强的系统提示词，包含工具信息"""
-        base_prompt = self.system_prompt or "你是一个有用的AI助手。"
+        """Создайте расширенные системные подсказки, включающие информацию об инструменте."""
+        base_prompt = self.system_prompt or "Вы полезный помощник ИИ."
 
         if not self.enable_tool_calling or not self.tool_registry:
             return base_prompt
 
-        # 获取工具描述
+        # Получить описание инструмента
         tools_description = self.tool_registry.get_tools_description()
-        if not tools_description or tools_description == "暂无可用工具":
+        if not tools_description or tools_description == "Инструментов пока нет":
             return base_prompt
 
-        tools_section = "\n\n## 可用工具\n"
-        tools_section += "你可以使用以下工具来帮助回答问题：\n"
+        tools_section = "\n\n## Доступные инструменты\n"
+        tools_section += "Чтобы ответить на ваши вопросы, вы можете использовать следующие инструменты:\n"
         tools_section += tools_description + "\n"
 
-        tools_section += "\n## 工具调用格式\n"
-        tools_section += "当需要使用工具时，请使用以下格式：\n"
+        tools_section += "\n## Формат вызова инструмента\n"
+        tools_section += "При использовании инструмента используйте следующий формат:\n"
         tools_section += "`[TOOL_CALL:{tool_name}:{parameters}]`\n"
-        tools_section += "例如：`[TOOL_CALL:search:Python编程]` 或 `[TOOL_CALL:memory:recall=用户信息]`\n\n"
-        tools_section += "工具调用结果会自动插入到对话中，然后你可以基于结果继续回答。\n"
+        tools_section += "Например: `[TOOL_CALL:search:Программирование на Python]` или `[TOOL_CALL:memory:recall=информация о пользователе]`\n\n"
+        tools_section += "Результаты вызова инструмента автоматически вставляются в разговор, и вы можете продолжить свой ответ на основе результатов. \п"
 
         return base_prompt + tools_section
     
     def _run_with_tools(self, messages: list, input_text: str, max_tool_iterations: int, **kwargs) -> str:
-        """支持工具调用的运行逻辑"""
+        """Поддержка текущей логики вызовов инструментов"""
         current_iteration = 0
         final_response = ""
 
         while current_iteration < max_tool_iterations:
-            # 调用LLM
+            # Позвонить в LLM
             response = self.llm.invoke(messages, **kwargs)
 
-            # 检查是否有工具调用
+            # Проверьте, есть ли вызов инструмента
             tool_calls = self._parse_tool_calls(response)
 
             if tool_calls:
-                print(f"🔧 检测到 {len(tool_calls)} 个工具调用")
-                # 执行所有工具调用并收集结果
+                print(f"🔧 Обнаружены вызовы инструментов {len(tool_calls)}")
+                # Выполнять все вызовы инструментов и собирать результаты
                 tool_results = []
                 clean_response = response
 
                 for call in tool_calls:
                     result = self._execute_tool_call(call['tool_name'], call['parameters'])
                     tool_results.append(result)
-                    # 从响应中移除工具调用标记
+                    # Удалить маркер вызова инструмента из ответа
                     clean_response = clean_response.replace(call['original'], "")
 
-                # 构建包含工具结果的消息
+                # Создайте сообщение, содержащее результаты работы инструмента.
                 messages.append({"role": "assistant", "content": clean_response})
 
-                # 添加工具结果
+                # Добавить результаты инструмента
                 tool_results_text = "\n\n".join(tool_results)
-                messages.append({"role": "user", "content": f"工具执行结果：\n{tool_results_text}\n\n请基于这些结果给出完整的回答。"})
+                messages.append({"role": "user", "content": f"Результаты выполнения инструмента:\n{tool_results_text}\n\nПожалуйста, дайте полный ответ на основе этих результатов."})
 
                 current_iteration += 1
                 continue
 
-            # 没有工具调用，这是最终回答
+            # Никаких вызовов инструментов, это окончательный ответ
             final_response = response
             break
 
-        # 如果超过最大迭代次数，获取最后一次回答
+        # Если максимальное количество итераций превышено, получить последний ответ
         if current_iteration >= max_tool_iterations and not final_response:
             final_response = self.llm.invoke(messages, **kwargs)
 
-        # 保存到历史记录
+        # Сохранить в историю
         self.add_message(Message(input_text, "user"))
         self.add_message(Message(final_response, "assistant"))
-        print(f"✅ {self.name} 响应完成")
+        print(f"✅ Ответ {self.name} завершен")
 
         return final_response
 
     def _parse_tool_calls(self, text: str) -> list:
-        """解析文本中的工具调用"""
+        """Анализ вызовов инструментов в тексте"""
         pattern = r'\[TOOL_CALL:([^:]+):([^\]]+)\]'
         matches = re.findall(pattern, text)
 
@@ -143,47 +143,47 @@ class MySimpleAgent(SimpleAgent):
         return tool_calls
 
     def _execute_tool_call(self, tool_name: str, parameters: str) -> str:
-        """执行工具调用"""
+        """Выполнить вызов инструмента"""
         if not self.tool_registry:
-            return f"❌ 错误：未配置工具注册表"
+            return f"❌ Ошибка: реестр инструментов не настроен."
 
         try:
-            # 智能参数解析
+            # Интеллектуальный анализ параметров
             if tool_name == 'calculator':
-                # 计算器工具直接传入表达式
+                # Инструмент калькулятора напрямую передает выражение
                 result = self.tool_registry.execute_tool(tool_name, parameters)
             else:
-                # 其他工具使用智能参数解析
+                # Другие инструменты используют интеллектуальный анализ параметров.
                 param_dict = self._parse_tool_parameters(tool_name, parameters)
                 tool = self.tool_registry.get_tool(tool_name)
                 if not tool:
-                    return f"❌ 错误：未找到工具 '{tool_name}'"
+                    return f"❌ Ошибка: инструмент «{tool_name}» не найден."
                 result = tool.run(param_dict)
 
-            return f"🔧 工具 {tool_name} 执行结果：\n{result}"
+            return f"🔧 Результат выполнения инструмента {tool_name}:\n{result}"
 
         except Exception as e:
-            return f"❌ 工具调用失败：{str(e)}"
+            return f"❌ Ошибка вызова инструмента: {str(e)}"
 
     def _parse_tool_parameters(self, tool_name: str, parameters: str) -> dict:
-        """智能解析工具参数"""
+        """Параметры инструмента интеллектуального анализа"""
         param_dict = {}
 
         if '=' in parameters:
-            # 格式: key=value 或 action=search,query=Python
+            # Формат: ключ=значение или действие=поиск,запрос=Python.
             if ',' in parameters:
-                # 多个参数：action=search,query=Python,limit=3
+                # Несколько параметров: action=search,query=Python,limit=3.
                 pairs = parameters.split(',')
                 for pair in pairs:
                     if '=' in pair:
                         key, value = pair.split('=', 1)
                         param_dict[key.strip()] = value.strip()
             else:
-                # 单个参数：key=value
+                # Один параметр: ключ=значение.
                 key, value = parameters.split('=', 1)
                 param_dict[key.strip()] = value.strip()
         else:
-            # 直接传入参数，根据工具类型智能推断
+            # Непосредственная передача параметров и интеллектуальный вывод на основе типа инструмента
             if tool_name == 'search':
                 param_dict = {'query': parameters}
             elif tool_name == 'memory':
@@ -195,9 +195,9 @@ class MySimpleAgent(SimpleAgent):
     
     def stream_run(self, input_text: str, **kwargs) -> Iterator[str]:
         """
-        自定义的流式运行方法
+        Пользовательский метод запуска потоковой передачи
         """
-        print(f"🌊 {self.name} 开始流式处理: {input_text}")
+        print(f"🌊 {self.name} начинает трансляцию: {input_text}")
 
         messages = []
 
@@ -209,44 +209,44 @@ class MySimpleAgent(SimpleAgent):
 
         messages.append({"role": "user", "content": input_text})
 
-        # 流式调用LLM
+        # Потоковый звонок в LLM
         full_response = ""
-        print("📝 实时响应: ", end="")
+        print("📝Ответ в режиме реального времени: ", end="")
         for chunk in self.llm.stream_invoke(messages, **kwargs):
             full_response += chunk
             print(chunk, end="", flush=True)
             yield chunk
 
-        print()  # 换行
+        print()  # новая строка
 
-        # 保存完整对话到历史记录
+        # Сохранить весь разговор в истории
         self.add_message(Message(input_text, "user"))
         self.add_message(Message(full_response, "assistant"))
-        print(f"✅ {self.name} 流式响应完成")
+        print(f"✅ Ответ потоковой передачи {self.name} завершен")
 
     def add_tool(self, tool) -> None:
-        """添加工具到Agent（便利方法）"""
+        """Добавить инструменты в Агент (удобный способ)"""
         if not self.tool_registry:
             from hello_agents import ToolRegistry
             self.tool_registry = ToolRegistry()
             self.enable_tool_calling = True
 
         self.tool_registry.register_tool(tool)
-        print(f"🔧 工具 '{tool.name}' 已添加")
+        print(f"🔧 Добавлен инструмент «{tool.name}».")
 
     def has_tools(self) -> bool:
-        """检查是否有可用工具"""
+        """Проверьте наличие инструментов"""
         return self.enable_tool_calling and self.tool_registry is not None
     
     def remove_tool(self, tool_name: str) -> bool:
-        """移除工具（便利方法）"""
+        """Инструмент для удаления (удобный метод)"""
         if self.tool_registry:
             self.tool_registry.unregister(tool_name)
             return True
         return False
     
     def list_tools(self) -> list:
-        """列出所有可用工具"""
+        """Список всех доступных инструментов"""
         if self.tool_registry:
             return self.tool_registry.list_tools()
         return []

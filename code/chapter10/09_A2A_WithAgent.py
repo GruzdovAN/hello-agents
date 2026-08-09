@@ -1,7 +1,7 @@
 """
-A2A 协议 + HelloAgents SimpleAgent 集成案例
+Протокол A2A + вариант интеграции HelloAgents SimpleAgent
 
-展示如何将 A2A 协议的 Agent 作为工具集成到 SimpleAgent 中
+Покажите, как интегрировать Агент протокола A2A в SimpleAgent как инструмент.
 """
 
 from hello_agents.protocols import A2AServer, A2AClient
@@ -12,66 +12,66 @@ import time
 from typing import Dict, Any
 
 # ============================================================
-# 1. 创建专业 A2A Agent 服务
+# 1. Создайте профессиональную службу агента A2A.
 # ============================================================
 
-# 技术专家 Agent
+# Технический экспертный агент
 tech_expert = A2AServer(
     name="tech_expert",
-    description="技术专家，回答技术相关问题",
+    description="Технические эксперты ответят на вопросы, связанные с технологиями",
     version="1.0.0"
 )
 
 @tech_expert.skill("answer")
 def answer_tech_question(text: str) -> str:
-    """回答技术问题"""
+    """Отвечу на технические вопросы"""
     import re
     match = re.search(r'answer\s+(.+)', text, re.IGNORECASE)
     question = match.group(1).strip() if match else text
     
-    print(f"  [技术专家] 回答问题: {question}")
-    return f"技术回答：关于'{question}'，这是一个技术问题的专业解答..."
+    print(f"  [Технический эксперт] Ответ на вопрос: {question}")
+    return f"Технический ответ: Что касается «{question}», это профессиональный ответ на технический вопрос..."
 
-# 销售顾问 Agent
+# агент-консультант по продажам
 sales_advisor = A2AServer(
     name="sales_advisor",
-    description="销售顾问，回答销售问题",
+    description="Продавец-консультант, ответит на вопросы по продажам",
     version="1.0.0"
 )
 
 @sales_advisor.skill("answer")
 def answer_sales_question(text: str) -> str:
-    """回答销售问题"""
+    """Отвечать на вопросы по продажам"""
     import re
     match = re.search(r'answer\s+(.+)', text, re.IGNORECASE)
     question = match.group(1).strip() if match else text
     
-    print(f"  [销售顾问] 回答问题: {question}")
-    return f"销售回答：关于'{question}'，我们有特别优惠..."
+    print(f"  [Продавец-консультант] Ответ на вопрос: {question}")
+    return f"Ответ продавца: Что касается «{question}», у нас есть специальное предложение..."
 
 # ============================================================
-# 2. 启动 A2A Agent 服务
+# 2. Запустите службу агента A2A.
 # ============================================================
 
 print("="*60)
-print("🚀 启动专业 Agent 服务")
+print("🚀 Запустите услуги профессионального агента")
 print("="*60)
 
 threading.Thread(target=lambda: tech_expert.run(port=6000), daemon=True).start()
 threading.Thread(target=lambda: sales_advisor.run(port=6001), daemon=True).start()
 
-print("✓ 技术专家 Agent 启动在 http://localhost:6000")
-print("✓ 销售顾问 Agent 启动在 http://localhost:6001")
+print("✓ Агент технического эксперта запускается по адресу http://localhost:6000.")
+print("✓ Агент-консультант по продажам начинается с адреса http://localhost:6001.")
 
-print("\n⏳ 等待服务启动...")
+print("\n⏳ Ожидание запуска службы...")
 time.sleep(3)
 
 # ============================================================
-# 3. 创建 A2A 工具（封装 A2A Agent 为 Tool）
+# 3. Создайте инструмент A2A (инкапсулируйте агент A2A как инструмент).
 # ============================================================
 
 class A2ATool(Tool):
-    """将 A2A Agent 封装为 HelloAgents Tool"""
+    """Инкапсулируйте агент A2A в инструмент HelloAgents"""
 
     def __init__(self, name: str, description: str, agent_url: str, skill_name: str = "answer"):
         self.agent_url = agent_url
@@ -83,7 +83,7 @@ class A2ATool(Tool):
             ToolParameter(
                 name="question",
                 type="string",
-                description="要问的问题",
+                description="Вопросы, которые стоит задать",
                 required=True
             )
         ]
@@ -97,11 +97,11 @@ class A2ATool(Tool):
         return self._description
 
     def get_parameters(self) -> list[ToolParameter]:
-        """获取工具参数"""
+        """Получить параметры инструмента"""
         return self._parameters
 
     def run(self, **kwargs) -> str:
-        """执行工具"""
+        """Инструмент выполнения"""
         question = kwargs.get('question', '')
         result = self.client.execute_skill(self.skill_name, f"answer {question}")
         if result.get('status') == 'success':
@@ -109,95 +109,95 @@ class A2ATool(Tool):
         else:
             return f"Error: {result.get('error', 'Unknown error')}"
 
-# 创建工具
+# Создание инструментов
 tech_tool = A2ATool(
     name="tech_expert",
-    description="技术专家，回答技术相关问题",
+    description="Технические эксперты ответят на вопросы, связанные с технологиями",
     agent_url="http://localhost:6000"
 )
 
 sales_tool = A2ATool(
     name="sales_advisor",
-    description="销售顾问，回答销售相关问题",
+    description="Продавец-консультант ответит на вопросы, связанные с продажами",
     agent_url="http://localhost:6001"
 )
 
 # ============================================================
-# 4. 创建 SimpleAgent（使用 A2A 工具）
+# 4. Создайте SimpleAgent (с помощью инструментов A2A)
 # ============================================================
 
 print("\n" + "="*60)
-print("🤖 创建接待员 SimpleAgent")
+print("🤖 Создать секретаршу SimpleAgent")
 print("="*60)
 
-# 初始化 LLM
+# Инициализировать LLM
 llm = HelloAgentsLLM()
 
-# 创建接待员 Agent
+# Создать агента-секретаря
 receptionist = SimpleAgent(
-    name="接待员",
+    name="Регистратор",
     llm=llm,
-    system_prompt="""你是客服接待员，负责：
-1. 分析客户问题类型（技术问题 or 销售问题）
-2. 使用合适的工具（tech_expert 或 sales_advisor）获取答案
-3. 整理答案并返回给客户
+    system_prompt="""Вы - администратор службы поддержки клиентов, ответственный за:
+1. Проанализируйте тип проблемы клиента (техническая проблема или проблема с продажами).
+2. Используйте соответствующий инструмент (tech_expert или sales_advisor), чтобы получить ответ.
+3. Систематизируйте ответы и верните их клиенту.
 
-可用工具：
-- tech_expert: 回答技术问题
-- sales_advisor: 回答销售问题
+Доступные инструменты:
+- tech_expert: отвечайте на технические вопросы
+- sales_advisor: отвечать на вопросы о продажах
 
-请保持礼貌和专业。"""
+Пожалуйста, оставайтесь вежливыми и профессиональными."""
 )
 
-# 添加 A2A 工具
+# Добавьте инструменты A2A
 receptionist.add_tool(tech_tool)
 receptionist.add_tool(sales_tool)
 
-print("✓ 接待员 Agent 创建完成")
-print("✓ 已集成 A2A 工具: tech_expert, sales_advisor")
+print("✓ Агент администратора создан.")
+print("✓ Интегрированные инструменты A2A: tech_expert, sales_advisor")
 
 # ============================================================
-# 5. 测试集成系统
+# 5. Протестируйте интегрированную систему
 # ============================================================
 
 print("\n" + "="*60)
-print("🧪 测试 A2A + SimpleAgent 集成")
+print("🧪 Тестирование интеграции A2A + SimpleAgent")
 print("="*60)
 
-# 测试问题
+# тестовые вопросы
 test_questions = [
-    "你们的产品有什么优惠活动吗？",
-    "如何配置服务器的SSL证书？",
-    "我想了解一下价格方案"
+    "Есть ли акции на вашу продукцию?",
+    "Как настроить SSL-сертификат сервера?",
+    "хотелось бы узнать о тарифном плане"
 ]
 
 for i, question in enumerate(test_questions, 1):
-    print(f"\n问题 {i}: {question}")
+    print(f"\nВопрос {i}: {вопрос}")
     print("-" * 60)
 
     try:
-        # 使用 SimpleAgent 的 run 方法
+        # Используйте метод запуска SimpleAgent.
         response = receptionist.run(question)
-        print(f"回答: {response}")
+        print(f"Ответ: {ответ}")
     except Exception as e:
-        print(f"错误: {str(e)}")
+        print(f"Ошибка: {str(e)}")
         import traceback
         traceback.print_exc()
 
     print()
 
 # ============================================================
-# 6. 保持服务运行
+# 6. Поддерживайте работу служб
 # ============================================================
 
 print("="*60)
-print("💡 系统仍在运行")
+print("💡 Система все еще работает")
 print("="*60)
-print("你可以继续测试或按 Ctrl+C 停止\n")
+print("Вы можете продолжить тестирование или нажать Ctrl+C, чтобы остановить\n")
 
 try:
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
-    print("\n\n✅ 系统已停止")
+    print("\n\n ✅ Система остановлена")
 

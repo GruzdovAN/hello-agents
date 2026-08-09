@@ -1,6 +1,6 @@
 """
-数据模型模块
-定义应用中使用的数据模型
+Модуль модели данных
+Определите модель данных, используемую в приложении.
 """
 
 from dataclasses import dataclass
@@ -10,7 +10,7 @@ from typing import Optional, List
 
 @dataclass
 class User:
-    """用户模型"""
+    """модель пользователя"""
     id: int
     username: str
     email: str
@@ -20,12 +20,12 @@ class User:
     def __str__(self) -> str:
         return f"User({self.username}, {self.email})"
     
-    # TODO: 添加用户验证方法
+    # ЗАДАЧА: Добавить метод проверки пользователя
 
 
 @dataclass
 class Product:
-    """产品模型"""
+    """модель продукта"""
     id: int
     name: str
     category: str
@@ -34,26 +34,26 @@ class Product:
     description: Optional[str] = None
     
     def is_in_stock(self) -> bool:
-        """检查是否有库存"""
+        """Проверьте, есть ли он в наличии"""
         return self.stock > 0
     
     def apply_discount(self, percentage: float) -> float:
         """
-        应用折扣
+        Применить скидку
         
-        Args:
-            percentage: 折扣百分比
+        Аргументы:
+            процент: процент скидки
             
-        Returns:
-            折后价格
+        Возврат:
+            Цена после скидки
         """
-        # TODO: 添加折扣验证
+        # ЗАДАЧА: Добавить подтверждение скидки
         return self.price * (1 - percentage / 100)
 
 
 @dataclass
 class Order:
-    """订单模型"""
+    """Заказать модель"""
     id: int
     user_id: int
     products: List[Product]
@@ -62,18 +62,18 @@ class Order:
     created_at: datetime
     
     def calculate_total(self) -> float:
-        """计算订单总额"""
-        # TODO: 考虑折扣和税费
+        """Рассчитать сумму заказа"""
+        # TODO: Учитывайте скидки и налоги
         return sum(p.price for p in self.products)
     
     def is_completed(self) -> bool:
-        """检查订单是否完成"""
+        """Проверьте, выполнен ли заказ"""
         return self.status == "completed"
 
 
 @dataclass
 class Transaction:
-    """交易模型"""
+    """торговая модель"""
     id: int
     order_id: int
     amount: float
@@ -81,5 +81,5 @@ class Transaction:
     timestamp: datetime
     status: str
     
-    # TODO: 添加退款功能
+    # TODO: Добавить функцию возврата
 

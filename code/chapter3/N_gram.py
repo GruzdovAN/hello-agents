@@ -1,30 +1,30 @@
 import collections
 
-# 示例语料库，与上方案例讲解中的语料库保持一致
+# Пример корпуса, соответствующего корпусу в приведенном выше объяснении случая
 corpus = "datawhale agent learns datawhale agent works"
 tokens = corpus.split()
 total_tokens = len(tokens)
 
-# --- 第一步：计算 P(datawhale) ---
+# --- Шаг 1. Вычислите P(datawhale) ---
 count_datawhale = tokens.count('datawhale')
 p_datawhale = count_datawhale / total_tokens
-print(f"第一步: P(datawhale) = {count_datawhale}/{total_tokens} = {p_datawhale:.3f}")
+print(f"Шаг первый: P(datawhale) = {count_datawhale}/{total_tokens} = {p_datawhale:.3f}")
 
-# --- 第二步：计算 P(agent|datawhale) ---
-# 先计算 bigrams 用于后续步骤
+# --- Шаг 2. Вычислите P(agent|datawhale) ---
+# Сначала вычислите биграммы для последующих шагов
 bigrams = zip(tokens, tokens[1:])
 bigram_counts = collections.Counter(bigrams)
 count_datawhale_agent = bigram_counts[('datawhale', 'agent')]
-# count_datawhale 已在第一步计算
+# count_datawhale был рассчитан на первом этапе
 p_agent_given_datawhale = count_datawhale_agent / count_datawhale
-print(f"第二步: P(agent|datawhale) = {count_datawhale_agent}/{count_datawhale} = {p_agent_given_datawhale:.3f}")
+print(f"Шаг 2: P(agent|datawhale) = {count_datawhale_agent}/{count_datawhale} = {p_agent_given_datawhale:.3f}")
 
-# --- 第三步：计算 P(learns|agent) ---
+# --- Шаг 3: Вычислите P(обучается|агент) ---
 count_agent_learns = bigram_counts[('agent', 'learns')]
 count_agent = tokens.count('agent')
 p_learns_given_agent = count_agent_learns / count_agent
-print(f"第三步: P(learns|agent) = {count_agent_learns}/{count_agent} = {p_learns_given_agent:.3f}")
+print(f"Шаг 3: P(learns|agent) = {count_agent_learns}/{count_agent} = {p_learns_given_agent:.3f}")
 
-# --- 最后：将概率连乘 ---
+# ---Наконец: умножьте вероятности ---
 p_sentence = p_datawhale * p_agent_given_datawhale * p_learns_given_agent
-print(f"最后: P('datawhale agent learns') ≈ {p_datawhale:.3f} * {p_agent_given_datawhale:.3f} * {p_learns_given_agent:.3f} = {p_sentence:.3f}")
+print(f"Наконец: P('агент datawhale учится') ≈ {p_datawhale:.3f} * {p_agent_given_datawhale:.3f} * {p_learns_given_agent:.3f} = {p_sentence:.3f}")

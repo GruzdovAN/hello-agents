@@ -1,13 +1,13 @@
 """
-示例1: 数据集加载和格式化
-演示如何使用RLTrainingTool加载和查看GSM8K数据集
+Пример 1. Загрузка и форматирование набора данных
+Демонстрирует, как использовать RLTrainingTool для загрузки и просмотра наборов данных GSM8K.
 """
 
 import sys
 from pathlib import Path
 import json
 
-# 添加项目路径
+# Добавить путь к проекту
 project_root = Path(__file__).parent.parent / "HelloAgents"
 sys.path.insert(0, str(project_root))
 
@@ -15,18 +15,18 @@ from hello_agents.tools import RLTrainingTool
 
 
 # ============================================================================
-# 示例1: 加载SFT格式数据集
+# Пример 1. Загрузка набора данных формата SFT.
 # ============================================================================
 
 def load_sft_dataset():
     """
-    使用RLTrainingTool加载SFT格式的GSM8K数据集
+    Загрузите набор данных GSM8K в формате SFT с помощью RLTrainingTool.
 
-    SFT数据格式:
+    Формат данных SFT:
     {
-        "prompt": "Question: ...\n\nLet's solve this step by step:\n",
-        "completion": "Step 1: ...\nFinal Answer: 42",
-        "text": "Question: ...\n\nLet's solve this step by step:\nStep 1: ...\nFinal Answer: 42"
+        "prompt": "Вопрос: ...\n\nДавайте решим это шаг за шагом:\n",
+        "completion": "Шаг 1: ...\nОкончательный ответ: 42",
+        "text": "Вопрос: ...\n\nДавайте решим это шаг за шагом:\nШаг 1: ...\nОкончательный ответ: 42"
     }
     """
     tool = RLTrainingTool()
@@ -38,31 +38,31 @@ def load_sft_dataset():
         "max_samples": 5
     }
 
-    print("加载SFT格式数据集...")
+    print("Загрузить набор данных формата SFT...")
     result = tool.run(config)
     result_dict = json.loads(result)
 
-    print(f"✅ 数据集大小: {result_dict['dataset_size']}")
-    print(f"📋 数据集列: {result_dict['sample_keys']}")
-    print(f"\n💡 提示: 数据集已加载,可以用于训练")
-    print(f"   使用 action='train' 开始训练")
+    print(f"✅ Размер набора данных: {result_dict['dataset_size']}")
+    print(f"📋 Столбец набора данных: {result_dict['sample_keys']}")
+    print(f"\n💡 Совет: набор данных загружен и его можно использовать для обучения.")
+    print(f"   Используйте action='train', чтобы начать тренировку.")
 
     return result_dict
 
 
 # ============================================================================
-# 示例2: 加载RL格式数据集
+# Пример 2. Загрузка набора данных формата RL
 # ============================================================================
 
 def load_rl_dataset():
     """
-    使用RLTrainingTool加载RL格式的GSM8K数据集
+    Загрузите набор данных GSM8K в формате RL с помощью RLTrainingTool.
 
-    RL数据格式:
+    Формат данных RL:
     {
-        "prompt": "<|im_start|>user\nQuestion: ...\n<|im_end|>\n<|im_start|>assistant\n",
+        "prompt": "<|im_start|>пользователь\nВопрос: ...\n<|im_end|>\n<|im_start|>ассистент\n",
         "ground_truth": "42",
-        "question": "...",
+        "вопрос": "...",
         "full_answer": "..."
     }
     """
@@ -76,29 +76,29 @@ def load_rl_dataset():
         "model_name": "Qwen/Qwen3-0.6B"
     }
 
-    print("加载RL格式数据集...")
+    print("Загрузка набора данных формата RL...")
     result = tool.run(config)
     result_dict = json.loads(result)
 
-    print(f"✅ 数据集大小: {result_dict['dataset_size']}")
-    print(f"📋 数据集列: {result_dict['sample_keys']}")
-    print(f"\n💡 提示: RL数据集已加载,包含prompt和ground_truth")
-    print(f"   可用于GRPO训练")
+    print(f"✅ Размер набора данных: {result_dict['dataset_size']}")
+    print(f"📋 Столбец набора данных: {result_dict['sample_keys']}")
+    print(f"\n💡 Совет: набор данных RL загружен, включая Prompt и ground_truth.")
+    print(f"   Может использоваться для обучения GRPO.")
 
     return result_dict
 
 
 # ============================================================================
-# 示例3: 加载不同split的数据集
+# Пример 3. Загрузка наборов данных с разными разбиениями
 # ============================================================================
 
 def load_different_splits():
     """
-    加载训练集和测试集
+    Загрузка обучающего набора и тестового набора
     """
     tool = RLTrainingTool()
     
-    # 加载训练集
+    # Загрузка обучающего набора
     train_config = {
         "action": "load_dataset",
         "format": "sft",
@@ -106,12 +106,12 @@ def load_different_splits():
         "max_samples": 100
     }
     
-    print("加载训练集...")
+    print("Загрузить тренировочный набор...")
     train_result = tool.run(train_config)
     train_data = json.loads(train_result)
-    print(f"✅ 训练集: {train_data['dataset_size']} 样本")
+    print(f"✅ Обучающий набор: образцы {train_data['dataset_size']}")
     
-    # 加载测试集
+    # Загрузить тестовый набор
     test_config = {
         "action": "load_dataset",
         "format": "sft",
@@ -119,25 +119,25 @@ def load_different_splits():
         "max_samples": 50
     }
     
-    print("\n加载测试集...")
+    print("\nЗагрузить набор тестов...")
     test_result = tool.run(test_config)
     test_data = json.loads(test_result)
-    print(f"✅ 测试集: {test_data['dataset_size']} 样本")
+    print(f"✅ Тестовый набор: образец {test_data['dataset_size']}")
     
     return train_data, test_data
 
 
 # ============================================================================
-# 示例4: 加载完整数据集
+# Пример 4. Загрузите полный набор данных
 # ============================================================================
 
 def load_full_dataset():
     """
-    加载完整数据集 (max_samples=None)
+    Загрузить полный набор данных (max_samples=None)
     
-    GSM8K数据集:
-    - 训练集: ~7500 样本
-    - 测试集: ~1300 样本
+    Набор данных GSM8K:
+    - Обучающий набор: ~7500 образцов.
+    - Тестовый набор: ~1300 образцов
     """
     tool = RLTrainingTool()
     
@@ -145,38 +145,38 @@ def load_full_dataset():
         "action": "load_dataset",
         "format": "sft",
         "split": "train",
-        "max_samples": None  # None = 使用全部数据
+        "max_samples": None  # Нет = использовать все данные
     }
     
-    print("加载完整训练集...")
-    print("⚠️  这可能需要一些时间...")
+    print("Загрузка полного обучающего набора...")
+    print("⚠️ Это может занять некоторое время...")
     
-    # 实际加载时取消注释
+    # Раскомментируйте при фактической загрузке
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"✅ 完整训练集: {result_dict['dataset_size']} 样本")
+    # print(f" ✅ Полный обучающий набор: {result_dict['dataset_size']} образец")
     
-    print("💡 提示: 设置 max_samples=None 可以加载全部数据")
-    print("   GSM8K训练集约有 7500 个样本")
+    print("💡 Совет: установите max_samples=None, чтобы загрузить все данные.")
+    print("   Обучающий набор GSM8K содержит около 7500 выборок.")
     
     return config
 
 
 # ============================================================================
-# 示例5: 对比SFT和RL格式
+# Пример 5: Сравнение форматов SFT и RL
 # ============================================================================
 
 def compare_sft_rl_formats():
     """
-    对比SFT和RL数据格式的区别
+    Сравните различия между форматами данных SFT и RL.
     """
     tool = RLTrainingTool()
 
     print("="*80)
-    print("SFT vs RL 数据格式对比")
+    print("Сравнение форматов данных SFT и RL")
     print("="*80)
 
-    # SFT格式
+    # Формат SFT
     sft_config = {
         "action": "load_dataset",
         "format": "sft",
@@ -184,14 +184,14 @@ def compare_sft_rl_formats():
         "max_samples": 1
     }
 
-    print("\n1. SFT格式:")
+    print("\n1. Формат SFT:")
     sft_result = tool.run(sft_config)
     sft_data = json.loads(sft_result)
-    print(f"   列: {sft_data['sample_keys']}")
-    print(f"   用途: 监督微调 (Supervised Fine-Tuning)")
-    print(f"   特点: 包含完整的prompt和completion")
+    print(f"   Столбец: {sft_data['sample_keys']}")
+    print(f"   Цель: Контролируемая точная настройка")
+    print(f"   Особенности: Содержит полную подсказку и завершение.")
 
-    # RL格式
+    # формат RL
     rl_config = {
         "action": "load_dataset",
         "format": "rl",
@@ -200,27 +200,27 @@ def compare_sft_rl_formats():
         "model_name": "Qwen/Qwen3-0.6B"
     }
 
-    print("\n2. RL格式:")
+    print("\n2. Формат РЛ:")
     rl_result = tool.run(rl_config)
     rl_data = json.loads(rl_result)
-    print(f"   列: {rl_data['sample_keys']}")
-    print(f"   用途: 强化学习训练 (Reinforcement Learning)")
-    print(f"   特点: 包含prompt和ground_truth,用于奖励计算")
+    print(f"   Столбец: {rl_data['sample_keys']}")
+    print(f"   Цель: обучение с подкреплением")
+    print(f"   Особенности: Содержит подсказку и ground_truth для расчета вознаграждения.")
 
-    print("\n主要区别:")
-    print("  - SFT: 直接学习正确答案")
-    print("  - RL: 通过奖励信号学习,更灵活")
+    print("\nОсновные отличия:")
+    print("  - SFT: узнайте правильные ответы напрямую")
+    print("  - RL: обучение через сигналы вознаграждения, более гибкое")
 
     return sft_data, rl_data
 
 
 # ============================================================================
-# 示例6: 数据集统计信息
+# Пример 6: Статистика набора данных
 # ============================================================================
 
 def dataset_statistics():
     """
-    查看数据集的统计信息
+    Просмотр статистики для набора данных
     """
     tool = RLTrainingTool()
 
@@ -231,17 +231,17 @@ def dataset_statistics():
         "max_samples": 100
     }
 
-    print("加载数据集...")
+    print("Загрузка набора данных...")
     result = tool.run(config)
     result_dict = json.loads(result)
 
-    print("\n数据集统计:")
-    print(f"  总样本数: {result_dict['dataset_size']}")
-    print(f"  数据列: {', '.join(result_dict['sample_keys'])}")
-    print(f"  数据集: GSM8K (Grade School Math 8K)")
-    print(f"  任务类型: 数学推理")
+    print("\nСтатистика набора данных:")
+    print(f"  Общее количество образцов: {result_dict['dataset_size']}")
+    print(f"  Столбец данных: {', '.join(result_dict['sample_keys'])}")
+    print(f"  Набор данных: GSM8K (Математика для начальной школы 8K)")
+    print(f"  Тип задания: Математическое рассуждение")
 
-    print(f"\n💡 提示: 数据集包含以下字段:")
+    print(f"\n💡 Совет: набор данных содержит следующие поля:")
     for key in result_dict['sample_keys']:
         print(f"  - {key}")
 
@@ -249,37 +249,37 @@ def dataset_statistics():
 
 
 # ============================================================================
-# 主函数
+# основная функция
 # ============================================================================
 
 if __name__ == "__main__":
     print("="*80)
-    print("示例1: 加载SFT格式数据集")
+    print("Пример 1. Загрузка набора данных формата SFT.")
     print("="*80)
     load_sft_dataset()
     
     print("\n" + "="*80)
-    print("示例2: 加载RL格式数据集")
+    print("Пример 2. Загрузка набора данных формата RL")
     print("="*80)
     load_rl_dataset()
     
     print("\n" + "="*80)
-    print("示例3: 加载不同split的数据集")
+    print("Пример 3. Загрузка наборов данных с разными разбиениями")
     print("="*80)
     load_different_splits()
     
     print("\n" + "="*80)
-    print("示例4: 加载完整数据集")
+    print("Пример 4. Загрузите полный набор данных")
     print("="*80)
     load_full_dataset()
     
     print("\n" + "="*80)
-    print("示例5: 对比SFT和RL格式")
+    print("Пример 5: Сравнение форматов SFT и RL")
     print("="*80)
     compare_sft_rl_formats()
     
     print("\n" + "="*80)
-    print("示例6: 数据集统计信息")
+    print("Пример 6: Статистика набора данных")
     print("="*80)
     dataset_statistics()
 

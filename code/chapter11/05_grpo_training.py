@@ -1,14 +1,14 @@
 """
-示例5: GRPO训练完整流程
+Пример 5: Полный процесс обучения GRPO
 
-演示如何使用RLTrainingTool进行GRPO强化学习训练
+Демонстрирует, как использовать RLTrainingTool для обучения с подкреплением GRPO.
 """
 
 import sys
 from pathlib import Path
 import json
 
-# 添加项目路径
+# Добавить путь к проекту
 project_root = Path(__file__).parent.parent / "HelloAgents"
 sys.path.insert(0, str(project_root))
 
@@ -16,14 +16,14 @@ from hello_agents.tools import RLTrainingTool
 
 
 # ============================================================================
-# 示例1: 最简单的GRPO训练
+# Пример 1: Простейшее обучение GRPO
 # ============================================================================
 
 def minimal_grpo_training():
     """
-    最简单的GRPO训练示例
+    Простейший пример обучения GRPO
     
-    只需要调用RLTrainingTool即可
+    Просто позвоните в RLTrainingTool
     """
     tool = RLTrainingTool()
     
@@ -36,28 +36,28 @@ def minimal_grpo_training():
         "num_epochs": 1,
     }
     
-    print("最简单的GRPO训练:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: {config['max_samples']}")
-    print(f"  训练轮数: {config['num_epochs']}")
+    print("Простейшее обучение ГРПО:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: {config['max_samples']}")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 训练完成! 模型保存在: {result_dict['output_dir']}")
+    # print(f"\n© Обучение завершено! Модель сохранена в папке: {result_dict['output_dir']}")
     
     return config
 
 
 # ============================================================================
-# 示例2: 标准GRPO训练配置
+# Пример 2. Стандартная конфигурация обучения GRPO
 # ============================================================================
 
 def standard_grpo_training():
     """
-    标准的GRPO训练配置
+    Стандартная конфигурация обучения GRPO
     
-    通常在SFT模型基础上进行GRPO训练
+    Обучение GRPO обычно проводится на основе модели SFT.
     """
     tool = RLTrainingTool()
     
@@ -65,46 +65,46 @@ def standard_grpo_training():
         "action": "train",
         "algorithm": "grpo",
         
-        # 模型配置 - 可以使用SFT训练后的模型
-        "model_name": "Qwen/Qwen3-0.6B",  # 或 "./output/sft_standard"
+        # Конфигурация модели — вы можете использовать обученную модель SFT.
+        "model_name": "Qwen/Qwen3-0.6B",  # или "./output/sft_standard"
         "output_dir": "./output/grpo_standard",
         
-        # 数据配置
-        "max_samples": 500,  # GRPO通常使用较少样本
+        # Конфигурация данных
+        "max_samples": 500,  # GRPO обычно использует меньше образцов.
         
-        # 训练配置
+        # конфигурация обучения
         "num_epochs": 3,
-        "batch_size": 2,  # GRPO需要更多显存
-        "learning_rate": 1e-5,  # 比SFT小10倍；注意：5e-5 在小模型上可能导致策略坍塌，必要时可调至 1e-6
+        "batch_size": 2,  # GRPO требует больше видеопамяти
+        "learning_rate": 1e-5,  # В 10 раз меньше, чем SFT; примечание: 5e-5 может привести к краху стратегии на небольших моделях, при необходимости скорректируйте до 1e-6.
         
-        # LoRA配置
+        # Конфигурация ЛоРА
         "use_lora": True,
         "lora_r": 16,
         "lora_alpha": 32,
     }
     
-    print("标准GRPO训练配置:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: {config['max_samples']}")
-    print(f"  训练轮数: {config['num_epochs']}")
+    print("Стандартная конфигурация обучения GRPO:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: {config['max_samples']}")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
     print(f"  batch_size: {config['batch_size']}")
-    print(f"  learning_rate: {config['learning_rate']} (比SFT小)")
+    print(f"  Learning_rate: {config['learning_rate']} (меньше, чем SFT)")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ GRPO训练完成!")
+    # print(f"\n© Обучение GRPO завершено!")
     
     return config
 
 
 # ============================================================================
-# 示例3: 完整数据集训练
+# Пример 3: Обучение полному набору данных
 # ============================================================================
 
 def full_dataset_training():
     """
-    使用完整数据集进行GRPO训练
+    Обучение GRPO с использованием полного набора данных
     """
     tool = RLTrainingTool()
     
@@ -114,8 +114,8 @@ def full_dataset_training():
         "model_name": "Qwen/Qwen3-0.6B",
         "output_dir": "./output/grpo_full",
         
-        # 使用全部数据
-        "max_samples": None,  # None = 使用全部数据
+        # Использовать все данные
+        "max_samples": None,  # Нет = использовать все данные
         
         "num_epochs": 3,
         "batch_size": 2,
@@ -125,34 +125,34 @@ def full_dataset_training():
         "lora_alpha": 32,
     }
     
-    print("完整数据集GRPO训练:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: 全部 (max_samples=None)")
-    print(f"  训练轮数: {config['num_epochs']}")
-    print(f"  预计样本数: ~7500 (GSM8K训练集)")
+    print("Полное обучение GRPO по наборам данных:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: Все (max_samples=Нет)")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
+    print(f"  Примерное количество образцов: ~7500 (обучающий набор GSM8K)")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     
     return config
 
 
 # ============================================================================
-# 示例4: SFT + GRPO完整流程
+# Пример 4: Полный процесс SFT + GRPO
 # ============================================================================
 
 def complete_sft_grpo_pipeline():
     """
-    完整的SFT + GRPO训练流程
+    Полный процесс обучения SFT + GRPO
     
-    步骤:
-    1. SFT训练 - 学习基本格式
-    2. GRPO训练 - 优化推理能力
+    Шаги:
+    1. Обучение SFT – изучите базовый формат
+    2. Обучение GRPO – оптимизация способностей к рассуждению.
     """
     tool = RLTrainingTool()
     
-    # 步骤1: SFT训练
-    print("步骤1: SFT训练")
+    # Шаг 1: Обучение SFT
+    print("Шаг 1: Обучение SFT")
     sft_config = {
         "action": "train",
         "algorithm": "sft",
@@ -164,19 +164,19 @@ def complete_sft_grpo_pipeline():
         "use_lora": True,
     }
     
-    print(f"  模型: {sft_config['model_name']}")
-    print(f"  样本数: {sft_config['max_samples']}")
+    print(f"  Модель: {sft_config['model_name']}")
+    print(f"  Количество образцов: {sft_config['max_samples']}")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # sft_result = tool.run(sft_config)
-    # print(f"✅ SFT训练完成: {sft_config['output_dir']}")
+    # print(f"Обучение SFT завершено: {sft_config['output_dir']}")
     
-    # 步骤2: GRPO训练
-    print("\n步骤2: GRPO训练")
+    # Шаг 2: Обучение GRPO
+    print("\nШаг 2: Обучение GRPO")
     grpo_config = {
         "action": "train",
         "algorithm": "grpo",
-        "model_name": "./output/pipeline_sft",  # 使用SFT模型
+        "model_name": "./output/pipeline_sft",  # Использовать модель SFT
         "output_dir": "./output/pipeline_grpo",
         "max_samples": 500,
         "num_epochs": 3,
@@ -185,77 +185,77 @@ def complete_sft_grpo_pipeline():
         "use_lora": True,
     }
     
-    print(f"  基础模型: {grpo_config['model_name']}")
-    print(f"  样本数: {grpo_config['max_samples']}")
+    print(f"  Базовая модель: {grpo_config['model_name']}")
+    print(f"  Количество образцов: {grpo_config['max_samples']}")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # grpo_result = tool.run(grpo_config)
-    # print(f"✅ GRPO训练完成: {grpo_config['output_dir']}")
+    # print(f" ✅ Обучение GRPO завершено: {grpo_config['output_dir']}")
     
-    print("\n💡 推荐使用GRPO模型进行推理")
+    print("\n💡 Для вывода рекомендуется использовать модель GRPO.")
     
     return sft_config, grpo_config
 
 
 # ============================================================================
-# 示例5: 不同奖励函数的使用
+# Пример 5: Использование различных функций вознаграждения
 # ============================================================================
 
 def using_different_rewards():
     """
-    GRPO默认使用准确性奖励函数
+    GRPO по умолчанию использует функцию вознаграждения за точность.
     
-    可以通过创建自定义奖励函数来改变行为
+    Поведение можно изменить, создав собственную функцию вознаграждения.
     """
-    print("GRPO奖励函数:")
-    print("\n默认奖励函数: 准确性奖励")
-    print("  - 答案正确: 1.0")
-    print("  - 答案错误: 0.0")
+    print("Функция вознаграждения GRPO:")
+    print("\nФункция вознаграждения по умолчанию: награда за точность")
+    print("  - Правильный ответ: 1,0.")
+    print("  - Ошибка ответа: 0.0")
     
-    print("\n其他可用奖励函数:")
-    print("  1. 长度惩罚奖励: 鼓励简洁答案")
-    print("  2. 步骤奖励: 鼓励详细推理")
-    print("  3. 自定义奖励: 根据需求定制")
+    print("\nДругие доступные функции вознаграждения:")
+    print("  1. Бонус за длину: поощряйте краткие ответы.")
+    print("  2. Награды за этапы: поощряйте детальное рассуждение.")
+    print("  3. Индивидуальные награды: настраиваются в соответствии с потребностями.")
     
-    print("\n创建奖励函数示例:")
+    print("\nПример создания функции вознаграждения:")
     tool = RLTrainingTool()
     
-    # 创建准确性奖励函数
+    # Создайте функцию вознаграждения за точность
     accuracy_config = {
         "action": "create_reward",
         "reward_type": "accuracy"
     }
-    print("\n1. 准确性奖励:")
-    print(f"   配置: {accuracy_config}")
+    print("\n1. Бонус к точности:")
+    print(f"   Конфигурация: {accuracy_config}")
     
-    # 创建长度惩罚奖励函数
+    # Создайте функцию вознаграждения за штраф за длину
     length_config = {
         "action": "create_reward",
         "reward_type": "length_penalty",
         "penalty_weight": 0.001
     }
-    print("\n2. 长度惩罚奖励:")
-    print(f"   配置: {length_config}")
+    print("\n2. Награда за штраф за длину:")
+    print(f"   Конфигурация: {length_config}")
     
-    # 创建步骤奖励函数
+    # Создать функцию вознаграждения за шаг
     step_config = {
         "action": "create_reward",
         "reward_type": "step",
         "step_bonus": 0.1
     }
-    print("\n3. 步骤奖励:")
-    print(f"   配置: {step_config}")
+    print("\n3. Награды за этапы:")
+    print(f"   Конфигурация: {step_config}")
     
     return accuracy_config, length_config, step_config
 
 
 # ============================================================================
-# 示例6: 实际训练示例
+# Пример 6: Фактический пример обучения
 # ============================================================================
 
 def practical_training_example():
     """
-    实际训练示例 - 可以直接运行
+    Фактический пример обучения — можно запустить напрямую
     """
     tool = RLTrainingTool()
     
@@ -265,70 +265,70 @@ def practical_training_example():
         "model_name": "Qwen/Qwen3-0.6B",
         "output_dir": "./output/grpo_practical",
         
-        # 使用较少样本进行快速测试
+        # Быстрое тестирование с использованием меньшего количества образцов
         "max_samples": 50,
         "num_epochs": 1,
         "batch_size": 2,
         "learning_rate": 1e-5,
         
-        # 使用LoRA
+        # Использование ЛоРА
         "use_lora": True,
         "lora_r": 16,
         "lora_alpha": 32,
     }
     
-    print("实际训练示例:")
-    print(f"  模型: {config['model_name']}")
-    print(f"  样本数: {config['max_samples']}")
-    print(f"  训练轮数: {config['num_epochs']}")
-    print(f"  输出目录: {config['output_dir']}")
+    print("Пример практического обучения:")
+    print(f"  Модель: {config['model_name']}")
+    print(f"  Количество образцов: {config['max_samples']}")
+    print(f"  Количество эпох обучения: {config['num_epochs']}")
+    print(f"  Выходной каталог: {config['output_dir']}")
     
-    print("\n💡 提示: 取消下面的注释以开始训练")
+    print("\n💡 Совет: раскомментируйте ниже, чтобы начать обучение.")
     print("# result = tool.run(config)")
     print("# result_dict = json.loads(result)")
-    print("# print(f'✅ 训练完成! 模型保存在: {result_dict[\"output_dir\"]}')")
+    print("# print(f' ✅ Обучение завершено! Модель сохранена в: {result_dict[\"output_dir\"]}')")
     
-    # 实际训练时取消注释
+    # Раскомментируйте во время фактического обучения
     # result = tool.run(config)
     # result_dict = json.loads(result)
-    # print(f"\n✅ 训练完成!")
-    # print(f"📁 模型保存在: {result_dict['output_dir']}")
+    # print(f"\n© Обучение завершено!")
+    # print(f"📁 Модель сохранена в: {result_dict['output_dir']}")
     
     return config
 
 
 # ============================================================================
-# 主函数
+# основная функция
 # ============================================================================
 
 if __name__ == "__main__":
     print("="*80)
-    print("示例1: 最简单的GRPO训练")
+    print("Пример 1: Простейшее обучение GRPO")
     print("="*80)
     minimal_grpo_training()
     
     print("\n" + "="*80)
-    print("示例2: 标准GRPO训练配置")
+    print("Пример 2. Стандартная конфигурация обучения GRPO")
     print("="*80)
     standard_grpo_training()
     
     print("\n" + "="*80)
-    print("示例3: 完整数据集训练")
+    print("Пример 3: Обучение полному набору данных")
     print("="*80)
     full_dataset_training()
     
     print("\n" + "="*80)
-    print("示例4: SFT + GRPO完整流程")
+    print("Пример 4: Полный процесс SFT + GRPO")
     print("="*80)
     complete_sft_grpo_pipeline()
     
     print("\n" + "="*80)
-    print("示例5: 不同奖励函数的使用")
+    print("Пример 5: Использование различных функций вознаграждения")
     print("="*80)
     using_different_rewards()
     
     print("\n" + "="*80)
-    print("示例6: 实际训练示例")
+    print("Пример 6: Фактический пример обучения")
     print("="*80)
     practical_training_example()
 

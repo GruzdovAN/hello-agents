@@ -4,52 +4,52 @@ from hello_agents import HelloAgentsLLM, ToolRegistry
 from hello_agents.tools import CalculatorTool
 from my_simple_agent import MySimpleAgent
 
-# 加载环境变量
+# Загрузить переменные среды
 load_dotenv()
 
-# 创建LLM实例
+# Создать экземпляр LLM
 llm = HelloAgentsLLM()
 
-# 测试1：基础对话Agent（无工具）
-print("=== 测试1：基础对话 ===")
+# Тест 1. Базовый агент диалога (без инструментов)
+print("=== Тест 1: Базовый разговор ===")
 basic_agent = MySimpleAgent(
-    name="基础助手",
+    name="Базовый помощник",
     llm=llm,
-    system_prompt="你是一个友好的AI助手，请用简洁明了的方式回答问题。"
+    system_prompt="Вы дружелюбный ИИ-помощник, пожалуйста, отвечайте на вопросы кратко и ясно."
 )
 
-response1 = basic_agent.run("你好，请介绍一下自己")
-print(f"基础对话响应: {response1}\n")
+response1 = basic_agent.run("Здравствуйте, представьтесь, пожалуйста")
+print(f"Основной ответ в диалоге: {response1}\n")
 
-# 测试2：带工具的Agent
-print("=== 测试2：工具增强对话 ===")
+# Тест 2: Агент с инструментами
+print("=== Тест 2: Диалоги с расширенными инструментами ===")
 tool_registry = ToolRegistry()
 calculator = CalculatorTool()
 tool_registry.register_tool(calculator)
 
 enhanced_agent = MySimpleAgent(
-    name="增强助手",
+    name="Расширенный помощник",
     llm=llm,
-    system_prompt="你是一个智能助手，可以使用工具来帮助用户。",
+    system_prompt="Вы умный помощник, который может использовать инструменты, помогающие пользователям.",
     tool_registry=tool_registry,
     enable_tool_calling=True
 )
 
-response2 = enhanced_agent.run("请帮我计算 15 * 8 + 32")
-print(f"工具增强响应: {response2}\n")
+response2 = enhanced_agent.run("Помогите пожалуйста посчитать 15*8+32.")
+print(f"Расширенный ответ инструмента: {response2}\n")
 
-# 测试3：流式响应
-print("=== 测试3：流式响应 ===")
-print("流式响应: ", end="")
-for chunk in basic_agent.stream_run("请解释什么是人工智能"):
-    pass  # 内容已在stream_run中实时打印
+# Тест 3. Потоковая передача ответа
+print("=== Тест 3: потоковая передача ответа ===")
+print("Потоковое ответ: ", end="")
+for chunk in basic_agent.stream_run("Объясните пожалуйста, что такое искусственный интеллект?"):
+    pass  # Содержимое распечатывалось в потокеstream_run в реальном времени.
 
-# 测试4：动态添加工具
-print("\n=== 测试4：动态工具管理 ===")
-print(f"添加工具前: {basic_agent.has_tools()}")
+# Тест 4. Динамическое добавление инструментов
+print("\n=== Тест 4. Динамическое управление инструментом ===")
+print(f"Перед добавлением инструментов: {basic_agent.has_tools()}")
 basic_agent.add_tool(calculator)
-print(f"添加工具后: {basic_agent.has_tools()}")
-print(f"可用工具: {basic_agent.list_tools()}")
+print(f"После добавления инструментов: {basic_agent.has_tools()}")
+print(f"Доступные инструменты: {basic_agent.list_tools()}")
 
-# 查看对话历史
-print(f"\n对话历史: {len(basic_agent.get_history())} 条消息")
+# Просмотреть историю разговоров
+print(f"\nИстория разговоров: {len(basic_agent.get_history())} сообщений")

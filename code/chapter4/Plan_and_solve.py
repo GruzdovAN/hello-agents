@@ -4,28 +4,28 @@ from llm_client import HelloAgentsLLM
 from dotenv import load_dotenv
 from typing import List, Dict
 
-# 加载 .env 文件中的环境变量，处理文件不存在异常
+# Загрузить .env; если файла нет — продолжить с системным окружением
 try:
     load_dotenv()
 except FileNotFoundError:
-    print("警告：未找到 .env 文件，将使用系统环境变量。")
+    print("Предупреждение: файл .env не найден, используются системные переменные.")
 except Exception as e:
-    print(f"警告：加载 .env 文件时出错: {e}")
+    print(f"Предупреждение: ошибка загрузки .env: {e}")
 
-# --- 1. LLM客户端定义 ---
-# 假设你已经有llm_client.py文件，里面定义了HelloAgentsLLM类
+# --- 1. LLM-клиент ---
+# Предполагается файл llm_client.py с классом HelloAgentsLLM
 
-# --- 2. 规划器 (Planner) 定义 ---
+# --- 2. Планировщик (Planner) ---
 PLANNER_PROMPT_TEMPLATE = """
-你是一个顶级的AI规划专家。你的任务是将用户提出的复杂问题分解成一个由多个简单步骤组成的行动计划。
-请确保计划中的每个步骤都是一个独立的、可执行的子任务，并且严格按照逻辑顺序排列。
-你的输出必须是一个Python列表，其中每个元素都是一个描述子任务的字符串。
+Ты — эксперт по планированию для ИИ. Разбей сложный вопрос пользователя на план из простых шагов.
+Каждый шаг — независимая, выполнимая подзадача; шаги строго в логическом порядке.
+Ответ должен быть Python-списком строк — описаний подзадач.
 
-问题: {question}
+Вопрос: {question}
 
-请严格按照以下格式输出你的计划，```python与```作为前后缀是必要的:
+Выведи план строго в таком виде (обязательны префикс ```python и суффикс ```):
 ```python
-["步骤1", "步骤2", "步骤3", ...]
+["шаг1", "шаг2", "шаг3", ...]
 ```
 """
 
@@ -37,41 +37,41 @@ class Planner:
         prompt = PLANNER_PROMPT_TEMPLATE.format(question=question)
         messages = [{"role": "user", "content": prompt}]
         
-        print("--- 正在生成计划 ---")
+        print("--- Генерация плана ---")
         response_text = self.llm_client.think(messages=messages) or ""
-        print(f"✅ 计划已生成:\n{response_text}")
+        print(f"✅ План сгенерирован:\n{response_text}")
         
         try:
             plan_str = response_text.split("```python")[1].split("```")[0].strip()
             plan = ast.literal_eval(plan_str)
             return plan if isinstance(plan, list) else []
         except (ValueError, SyntaxError, IndexError) as e:
-            print(f"❌ 解析计划时出错: {e}")
-            print(f"原始响应: {response_text}")
+            print(f"❌ Ошибка разбора плана: {e}")
+            print(f"Исходный ответ: {response_text}")
             return []
         except Exception as e:
-            print(f"❌ 解析计划时发生未知错误: {e}")
+            print(f"❌ Неизвестная ошибка при разборе плана: {e}")
             return []
 
-# --- 3. 执行器 (Executor) 定义 ---
+# --- 3. Исполнитель (Executor) ---
 EXECUTOR_PROMPT_TEMPLATE = """
-你是一位顶级的AI执行专家。你的任务是严格按照给定的计划，一步步地解决问题。
-你将收到原始问题、完整的计划、以及到目前为止已经完成的步骤和结果。
-请你专注于解决“当前步骤”，并仅输出该步骤的最终答案，不要输出任何额外的解释或对话。
+Ты — эксперт по исполнению планов для ИИ. Строго следуй данному плану, шаг за шагом.
+Тебе даны исходный вопрос, полный план и уже выполненные шаги с результатами.
+Сосредоточься на «текущем шаге» и выдай только его итоговый ответ — без лишних пояснений.
 
-# 原始问题:
+# Исходный вопрос:
 {question}
 
-# 完整计划:
+# Полный план:
 {plan}
 
-# 历史步骤与结果:
+# История шагов и результатов:
 {history}
 
-# 当前步骤:
+# Текущий шаг:
 {current_step}
 
-请仅输出针对“当前步骤”的回答:
+Выведи только ответ для «текущего шага»:
 """
 
 class Executor:
@@ -82,23 +82,23 @@ class Executor:
         history = ""
         final_answer = ""
         
-        print("\n--- 正在执行计划 ---")
+        print("\n--- Исполнение плана ---")
         for i, step in enumerate(plan, 1):
-            print(f"\n-> 正在执行步骤 {i}/{len(plan)}: {step}")
+            print(f"\n-> Шаг {i}/{len(plan)}: {step}")
             prompt = EXECUTOR_PROMPT_TEMPLATE.format(
-                question=question, plan=plan, history=history if history else "无", current_step=step
+                question=question, plan=plan, history=history if history else "нет", current_step=step
             )
             messages = [{"role": "user", "content": prompt}]
             
             response_text = self.llm_client.think(messages=messages) or ""
             
-            history += f"步骤 {i}: {step}\n结果: {response_text}\n\n"
+            history += f"Шаг {i}: {step}\nРезультат: {response_text}\n\n"
             final_answer = response_text
-            print(f"✅ 步骤 {i} 已完成，结果: {final_answer}")
+            print(f"✅ Шаг {i} выполнен, результат: {final_answer}")
             
         return final_answer
 
-# --- 4. 智能体 (Agent) 整合 ---
+# --- 4. Сборка агента ---
 class PlanAndSolveAgent:
     def __init__(self, llm_client: HelloAgentsLLM):
         self.llm_client = llm_client
@@ -106,20 +106,20 @@ class PlanAndSolveAgent:
         self.executor = Executor(self.llm_client)
 
     def run(self, question: str):
-        print(f"\n--- 开始处理问题 ---\n问题: {question}")
+        print(f"\n--- Обработка вопроса ---\nВопрос: {question}")
         plan = self.planner.plan(question)
         if not plan:
-            print("\n--- 任务终止 --- \n无法生成有效的行动计划。")
+            print("\n--- Задача прервана ---\nНе удалось сформировать план.")
             return
         final_answer = self.executor.execute(question, plan)
-        print(f"\n--- 任务完成 ---\n最终答案: {final_answer}")
+        print(f"\n--- Готово ---\nИтоговый ответ: {final_answer}")
 
-# --- 5. 主函数入口 ---
+# --- 5. Точка входа ---
 if __name__ == '__main__':
     try:
         llm_client = HelloAgentsLLM()
         agent = PlanAndSolveAgent(llm_client)
-        question = "一个水果店周一卖出了15个苹果。周二卖出的苹果数量是周一的两倍。周三卖出的数量比周二少了5个。请问这三天总共卖出了多少个苹果？"
+        question = "В понедельник фруктовый магазин продал 15 яблок. Во вторник — вдвое больше, чем в понедельник. В среду — на 5 меньше, чем во вторник. Сколько яблок продали за три дня?"
         agent.run(question)
     except ValueError as e:
         print(e)

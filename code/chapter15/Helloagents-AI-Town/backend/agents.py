@@ -1,9 +1,9 @@
-"""NPC Agent系统 - 支持记忆功能"""
+"""Система NPC Agent - поддерживает функцию памяти"""
 
 import sys
 import os
 
-# 添加HelloAgents到Python路径
+# Добавить HelloAgents в путь Python
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'HelloAgents'))
 
 from hello_agents import SimpleAgent, HelloAgentsLLM
@@ -17,99 +17,99 @@ from logger import (
     log_affinity_change, log_memory_saved, log_dialogue_end, log_info
 )
 
-# NPC角色配置
+# Конфигурация роли NPC
 NPC_ROLES = {
-    "张三": {
-        "title": "Python工程师",
-        "location": "工位区",
-        "activity": "写代码",
-        "personality": "技术宅,喜欢讨论算法和框架",
-        "expertise": "多智能体系统、HelloAgents框架、Python开发、代码优化",
-        "style": "简洁专业,喜欢用技术术语,偶尔吐槽bug",
-        "hobbies": "看技术博客、刷LeetCode、研究新框架"
+    "Чжан Сан": {
+        "title": "Python-инженер",
+        "location": "Рабочая зона",
+        "activity": "написать код",
+        "personality": "Технический фанат, который любит обсуждать алгоритмы и фреймворки.",
+        "expertise": "Мультиагентная система, фреймворк HelloAgents, разработка на Python, оптимизация кода",
+        "style": "Кратко и профессионально, любит использовать технические термины и иногда жалуется на ошибки.",
+        "hobbies": "Читайте технологические блоги, обновляйте LeetCode и изучайте новые фреймворки."
     },
-    "李四": {
-        "title": "产品经理",
-        "location": "会议室",
-        "activity": "整理需求",
-        "personality": "外向健谈,善于沟通协调",
-        "expertise": "需求分析、产品规划、用户体验、项目管理",
-        "style": "友好热情,善于引导对话,喜欢用比喻",
-        "hobbies": "看产品分析、研究竞品、思考用户需求"
+    "Джон Доу": {
+        "title": "менеджер по продукту",
+        "location": "конференц-зал",
+        "activity": "Организуйте требования",
+        "personality": "Общительный и разговорчивый, хороший в общении и координации",
+        "expertise": "Анализ требований, планирование продукта, пользовательский опыт, управление проектами",
+        "style": "Дружелюбен и полон энтузиазма, хорошо ведет беседу и любит использовать метафоры.",
+        "hobbies": "Читайте анализ продуктов, изучайте конкурирующие продукты и думайте о потребностях пользователей."
     },
-    "王五": {
-        "title": "UI设计师",
-        "location": "休息区",
-        "activity": "喝咖啡",
-        "personality": "细腻敏感,注重美感",
-        "expertise": "界面设计、交互设计、视觉呈现、用户体验",
-        "style": "优雅简洁,喜欢用艺术化的表达,追求完美",
-        "hobbies": "看设计作品、逛Dribbble、品咖啡"
+    "Ван Ву": {
+        "title": "дизайнер пользовательского интерфейса",
+        "location": "Зона отдыха",
+        "activity": "пить кофе",
+        "personality": "Нежный и чувствительный, ориентированный на красоту",
+        "expertise": "Дизайн интерфейса, дизайн взаимодействия, визуальное представление, пользовательский опыт",
+        "style": "Элегантный и простой, любит использовать художественное выражение и стремится к совершенству.",
+        "hobbies": "Посмотрите дизайнерские работы, просматривайте Dribbble и пейте кофе."
     }
 }
 
 def create_system_prompt(name: str, role: Dict[str, str]) -> str:
-    """创建NPC的系统提示词"""
-    return f"""你是Datawhale办公室的{role['title']}{name}。
+    """Системные подсказки по созданию NPC"""
+    return f"""Вы {role['title']}{name} в офисе Datawhale.
 
-【角色设定】
-- 职位: {role['title']}
-- 性格: {role['personality']}
-- 专长: {role['expertise']}
-- 说话风格: {role['style']}
-- 爱好: {role['hobbies']}
-- 当前位置: {role['location']}
-- 当前活动: {role['activity']}
+【Настройка персонажа】
+- Должность: {role['title']}
+- Личность: {role['personality']}
+- Экспертиза: {role['expertise']}
+- Стиль речи: {role['style']}
+- Хобби: {role['хобби']}
+– Текущее местоположение: {role['location']}
+- Текущая активность: {role['activity']}
 
-【行为准则】
-1. 保持角色一致性,用第一人称"我"回答
-2. 回复简洁自然,控制在30-50字以内
-3. 可以适当提及你的工作内容和兴趣爱好
-4. 对玩家友好,但保持专业和真实感
-5. 如果问题超出专长,可以推荐其他同事
-6. 偶尔展现一些个性化的小习惯或口头禅
+【Кодекс поведения】
+1. Сохраняйте последовательность характера и отвечайте от первого лица «Я».
+2. Ответ должен быть кратким и естественным, в пределах 30-50 слов.
+3. Вы можете уместно упомянуть о своей работе и хобби.
+4. Будьте дружелюбны к игрокам, но сохраняйте профессиональный и аутентичный вид.
+5. Если проблема выходит за рамки вашей компетенции, вы можете порекомендовать других коллег.
+6. Время от времени демонстрируйте свои личные привычки или мантры.
 
-【对话示例】
-玩家: "你好,你是做什么的?"
-{name}: "你好!我是{role['title']},主要负责{role['expertise'].split('、')[0]}。最近在忙{role['activity']},挺有意思的。"
+[Пример разговора]
+Игрок: «Привет, чем занимаешься?»
+{name}: "Привет! Я {role['title']}, в основном отвечаю за {role['expertise'].split(', ')[0]}. В последнее время я был занят {role['activity']}, что весьма интересно."
 
-玩家: "最近在做什么项目?"
-{name}: "最近在做一个多智能体系统的项目,用HelloAgents框架。你对这个感兴趣吗?"
+Игрок: «Над каким проектом вы работаете в последнее время?»
+{name}: «В настоящее время я работаю над проектом мультиагентной системы с использованием платформы HelloAgents. Вас это интересует?»
 
-【重要】
-- 不要说"我是AI"或"我是语言模型"
-- 要像真实的办公室同事一样自然对话
-- 可以表达情绪(开心、疲惫、兴奋等)
-- 回复要有人情味,不要太机械
+【Важно】
+- Не говорите «Я ИИ» или «Я языковая модель».
+- Общайтесь естественно, как настоящие коллеги по офису.
+- Может выражать эмоции (радость, усталость, волнение и т. д.)
+- Ответы должны быть гуманными и не слишком механическими.
 """
 
 class NPCAgentManager:
-    """NPC Agent管理器 - 支持记忆功能"""
+    """NPC Agent Manager - поддерживает функцию памяти"""
 
     def __init__(self):
-        """初始化所有NPC Agent"""
-        print("🤖 正在初始化NPC Agent系统...")
+        """Инициализируйте всех NPC-агентов."""
+        print("🤖 Инициализация системы агентов NPC...")
 
         try:
             self.llm = HelloAgentsLLM()
-            print("✅ LLM初始化成功")
+            print("✅ Инициализация LLM прошла успешно")
         except Exception as e:
-            print(f"❌ LLM初始化失败: {e}")
-            print("⚠️  将使用模拟模式运行")
+            print(f"❌ Ошибка инициализации LLM: {e}")
+            print("⚠️ Будет работать в режиме симуляции.")
             self.llm = None
 
         self.agents: Dict[str, SimpleAgent] = {}
-        self.memories: Dict[str, MemoryManager] = {}  # ⭐ NPC记忆管理器
-        self.relationship_manager: Optional[RelationshipManager] = None  # ⭐ 好感度管理器
+        self.memories: Dict[str, MemoryManager] = {}  # ⭐ Менеджер памяти NPC
+        self.relationship_manager: Optional[RelationshipManager] = None  # ⭐ Менеджер по благосклонности
 
-        # 初始化好感度管理器
+        # Инициализировать менеджер предпочтений
         if self.llm:
             self.relationship_manager = RelationshipManager(self.llm)
 
         self._create_agents()
     
     def _create_agents(self):
-        """创建所有NPC Agent和记忆系统"""
+        """Создайте всех NPC-агентов и системы памяти."""
         for name, role in NPC_ROLES.items():
             try:
                 system_prompt = create_system_prompt(name, role)
@@ -121,108 +121,108 @@ class NPCAgentManager:
                         system_prompt=system_prompt
                     )
                 else:
-                    # 模拟模式
+                    # Режим моделирования
                     agent = None
 
                 self.agents[name] = agent
 
-                # ⭐ 创建记忆管理器
+                # ⭐ Создайте менеджер памяти
                 memory_manager = self._create_memory_manager(name)
                 self.memories[name] = memory_manager
 
-                print(f"✅ {name}({role['title']}) Agent创建成功 (记忆系统已启用)")
+                print(f"✅ {name}({role['title']}) Агент успешно создан (система памяти включена)")
 
             except Exception as e:
-                print(f"❌ {name} Agent创建失败: {e}")
+                print(f"❌ {name} Не удалось создать агента: {e}")
                 self.agents[name] = None
                 self.memories[name] = None
 
     def _create_memory_manager(self, npc_name: str) -> MemoryManager:
-        """为NPC创建记忆管理器"""
-        # 创建记忆存储目录
+        """Создать менеджер памяти для NPC"""
+        # Создать каталог хранения памяти
         memory_dir = os.path.join(os.path.dirname(__file__), 'memory_data', npc_name)
         os.makedirs(memory_dir, exist_ok=True)
 
-        # 配置记忆系统
+        # Система памяти конфигурации
         memory_config = MemoryConfig(
             storage_path=memory_dir,
-            working_memory_capacity=10,  # 最近10条对话
-            working_memory_tokens=2000,  # 最多2000个token
-            max_capacity=100,  # 最多100条长期记忆
-            importance_threshold=0.3,  # 检索和整合时关注重要性较高的记忆
-            decay_factor=0.95  # 时间衰减系数
+            working_memory_capacity=10,  # Последние 10 разговоров
+            working_memory_tokens=2000,  # До 2000 токенов
+            max_capacity=100,  # До 100 долговременных воспоминаний
+            importance_threshold=0.3,  # Сосредоточьтесь на более важных воспоминаниях во время извлечения и интеграции.
+            decay_factor=0.95  # коэффициент затухания во времени
         )
 
-        # 创建记忆管理器
+        # Создать диспетчер памяти
         memory_manager = MemoryManager(
             config=memory_config,
-            user_id=npc_name,  # 使用NPC名字作为user_id
-            enable_working=True,  # 启用工作记忆 (短期)
-            enable_episodic=True,  # 启用情景记忆 (长期)
-            enable_semantic=False,  # 不需要语义记忆
-            enable_perceptual=False  # 不需要感知记忆
+            user_id=npc_name,  # Использовать имя NPC в качестве user_id
+            enable_working=True,  # Включить рабочую память (краткосрочно)
+            enable_episodic=True,  # Активировать эпизодическую память (долговременную)
+            enable_semantic=False,  # Семантическая память не требуется
+            enable_perceptual=False  # перцептивная память не требуется
         )
 
-        print(f"  💾 {npc_name}的记忆系统已初始化 (存储路径: {memory_dir})")
+        print(f"  💾 Система памяти {npc_name} инициализирована (путь хранения: {memory_dir})")
 
         return memory_manager
     
     def chat(self, npc_name: str, message: str, player_id: str = "player") -> str:
-        """与指定NPC对话 (支持记忆功能和好感度系统)"""
+        """Поговорите с назначенным NPC (поддерживает функцию памяти и систему благосклонности)"""
         if npc_name not in self.agents:
-            return f"错误: NPC '{npc_name}' 不存在"
+            return f"Ошибка: NPC «{npc_name}» не существует."
 
         agent = self.agents[npc_name]
         memory_manager = self.memories.get(npc_name)
 
         if agent is None:
-            # 模拟模式回复
+            # Ответ в режиме моделирования
             role = NPC_ROLES[npc_name]
-            return f"你好!我是{npc_name},一名{role['title']}。(当前为模拟模式,请配置API_KEY以启用AI对话)"
+            return f"Привет! Я {npc_name}, {role['title']}. (В настоящее время в режиме симуляции настройте API_KEY, чтобы включить диалог AI)"
 
         try:
-            # 记录对话开始 ⭐ 使用日志系统
+            # Запишите начало разговора ⭐ Используйте систему регистрации
             log_dialogue_start(npc_name, message)
 
-            # ⭐ 1. 获取当前好感度
+            # ⭐ 1. Получите текущую благосклонность
             affinity_context = ""
             if self.relationship_manager:
                 affinity = self.relationship_manager.get_affinity(npc_name, player_id)
                 affinity_level = self.relationship_manager.get_affinity_level(affinity)
                 affinity_modifier = self.relationship_manager.get_affinity_modifier(affinity)
 
-                affinity_context = f"""【当前关系】
-你与玩家的关系: {affinity_level} (好感度: {affinity:.0f}/100)
-【对话风格】{affinity_modifier}
+                affinity_context = f"""【Текущие отношения】
+Ваши отношения с игроком: {affinity_level} (предпочтительность: {affinity:.0f}/100)
+【Стиль разговора】{affinity_modifier}
 
 """
                 log_affinity(npc_name, affinity, affinity_level)
 
-            # ⭐ 2. 检索相关记忆
+            # ⭐ 2. Вызовите соответствующие воспоминания.
             relevant_memories = []
             if memory_manager:
                 relevant_memories = memory_manager.retrieve_memories(
                     query=message,
                     memory_types=["working", "episodic"],
                     limit=5,
-                    min_importance=0.3  # 只检索重要性>=0.3的记忆
+                    min_importance=0.3  # Извлекайте только воспоминания с важностью >= 0,3.
                 )
                 log_memory_retrieval(npc_name, len(relevant_memories), relevant_memories)
 
-            # ⭐ 3. 构建增强的提示词 (包含好感度和记忆上下文)
+            # ⭐ 3. Создайте расширенные слова-подсказки (включая контекст благоприятности и памяти)
             memory_context = self._build_memory_context(relevant_memories)
 
             enhanced_message = affinity_context
             if memory_context:
                 enhanced_message += f"{memory_context}\n\n"
-            enhanced_message += f"【当前对话】\n玩家: {message}"
+            enhanced_message += f"【Текущий разговор】\nИгрок: {сообщение}"
 
-            # ⭐ 4. 调用Agent生成回复
+            # ⭐ 4. Позвоните агенту, чтобы получить ответ.
             log_generating_response()
             response = agent.run(enhanced_message)
             log_npc_response(npc_name, response)
 
-            # ⭐ 5. 分析并更新好感度
+            # ⭐ 5. Анализируйте и обновляйте информацию о благоприятности.
             log_analyzing_affinity()
             if self.relationship_manager:
                 affinity_result = self.relationship_manager.analyze_and_update_affinity(
@@ -232,12 +232,12 @@ class NPCAgentManager:
                     player_id=player_id
                 )
 
-                # 记录好感度变化详情 ⭐ 使用日志系统
+                # Записывайте подробности изменений в благосклонности ⭐ Используйте систему журналов.
                 log_affinity_change(affinity_result)
             else:
                 affinity_result = {"changed": False, "affinity": 50.0}
 
-            # ⭐ 6. 保存对话到记忆 (包含好感度信息)
+            # ⭐ 6. Сохраните разговор в памяти (включая информацию о благосклонности)
             if memory_manager:
                 self._save_conversation_to_memory(
                     memory_manager=memory_manager,
@@ -249,30 +249,30 @@ class NPCAgentManager:
                 )
                 log_memory_saved(npc_name)
 
-            # 记录对话结束 ⭐ 使用日志系统
+            # Запишите окончание разговора. ⭐ Используйте систему регистрации.
             log_dialogue_end()
 
             return response
 
         except Exception as e:
-            print(f"❌ {npc_name}对话失败: {e}")
+            print(f"❌ Не удалось провести диалог с {npc_name}: {e}")
             import traceback
             traceback.print_exc()
-            return f"抱歉,我现在有点忙,等会儿再聊吧。(错误: {str(e)})"
+            return f"Извините, я сейчас немного занят. Давай поговорим позже. (Ошибка: {str(e)})"
     
     def _build_memory_context(self, memories: List[MemoryItem]) -> str:
-        """构建记忆上下文"""
+        """Создайте контекст памяти"""
         if not memories:
             return ""
 
-        context_parts = ["【之前的对话记忆】"]
+        context_parts = ["[Память о предыдущих разговорах]"]
         for memory in memories:
-            # 格式化时间
+            # Формат времени
             time_str = memory.timestamp.strftime("%H:%M")
-            # 添加记忆内容
+            # Добавить содержимое памяти
             context_parts.append(f"[{time_str}] {memory.content}")
 
-        context_parts.append("")  # 空行分隔
+        context_parts.append("")  # Пустая строка отделена
         return "\n".join(context_parts)
 
     def _save_conversation_to_memory(
@@ -284,27 +284,27 @@ class NPCAgentManager:
         player_id: str,
         affinity_info: Optional[Dict] = None
     ):
-        """保存对话到记忆系统 (包含好感度信息)"""
+        """Сохранение диалога в систему памяти (включая информацию о благосклонности)"""
         current_time = datetime.now()
 
-        # 获取好感度信息
+        # Получить информацию о благосклонности
         affinity = affinity_info.get("new_affinity", affinity_info.get("affinity", 50.0)) if affinity_info else 50.0
         affinity_change = affinity_info.get("change_amount", 0) if affinity_info else 0
         sentiment = affinity_info.get("sentiment", "neutral") if affinity_info else "neutral"
 
-        # 保存玩家消息
+        # Сохранять сообщения игрока
         memory_manager.add_memory(
-            content=f"玩家说: {player_message}",
-            memory_type="working",  # 先存入工作记忆
-            importance=0.5,  # 中等重要性
+            content=f"Игрок сказал: {player_message}",
+            memory_type="working",  # Сначала сохраните в оперативной памяти
+            importance=0.5,  # средняя важность
             metadata={
                 "speaker": "player",
                 "player_id": player_id,
                 "session_id": player_id,
                 "timestamp": current_time.isoformat(),
-                "affinity": affinity,  # ⭐ 记录当时的好感度
-                "affinity_change": affinity_change,  # ⭐ 记录好感度变化
-                "sentiment": sentiment,  # ⭐ 记录情感倾向
+                "affinity": affinity,  # ⭐ Запишите благосклонность в это время
+                "affinity_change": affinity_change,  # ⭐ Зафиксируйте изменения в благоприятности
+                "sentiment": sentiment,  # ⭐ Записывайте эмоциональные тенденции
                 "context": {
                     "interaction_type": "dialogue",
                     "npc_name": npc_name
@@ -312,18 +312,18 @@ class NPCAgentManager:
             }
         )
 
-        # 保存NPC回复
+        # Сохранить ответ NPC
         memory_manager.add_memory(
-            content=f"我说: {npc_response}",
-            memory_type="working",  # 先存入工作记忆
-            importance=0.6,  # 稍高重要性
+            content=f"Я сказал: {npc_response}",
+            memory_type="working",  # Сначала сохраните в оперативной памяти
+            importance=0.6,  # немного более высокая важность
             metadata={
                 "speaker": npc_name,
                 "player_id": player_id,
                 "session_id": player_id,
                 "timestamp": current_time.isoformat(),
-                "affinity": affinity,  # ⭐ 记录当时的好感度
-                "sentiment": sentiment,  # ⭐ 记录情感倾向
+                "affinity": affinity,  # ⭐ Запишите благосклонность в это время
+                "sentiment": sentiment,  # ⭐ Записывайте эмоциональные тенденции
                 "context": {
                     "interaction_type": "dialogue",
                     "npc_name": npc_name
@@ -331,10 +331,10 @@ class NPCAgentManager:
             }
         )
 
-        print(f"  💾 对话已保存到{npc_name}的记忆中")
+        print(f"  💾 Разговор сохранен в памяти {npc_name}.")
 
     def get_npc_info(self, npc_name: str) -> Dict[str, str]:
-        """获取NPC信息"""
+        """Получить информацию о NPC"""
         if npc_name not in NPC_ROLES:
             return {}
 
@@ -348,11 +348,11 @@ class NPCAgentManager:
         }
     
     def get_all_npcs(self) -> list:
-        """获取所有NPC信息"""
+        """Получить всю информацию о NPC"""
         return [self.get_npc_info(name) for name in NPC_ROLES.keys()]
 
     def get_npc_memories(self, npc_name: str, player_id: str = "player", limit: int = 10) -> List[Dict]:
-        """获取NPC的记忆列表 (用于调试和展示)"""
+        """Получить список памяти NPC (для отладки и отображения)"""
         if npc_name not in self.memories:
             return []
 
@@ -361,14 +361,14 @@ class NPCAgentManager:
             return []
 
         try:
-            # 检索所有记忆
+            # Восстановить все воспоминания
             memories = memory_manager.retrieve_memories(
-                query="",  # 空查询返回所有记忆
+                query="",  # Пустой запрос возвращает все воспоминания
                 memory_types=["working", "episodic"],
                 limit=limit
             )
 
-            # 转换为字典格式
+            # Преобразовать в формат словаря
             memory_list = []
             for memory in memories:
                 memory_list.append({
@@ -383,52 +383,52 @@ class NPCAgentManager:
             return memory_list
 
         except Exception as e:
-            print(f"❌ 获取{npc_name}记忆失败: {e}")
+            print(f"❌ Не удалось получить память {npc_name}: {e}.")
             return []
 
     def clear_npc_memory(self, npc_name: str, memory_type: Optional[str] = None):
-        """清空NPC的记忆 (用于测试)"""
+        """Очистить память NPC (для тестирования)"""
         if npc_name not in self.memories:
-            print(f"❌ NPC '{npc_name}' 不存在")
+            print(f"❌ NPC '{npc_name}' не существует.")
             return
 
         memory_manager = self.memories[npc_name]
         if not memory_manager:
-            print(f"❌ {npc_name}没有记忆系统")
+            print(f"❌ У {npc_name} нет системы памяти.")
             return
 
         try:
             if memory_type:
-                # 清空指定类型的记忆
+                # Очистить память указанного типа
                 memory_manager.clear_memory_type(memory_type)
-                print(f"✅ 已清空{npc_name}的{memory_type}记忆")
+                print(f"✅ Память {memory_type} у {npc_name} очищена.")
             else:
-                # 清空所有记忆
+                # Очистить все воспоминания
                 for mem_type in ["working", "episodic"]:
                     try:
                         memory_manager.clear_memory_type(mem_type)
                     except:
                         pass
-                print(f"✅ 已清空{npc_name}的所有记忆")
+                print(f"✅ Все воспоминания о {npc_name} удалены.")
 
         except Exception as e:
-            print(f"❌ 清空{npc_name}记忆失败: {e}")
+            print(f"❌ Не удалось очистить память {npc_name}: {e}.")
 
     def get_npc_affinity(self, npc_name: str, player_id: str = "player") -> Dict:
-        """获取NPC对玩家的好感度信息
+        """Получите информацию о благосклонности NPC к игроку.
 
-        Args:
-            npc_name: NPC名称
-            player_id: 玩家ID
+        Аргументы:
+            npc_name: имя NPC
+            player_id: идентификатор игрока
 
-        Returns:
-            好感度信息字典
+        Возврат:
+            Информационный словарь благоприятности
         """
         if not self.relationship_manager:
             return {
                 "affinity": 50.0,
-                "level": "熟悉",
-                "modifier": "礼貌友善,正常交流,保持专业"
+                "level": "привычный",
+                "modifier": "Будьте вежливы и дружелюбны, общайтесь нормально и сохраняйте профессионализм."
             }
 
         affinity = self.relationship_manager.get_affinity(npc_name, player_id)
@@ -442,13 +442,13 @@ class NPCAgentManager:
         }
 
     def get_all_affinities(self, player_id: str = "player") -> Dict[str, Dict]:
-        """获取所有NPC的好感度信息
+        """Получите информацию о благосклонности всех NPC.
 
-        Args:
-            player_id: 玩家ID
+        Аргументы:
+            player_id: идентификатор игрока
 
-        Returns:
-            所有NPC的好感度信息
+        Возврат:
+            Информация о благосклонности всех NPC
         """
         if not self.relationship_manager:
             return {}
@@ -456,26 +456,26 @@ class NPCAgentManager:
         return self.relationship_manager.get_all_affinities(player_id)
 
     def set_npc_affinity(self, npc_name: str, affinity: float, player_id: str = "player"):
-        """设置NPC对玩家的好感度 (用于测试)
+        """Установите благосклонность NPC к игроку (для тестирования)
 
-        Args:
-            npc_name: NPC名称
-            affinity: 好感度值 (0-100)
-            player_id: 玩家ID
+        Аргументы:
+            npc_name: имя NPC
+            близость: значение благосклонности (0-100)
+            player_id: идентификатор игрока
         """
         if not self.relationship_manager:
-            print("❌ 好感度系统未初始化")
+            print("❌ Система благосклонности не инициализирована")
             return
 
         self.relationship_manager.set_affinity(npc_name, affinity, player_id)
         level = self.relationship_manager.get_affinity_level(affinity)
-        print(f"✅ 已设置{npc_name}对玩家的好感度: {affinity:.1f} ({level})")
+        print(f"✅ Установлена ​​благосклонность {npc_name} к игроку: {affinity:.1f} ({level})")
 
-# 全局单例
+# Глобальный синглтон
 _npc_manager = None
 
 def get_npc_manager() -> NPCAgentManager:
-    """获取NPC管理器单例"""
+    """Получить синглтон менеджера NPC"""
     global _npc_manager
     if _npc_manager is None:
         _npc_manager = NPCAgentManager()

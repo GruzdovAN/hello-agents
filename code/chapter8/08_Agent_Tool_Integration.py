@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-代码示例 08: Agent工具集成
-展示如何在HelloAgents框架中集成MemoryTool和RAGTool
+Пример кода 08: Интеграция инструментов агента
+Покажите, как интегрировать MemoryTool и RAGTool в среду HelloAgents.
 """
 
 from dotenv import load_dotenv
@@ -12,18 +12,18 @@ from hello_agents import SimpleAgent, HelloAgentsLLM, ToolRegistry
 from hello_agents.tools import MemoryTool, RAGTool
 
 class AgentIntegrationDemo:
-    """Agent工具集成演示类"""
+    """Демонстрационный класс по интеграции инструментов агента"""
     
     def __init__(self):
         self.setup_agent()
     
     def setup_agent(self):
-        """设置Agent和工具"""
-        print("🤖 Agent工具集成设置")
+        """Настройка агентов и инструментов"""
+        print("🤖Настройки интеграции инструментов агента")
         print("=" * 50)
         
-        # 初始化工具
-        print("1. 初始化工具...")
+        # Инструмент инициализации
+        print("1. Инструмент инициализации...")
         self.memory_tool = MemoryTool(
             user_id="agent_integration_user",
             memory_types=["working", "episodic", "semantic", "perceptual"]
@@ -34,262 +34,262 @@ class AgentIntegrationDemo:
             rag_namespace="agent_demo"
         )
         
-        print("✅ MemoryTool和RAGTool初始化完成")
+        print("✅ Инициализация MemoryTool и RAGTool завершена")
         
-        # 创建Agent
-        print("\n2. 创建Agent...")
+        # СоздатьАгент
+        print("\n2. Создать агента...")
         self.llm = HelloAgentsLLM()
         self.agent = SimpleAgent(
-            name="智能学习助手",
+            name="Интеллектуальный помощник в обучении",
             llm=self.llm,
-            system_prompt="集成记忆和RAG功能的智能助手"
+            system_prompt="Интеллектуальный помощник со встроенной памятью и функциями RAG."
         )
         
-        print("✅ Agent创建完成")
+        print("✅ Создание агента завершено")
         
-        # 注册工具
-        print("\n3. 注册工具...")
+        # Инструмент регистрации
+        print("\n3. Инструмент регистрации...")
         self.tool_registry = ToolRegistry()
         self.tool_registry.register_tool(self.memory_tool)
         self.tool_registry.register_tool(self.rag_tool)
         self.agent.tool_registry = self.tool_registry
         
-        print("✅ 工具注册完成")
+        print("✅ Регистрация инструмента завершена")
         
-        # 显示Agent状态
-        print(f"\n📊 Agent状态:")
-        print(f"  名称: {self.agent.name}")
-        print(f"  描述: {self.agent.system_prompt}")
-        print(f"  可用工具: {list(self.tool_registry._tools.keys())}")
+        # Показать статус агента
+        print(f"\n📊 Статус агента:")
+        print(f"  Имя: {self.agent.name}")
+        print(f"  Описание: {self.agent.system_prompt}")
+        print(f"  Доступные инструменты: {list(self.tool_registry._tools.keys())}")
     
     def demonstrate_tool_registry_pattern(self):
-        """演示工具注册模式"""
-        print("\n🔧 工具注册模式演示")
+        """Режим регистрации демо-инструмента"""
+        print("\n🔧 Демонстрация режима регистрации инструмента")
         print("-" * 50)
         
-        print("工具注册模式特点:")
-        print("• 🔌 统一的工具接口")
-        print("• 📋 集中的工具管理")
-        print("• 🔄 动态工具加载")
-        print("• 🎯 工具能力发现")
+        print("Особенности режима регистрации инструмента:")
+        print("• 🔌 Единый интерфейс инструмента.")
+        print("• 📋 Централизованное управление инструментами")
+        print("• 🔄 Динамическая загрузка инструментов")
+        print("• 🎯 Обнаружение возможностей инструмента.")
         
-        # 演示工具注册过程
-        print(f"\n🔧 工具注册详情:")
+        # Процесс регистрации демо-инструмента
+        print(f"\n🔧 Детали регистрации инструмента:")
         
         for tool_name, tool_instance in self.tool_registry._tools.items():
-            print(f"\n工具: {tool_name}")
-            print(f"  类型: {type(tool_instance).__name__}")
-            print(f"  描述: {tool_instance.description}")
+            print(f"\nИнструмент: {tool_name}")
+            print(f"  Тип: {тип(экземпляр_инструмента).__имя__}")
+            print(f"  Описание: {tool_instance.description}")
             
-            # 显示工具的主要功能
+            # Показаны основные функции инструмента.
             if tool_name == "memory":
-                print(f"  主要功能: 记忆管理、搜索、整合、遗忘")
-                print(f"  记忆类型: {tool_instance.memory_types}")
+                print(f"  Основные функции: управление памятью, поиск, интеграция, забывание.")
+                print(f"  Тип памяти: {tool_instance.memory_types}")
             elif tool_name == "rag":
-                print(f"  主要功能: 文档处理、智能问答、知识检索")
-                print(f"  命名空间: {tool_instance.rag_namespace}")
+                print(f"  Основные функции: обработка документов, интеллектуальные вопросы и ответы, поиск знаний.")
+                print(f"  Пространство имен: {tool_instance.rag_namespace}")
         
-        # 演示工具发现机制
-        print(f"\n🔍 工具能力发现:")
+        # Механизм обнаружения демонстрационных инструментов
+        print(f"\n🔍Обнаружение возможностей инструмента:")
         available_tools = self.tool_registry.list_tools()
-        print(f"可用工具列表: {available_tools}")
+        print(f"Список доступных инструментов: {available_tools}")
         
-        # 演示工具获取
+        # Получите демонстрационные инструменты
         memory_tool = self.tool_registry.get_tool("memory")
         rag_tool = self.tool_registry.get_tool("rag")
         
-        print(f"\n✅ 工具获取成功:")
-        print(f"  Memory工具: {type(memory_tool).__name__}")
-        print(f"  RAG工具: {type(rag_tool).__name__}")
+        print(f"\n ✅ Инструмент успешно получен:")
+        print(f"  Инструмент памяти: {type(memory_tool).__name__}")
+        print(f"  Инструмент RAG: {type(rag_tool).__name__}")
     
     def demonstrate_unified_interface(self):
-        """演示统一接口模式"""
-        print("\n🔗 统一接口模式演示")
+        """Демонстрация единого шаблона интерфейса"""
+        print("\n🔗 Демонстрация режима единого интерфейса")
         print("-" * 50)
         
-        print("统一接口优势:")
-        print("• 🎯 一致的调用方式")
-        print("• 📝 标准化的参数传递")
-        print("• 🛡️ 统一的错误处理")
-        print("• 🔄 简化的工具切换")
+        print("Преимущества единого интерфейса:")
+        print("• 🎯 Последовательный метод вызова")
+        print("• 📝 Стандартизированная передача параметров.")
+        print("• 🛡️ Единая обработка ошибок.")
+        print("• 🔄 Упрощенное переключение инструментов.")
         
-        # 演示统一的run接口
-        print(f"\n🔗 统一run接口演示:")
+        # Демонстрация единого интерфейса запуска
+        print(f"\n🔗 Демонстрация единого интерфейса запуска:")
         
-        # Memory工具操作
-        print(f"\n1. Memory工具操作:")
+        # Операции с инструментом памяти
+        print(f"\n1. Операции с инструментом памяти:")
         memory_operations = [
             ("add", {
-                "content": "学习了Agent工具集成模式",
+                "content": "Изучили модель интеграции инструментов агента.",
                 "memory_type": "episodic",
                 "importance": 0.8,
                 "topic": "agent_integration"
             }),
             ("search", {
-                "query": "Agent集成",
+                "query": "Интеграция агента",
                 "limit": 2
             }),
             ("stats", {})
         ]
         
         for operation, params in memory_operations:
-            print(f"  操作: memory.run('{operation}', {params})")
+            print(f"  Операция: Memory.run('{operation}', {params})")
             result = self.memory_tool.run({"action":operation, **params})
-            print(f"  结果: {str(result)[:100]}...")
+            print(f"  Результат: {str(результат)[:100]}...")
         
-        # RAG工具操作
-        print(f"\n2. RAG工具操作:")
+        # Работа с инструментом RAG
+        print(f"\n2. Работа инструмента RAG:")
         
-        # 先添加一些内容
+        # Сначала добавьте немного контента
         self.rag_tool.run({"action":"add_text",
-                            "text":"Agent工具集成是HelloAgents框架的核心特性，允许Agent使用多种工具来完成复杂任务。",
+                            "text":"Интеграция инструментов агентов — это основная функция платформы HelloAgents, позволяющая агентам использовать несколько инструментов для выполнения сложных задач.",
                             "document_id":"agent_integration_guide"})
         
         rag_operations = [
             ("search", {
-                "query": "Agent工具集成",
+                "query": "Интеграция инструментов агента",
                 "limit": 2
             }),
             ("ask", {
-                "question": "什么是Agent工具集成？",
+                "question": "Что такое интеграция с инструментами агента?",
                 "limit": 2
             }),
             ("stats", {})
         ]
         
         for operation, params in rag_operations:
-            print(f"  操作: rag.run('{operation}', {params})")
+            print(f"  Операция: rag.run('{operation}', {params})")
             result = self.rag_tool.run({"action":operation, **params})
-            print(f"  结果: {str(result)[:100]}...")
+            print(f"  Результат: {str(результат)[:100]}...")
     
     def demonstrate_collaborative_workflow(self):
-        """演示协同工作流程"""
-        print("\n🤝 协同工作流程演示")
+        """Продемонстрировать совместный рабочий процесс"""
+        print("\n🤝 Демонстрация совместного рабочего процесса")
         print("-" * 50)
         
-        print("协同工作场景:")
-        print("• 📚 学习新知识 → RAG存储 + Memory记录")
-        print("• 🔍 回顾学习历程 → Memory检索 + RAG补充")
-        print("• 💡 知识应用 → RAG查询 + Memory更新")
-        print("• 📊 学习分析 → 两工具统计整合")
+        print("Сценарий совместной работы:")
+        print("• 📚 Получить новые знания → Хранение ТРЯПКИ + Запись в Память")
+        print("• 🔍 Обзор процесса обучения → Восстановление памяти + дополнение RAG")
+        print("• 💡 Приложение знаний → Запрос RAG + Обновление памяти")
+        print("• 📊 Анализ обучения → Статистическая интеграция двух инструментов.")
         
-        # 场景1：学习新知识
-        print(f"\n📚 场景1：学习新知识")
+        # Сценарий 1: Получите новые знания
+        print(f"\n📚 Сценарий 1: Получение новых знаний")
         
-        # 向RAG添加学习资料
-        learning_content = """# 设计模式：观察者模式
+        # Добавить учебные материалы в RAG
+        learning_content = """# Шаблон проектирования: шаблон наблюдателя
 
-## 定义
-观察者模式定义了对象间的一对多依赖关系，当一个对象的状态发生改变时，所有依赖它的对象都会得到通知并自动更新。
+## Определение
+Паттерн Observer определяет отношения зависимости «один ко многим» между объектами. При изменении состояния объекта все объекты, зависящие от него, будут уведомлены и автоматически обновлены.
 
-## 结构
-- Subject（主题）：维护观察者列表，提供注册和删除观察者的方法
-- Observer（观察者）：定义更新接口
-- ConcreteSubject（具体主题）：实现主题接口
-- ConcreteObserver（具体观察者）：实现观察者接口
+## Структура
+- Тема: ведет список наблюдателей и предоставляет методы для регистрации и удаления наблюдателей.
+- Наблюдатель: определение интерфейса обновления.
+- ConcreteSubject (конкретная тема): реализует интерфейс темы.
+- ConcreteObserver (конкретный наблюдатель): реализует интерфейс наблюдателя.
 
-## 应用场景
-- GUI事件处理
-- 模型-视图架构
-- 发布-订阅系统
+## Сценарии применения
+- Обработка событий графического интерфейса
+- Модельно-представленная архитектура
+- система публикации-подписки
 """
         
         rag_result = self.rag_tool.run({"action":"add_text",
                                          "text":learning_content,
                                          "document_id":"observer_pattern"})
-        print(f"RAG添加结果: {rag_result}")
+        print(f"Результат добавления RAG: {rag_result}")
         
-        # 记录学习活动到记忆系统
+        # Записывайте учебную деятельность в систему памяти.
         memory_result = self.memory_tool.run({"action":"add",
-                                                "content":"学习了观察者设计模式的定义、结构和应用场景",
+                                                "content":"Изучили определение, структуру и сценарии применения шаблона проектирования наблюдателя.",
                                                 "memory_type":"episodic",
                                                 "importance":0.8,
                                                 "topic":"design_patterns",
                                                 "pattern_type":"observer"})
-        print(f"Memory记录结果: {memory_result}")
+        print(f"Результат записи в память: {memory_result}")
         
-        # 场景2：回顾学习历程
-        print(f"\n🔍 场景2：回顾学习历程")
+        # Сценарий 2: Обзор процесса обучения
+        print(f"\n🔍 Сценарий 2: Обзор процесса обучения")
         
-        # 从记忆系统检索学习历史
+        # Получить историю обучения из системы памяти
         memory_search = self.memory_tool.run({"action":"search",
-                                                "query":"设计模式学习",
+                                                "query":"Изучение шаблонов проектирования",
                                                 "limit":3})
-        print(f"学习历史回顾: {memory_search}")
+        print(f"Обзор истории обучения: {memory_search}")
         
-        # 从RAG获取相关知识补充
+        # Получите соответствующие дополнения к знаниям от RAG.
         rag_search = self.rag_tool.run({"action":"search",
-                                         "query":"观察者模式",
+                                         "query":"Шаблон наблюдателя",
                                          "limit":2})
-        print(f"知识内容补充: {rag_search}")
+        print(f"Дополнение к содержанию знаний: {rag_search}")
         
-        # 场景3：知识应用
-        print(f"\n💡 场景3：知识应用")
+        # Сценарий 3: Применение знаний
+        print(f"\n💡 Сценарий 3: Применение знаний")
         
-        # 通过RAG查询应用方法
+        # Запрос методов приложения через RAG
         application_query = self.rag_tool.run({"action":"ask",
-                                                "question":"观察者模式适用于什么场景？",
+                                                "question":"Для каких сценариев подходит шаблон наблюдателя?",
                                                 "limit":2})
-        print(f"应用场景查询: {application_query}")
+        print(f"Запрос сценария приложения: {application_query}")
         
-        # 记录应用实践到记忆
+        # Запишите практику применения в память
         application_memory = self.memory_tool.run({"action":"add",
-                                                     "content":"查询了观察者模式的应用场景，准备在GUI项目中使用",
+                                                     "content":"Запросите сценарии применения шаблона наблюдателя и подготовьтесь к его использованию в проектах с графическим интерфейсом.",
                                                      "memory_type":"working",
                                                      "importance":0.7,
                                                      "application_context":"gui_project"})
-        print(f"应用记录: {application_memory}")
+        print(f"Запись приложения: {application_memory}")
         
-        # 场景4：学习分析
-        print(f"\n📊 场景4：学习分析")
+        # Сценарий 4: Аналитика обучения
+        print(f"\n📊 Сценарий 4: Анализ обучения")
         
-        # 获取记忆系统统计
+        # Получить статистику системы памяти
         memory_stats = self.memory_tool.run({"action":"stats"})
-        print(f"记忆统计: {memory_stats}")
+        print(f"Статистика памяти: {memory_stats}")
         
-        # 获取RAG系统统计
+        # Получить статистику системы RAG
         rag_stats = self.rag_tool.run({"action":"stats"})
-        print(f"知识库统计: {rag_stats}")
+        print(f"Статистика базы знаний: {rag_stats}")
         
-        # 生成学习摘要
+        # Создание резюме исследования
         learning_summary = self.memory_tool.run({"action":"summary", "limit":5})
-        print(f"学习摘要: {learning_summary}")
+        print(f"Сводка обучения: {learning_summary}")
     
     def demonstrate_agent_orchestration(self):
-        """演示Agent编排能力"""
-        print("\n🎭 Agent编排能力演示")
+        """Демонстрация возможностей оркестрации агента"""
+        print("\n🎭Демонстрация возможностей оркестрации агентов")
         print("-" * 50)
         
-        print("Agent编排特点:")
-        print("• 🧠 智能工具选择")
-        print("• 🔄 工具链式调用")
-        print("• 📊 结果整合分析")
-        print("• 🎯 目标导向执行")
+        print("Возможности оркестрации агентов:")
+        print("• 🧠 Умный выбор инструмента")
+        print("• 🔄 Вызов цепочки инструментов")
+        print("• 📊 Комплексный анализ результатов")
+        print("• 🎯 Целенаправленное исполнение")
         
-        # 模拟复杂任务的工具编排
-        print(f"\n🎭 复杂任务编排示例:")
-        print(f"任务: 创建一个关于机器学习的学习计划")
+        # Оркестровка инструментов для моделирования сложных задач
+        print(f"\n🎭 Пример постановки сложной задачи:")
+        print(f"Задача: создать план обучения машинному обучению.")
         
-        # 步骤1：从RAG获取机器学习知识结构
-        print(f"\n步骤1: 获取知识结构")
+        # Шаг 1. Получите структуру знаний о машинном обучении от RAG.
+        print(f"\nШаг 1: Получите структуру знаний")
         
-        # 添加机器学习知识
-        ml_content = """# 机器学习学习路径
+        # Добавьте знания в области машинного обучения
+        ml_content = """# Путь обучения машинному обучению
 
-## 基础阶段
-1. 数学基础：线性代数、概率统计、微积分
-2. 编程基础：Python、NumPy、Pandas
-3. 机器学习概念：监督学习、无监督学习、强化学习
+## Базовый этап
+1. Основы математики: линейная алгебра, вероятность и статистика, исчисление.
+2. Основы программирования: Python, NumPy, Pandas.
+3. Концепции машинного обучения: обучение с учителем, обучение без учителя, обучение с подкреплением.
 
-## 进阶阶段
-1. 算法实现：从零实现经典算法
-2. 深度学习：神经网络、CNN、RNN、Transformer
-3. 实践项目：端到端机器学习项目
+## Продвинутый этап
+1. Реализация алгоритма: реализация классических алгоритмов с нуля.
+2. Глубокое обучение: нейронная сеть, CNN, RNN, Трансформер.
+3. Практический проект: проект сквозного машинного обучения.
 
-## 高级阶段
-1. 模型优化：超参数调优、模型压缩
-2. 部署运维：模型部署、监控、更新
-3. 前沿技术：最新论文、开源项目
+## Продвинутый этап
+1. Оптимизация модели: настройка гиперпараметров, сжатие модели.
+2. Развертывание и эксплуатация: развертывание модели, мониторинг и обновление.
+3. Передовые технологии: новейшие статьи, проекты с открытым исходным кодом.
 """
         
         self.rag_tool.run({"action":"add_text",
@@ -297,170 +297,170 @@ class AgentIntegrationDemo:
                             "document_id":"ml_learning_path"})
         
         knowledge_structure = self.rag_tool.run({"action":"ask",
-                                                  "question":"机器学习的学习路径是什么？",
+                                                  "question":"Каков путь обучения машинному обучению?",
                                                   "limit":3})
-        print(f"知识结构: {knowledge_structure[:200]}...")
+        print(f"Структура знаний: {knowledge_structure[:200]}...")
         
-        # 步骤2：记录学习计划到记忆系统
-        print(f"\n步骤2: 记录学习计划")
+        # Шаг 2: Запишите план обучения в систему памяти.
+        print(f"\nШаг 2: Запишите план обучения")
         
         plan_memory = self.memory_tool.run({"action":"add",
-                                             "content":"制定了机器学习学习计划，包括基础、进阶、高级三个阶段",
+                                             "content":"Разработан план обучения машинному обучению, включающий три этапа: базовый, продвинутый и продвинутый.",
                                              "memory_type":"episodic",
                                              "importance":0.9,
                                              "plan_type":"learning",
                                              "subject":"machine_learning"})
-        print(f"计划记录: {plan_memory}")
+        print(f"Запись плана: {plan_memory}")
         
-        # 步骤3：检索相关学习经验
-        print(f"\n步骤3: 检索学习经验")
+        # Шаг 3. Извлеките соответствующий опыт обучения
+        print(f"\nШаг 3. Извлеките обучающий опыт")
         
         experience_search = self.memory_tool.run({"action":"search",
-                                                    "query":"学习计划 学习经验",
+                                                    "query":"План обучения Опыт обучения",
                                                     "limit":3})
-        print(f"相关经验: {experience_search}")
+        print(f"Связанный опыт: {experience_search}")
         
-        # 步骤4：整合生成最终建议
-        print(f"\n步骤4: 生成最终建议")
+        # Шаг 4. Интегрируйте для получения окончательных рекомендаций
+        print(f"\nШаг 4. Создайте окончательные рекомендации.")
         
         final_advice = self.rag_tool.run({"action":"ask",
-                                            "question":"如何制定有效的机器学习学习计划？",
+                                            "question":"Как разработать эффективный план обучения машинному обучению?",
                                             "limit":4})
-        print(f"最终建议: {final_advice[:300]}...")
+        print(f"Последний совет: {final_advice[:300]}...")
         
-        # 记录编排过程
+        # Запишите процесс оркестровки
         orchestration_memory = self.memory_tool.run({"action":"add",
-                                                       "content":"完成了复杂的学习计划制定任务，使用了RAG和Memory的协同编排",
+                                                       "content":"Выполнил сложные задачи по составлению плана обучения, используя совместную оркестровку RAG и Memory.",
                                                        "memory_type":"working",
                                                        "importance":0.8,
                                                        "task_type":"orchestration"})
-        print(f"\n编排记录: {orchestration_memory}")
+        print(f"\nЗапись оркестрации: {orchestration_memory}")
     
     def demonstrate_performance_analysis(self):
-        """演示性能分析"""
-        print("\n📊 性能分析演示")
+        """Демонстрационный анализ производительности"""
+        print("\n📊Демонстрация анализа производительности")
         print("-" * 50)
         
-        print("性能分析指标:")
-        print("• ⏱️ 工具响应时间")
-        print("• 🔄 工具切换开销")
-        print("• 💾 内存使用情况")
-        print("• 🎯 任务完成效率")
+        print("Показатели анализа эффективности:")
+        print("• ⏱️ Время отклика инструмента")
+        print("• 🔄 Накладные расходы на переключение инструментов")
+        print("• 💾 Использование памяти")
+        print("• 🎯 Эффективность выполнения задач")
         
-        # 性能测试
-        print(f"\n📊 性能测试:")
+        # Тестирование производительности
+        print(f"\n📊Тест производительности:")
         
-        # 单工具性能测试
-        print(f"\n1. 单工具性能:")
+        # Тестирование производительности одного инструмента
+        print(f"\n1. Производительность одного инструмента:")
         
-        # Memory工具性能
+        # Производительность инструмента памяти
         start_time = time.time()
         for i in range(5):
             self.memory_tool.run({"action":"add",
-                                   "content":f"性能测试记忆 {i+1}",
+                                   "content":f"Память для тестирования производительности {i+1}",
                                    "memory_type":"working",
                                    "importance":0.5})
         memory_time = time.time() - start_time
-        print(f"Memory工具 - 5次添加操作: {memory_time:.3f}秒")
+        print(f"Инструмент памяти – 5 операций добавления: {memory_time:.3f} секунд.")
         
-        # RAG工具性能
+        # Производительность инструмента RAG
         start_time = time.time()
         for i in range(3):
             self.rag_tool.run({"action":"search",
-                                "query":f"测试查询 {i+1}",
+                                "query":f"Тестовый запрос {i+1}",
                                 "limit":2})
         rag_time = time.time() - start_time
-        print(f"RAG工具 - 3次搜索操作: {rag_time:.3f}秒")
+        print(f"Инструмент RAG — 3 операции поиска: {rag_time:.3f} секунд.")
         
-        # 协同工作性能测试
-        print(f"\n2. 协同工作性能:")
+        # Тестирование производительности совместной работы
+        print(f"\n2. Результативность сотрудничества:")
         
         start_time = time.time()
         
-        # 模拟协同工作流程
+        # Имитируйте совместный рабочий процесс
         self.rag_tool.run({"action":"add_text",
-                            "text":"这是一个性能测试文档",
+                            "text":"Это документ о проверке производительности.",
                             "document_id":"perf_test"})
         
         self.memory_tool.run({"action":"add",
-                                "content":"执行了性能测试",
+                                "content":"Проведено тестирование производительности",
                                 "memory_type":"working",
                                 "importance":0.6})
         
         rag_result = self.rag_tool.run({"action":"search",
-                                         "query":"性能测试",
+                                         "query":"Тестирование производительности",
                                          "limit":1})
         
         memory_result = self.memory_tool.run({"action":"search",
-                                                "query":"性能测试",
+                                                "query":"Тестирование производительности",
                                                 "limit":1})
         
         collaborative_time = time.time() - start_time
-        print(f"协同工作流程: {collaborative_time:.3f}秒")
+        print(f"Совместный рабочий процесс: {collaborative_time:.3f} секунд.")
         
-        # 性能分析总结
-        print(f"\n📈 性能分析总结:")
-        print(f"Memory工具平均响应: {memory_time/5:.3f}秒/操作")
-        print(f"RAG工具平均响应: {rag_time/3:.3f}秒/操作")
-        print(f"协同工作效率: {collaborative_time:.3f}秒/流程")
+        # Сводка анализа производительности
+        print(f"\n📈 Сводка анализа производительности:")
+        print(f"Средний отклик инструмента памяти: {memory_time/5:.3f} секунд/операция.")
+        print(f"Средний отклик инструмента RAG: {rag_time/3:.3f} секунд/операция")
+        print(f"Эффективность совместной работы: {collaborative_time:.3f} секунд/процесс.")
         
-        # 获取最终统计
+        # Получить окончательную статистику
         final_memory_stats = self.memory_tool.run({"action":"stats"})
         final_rag_stats = self.rag_tool.run({"action":"stats"})
         
-        print(f"\n📊 最终系统状态:")
-        print(f"Memory系统: {final_memory_stats}")
-        print(f"RAG系统: {final_rag_stats}")
+        print(f"\n📊 Окончательный статус системы:")
+        print(f"Система памяти: {final_memory_stats}")
+        print(f"Система RAG: {final_rag_stats}")
 
 def main():
-    """主函数"""
-    print("🤖 Agent工具集成演示")
-    print("展示如何在HelloAgents框架中集成MemoryTool和RAGTool")
+    """основная функция"""
+    print("🤖Демонстрация интеграции инструментов агента")
+    print("Покажите, как интегрировать MemoryTool и RAGTool в среду HelloAgents.")
     print("=" * 70)
     
     try:
         demo = AgentIntegrationDemo()
         
-        # 1. 工具注册模式演示
+        # 1. Демонстрация режима регистрации инструмента.
         demo.demonstrate_tool_registry_pattern()
         
-        # 2. 统一接口模式演示
+        # 2. Демонстрация режима единого интерфейса
         demo.demonstrate_unified_interface()
         
-        # 3. 协同工作流程演示
+        # 3. Демонстрация совместного рабочего процесса
         demo.demonstrate_collaborative_workflow()
         
-        # 4. Agent编排能力演示
+        # 4. Демонстрация возможностей оркестровки агентов.
         demo.demonstrate_agent_orchestration()
         
-        # 5. 性能分析演示
+        # 5. Демонстрация анализа производительности
         demo.demonstrate_performance_analysis()
         
         print("\n" + "=" * 70)
-        print("🎉 Agent工具集成演示完成！")
+        print("🎉 Демонстрация интеграции инструментов агента завершена!")
         print("=" * 70)
         
-        print("\n✨ Agent集成核心特性:")
-        print("1. 🔧 工具注册模式 - 统一的工具管理和发现")
-        print("2. 🔗 统一接口设计 - 一致的工具调用方式")
-        print("3. 🤝 协同工作流程 - 工具间的智能协作")
-        print("4. 🎭 智能编排能力 - 复杂任务的自动分解")
-        print("5. 📊 性能监控分析 - 全面的性能评估")
+        print("\n✨Основные функции интеграции агентов:")
+        print("1. 🔧 Режим регистрации инструментов — единое управление и обнаружение инструментов.")
+        print("2. 🔗 Единый дизайн интерфейса — единый метод вызова инструментов.")
+        print("3. 🤝 Совместный рабочий процесс — интеллектуальное сотрудничество между инструментами.")
+        print("4. 🎭 Возможности интеллектуальной оркестрации — автоматическая декомпозиция сложных задач.")
+        print("5. 📊Анализ мониторинга производительности – комплексная оценка производительности")
         
-        print("\n🎯 设计优势:")
-        print("• 模块化 - 工具独立开发，灵活组合")
-        print("• 可扩展 - 支持动态添加新工具")
-        print("• 高内聚 - 每个工具专注特定功能")
-        print("• 低耦合 - 工具间依赖关系最小")
+        print("\n🎯 Преимущества дизайна:")
+        print("• Модульность — инструменты разрабатываются независимо и могут гибко комбинироваться.")
+        print("• Расширяемость — поддерживает динамическое добавление новых инструментов.")
+        print("• Высокая сплоченность: каждый инструмент ориентирован на конкретную функциональность.")
+        print("• Низкая связанность — минимальные зависимости между инструментами.")
         
-        print("\n💡 应用价值:")
-        print("• 智能助手 - 构建多功能智能助手")
-        print("• 知识管理 - 企业级知识管理系统")
-        print("• 学习平台 - 个性化学习支持系统")
-        print("• 决策支持 - 基于知识和经验的决策")
+        print("\n💡 Стоимость приложения:")
+        print("• Умный помощник. Создайте многофункционального умного помощника.")
+        print("• Управление знаниями – система управления знаниями на уровне предприятия.")
+        print("• Платформа обучения – персонализированная система поддержки обучения.")
+        print("• Поддержка принятия решений – принятие решений на основе знаний и опыта.")
         
     except Exception as e:
-        print(f"\n❌ 演示过程中发生错误: {e}")
+        print(f"\n❌ Во время демонстрации произошла ошибка: {e}")
         import traceback
         traceback.print_exc()
 

@@ -1,6 +1,6 @@
 """
-工具函数模块
-提供常用的辅助函数
+Функциональный модуль инструмента
+Обеспечить часто используемые вспомогательные функции
 """
 
 import json
@@ -11,26 +11,26 @@ from typing import Any, Dict, List
 
 def load_config(config_path: str) -> Dict[str, Any]:
     """
-    加载配置文件
+    Загрузить файл конфигурации
     
-    Args:
-        config_path: 配置文件路径
+    Аргументы:
+        config_path: путь к файлу конфигурации
         
-    Returns:
-        配置字典
+    Возврат:
+        Словарь конфигурации
     """
-    # TODO: 支持多种配置文件格式
+    # TODO: поддержка нескольких форматов файлов конфигурации.
     with open(config_path, 'r') as f:
         return json.load(f)
 
 
 def save_config(config: Dict[str, Any], config_path: str) -> None:
     """
-    保存配置到文件
+    Сохраняем конфигурацию в файл
     
-    Args:
-        config: 配置字典
-        config_path: 配置文件路径
+    Аргументы:
+        config: словарь конфигурации
+        config_path: путь к файлу конфигурации
     """
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=2)
@@ -38,20 +38,20 @@ def save_config(config: Dict[str, Any], config_path: str) -> None:
 
 def get_timestamp() -> str:
     """
-    获取当前时间戳
+    Получить текущую временную метку
     
-    Returns:
-        ISO格式的时间戳字符串
+    Возврат:
+        Строка временной метки в формате ISO
     """
     return datetime.now().isoformat()
 
 
 def ensure_dir(directory: str) -> None:
     """
-    确保目录存在，不存在则创建
+    Убедитесь, что каталог существует, создайте его, если он не существует.
     
-    Args:
-        directory: 目录路径
+    Аргументы:
+        каталог: путь к каталогу
     """
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -59,15 +59,15 @@ def ensure_dir(directory: str) -> None:
 
 def format_size(size_bytes: int) -> str:
     """
-    格式化文件大小
+    Размер файла формата
     
-    Args:
-        size_bytes: 字节数
+    Аргументы:
+        size_bytes: количество байтов
         
-    Returns:
-        格式化后的大小字符串
+    Возврат:
+        Форматированная строка размера
     """
-    # TODO: 优化格式化逻辑
+    # ЗАДАЧА: Оптимизировать логику форматирования
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
         if size_bytes < 1024.0:
             return f"{size_bytes:.2f} {unit}"
@@ -77,13 +77,13 @@ def format_size(size_bytes: int) -> str:
 
 def validate_email(email: str) -> bool:
     """
-    验证邮箱地址格式
+    Проверьте формат адреса электронной почты
     
-    Args:
-        email: 邮箱地址
+    Аргументы:
+        электронная почта: адрес электронной почты
         
-    Returns:
-        是否有效
+    Возврат:
+        Это действительно?
     """
     import re
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'

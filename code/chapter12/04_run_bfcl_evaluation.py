@@ -1,20 +1,20 @@
 """
-第十二章：BFCL一键评估脚本
+Глава 12: Сценарий оценки BFCL в один клик
 
-本脚本提供完整的BFCL评估流程：
-1. 自动检查和准备BFCL数据
-2. 运行HelloAgents评估
-3. 导出BFCL格式结果
-4. 调用BFCL官方评估工具
-5. 展示评估结果
+Этот сценарий обеспечивает полный процесс оценки BFCL:
+1. Автоматическая проверка и подготовка данных BFCL.
+2. Запустите оценку HelloAgents.
+3. Экспортируйте результаты в формат BFCL.
+4. Позвоните в официальный инструмент оценки BFCL.
+5. Представление результатов оценки
 
-使用方法：
-    python examples/04_run_bfcl_evaluation.py
+Как использовать:
+    примеры Python/04_run_bfcl_evaluation.py
 
-可选参数：
-    --category: 评估类别（默认：simple_python）
-    --samples: 样本数量（默认：5，设为0表示全部）
-    --model-name: 模型名称（默认：HelloAgents）
+Дополнительные параметры:
+    --category: категория оценки (по умолчанию: simple_python)
+    --samples: количество выборок (по умолчанию: 5, установлено значение 0 для представления всех)
+    --model-name: имя модели (по умолчанию: HelloAgents)
 """
 
 import sys
@@ -23,7 +23,7 @@ from pathlib import Path
 import argparse
 import json
 
-# 添加项目路径
+# Добавить путь к проекту
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -31,58 +31,58 @@ from hello_agents import SimpleAgent, HelloAgentsLLM
 from hello_agents.evaluation import BFCLDataset, BFCLEvaluator
 
 
-# 函数调用系统提示词
-FUNCTION_CALLING_SYSTEM_PROMPT = """你是一个专业的函数调用助手。
+# Слово системной подсказки для вызова функции
+FUNCTION_CALLING_SYSTEM_PROMPT = """Вы профессиональный помощник по вызову функций.
 
-你的任务是：根据用户的问题和提供的函数定义，生成正确的函数调用。
+Ваша задача — сгенерировать правильный вызов функции на основе вопроса пользователя и предоставленного определения функции.
 
-输出格式要求：
-1. 必须是纯JSON格式，不要添加任何解释文字
-2. 使用JSON数组格式：[{"name": "函数名", "arguments": {"参数名": "参数值"}}]
-3. 如果需要调用多个函数，在数组中添加多个对象
-4. 如果不需要调用函数，返回空数组：[]
+Требования к выходному формату:
+1. Он должен быть в чистом формате JSON, не добавляйте пояснительного текста.
+2. Используйте формат массива JSON: [{"name": "Имя функции", "arguments": {"Имя параметра": "Значение параметра"}}]
+3. Если вам нужно вызвать несколько функций, добавьте в массив несколько объектов.
+4. Если нет необходимости вызывать функцию, верните пустой массив: []
 
-示例：
-用户问题：查询北京的天气
-可用函数：get_weather(city: str)
-正确输出：[{"name": "get_weather", "arguments": {"city": "北京"}}]
+Пример:
+Вопрос пользователя: Узнать погоду в Пекине
+Доступные функции: get_weather(city: str)
+Правильный вывод: [{"name": "get_weather", "arguments": {"city": "Beijing"}}]
 
-注意：
-- 只输出JSON，不要添加"好的"、"我来帮你"等额外文字
-- 参数值必须与函数定义的类型匹配
-- 参数名必须与函数定义完全一致
+Примечание:
+- Выводите только JSON, не добавляйте дополнительный текст, например «Хорошо», «Я вам помогу» и т. д.
+- Значения параметров должны соответствовать типу, определенному функцией.
+- Имена параметров должны быть точно такими же, как определение функции.
 """
 
 
 def check_bfcl_data(bfcl_data_dir: Path) -> bool:
-    """检查BFCL数据是否存在"""
+    """Проверьте, существуют ли данные BFCL"""
     if not bfcl_data_dir.exists():
-        print(f"\n❌ BFCL数据目录不存在: {bfcl_data_dir}")
-        print(f"\n请先克隆BFCL仓库：")
+        print(f"\n❌ Каталог данных BFCL не существует: {bfcl_data_dir}")
+        print(f"\nСначала клонируйте репозиторий BFCL:")
         print(f"   git clone --depth 1 https://github.com/ShishirPatil/gorilla.git temp_gorilla")
         return False
     return True
 
 
 def run_evaluation(category: str, max_samples: int, model_name: str) -> dict:
-    """运行HelloAgents评估"""
+    """Запустите оценку HelloAgents"""
     print("\n" + "="*60)
-    print("步骤1: 运行HelloAgents评估")
+    print("Шаг 1. Запустите оценку HelloAgents.")
     print("="*60)
     
-    # BFCL数据目录
+    # Каталог данных BFCL
     bfcl_data_dir = project_root / "temp_gorilla" / "berkeley-function-call-leaderboard" / "bfcl_eval" / "data"
     
-    # 检查数据
+    # Проверить данные
     if not check_bfcl_data(bfcl_data_dir):
         return None
     
-    # 加载数据集
-    print(f"\n📚 加载BFCL数据集...")
+    # Загрузить набор данных
+    print(f"\n📚 Загрузка набора данных BFCL...")
     dataset = BFCLDataset(bfcl_data_dir=str(bfcl_data_dir), category=category)
 
-    # 创建智能体
-    print(f"\n🤖 创建智能体...")
+    # Создать агента
+    print(f"\n🤖 Создать агента...")
     llm = HelloAgentsLLM()
     agent = SimpleAgent(
         name=model_name,
@@ -90,90 +90,90 @@ def run_evaluation(category: str, max_samples: int, model_name: str) -> dict:
         system_prompt=FUNCTION_CALLING_SYSTEM_PROMPT,
         enable_tool_calling=False
     )
-    print(f"   智能体: {model_name}")
+    print(f"   Агент: {model_name}")
     print(f"   LLM: {llm.provider}")
 
-    # 创建评估器
+    # Создать оценщика
     evaluator = BFCLEvaluator(dataset=dataset, category=category)
 
-    # 运行评估（传递max_samples参数）
-    print(f"\n🔄 开始评估...")
+    # Запустите оценку (передайте параметр max_samples)
+    print(f"\n🔄 Начинаем оценивать...")
     if max_samples > 0:
-        print(f"   样本数量: {max_samples}")
+        print(f"   Количество образцов: {max_samples}")
         results = evaluator.evaluate(agent, max_samples=max_samples)
     else:
-        print(f"   样本数量: 全部")
+        print(f"   Размер выборки: Все")
         results = evaluator.evaluate(agent, max_samples=None)
     
-    # 显示结果
-    print(f"\n📊 评估结果:")
-    print(f"   准确率: {results['overall_accuracy']:.2%}")
-    print(f"   正确数: {results['correct_samples']}/{results['total_samples']}")
+    # Показать результаты
+    print(f"\n📊 Результаты оценки:")
+    print(f"   Точность: {results['overall_accuracy']:.2%}")
+    print(f"   Правильный номер: {results['correct_samples']}/{results['total_samples']}")
     
     return results
 
 
 def export_bfcl_format(results: dict, category: str, model_name: str) -> Path:
-    """导出BFCL格式结果"""
+    """Экспорт результатов в формате BFCL"""
     print("\n" + "="*60)
-    print("步骤2: 导出BFCL格式结果")
+    print("Шаг 2. Экспортируйте результаты в формат BFCL.")
     print("="*60)
     
-    # 输出目录
+    # Выходной каталог
     output_dir = project_root / "evaluation_results" / "bfcl_official"
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # 输出文件
+    # выходной файл
     output_file = output_dir / f"BFCL_v4_{category}_result.json"
     
-    # 创建评估器（用于导出）
+    # Создать оценщик (для экспорта)
     bfcl_data_dir = project_root / "temp_gorilla" / "berkeley-function-call-leaderboard" / "bfcl_eval" / "data"
     dataset = BFCLDataset(bfcl_data_dir=str(bfcl_data_dir), category=category)
     evaluator = BFCLEvaluator(dataset=dataset, category=category)
     
-    # 导出
+    # Экспорт
     evaluator.export_to_bfcl_format(results, output_file)
     
     return output_file
 
 
 def copy_to_bfcl_result_dir(source_file: Path, model_name: str, category: str) -> Path:
-    """复制结果文件到BFCL结果目录"""
+    """Скопируйте файлы результатов в каталог результатов BFCL."""
     print("\n" + "="*60)
-    print("步骤3: 准备BFCL官方评估")
+    print("Шаг 3. Подготовьтесь к официальной оценке BFCL.")
     print("="*60)
     
-    # BFCL结果目录
-    # 注意：BFCL会将模型名中的"/"替换为"_"
+    # Каталог результатов BFCL
+    # Примечание. BFCL заменит «/» в названии модели на «_».
     safe_model_name = model_name.replace("/", "_")
     result_dir = project_root / "result" / safe_model_name
     result_dir.mkdir(parents=True, exist_ok=True)
     
-    # 目标文件
+    # объектный файл
     target_file = result_dir / f"BFCL_v4_{category}_result.json"
     
-    # 复制文件
+    # Копировать файлы
     import shutil
     shutil.copy(source_file, target_file)
     
-    print(f"\n✅ 结果文件已复制到:")
+    print(f"\n ✅ Файл результатов был скопирован в:")
     print(f"   {target_file}")
     
     return target_file
 
 
 def run_bfcl_official_eval(model_name: str, category: str) -> bool:
-    """运行BFCL官方评估"""
+    """Запустите официальную оценку BFCL"""
     print("\n" + "="*60)
-    print("步骤4: 运行BFCL官方评估")
+    print("Шаг 4. Проведите официальную оценку BFCL.")
     print("="*60)
     
     try:
-        # 设置环境变量
+        # Установить переменные среды
         import os
         os.environ['PYTHONUTF8'] = '1'
         
-        # 运行BFCL评估
+        # Запустите оценку BFCL
         cmd = [
             "bfcl", "evaluate",
             "--model", model_name,
@@ -181,7 +181,7 @@ def run_bfcl_official_eval(model_name: str, category: str) -> bool:
             "--partial-eval"
         ]
         
-        print(f"\n🔄 运行命令: {' '.join(cmd)}")
+        print(f"\n🔄 Выполните команду: {' '.join(cmd)}")
         
         result = subprocess.run(
             cmd,
@@ -191,12 +191,12 @@ def run_bfcl_official_eval(model_name: str, category: str) -> bool:
             encoding='utf-8'
         )
         
-        # 显示输出
+        # показать вывод
         if result.stdout:
             print(result.stdout)
         
         if result.returncode != 0:
-            print(f"\n❌ BFCL评估失败:")
+            print(f"\n❌ Оценка BFCL не удалась:")
             if result.stderr:
                 print(result.stderr)
             return False
@@ -204,87 +204,87 @@ def run_bfcl_official_eval(model_name: str, category: str) -> bool:
         return True
         
     except FileNotFoundError:
-        print("\n❌ 未找到bfcl命令")
-        print("   请先安装: pip install bfcl-eval")
+        print("\n❌ команда bfcl не найдена")
+        print("   Пожалуйста, сначала установите: pip install bfcl-eval")
         return False
     except Exception as e:
-        print(f"\n❌ 运行BFCL评估时出错: {e}")
+        print(f"\n❌ Ошибка при выполнении оценки BFCL: {e}")
         return False
 
 
 def show_results(model_name: str, category: str):
-    """展示评估结果"""
+    """Показать результаты оценки"""
     print("\n" + "="*60)
-    print("步骤5: 展示评估结果")
+    print("Шаг 5: Представление результатов оценки")
     print("="*60)
     
-    # CSV文件
+    # CSV-файл
     csv_file = project_root / "score" / "data_non_live.csv"
     
     if csv_file.exists():
-        print(f"\n📊 评估结果汇总:")
+        print(f"\n📊 Сводка результатов оценки:")
         with open(csv_file, 'r', encoding='utf-8') as f:
             content = f.read()
             print(content)
     else:
-        print(f"\n⚠️ 未找到评估结果文件: {csv_file}")
+        print(f"\n⚠️ Файл результатов оценки не найден: {csv_file}")
     
-    # 详细评分文件
+    # Подробный файл оценок
     safe_model_name = model_name.replace("/", "_")
     score_file = project_root / "score" / safe_model_name / "non_live" / f"BFCL_v4_{category}_score.json"
     
     if score_file.exists():
-        print(f"\n📝 详细评分文件:")
+        print(f"\n📝 Подробный файл оценок:")
         print(f"   {score_file}")
         
-        # 读取并显示准确率
+        # Точность чтения и отображения
         with open(score_file, 'r', encoding='utf-8') as f:
             first_line = f.readline()
             summary = json.loads(first_line)
-            print(f"\n🎯 最终结果:")
-            print(f"   准确率: {summary['accuracy']:.2%}")
-            print(f"   正确数: {summary['correct_count']}/{summary['total_count']}")
+            print(f"\n🎯 Окончательный результат:")
+            print(f"   Точность: {summary['accuracy']:.2%}")
+            print(f"   Правильный номер: {summary['correct_count']}/{summary['total_count']}")
 
 
 def main():
-    """主函数"""
-    parser = argparse.ArgumentParser(description="BFCL一键评估脚本")
-    parser.add_argument("--category", default="simple_python", help="评估类别")
-    parser.add_argument("--samples", type=int, default=5, help="样本数量（0表示全部）")
+    """основная функция"""
+    parser = argparse.ArgumentParser(description="Сценарий оценки BFCL в один клик")
+    parser.add_argument("--category", default="simple_python", help="Категория оценки")
+    parser.add_argument("--samples", type=int, default=5, help="Размер выборки (0 означает все)")
     parser.add_argument("--model-name", default="Qwen/Qwen3-8B",
-                       help="模型名称（必须是BFCL支持的模型，运行'bfcl models'查看）")
+                       help="Название модели (должна быть модель, поддерживаемая BFCL, для просмотра запустите «модели bfcl»)")
     
     args = parser.parse_args()
     
     print("="*60)
-    print("BFCL一键评估脚本")
+    print("Сценарий оценки BFCL в один клик")
     print("="*60)
-    print(f"\n配置:")
-    print(f"   评估类别: {args.category}")
-    print(f"   样本数量: {args.samples if args.samples > 0 else '全部'}")
-    print(f"   模型名称: {args.model_name}")
+    print(f"\nКонфигурация:")
+    print(f"   Категория оценки: {args.category}")
+    print(f"   Количество выборок: {args.samples, если args.samples > 0, иначе 'все'}")
+    print(f"   Название модели: {args.model_name}")
     
-    # 步骤1: 运行评估
+    # Шаг 1. Запустите оценку
     results = run_evaluation(args.category, args.samples, args.model_name)
     if not results:
         return
     
-    # 步骤2: 导出BFCL格式
+    # Шаг 2. Экспортируйте формат BFCL.
     output_file = export_bfcl_format(results, args.category, args.model_name)
     
-    # 步骤3: 复制到BFCL结果目录
+    # Шаг 3. Скопируйте в каталог результатов BFCL.
     copy_to_bfcl_result_dir(output_file, args.model_name, args.category)
     
-    # 步骤4: 运行BFCL官方评估
+    # Шаг 4. Проведите официальную оценку BFCL.
     if not run_bfcl_official_eval(args.model_name, args.category):
-        print("\n⚠️ BFCL官方评估失败，但HelloAgents评估已完成")
+        print("\n⚠️ Официальная оценка BFCL не удалась, но оценка HelloAgents завершена.")
         return
     
-    # 步骤5: 展示结果
+    # Шаг 5. Покажите результаты
     show_results(args.model_name, args.category)
     
     print("\n" + "="*60)
-    print("✅ 评估完成！")
+    print("✅Оценка завершена!")
     print("="*60)
 
 
