@@ -23,7 +23,7 @@
 
 &emsp;&emsp;Hello-Agents — **систематический курс по агентам** сообщества Datawhale. Сегодня разработку агентов условно делят на два направления: инженерные агенты вроде Dify, Coze и n8n (по сути процесс-ориентированная разработка, где LLM — бэкенд обработки данных) и AI-native агенты, по-настоящему управляемые ИИ. Этот курс ведёт к глубокому пониманию и построению вторых — настоящих AI Native Agents. Вы пройдёте сквозь оболочку фреймворков: от принципов агентов, архитектуры и классических парадигм — до собственных мультиагентных приложений. Лучший способ учиться — практика. Надеемся, курс станет точкой входа в мир агентов и поможет превратиться из «пользователя» LLM в «строителя» агентных систем.
 
-> **Локальная русская редакция:** в этой копии учебника оставлен только русский текст ядра курса (главы, предисловие, код). Материалы Extra-Chapter, Additional-Chapter и Co-creation-projects не переводились.
+> **Локальная русская редакция:** ядро курса (главы, предисловие, код) и приоритетные Extra (собеседования, контекст, Skills, FAQ, грабли, self-evolution) — на русском. Extra03/06/07/11–13, Additional-Chapter и Co-creation-projects не переводились (см. [`RU_LOCALIZATION.md`](./RU_LOCALIZATION.md)).
 
 ## Быстрый старт
 
@@ -42,7 +42,7 @@
 - **Продвинутые навыки** — инженерия контекста, Memory, протоколы, оценка
 - **Обучение моделей** — Agentic RL, от SFT до GRPO
 - **Кейсы** — умный помощник путешественника, кибер-городок и др.
-- **Собеседования** — вопросы по агентам (в Extra-Chapter, без перевода в этой редакции)
+- **Собеседования** — вопросы и опорные ответы в Extra-Chapter
 
 ## Навигация по содержанию
 
@@ -71,15 +71,20 @@
 | **Часть V: Выпускной проект и перспективы** | | |
 | [Глава 16. Выпускной проект](./docs/chapter16/Chapter16-Graduation-Project.md) | Своё полное мультиагентное приложение | ✅ |
 
-### Сообщество и Extra (без перевода в этой редакции)
-
-Ссылки ведут на оригинальные материалы upstream (часто на китайском):
+### Сообщество и Extra
 
 | Материал | Кратко |
 | -------- | ------ |
-| [00 — Совместные выпускные проекты](https://github.com/datawhalechina/hello-agents/blob/main/Co-creation-projects) | Co-creation |
-| [01 — Вопросы на собеседования](https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra01-面试问题总结.md) | Интервью |
-| [Extra-Chapter](./Extra-Chapter/) | Доп. статьи сообщества |
+| [00 — Совместные выпускные проекты](https://github.com/datawhalechina/hello-agents/blob/main/Co-creation-projects) | Co-creation (без перевода) |
+| [01 — Вопросы на собеседования](./Extra-Chapter/Extra01-Interview-Questions.md) | Интервью (RU) |
+| [01 — Опорные ответы](./Extra-Chapter/Extra01-Reference-Answers.md) | Ответы к собеседованиям (RU) |
+| [02 — Инженерия контекста](./Extra-Chapter/Extra02-Context-Engineering-Supplement.md) | Дополнение к гл. 9 (RU) |
+| [04 — FAQ](./Extra-Chapter/Extra04-Datawhale-FAQ.md) | FAQ курса (RU) |
+| [05 — Agent Skills](./Extra-Chapter/Extra05-Agent-Skills.md) | Skills и MCP (RU) |
+| [08 — Как писать Skill](./Extra-Chapter/Extra08-How-to-Write-Good-Skills.md) | Практика Skills (RU) |
+| [09 — Грабли разработки](./Extra-Chapter/Extra09-Agent-Dev-Pitfalls-and-Lessons.md) | Уроки Code Agent (RU) |
+| [10 — Self-evolution](./Extra-Chapter/Extra10-Agent-Self-Evolution.md) | Самоэволюция агентов (RU) |
+| [Extra-Chapter](./Extra-Chapter/) | Полный список, в т.ч. непереведённые CN |
 
 ### PDF
 
