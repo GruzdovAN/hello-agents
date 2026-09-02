@@ -1,8 +1,8 @@
 """
-智能股票分析助手 — 数据库连接模块
+Интеллектуальный помощник по анализу запасов — модуль подключения к базе данных
 
-使用SQLAlchemy + aiosqlite实现异步数据库访问。
-数据库文件自动创建在项目data目录下。
+Используйте SQLAlchemy + aiosqlite для реализации асинхронного доступа к базе данных.
+Файл базы данных автоматически создается в каталоге данных проекта.
 """
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -17,24 +17,24 @@ sys.path.insert(0, str(_PROJECT_ROOT / "backend"))
 from app.config import settings
 
 
-# 将SQLite URL转换为异步版本（aiosqlite）
+# Преобразование URL-адреса SQLite в асинхронную версию (aiosqlite)
 def _build_async_url(url: str) -> str:
-    """将 sqlite:/// 格式转为 sqlite+aiosqlite:/// 格式"""
+"""Преобразовать формат sqlite:/// в формат sqlite+aiosqlite:///"""
     if url.startswith("sqlite:///"):
         return url.replace("sqlite:///", "sqlite+aiosqlite:///")
     return url
 
 
-# 确保数据目录存在
+# Убедитесь, что каталог данных существует
 settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# 创建异步引擎
+# Создаём асинхронный движок
 engine = create_async_engine(
     _build_async_url(settings.DATABASE_URL),
-    echo=False,  # 开发时可设为True查看SQL日志
+echo=False, # Можно установить значение True для просмотра журналов SQL во время разработки.
 )
 
-# 创建异步会话工厂
+# Создаём фабрику асинхронных сессий
 async_session_factory = async_sessionmaker(
     engine,
     class_=AsyncSession,
@@ -42,7 +42,7 @@ async_session_factory = async_sessionmaker(
 )
 
 
-# SQLAlchemy声明式基类
+# Декларативный базовый класс SQLAlchemy
 class Base(DeclarativeBase):
     pass
 
@@ -54,7 +54,7 @@ async def init_db():
 
 
 async def get_db_session() -> AsyncSession:
-    """获取数据库会话（FastAPI依赖注入用）"""
+"""Получить сеанс базы данных (для внедрения зависимостей FastAPI)"""
     async with async_session_factory() as session:
         try:
             yield session
@@ -63,5 +63,5 @@ async def get_db_session() -> AsyncSession:
 
 
 async def close_db():
-    """关闭数据库连接"""
+"""Закрыть соединение с базой данных"""
     await engine.dispose()

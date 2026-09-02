@@ -1,7 +1,7 @@
 """
-智能股票分析助手 — 用户偏好数据模型
+Интеллектуальный помощник по анализу запасов — модель данных о предпочтениях пользователя
 
-定义用户投资偏好、风控参数、界面偏好等持久化存储结构。
+Определите структуры постоянного хранения, такие как инвестиционные предпочтения пользователей, параметры контроля рисков и предпочтения интерфейса.
 """
 
 from sqlalchemy import Column, Integer, String, Float, Text, DateTime, Boolean, func
@@ -9,18 +9,18 @@ from app.models.database import Base
 
 
 class UserPreference(Base):
-    """用户偏好模型"""
+"""Модель предпочтений пользователя"""
 
     __tablename__ = "user_preferences"
 
-    # 主键
+# Первичный ключ
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    # 关联用户（当前简化：单用户模式，后续可扩展多用户）
+#Связывание пользователей (в настоящее время упрощено: однопользовательский режим, многопользовательский режим можно расширить позже)
     user_id = Column(String(64), default="default", unique=True, nullable=False, comment="用户ID")
 
     # =========================================================================
-    # 投资偏好
+#Инвестиционные предпочтения
     # =========================================================================
     risk_tolerance = Column(
         String(20), default="moderate", nullable=False,
@@ -32,73 +32,73 @@ class UserPreference(Base):
     )
     preferred_sectors = Column(
         Text, default="[]",
-        comment="偏好行业 (JSON数组)"
+comment="Предпочитаемые отрасли (массив JSON)"
     )
     excluded_sectors = Column(
         Text, default="[]",
-        comment="排除行业 (JSON数组)"
+comment="Исключить отрасли (массив JSON)"
     )
     investment_horizon = Column(
         String(20), default="medium",
-        comment="投资期限: short / medium / long"
+comment="Срок инвестирования: короткий/средний/длинный"
     )
     target_return_rate = Column(
         Float, default=10.0, nullable=False,
-        comment="目标年化收益率(%)"
+comment="Целевая годовая доходность (%)"
     )
 
     # =========================================================================
-    # 风控参数
+# Параметры контроля рисков
     # =========================================================================
     max_position_ratio = Column(
         Float, default=30.0, nullable=False,
-        comment="单只股票最大仓位比例(%)"
+comment="Максимальный коэффициент позиции по одной акции (%)"
     )
     max_drawdown_limit = Column(
         Float, default=-15.0, nullable=False,
-        comment="最大回撤预警线(%)"
+comment="Линия предупреждения о максимальном откате (%)"
     )
 
     # =========================================================================
-    # 通知设置
+# Настройки уведомлений
     # =========================================================================
     notification_enabled = Column(
         Boolean, default=True, nullable=False,
-        comment="是否启用通知"
+comment="Включить ли уведомления"
     )
     notification_channels = Column(
         Text, default='["push"]',
-        comment="通知渠道 (JSON: email/sms/push)"
+comment="Канал уведомлений (JSON: email/sms/push)"
     )
     market_alert_threshold = Column(
         Float, default=5.0, nullable=False,
-        comment="行情异动提醒阈值(%)"
+comment="Порог напоминания об изменении рынка (%)"
     )
 
     # =========================================================================
-    # 界面偏好
+# Настройки интерфейса
     # =========================================================================
     language = Column(
         String(10), default="zh", nullable=False,
-        comment="界面语言: zh / en"
+comment="Язык интерфейса: ж/эн"
     )
     theme = Column(
         String(10), default="auto", nullable=False,
-        comment="主题: light / dark / auto"
+comment="Тема: светлая/темная/авто"
     )
     default_view = Column(
         String(20), default="dashboard", nullable=False,
-        comment="默认首页: dashboard / watchlist"
+comment="Домашняя страница по умолчанию: панель управления/список наблюдения"
     )
 
     # =========================================================================
-    # 时间戳
+# временная метка
     # =========================================================================
-    created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment="更新时间")
+Create_at = Column(DateTime, server_default=func.now(), comment="Время создания")
+update_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment="更新时间")
 
     def to_dict(self) -> dict:
-        """转为字典（用于API响应）"""
+"""Преобразовать в словарь (для ответа API)"""
         import json
 
         return {
@@ -124,7 +124,7 @@ class UserPreference(Base):
 
     @classmethod
     def create_default(cls, user_id: str = "default") -> "UserPreference":
-        """创建默认偏好实例"""
+"""Создать экземпляр настройки по умолчанию"""
         return cls(
             user_id=user_id,
             risk_tolerance="moderate",

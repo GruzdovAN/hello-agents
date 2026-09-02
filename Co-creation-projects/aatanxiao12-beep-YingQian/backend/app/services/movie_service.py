@@ -1,6 +1,6 @@
-"""MovieService — TMDB HTTP 封装（D1 确定性通道）。
+"""MovieService — HTTP-оболочка TMDB (детерминированный канал D1).
 
-供 /api/movies/* 与 Agent Tool 复用；密钥仅来自环境变量。
+Для повторного использования /api/movies/* с Agent Tool; ключи поступают только из переменных среды.
 """
 
 from __future__ import annotations
@@ -23,33 +23,33 @@ _VALID_TMDB_LANGS = frozenset(
     {"zh", "en", "ja", "ko", "fr", "de", "es", "it", "hi", "th", "pt", "ru"}
 )
 _LANG_ALIASES = {
-    "华语": "zh",
-    "中文": "zh",
-    "汉语": "zh",
-    "普通话": "zh",
-    "国语": "zh",
-    "好莱坞": "en",
-    "英语": "en",
-    "英文": "en",
+"华语": "чж",
+"中文": "чж",
+"中文": "чж",
+«Мандарин»: «ж»,
+"国语": "чж",
+"Голливуд": "ru",
+"Английский": "en",
+"Английский": "en",
     "english": "en",
-    "美片": "en",
-    "日韩": "ja",
-    "日语": "ja",
-    "日本": "ja",
+«Красота»: «ru»,
+«Японский и корейский»: «джа»,
+«Японец»: «джа»,
+«Япония»: «джа»,
     "japanese": "ja",
-    "韩语": "ko",
-    "韩文": "ko",
-    "韩国": "ko",
+«Корейский»: «ко»,
+«Корейский»: «ко»,
+«Корея»: «ко»,
     "korean": "ko",
-    "法语": "fr",
-    "德语": "de",
-    "西语": "es",
-    "西班牙语": "es",
+"французский": "фр",
+«Немецкий»: «де»,
+"西语": "эс",
+«Испанский»: «эс»,
 }
 
 
 def normalize_tmdb_language(raw: Optional[str]) -> Optional[str]:
-    """把地区/中文名归一成 TMDB 语言码；无法识别则返回 None。"""
+"""Нормализуйте регион/китайское название в код языка TMDB; верните None, если его невозможно распознать."""
     if raw is None:
         return None
     text = str(raw).strip()
@@ -61,7 +61,7 @@ def normalize_tmdb_language(raw: Optional[str]) -> Optional[str]:
     mapped = _LANG_ALIASES.get(text) or _LANG_ALIASES.get(lower)
     if mapped in _VALID_TMDB_LANGS:
         return mapped
-    # 容错：en-US / zh-CN
+# Отказоустойчивость: en-US/zh-CN
     if "-" in lower or "_" in lower:
         primary = lower.replace("_", "-").split("-", 1)[0]
         if primary in _VALID_TMDB_LANGS:
@@ -73,7 +73,7 @@ class MovieService:
     """TMDB 电影查询服务：search / discover / 类型名 id 映射。"""
 
     def __init__(self, settings: Optional[Settings] = None) -> None:
-        """初始化配置、类型缓存占位，以及复用的 httpx 客户端。"""
+"""Первоначальная конфигурация, заполнитель типа кэша и повторное использование httpx-клиента."""
         self.settings = settings or get_settings()
         self._genre_id_to_name: Optional[Dict[int, str]] = None
         self._genre_name_to_id: Optional[Dict[str, int]] = None
@@ -144,7 +144,7 @@ class MovieService:
         return f"{base}{poster_path}"
 
     def _parse_year(self, release_date: Optional[str]) -> Optional[int]:
-        """从 release_date（YYYY-MM-DD）解析上映年份。"""
+"""Проанализируйте год выпуска по Release_date (ГГГГ-ММ-ДД)."""
         if not release_date or len(release_date) < 4:
             return None
         try:
@@ -153,7 +153,7 @@ class MovieService:
             return None
 
     def ensure_genres(self) -> None:
-        """拉取并缓存类型 id ↔ 中文名称（仅首次请求时打 TMDB）。"""
+"""Извлеките и кэшируйте идентификатор типа ↔ китайское имя (обращайтесь к TMDB только при первом запросе)."""
         if self._genre_id_to_name is not None:
             return
 
@@ -194,7 +194,7 @@ class MovieService:
         return ",".join(ids) if ids else None
 
     def _map_result(self, item: dict) -> CandidateMovie:
-        """把 TMDB 单条原始结果映射为内部 CandidateMovie。"""
+"""Сопоставьте один необработанный результат TMDB во внутренний CandidateMovie."""
         self.ensure_genres()
         assert self._genre_id_to_name is not None
 
@@ -210,7 +210,7 @@ class MovieService:
             title=title,
             year=self._parse_year(item.get("release_date")),
             genres=genre_names,
-            runtime=None,  # 列表接口通常无片长，需 detail 才有
+runtime=None, # Интерфейсы списков обычно не имеют длины среза и требуют детализации.
             rating=item.get("vote_average"),
             poster_url=self._poster_url(item.get("poster_path")),
             overview=item.get("overview") or "",
@@ -291,7 +291,7 @@ class MovieService:
         )
 
     def get_detail(self, movie_id: int) -> MovieDetail:
-        """按 id 取电影详情（含 credits：导演 / 主演）。"""
+"""Получить подробную информацию о фильме по идентификатору (включая сведения о режиссере/в главной роли)."""
         if movie_id <= 0:
             raise MovieServiceError("movie_id 必须为正整数", status_code=400)
 
@@ -307,7 +307,7 @@ class MovieService:
         year: Optional[int] = None,
         page: int = 1,
     ) -> List[CandidateMovie]:
-        """按关键词搜索电影（TMDB GET /search/movie）。"""
+"""Поиск фильмов по ключевому слову (TMDB GET /search/movie)."""
         query = (q or "").strip()
         if not query:
             raise MovieServiceError("搜索关键词 q 不能为空", status_code=400)
@@ -333,7 +333,7 @@ class MovieService:
         sort_by: str = "popularity.desc",
         page: int = 1,
     ) -> List[CandidateMovie]:
-        """按条件发现电影（TMDB GET /discover/movie）。"""
+"""Находите фильмы по состоянию (TMDB GET /discover/movie)."""
         genre_ids = self.resolve_genre_ids(with_genres)
         lang = normalize_tmdb_language(with_original_language)
 
@@ -354,7 +354,7 @@ class MovieService:
 
         if with_original_language and not lang:
             logger.warning(
-                "discover 丢弃非法 language=%r",
+"обнаружение отбрасывает недопустимый язык=%r",
                 with_original_language,
             )
         logger.info(
@@ -438,7 +438,7 @@ class MovieService:
                         kwargs,
                     )
                 return kept
-            logger.warning("discover 无结果 step=%d params=%s", i, kwargs)
+logger.warning("результатов нет"step=%d params=%s", i, kwargs)
 
         return []
 

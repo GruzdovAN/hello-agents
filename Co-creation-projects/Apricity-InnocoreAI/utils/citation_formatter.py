@@ -1,5 +1,5 @@
 """
-InnoCore AI 引用格式化工具
+Инструмент форматирования ссылок InnoCore AI
 """
 
 import re
@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 class CitationFormatter:
-    """引用格式化器"""
+"""Форматизатор цитат"""
     
     def __init__(self):
         self.month_names = {
@@ -16,28 +16,28 @@ class CitationFormatter:
         }
     
     def format_bibtex(self, paper_info: Dict[str, Any]) -> str:
-        """格式化为BibTeX"""
-        # 生成引用键
+"""Форматировать в BibTeX"""
+# Генерируем ссылочный ключ
         citation_key = self._generate_citation_key(paper_info)
         
-        # 确定条目类型
+# Определить тип записи
         entry_type = self._determine_entry_type(paper_info)
         
-        # 构建BibTeX条目
+# Создаем запись BibTeX
         bibtex_lines = [f"@{entry_type}{{{citation_key}"]
         
-        # 添加作者
+#Добавить автора
         authors = paper_info.get("authors", [])
         if authors:
             formatted_authors = self._format_bibtex_authors(authors)
             bibtex_lines.append(f"  author = {{{formatted_authors}}}")
         
-        # 添加标题
+#Добавить заголовок
         title = paper_info.get("title", "")
         if title:
             bibtex_lines.append(f"  title = {{{title}}}")
         
-        # 添加期刊/会议信息
+#Добавить информацию о журнале/конференции
         if entry_type == "article":
             journal = paper_info.get("journal", "")
             if journal:
@@ -69,52 +69,52 @@ class CitationFormatter:
             if publisher:
                 bibtex_lines.append(f"  publisher = {{{publisher}}}")
         
-        # 添加年份
+#Добавить год
         year = paper_info.get("year", "")
         if year:
             bibtex_lines.append(f"  year = {{{year}}}")
         
-        # 添加月份
+#Добавить месяц
         month = paper_info.get("month", "")
         if month:
             bibtex_lines.append(f"  month = {{{month}}}")
         
-        # 添加DOI
+# Добавить DOI
         doi = paper_info.get("doi", "")
         if doi:
             bibtex_lines.append(f"  doi = {{{doi}}}")
         
-        # 添加URL
+#Добавить URL
         url = paper_info.get("url", "")
         if url:
             bibtex_lines.append(f"  url = {{{url}}}")
         
-        # 添加笔记
+#Добавить заметки
         note = paper_info.get("note", "")
         if note:
             bibtex_lines.append(f"  note = {{{note}}}")
         
-        # 关闭条目
+# Закрыть запись
         bibtex_lines.append("}")
         
         return "\n".join(bibtex_lines)
     
     def format_apa(self, paper_info: Dict[str, Any]) -> str:
-        """格式化为APA格式"""
+"""Форматировать в формат APA"""
         authors = paper_info.get("authors", [])
         year = paper_info.get("year", "")
         title = paper_info.get("title", "")
         
-        # 格式化作者
+# Формат автора
         author_text = self._format_apa_authors(authors)
         
-        # 构建基本引用
+# Создаем базовую ссылку
         if year:
             citation = f"{author_text} ({year}). {title}."
         else:
             citation = f"{author_text}. {title}."
         
-        # 添加期刊信息
+#Добавляем информацию журнала
         journal = paper_info.get("journal", "")
         volume = paper_info.get("volume", "")
         number = paper_info.get("number", "")
@@ -133,12 +133,12 @@ class CitationFormatter:
             else:
                 citation += "."
         
-        # 添加书籍信息
+#Добавить информацию о книге
         publisher = paper_info.get("publisher", "")
         if publisher:
             citation += f" {publisher}."
         
-        # 添加会议信息
+#Добавить информацию о встрече
         booktitle = paper_info.get("booktitle", "")
         if booktitle:
             citation += f" In *{booktitle}*"
@@ -147,7 +147,7 @@ class CitationFormatter:
             else:
                 citation += "."
         
-        # 添加DOI
+# Добавить DOI
         doi = paper_info.get("doi", "")
         if doi:
             citation += f" https://doi.org/{doi}"
@@ -155,18 +155,18 @@ class CitationFormatter:
         return citation
     
     def format_ieee(self, paper_info: Dict[str, Any]) -> str:
-        """格式化为IEEE格式"""
+"""Форматировать в формат IEEE"""
         authors = paper_info.get("authors", [])
         year = paper_info.get("year", "")
         title = paper_info.get("title", "")
         
-        # 格式化作者（IEEE格式）
+# Автор формата (формат IEEE)
         author_text = self._format_ieee_authors(authors)
         
-        # 构建基本引用
+# Создаем базовую ссылку
         citation = f'{author_text}, "{title},"'
         
-        # 添加期刊信息
+#Добавляем информацию журнала
         journal = paper_info.get("journal", "")
         volume = paper_info.get("volume", "")
         number = paper_info.get("number", "")
@@ -183,19 +183,19 @@ class CitationFormatter:
             if pages:
                 citation += f", pp. {pages}"
         
-        # 添加会议信息
+#Добавить информацию о встрече
         booktitle = paper_info.get("booktitle", "")
         if booktitle:
             citation += f" in *{booktitle}*"
             if pages:
                 citation += f", pp. {pages}"
         
-        # 添加书籍信息
+#Добавить информацию о книге
         publisher = paper_info.get("publisher", "")
         if publisher:
             citation += f" {publisher}"
         
-        # 添加年份和月份
+#Добавить год и месяц
         month = paper_info.get("month", "")
         if year:
             if month:
@@ -203,7 +203,7 @@ class CitationFormatter:
             else:
                 citation += f", {year}."
         
-        # 添加DOI
+# Добавить DOI
         doi = paper_info.get("doi", "")
         if doi:
             citation += f" doi: {doi}"
@@ -211,7 +211,7 @@ class CitationFormatter:
         return citation
     
     def format_mla(self, paper_info: Dict[str, Any]) -> str:
-        """格式化为MLA格式"""
+"""Форматировать в формат MLA"""
         authors = paper_info.get("authors", [])
         title = paper_info.get("title", "")
         journal = paper_info.get("journal", "")
@@ -221,13 +221,13 @@ class CitationFormatter:
         # 格式化作者（MLA格式）
         author_text = self._format_mla_authors(authors)
         
-        # 构建基本引用
+# Создаем базовую ссылку
         if author_text:
             citation = f'{author_text}. "{title}."'
         else:
             citation = f'"{title}."'
         
-        # 添加期刊信息
+#Добавляем информацию журнала
         if journal:
             citation += f" *{journal}*"
             
@@ -244,7 +244,7 @@ class CitationFormatter:
             else:
                 citation += "."
         
-        # 添加书籍信息
+#Добавить информацию о книге
         publisher = paper_info.get("publisher", "")
         if publisher:
             citation += f" {publisher}"
@@ -256,7 +256,7 @@ class CitationFormatter:
         return citation
     
     def format_chicago(self, paper_info: Dict[str, Any]) -> str:
-        """格式化为Chicago格式"""
+"""Форматировать в формат Чикаго"""
         authors = paper_info.get("authors", [])
         title = paper_info.get("title", "")
         journal = paper_info.get("journal", "")
@@ -265,16 +265,16 @@ class CitationFormatter:
         year = paper_info.get("year", "")
         pages = paper_info.get("pages", "")
         
-        # 格式化作者（Chicago格式）
+# Автор формата (Чикагский формат)
         author_text = self._format_chicago_authors(authors)
         
-        # 构建基本引用
+# Создаем базовую ссылку
         if author_text:
             citation = f'{author_text}. "{title}."'
         else:
             citation = f'"{title}."'
         
-        # 添加期刊信息
+#Добавляем информацию журнала
         if journal:
             citation += f" *{journal}*"
             
@@ -294,8 +294,8 @@ class CitationFormatter:
         return citation
     
     def _generate_citation_key(self, paper_info: Dict[str, Any]) -> str:
-        """生成引用键"""
-        # 获取第一作者的姓氏
+"""Сгенерировать ссылочный ключ"""
+# Получить фамилию первого автора
         authors = paper_info.get("authors", [])
         if authors:
             first_author = authors[0]
@@ -306,10 +306,10 @@ class CitationFormatter:
         else:
             last_name = "unknown"
         
-        # 获取年份
+# Получить год
         year = str(paper_info.get("year", datetime.now().year))
         
-        # 获取标题关键词
+# Получить ключевые слова заголовка
         title = paper_info.get("title", "")
         title_words = re.findall(r'\b[a-zA-Z]{3,}\b', title.lower())[:3]
         title_key = "".join(title_words)
@@ -317,7 +317,7 @@ class CitationFormatter:
         return f"{last_name}{year}{title_key}"
     
     def _determine_entry_type(self, paper_info: Dict[str, Any]) -> str:
-        """确定BibTeX条目类型"""
+"""Определить тип записи BibTeX"""
         if paper_info.get("journal"):
             return "article"
         elif paper_info.get("booktitle"):
@@ -328,12 +328,12 @@ class CitationFormatter:
             return "misc"
     
     def _format_bibtex_authors(self, authors: List[str]) -> str:
-        """格式化BibTeX作者"""
+"""Формат автора BibTeX"""
         formatted_authors = []
         
         for author in authors:
             if isinstance(author, str):
-                # 将 "First Last" 转换为 "Last, First"
+# Преобразование «Первый Последний» в «Последний, Первый»
                 parts = author.split()
                 if len(parts) >= 2:
                     last_name = parts[-1]
@@ -347,7 +347,7 @@ class CitationFormatter:
         return " and ".join(formatted_authors)
     
     def _format_apa_authors(self, authors: List[str]) -> str:
-        """格式化APA作者"""
+"""Форматирование авторов APA"""
         if not authors:
             return ""
         
@@ -361,14 +361,14 @@ class CitationFormatter:
             return ", ".join(authors[:19]) + f", ... {authors[-1]}"
     
     def _format_ieee_authors(self, authors: List[str]) -> str:
-        """格式化IEEE作者"""
+"""Формат автора IEEE"""
         formatted_authors = []
         
         for i, author in enumerate(authors[:3]):  # IEEE通常只列出前3个作者
             if isinstance(author, str):
                 parts = author.split()
                 if len(parts) >= 2:
-                    # 转换为 "F. Last" 格式
+# Конвертировать в формат "F. Last"
                     initials = " ".join([f"{p[0]}." for p in parts[:-1]])
                     last_name = parts[-1]
                     formatted_authors.append(f"{initials} {last_name}")
@@ -383,7 +383,7 @@ class CitationFormatter:
         return ", ".join(formatted_authors)
     
     def _format_mla_authors(self, authors: List[str]) -> str:
-        """格式化MLA作者"""
+"""Формат автора MLA"""
         if not authors:
             return ""
         
@@ -395,7 +395,7 @@ class CitationFormatter:
             return f"{authors[0]}, et al."
     
     def _format_chicago_authors(self, authors: List[str]) -> str:
-        """格式化Chicago作者"""
+"""Формат Чикаго автор"""
         if not authors:
             return ""
         
@@ -407,16 +407,16 @@ class CitationFormatter:
             return f"{authors[0]}, et al."
     
     def parse_bibtex(self, bibtex_text: str) -> Dict[str, Any]:
-        """解析BibTeX文本"""
+"""Разобрать текст BibTeX"""
         paper_info = {}
         
-        # 提取条目类型和键
+#Извлекаем тип записи и ключ
         entry_match = re.match(r'@(\w+)\{([^,]+),', bibtex_text)
         if entry_match:
             paper_info["entry_type"] = entry_match.group(1)
             paper_info["citation_key"] = entry_match.group(2)
         
-        # 提取字段
+#Извлечь поля
         field_pattern = r'\s*(\w+)\s*=\s*\{([^}]*)\}'
         matches = re.findall(field_pattern, bibtex_text)
         
@@ -426,7 +426,7 @@ class CitationFormatter:
         return paper_info
     
     def validate_citation(self, citation: str, style: str) -> Dict[str, Any]:
-        """验证引用格式"""
+"""Проверьте формат цитирования"""
         validation_result = {
             "is_valid": True,
             "errors": [],
@@ -444,8 +444,8 @@ class CitationFormatter:
         return validation_result
     
     def _validate_bibtex(self, citation: str, result: Dict[str, Any]) -> Dict[str, Any]:
-        """验证BibTeX格式"""
-        # 检查基本结构
+"""Проверьте формат BibTeX"""
+# Проверьте базовую структуру
         if not citation.startswith('@'):
             result["is_valid"] = False
             result["errors"].append("BibTeX必须以@开头")
@@ -454,7 +454,7 @@ class CitationFormatter:
             result["is_valid"] = False
             result["errors"].append("BibTeX必须以}结尾")
         
-        # 检查必需字段
+# Проверьте обязательные поля
         if 'title' not in citation:
             result["warnings"].append("缺少title字段")
         
@@ -462,45 +462,45 @@ class CitationFormatter:
             result["warnings"].append("缺少author字段")
         
         if 'year' not in citation:
-            result["warnings"].append("缺少year字段")
+result["предупреждения"].append("поле года отсутствует")
         
         return result
     
     def _validate_apa(self, citation: str, result: Dict[str, Any]) -> Dict[str, Any]:
         """验证APA格式"""
-        # 检查作者格式
+# Проверьте формат автора
         if '(' in citation and ')' in citation:
             year_pattern = r'\((\d{4})\)'
             if not re.search(year_pattern, citation):
                 result["warnings"].append("APA格式应包含出版年份")
         
-        # 检查标题格式
+# Проверьте формат заголовка
         if not citation.strip().endswith('.'):
             result["warnings"].append("APA引用应以句号结尾")
         
         return result
     
     def _validate_ieee(self, citation: str, result: Dict[str, Any]) -> Dict[str, Any]:
-        """验证IEEE格式"""
-        # 检查引用格式
+"""Проверьте формат IEEE"""
+# Проверяем формат цитирования
         if '"' not in citation:
             result["warnings"].append("IEEE格式中标题应使用双引号")
         
-        # 检查期刊格式
+# Проверьте формат журнала
         if '*' not in citation:
             result["warnings"].append("IEEE格式中期刊名应使用斜体（*）")
         
         return result
     
     def convert_between_formats(self, citation: str, from_style: str, to_style: str) -> str:
-        """在不同格式间转换引用"""
+"""Преобразование ссылок между разными форматами"""
         try:
-            # 解析原始格式
+# Разбираем исходный формат
             if from_style.lower() == "bibtex":
                 paper_info = self.parse_bibtex(citation)
             else:
-                # 对于其他格式，需要更复杂的解析逻辑
-                # 这里提供简化实现
+# Для других форматов требуется более сложная логика анализа
+# Здесь представлена ​​упрощенная реализация
                 paper_info = {
                     "title": "",
                     "authors": [],
@@ -508,7 +508,7 @@ class CitationFormatter:
                     "journal": ""
                 }
             
-            # 转换为目标格式
+# Конвертируем в целевой формат
             if to_style.lower() == "bibtex":
                 return self.format_bibtex(paper_info)
             elif to_style.lower() == "apa":
@@ -523,4 +523,4 @@ class CitationFormatter:
                 return citation
                 
         except Exception as e:
-            return f"转换失败: {str(e)}"
+return f"Ошибка преобразования: {str(e)}"

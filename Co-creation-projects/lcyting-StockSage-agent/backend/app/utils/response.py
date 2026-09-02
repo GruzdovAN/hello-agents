@@ -1,7 +1,7 @@
 """
-智能股票分析助手 — 统一响应格式模块
+Интеллектуальный помощник по анализу запасов — модуль единого формата ответов
 
-定义标准API响应结构，确保前后端数据格式一致。
+Определите стандартную структуру ответа API, чтобы обеспечить согласованность форматов данных внешнего и внутреннего интерфейса.
 """
 
 from typing import Any, Optional
@@ -9,11 +9,11 @@ from pydantic import BaseModel
 
 
 class APIResponse(BaseModel):
-    """统一API响应格式"""
+"""Единый формат ответа API"""
 
     code: int = 0  # 状态码：0=成功，非0=错误
     message: str = "success"  # 提示信息
-    data: Optional[Any] = None  # 响应数据
+data: Необязательный[Любой] = Нет # Данные ответа
 
     class Config:
         json_schema_extra = {
@@ -26,12 +26,12 @@ class APIResponse(BaseModel):
 
 
 class PageResponse(BaseModel):
-    """分页API响应格式"""
+"""Формат ответа API разбиения на страницы"""
 
     code: int = 0
     message: str = "success"
     data: Optional[Any] = None
-    pagination: Optional[dict] = None  # 分页信息 {page, page_size, total, total_pages}
+нумерация страниц: Необязательно[dict] = Нет # Информация о нумерации страниц {page, page_size, total, total_pages}
 
     class Config:
         json_schema_extra = {
@@ -58,7 +58,7 @@ def error_response(code: int, message: str, data: Any = None) -> dict:
 
 
 def page_response(data: Any, page: int, page_size: int, total: int) -> dict:
-    """快速构建分页响应"""
+"""Быстро создавайте ответы с разбивкой на страницы"""
     total_pages = (total + page_size - 1) // page_size if page_size > 0 else 0
     return PageResponse(
         code=0,

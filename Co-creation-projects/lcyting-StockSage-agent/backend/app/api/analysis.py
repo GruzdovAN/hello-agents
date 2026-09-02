@@ -1,5 +1,5 @@
 """
-智能股票分析助手 — 分析报告API路由（兼容层）
+Интеллектуальный помощник по анализу акций — маршрутизация API отчетов об анализе (уровень совместимости)
 
 旧版 POST 生成报告已移除；列表与详情优先走分析历史表，其次兼容旧版 AnalysisReport 表。
 """
@@ -17,16 +17,16 @@ router = APIRouter(prefix="/analysis", tags=["分析报告"])
 async def generate_report_removed(
     code: str,
     user_id: str = Query(default="default", description="用户标识"),
-    report_type: str = Query(default="full", description="报告类型: full/quick"),
+report_type: str = Query(default="full",description="Тип отчета: полный/быстрый"),
 ):
-    """已废弃：请使用 AI 对话助手或个股页 AI 分析 Tab。"""
+"""Устарело: используйте помощника по диалогу с искусственным интеллектом или вкладку анализа искусственного интеллекта на отдельной странице акции."""
     return JSONResponse(
         status_code=410,
         content=error_response(
             code=410,
             message=(
                 "该接口已移除。请使用 POST /api/v1/chat/stream（AI 对话助手），"
-                "或个股分析页的舆情 / 数据 / 巴菲特流式分析。"
+«Или потоковый анализ общественного мнения/данных/Баффета на отдельной странице анализа акций».
             ),
             data={"replacement_chat": "/api/v1/chat/stream", "stock_code": code},
         ),
@@ -82,5 +82,5 @@ async def list_reports(
             "items": items,
             "total": result["total"],
         },
-        message=f"共 {result['total']} 条记录",
+message=f"Всего {result['total']} записей",
     )

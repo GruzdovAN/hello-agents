@@ -7,19 +7,19 @@ import html
 
 class BrowserTool:
     name = "browser_search"
-    description = "执行网页搜索（支持多种搜索引擎和内容提取）"
+    description = "Выполняет веб-поиск (поддерживаются несколько поисковых систем и извлечение контента)"
     
     def get_parameters(self):
         return {
-            "input": {"type": "str", "description": "搜索关键词", "required": True}
+            "input": {"type": "str", "description": "Ключевые слова для поиска", "required": True}
         }
 
     def _is_valid_result(self, title, url):
-        """验证搜索结果的有效性"""
+        """Проверяет валидность результата поиска"""
         if not title or len(title.strip()) < 3:
             return False
         
-        # 过滤导航链接和无意义内容
+        # Фильтрация навигационных ссылок и бессмысленного контента
         skip_keywords = [
             "next", "previous", "more", "about", "help", "settings",
             "privacy", "terms", "feedback", "donate", "install",
@@ -30,29 +30,29 @@ class BrowserTool:
         if any(keyword in title_lower for keyword in skip_keywords):
             return False
         
-        # 过滤广告和推广链接
-        ad_indicators = ["ad", "sponsored", "promotion", "广告", "推广"]
+        # Фильтрация рекламы и промо-ссылок
+        ad_indicators = ["ad", "sponsored", "promotion", "реклама", "промо"]
         if any(indicator in title_lower for indicator in ad_indicators):
             return False
         
         return True
 
     def _clean_text(self, text):
-        """清理文本内容"""
+        """Очищает текстовое содержимое"""
         if not text:
             return ""
         
-        # 移除多余空白字符
+        # Удаление лишних пробельных символов
         text = re.sub(r'\s+', ' ', text.strip())
         
-        # 移除特殊字符
+        # Удаление специальных символов
         text = re.sub(r'[^\w\s\u4e00-\u9fff.,!?;:()[\]{}"\'-]', '', text)
         
-        return text[:200]  # 限制长度
+        return text[:200]  # ограничение длины
 
     def _search_searx(self, query, limit=5):
-        """使用多个搜索引擎实例 - 稳定版，优先支持中文搜索"""
-        # 精选多个稳定的搜索引擎，优先支持中文
+        """Использует несколько экземпляров поисковых систем — стабильная версия с приоритетом CJK-запросов"""
+        # Подбор стабильных поисковых систем
         search_instances = [
             {
                 "name": "Searx.xyz",
@@ -67,7 +67,7 @@ class BrowserTool:
                 "type": "searx"
             },
             {
-                "name": "Brave搜索",
+                "name": "Поиск Brave",
                 "url": "https://search.brave.com/search",
                 "timeout": 8,
                 "type": "brave"
@@ -88,22 +88,22 @@ class BrowserTool:
         
         for instance in search_instances:
             try:
-                print(f"🔍 尝试 {instance['name']}...")
+                print(f"🔍 Пробуем {instance['name']}...")
                 result = self._try_search_instance(instance, query, limit)
                 if result and len(result) > 0:
-                    print(f"✅ {instance['name']} 搜索成功，找到 {len(result)} 个结果")
+                    print(f"✅ {instance['name']}: поиск успешен, найдено {len(result)} результатов")
                     return result, True
                     
             except Exception as e:
-                print(f"⚠️ {instance['name']} 失败: {str(e)[:50]}")
-                continue  # 静默失败，快速切换
+                print(f"⚠️ {instance['name']} не удался: {str(e)[:50]}")
+                continue  # тихий сбой, быстрое переключение
         
-        # 快速降级到搜索建议
-        print("🔗 所有搜索引擎失败，提供搜索建议")
+        # Быстрый переход к поисковым подсказкам
+        print("🔗 Все поисковые системы недоступны, предлагаем варианты поиска")
         return self._get_search_suggestions(query), True
 
     def _try_search_instance(self, instance, query, limit):
-        """尝试单个搜索引擎实例"""
+        """Пробует один экземпляр поисковой системы"""
         if instance['type'] == 'searx':
             return self._try_searx_instance(instance, query, limit)
         elif instance['type'] == 'duckduckgo':
@@ -120,21 +120,21 @@ class BrowserTool:
             return None
 
     def _try_searx_instance(self, instance, query, limit):
-        """尝试Searx实例 - 优化中文搜索支持"""
-        # 检测是否为中文查询
-        is_chinese = any('\u4e00' <= char <= '\u9fff' for char in query)
+        """Пробует экземпляр Searx — оптимизировано для CJK-запросов"""
+        # Определяем, содержит ли запрос иероглифы CJK
+        is_cjk = any('\u4e00' <= char <= '\u9fff' for char in query)
         
         params = {
             'q': query,
             'format': 'json',
-            'engines': 'google,bing,duckduckgo,yandex' if not is_chinese else 'google,bing,yandex,baidu',
-            'language': 'zh-CN' if is_chinese else 'auto'
+            'engines': 'google,bing,duckduckgo,yandex' if not is_cjk else 'google,bing,yandex,baidu',
+            'language': 'zh-CN' if is_cjk else 'auto'
         }
         
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8" if is_chinese else "en-US,en;q=0.9"
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8" if is_cjk else "en-US,en;q=0.9"
         }
         
         try:
@@ -165,20 +165,20 @@ class BrowserTool:
                     
                     return results if results else None
                 except Exception as e:
-                    print(f"⚠️ 解析Searx响应失败: {str(e)[:50]}")
+                    print(f"⚠️ Не удалось разобрать ответ Searx: {str(e)[:50]}")
                     return None
             else:
-                print(f"⚠️ Searx返回状态码: {response.status_code}")
+                print(f"⚠️ Searx вернул код состояния: {response.status_code}")
                 return None
         except requests.Timeout:
-            print(f"⚠️ {instance['name']} 请求超时")
+            print(f"⚠️ {instance['name']}: превышено время ожидания запроса")
             return None
         except Exception as e:
-            print(f"⚠️ {instance['name']} 请求异常: {str(e)[:50]}")
+            print(f"⚠️ {instance['name']}: ошибка запроса: {str(e)[:50]}")
             return None
 
     def _try_duckduckgo_instance(self, instance, query, limit):
-        """尝试DuckDuckGo实例"""
+        """Пробует экземпляр DuckDuckGo"""
         params = {
             'q': query,
             'kl': 'cn-zh'
@@ -203,7 +203,7 @@ class BrowserTool:
         return None
 
     def _try_startpage_instance(self, instance, query, limit):
-        """尝试Startpage实例"""
+        """Пробует экземпляр Startpage"""
         params = {
             'query': query,
             'cat': 'web',
@@ -230,7 +230,7 @@ class BrowserTool:
         return None
 
     def _try_qwant_instance(self, instance, query, limit):
-        """尝试Qwant实例"""
+        """Пробует экземпляр Qwant"""
         params = {
             'q': query,
             't': 'web',
@@ -256,7 +256,7 @@ class BrowserTool:
         return None
 
     def _try_brave_instance(self, instance, query, limit):
-        """尝试Brave搜索实例"""
+        """Пробует экземпляр поиска Brave"""
         params = {
             'q': query,
             'source': 'web'
@@ -278,7 +278,7 @@ class BrowserTool:
             
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, 'html.parser')
-                # Brave搜索结果提取（需要根据实际HTML结构调整）
+                # Извлечение результатов Brave (может потребоваться настройка под актуальную HTML-структуру)
                 results = []
                 result_divs = soup.find_all('div', class_=['result', 'web-result'])
                 
@@ -306,7 +306,7 @@ class BrowserTool:
         return None
 
     def _try_ecosia_instance(self, instance, query, limit):
-        """尝试Ecosia搜索实例"""
+        """Пробует экземпляр поиска Ecosia"""
         params = {
             'q': query
         }
@@ -327,7 +327,7 @@ class BrowserTool:
             
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, 'html.parser')
-                # Ecosia搜索结果提取（需要根据实际HTML结构调整）
+                # Извлечение результатов Ecosia (может потребоваться настройка под актуальную HTML-структуру)
                 results = []
                 result_divs = soup.find_all('div', class_=['result', 'web-result', 'result__body'])
                 
@@ -355,10 +355,10 @@ class BrowserTool:
         return None
 
     def _extract_duckduckgo_results_from_soup(self, soup, limit):
-        """从DuckDuckGo HTML中提取结果"""
+        """Извлекает результаты из HTML DuckDuckGo"""
         results = []
         
-        # 查找搜索结果
+        # Поиск результатов
         result_divs = soup.find_all('div', class_='result')
         
         for div in result_divs[:limit]:
@@ -381,10 +381,10 @@ class BrowserTool:
         return results
 
     def _extract_startpage_results(self, soup, limit):
-        """从Startpage HTML中提取结果"""
+        """Извлекает результаты из HTML Startpage"""
         results = []
         
-        # 查找搜索结果
+        # Поиск результатов
         result_divs = soup.find_all('div', class_='w-gl__result')
         
         for div in result_divs[:limit]:
@@ -408,10 +408,10 @@ class BrowserTool:
         return results
 
     def _extract_qwant_results(self, soup, limit):
-        """从Qwant HTML中提取结果"""
+        """Извлекает результаты из HTML Qwant"""
         results = []
         
-        # 查找搜索结果
+        # Поиск результатов
         result_divs = soup.find_all('div', class_='result')
         
         for div in result_divs[:limit]:
@@ -434,13 +434,13 @@ class BrowserTool:
         return results
 
     def _extract_duckduckgo_results(self, soup, limit=5):
-        """提取DuckDuckGo搜索结果"""
+        """Извлекает результаты поиска DuckDuckGo"""
         results = []
         
-        # DuckDuckGo现在返回202状态码，需要JavaScript渲染
-        # 我们尝试从HTML中提取任何有用的信息
+        # DuckDuckGo часто возвращает код 202 и требует JavaScript-рендеринг
+        # Пытаемся извлечь любую полезную информацию из HTML
         
-        # 方法1：查找所有外部链接
+        # Способ 1: поиск всех внешних ссылок
         all_links = soup.find_all('a', href=True)
         external_links = []
         
@@ -448,7 +448,7 @@ class BrowserTool:
             href = link.get('href', '')
             title = self._clean_text(link.get_text(strip=True))
             
-            # 过滤外部链接（非DuckDuckGo内部链接）
+            # Фильтрация внешних ссылок (не внутренних ссылок DuckDuckGo)
             if (href and 
                 not href.startswith('javascript:') and
                 not href.startswith('#') and
@@ -463,20 +463,20 @@ class BrowserTool:
                     'link_element': link
                 })
         
-        # 方法2：如果外部链接不够，尝试从页面文本中提取信息
+        # Способ 2: если внешних ссылок мало — извлечение из текста страницы
         if len(external_links) < 2:
-            print("⚠️ 外部链接较少，尝试文本提取")
+            print("⚠️ Мало внешних ссылок, пробуем извлечь текст")
             
-            # 查找页面中的主要文本内容
+            # Поиск основного текстового содержимого страницы
             text_content = soup.get_text()
             
-            # 尝试提取URL模式
+            # Извлечение URL по шаблону
             import re
             url_pattern = r'https?://[^\s<>"\'()]+'
             urls = re.findall(url_pattern, text_content)
             
             for url in urls[:limit]:
-                # 从URL中提取可能的标题
+                # Извлечение возможного заголовка из URL
                 domain = url.split('/')[2] if '/' in url else url
                 title = domain.replace('www.', '').title()
                 
@@ -484,31 +484,31 @@ class BrowserTool:
                     external_links.append({
                         'title': title,
                         'url': url,
-                        'snippet': f'来自 {domain}',
+                        'snippet': f'Источник: {domain}',
                         'link_element': None
                     })
         
-        # 方法3：如果还是没有足够结果，提供搜索建议
+        # Способ 3: если результатов всё ещё мало — поисковые подсказки
         if len(external_links) < 2:
-            print("⚠️ 搜索结果有限，提供搜索建议")
+            print("⚠️ Результатов мало, предлагаем варианты поиска")
             
             suggestions = [
                 {
-                    'title': f'在Google搜索 "{self.last_query}"',
+                    'title': f'Поиск в Google: «{self.last_query}»',
                     'url': f'https://www.google.com/search?q={self.last_query}',
-                    'snippet': '使用Google搜索引擎',
+                    'snippet': 'Поисковая система Google',
                     'link_element': None
                 },
                 {
-                    'title': f'在Bing搜索 "{self.last_query}"',
+                    'title': f'Поиск в Bing: «{self.last_query}»',
                     'url': f'https://www.bing.com/search?q={self.last_query}',
-                    'snippet': '使用Bing搜索引擎',
+                    'snippet': 'Поисковая система Bing',
                     'link_element': None
                 }
             ]
             external_links.extend(suggestions)
         
-        # 去重并限制结果数量
+        # Дедупликация и ограничение числа результатов
         seen_urls = set()
         unique_results = []
         
@@ -522,7 +522,7 @@ class BrowserTool:
         return unique_results
 
     def _extract_content_from_url(self, url, max_length=300):
-        """从URL提取主要内容"""
+        """Извлекает основное содержимое по URL"""
         try:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -532,41 +532,41 @@ class BrowserTool:
             
             response = requests.get(url, headers=headers, timeout=10)
             if response.status_code != 200:
-                return "内容获取失败"
+                return "Не удалось получить содержимое"
             
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # 移除脚本和样式标签
+            # Удаление тегов script и style
             for script in soup(["script", "style", "nav", "footer", "header", "aside", "advertisement"]):
                 script.decompose()
             
-            # 智能内容提取策略
+            # Стратегия интеллектуального извлечения контента
             content = self._extract_main_content(soup)
             
             if not content:
                 content = soup.get_text(strip=True)
             
-            # 清理和优化内容
+            # Очистка и оптимизация содержимого
             content = self._clean_and_format_content(content)
             
             return content[:max_length] + "..." if len(content) > max_length else content
             
         except Exception as e:
-            return f"内容提取失败: {str(e)[:50]}"
+            return f"Ошибка извлечения содержимого: {str(e)[:50]}"
 
     def _extract_main_content(self, soup):
-        """智能提取页面主要内容"""
-        # 优先级策略：从最具体到最通用
+        """Интеллектуально извлекает основное содержимое страницы"""
+        # Стратегия приоритетов: от конкретного к общему
         extraction_strategies = [
-            # 1. 文章相关标签
+            # 1. Теги, связанные со статьями
             ['article', 'main article', '.article-content', '.post-content'],
-            # 2. 主要内容区域
+            # 2. Основная область контента
             ['main', '.main', '.content', '.main-content'],
-            # 3. 常见内容类名
+            # 3. Распространённые классы контента
             ['.entry-content', '.post-body', '.article-body', '.content-area'],
-            # 4. 通用容器
+            # 4. Общие контейнеры
             ['.container', '.wrapper', '.page-content'],
-            # 5. 最后尝试body
+            # 5. Последняя попытка — body
             ['body']
         ]
         
@@ -575,69 +575,69 @@ class BrowserTool:
                 element = soup.select_one(selector)
                 if element:
                     content = element.get_text(strip=True)
-                    # 验证内容质量
+                    # Проверка качества контента
                     if self._is_quality_content(content):
                         return content
         
         return ""
 
     def _is_quality_content(self, content):
-        """验证内容质量"""
+        """Проверяет качество контента"""
         if not content or len(content) < 50:
             return False
         
-        # 过滤导航和菜单内容
-        nav_keywords = ['导航', '菜单', '首页', '登录', '注册', '搜索', '联系', '关于', 'privacy', 'terms', 'home', 'login', 'register', 'contact', 'about']
+        # Фильтрация навигации и меню
+        nav_keywords = ['навигация', 'меню', 'главная', 'вход', 'регистрация', 'поиск', 'контакты', 'о нас', 'privacy', 'terms', 'home', 'login', 'register', 'contact', 'about']
         content_lower = content.lower()
         
         for keyword in nav_keywords:
             if keyword in content_lower:
                 return False
         
-        # 检查是否包含有意义的句子
-        sentences = content.split('。')
+        # Проверка наличия осмысленных предложений
+        sentences = re.split(r'[.!?。]', content)
         meaningful_sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
         
         return len(meaningful_sentences) >= 2
 
     def _clean_and_format_content(self, content):
-        """清理和格式化内容"""
+        """Очищает и форматирует содержимое"""
         if not content:
             return ""
         
-        # 移除多余空白
+        # Удаление лишних пробелов
         content = re.sub(r'\s+', ' ', content.strip())
         
-        # 移除特殊字符，保留中文标点
-        content = re.sub(r'[^\w\s\u4e00-\u9fff.,!?;:()[\]{}"\'。，！？：；（）【】""''-]', '', content)
+        # Удаление специальных символов, сохранение пунктуации
+        content = re.sub(r'[^\w\s\u4e00-\u9fff.,!?;:()[\]{}"\'-]', '', content)
         
-        # 移除重复的换行和空格
+        # Удаление повторяющихся переводов строк и пробелов
         content = re.sub(r'\n\s*\n', '\n', content)
         content = re.sub(r' {2,}', ' ', content)
         
-        # 提取前几个有意义的句子
-        sentences = re.split(r'[。！？.!?]', content)
+        # Извлечение первых осмысленных предложений
+        sentences = re.split(r'[.!?。]', content)
         meaningful_sentences = []
         
         for sentence in sentences:
             sentence = sentence.strip()
-            if len(sentence) > 10 and len(sentence) < 100:  # 合理的句子长度
+            if len(sentence) > 10 and len(sentence) < 100:  # разумная длина предложения
                 meaningful_sentences.append(sentence)
-                if len(meaningful_sentences) >= 3:  # 最多3个句子
+                if len(meaningful_sentences) >= 3:  # не более 3 предложений
                     break
         
-        return '。'.join(meaningful_sentences)
+        return '. '.join(meaningful_sentences)
 
     def _enhance_search_results(self, results, limit=3):
-        """增强搜索结果，提取内容预览"""
+        """Улучшает результаты поиска, извлекая превью контента"""
         enhanced_results = []
         
         for i, result in enumerate(results):
-            if i >= limit:  # 只增强前几个结果
+            if i >= limit:  # улучшаем только первые результаты
                 break
             
             if result['url'] and result['url'].startswith('http'):
-                print(f"📄 提取内容: {result['title'][:30]}...")
+                print(f"📄 Извлечение контента: {result['title'][:30]}...")
                 content = self._extract_content_from_url(result['url'])
                 result['snippet'] = content
                 result['enhanced'] = True
@@ -646,16 +646,16 @@ class BrowserTool:
             
             enhanced_results.append(result)
         
-        # 添加未增强的结果
+        # Добавляем необработанные результаты
         enhanced_results.extend(results[limit:])
         
         return enhanced_results
 
     def _fallback_extraction(self, soup, limit=5):
-        """备用结果提取方法"""
+        """Резервный метод извлечения результатов"""
         results = []
         
-        # 方法1：提取标题元素
+        # Способ 1: извлечение заголовочных элементов
         for tag in ["h1", "h2", "h3", "h4"]:
             elements = soup.find_all(tag)
             for elem in elements:
@@ -670,7 +670,7 @@ class BrowserTool:
                         "snippet": ""
                     })
         
-        # 方法2：提取文本块
+        # Способ 2: извлечение текстовых блоков
         if not results:
             text_blocks = soup.get_text().split('\n')
             for block in text_blocks:
@@ -688,25 +688,25 @@ class BrowserTool:
         return results
 
     def run(self, parameters):
-        # 确保参数处理的安全性
+        # Безопасная обработка параметров
         if isinstance(parameters, dict):
             query = parameters.get("input", "")
         else:
             query = str(parameters) if parameters else ""
 
-        # 参数验证
+        # Проверка параметров
         if not query or not query.strip():
-            return "错误：搜索关键词不能为空"
+            return "Ошибка: ключевые слова поиска не могут быть пустыми"
         
         query = query.strip()
-        self.last_query = query  # 保存查询用于建议
-        limit = 5  # 增加结果数量
+        self.last_query = query  # сохраняем запрос для подсказок
+        limit = 5  # увеличенное число результатов
         
-        # URL 编码查询参数
+        # URL-кодирование параметров запроса
         encoded_query = quote_plus(query)
         url = f"https://duckduckgo.com/html/?q={encoded_query}"
         
-        # 使用更真实的User-Agent
+        # Более реалистичный User-Agent
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -717,37 +717,37 @@ class BrowserTool:
             "Upgrade-Insecure-Requests": "1"
         }
         
-        # 检测是否为中文查询
-        is_chinese = any('\u4e00' <= char <= '\u9fff' for char in query)
+        # Определяем, содержит ли запрос иероглифы CJK
+        is_cjk = any('\u4e00' <= char <= '\u9fff' for char in query)
         
-        # 对于中文搜索，直接使用Searx搜索引擎，跳过DuckDuckGo（避免202问题）
-        if is_chinese:
-            print(f"🌐 检测到中文查询，使用多引擎搜索策略...")
+        # Для CJK-запросов сразу используем Searx, пропуская DuckDuckGo (избегаем проблемы с кодом 202)
+        if is_cjk:
+            print(f"🌐 Обнаружен CJK-запрос, используем мультипоисковую стратегию...")
             searx_results, searx_success = self._search_searx(query, limit)
             
             if searx_success and searx_results:
                 results = searx_results
-                search_engine = "Searx多引擎"
-                print(f"✅ 中文搜索成功，找到 {len(results)} 个结果")
+                search_engine = "Searx мультипоиск"
+                print(f"✅ CJK-поиск успешен, найдено {len(results)} результатов")
             else:
-                # 如果Searx失败，提供搜索建议
-                print("⚠️ 所有搜索引擎失败，提供搜索建议")
+                # Если Searx не удался — поисковые подсказки
+                print("⚠️ Все поисковые системы недоступны, предлагаем варианты поиска")
                 results = self._get_search_suggestions(query)
-                search_engine = "搜索建议"
+                search_engine = "Поисковые подсказки"
         else:
-            # 英文搜索：先尝试DuckDuckGo，失败后使用Searx
-            max_retries = 2  # 减少重试次数，快速切换到Searx
+            # Для латиницы: сначала DuckDuckGo, при неудаче — Searx
+            max_retries = 2  # меньше повторов, быстрее переключение на Searx
             duckduckgo_success = False
             
             for attempt in range(max_retries):
                 try:
-                    print(f"🔍 尝试DuckDuckGo搜索: {query} (尝试 {attempt + 1}/{max_retries})")
+                    print(f"🔍 Пробуем DuckDuckGo: {query} (попытка {attempt + 1}/{max_retries})")
                     
                     response = requests.get(url, headers=headers, timeout=10)
                     
-                    # DuckDuckGo经常返回202，直接跳过
+                    # DuckDuckGo часто возвращает 202 — сразу переключаемся
                     if response.status_code == 202:
-                        print("⚠️ DuckDuckGo返回202（需要JavaScript），切换到Searx...")
+                        print("⚠️ DuckDuckGo вернул 202 (нужен JavaScript), переключаемся на Searx...")
                         break
                     
                     if response.status_code != 200:
@@ -756,7 +756,7 @@ class BrowserTool:
                             continue
                         break
                     
-                    # 检查响应内容
+                    # Проверка содержимого ответа
                     if len(response.text) < 1000:
                         if attempt < max_retries - 1:
                             time.sleep(1)
@@ -769,37 +769,37 @@ class BrowserTool:
                     if results and len(results) > 0:
                         duckduckgo_success = True
                         search_engine = "DuckDuckGo"
-                        print(f"✅ DuckDuckGo搜索成功，找到 {len(results)} 个结果")
+                        print(f"✅ DuckDuckGo: поиск успешен, найдено {len(results)} результатов")
                         break
                         
                 except Exception as e:
-                    print(f"⚠️ DuckDuckGo尝试失败: {str(e)[:50]}")
+                    print(f"⚠️ Попытка DuckDuckGo не удалась: {str(e)[:50]}")
                     if attempt < max_retries - 1:
                         time.sleep(1)
                         continue
                     break
             
-            # 如果DuckDuckGo失败，使用Searx
+            # Если DuckDuckGo не удался — Searx
             if not duckduckgo_success:
-                print("🌐 DuckDuckGo失败，切换到Searx搜索引擎...")
+                print("🌐 DuckDuckGo недоступен, переключаемся на Searx...")
                 searx_results, searx_success = self._search_searx(query, limit)
                 
                 if searx_success and searx_results:
                     results = searx_results
-                    search_engine = "Searx多引擎"
-                    print(f"✅ Searx搜索成功，找到 {len(results)} 个结果")
+                    search_engine = "Searx мультипоиск"
+                    print(f"✅ Searx: поиск успешен, найдено {len(results)} результатов")
                 else:
-                    print("⚠️ 所有搜索引擎失败，提供搜索建议")
+                    print("⚠️ Все поисковые системы недоступны, предлагаем варианты поиска")
                     results = self._get_search_suggestions(query)
-                    search_engine = "搜索建议"
+                    search_engine = "Поисковые подсказки"
         
-        # 增强搜索结果（提取内容预览）
+        # Улучшение результатов (извлечение превью контента)
         if results:
-            print("🚀 增强搜索结果，提取内容预览...")
+            print("🚀 Улучшаем результаты, извлекаем превью контента...")
             enhanced_results = self._enhance_search_results(results, limit=3)
             results = enhanced_results
         
-        # 格式化输出结果
+        # Форматирование вывода
         if results:
             formatted_results = []
             for i, result in enumerate(results, 1):
@@ -809,9 +809,9 @@ class BrowserTool:
                     result_text += f"\n   🔗 {result['url']}"
                 
                 if result['snippet']:
-                    # 如果是增强的结果，显示内容预览
+                    # Для улучшенных результатов показываем превью контента
                     if result.get('enhanced'):
-                        result_text += f"\n   📄 内容预览: {result['snippet']}"
+                        result_text += f"\n   📄 Превью: {result['snippet']}"
                     else:
                         result_text += f"\n   📝 {result['snippet']}"
                 
@@ -819,23 +819,23 @@ class BrowserTool:
             
             return "\n\n".join(formatted_results)
         else:
-            return f"未找到关于 '{query}' 的搜索结果。请尝试使用不同的关键词。"
+            return f"Результаты по запросу «{query}» не найдены. Попробуйте другие ключевые слова."
         
     def _get_search_suggestions(self, query):
-        """快速提供搜索建议"""
+        """Быстро предоставляет поисковые подсказки"""
         return [
             {
-                'title': f'Google搜索: {query}',
+                'title': f'Поиск в Google: {query}',
                 'url': f'https://www.google.com/search?q={query}',
-                'snippet': '使用Google搜索引擎',
+                'snippet': 'Поисковая система Google',
                 'source': 'Google'
             },
             {
-                'title': f'Bing搜索: {query}',
+                'title': f'Поиск в Bing: {query}',
                 'url': f'https://www.bing.com/search?q={query}',
-                'snippet': '使用Bing搜索引擎',
+                'snippet': 'Поисковая система Bing',
                 'source': 'Bing'
             }
         ]
 
-        return "搜索失败，已多次重试。请稍后再试。"
+        return "Поиск не удался после нескольких попыток. Попробуйте позже."

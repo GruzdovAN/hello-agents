@@ -1,5 +1,5 @@
 """
-Milvus 存储层（可选启用）。
+Уровень хранения Milvus (дополнительное включение).
 """
 
 from __future__ import annotations
@@ -73,7 +73,7 @@ def init_collection(dim: int) -> bool:
         col.load()
         return True
     except Exception as e:
-        logger.warning("Milvus 集合初始化失败: %s", e)
+logger.warning("Ошибка инициализации коллекции Milvus: %s", e)
         return False
 
 
@@ -104,7 +104,7 @@ def upsert_chunks(chunks: List[Dict[str, Any]]) -> int:
         col.flush()
         return len(chunks)
     except Exception as e:
-        logger.warning("Milvus upsert 失败: %s", e)
+logger.warning("Ошибка обновления Milvus: %s", e)
         return 0
 
 
@@ -152,5 +152,5 @@ def search(
                 )
         return rows
     except Exception as e:
-        logger.warning("Milvus 检索失败: %s", e)
+logger.warning("Ошибка получения Milvus: %s", e)
         return []

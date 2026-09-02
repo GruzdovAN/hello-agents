@@ -1,4 +1,4 @@
-"""HelloAgents 自定义工具测试。"""
+"""Тестирование специальных инструментов HelloAgents."""
 
 import json
 
@@ -14,15 +14,15 @@ def test_requirement_audit_returns_structured_coverage() -> None:
     response = json.loads(RequirementAuditTool().run(
         {
             "requirement_text": (
-                "面向社区居民做报名功能，希望一个月上线，"
-                "预计在线人数 100 人，并保存报名数据。"
+«Функция регистрации предназначена для жителей сообщества, и мы надеемся, что она появится онлайн в течение месяца».
+«Ожидается, что количество людей онлайн составит 100, а регистрационные данные будут сохранены».
             )
         }
     ))
 
     assert response["ok"] is True
     assert 0 < response["coverage_percent"] <= 100
-    assert "目标用户" in response["covered_dimensions"]
+укажите «целевого пользователя» в ответе[»covered_dimensions»]
     assert isinstance(response["clarifying_questions"], list)
 
 
@@ -39,7 +39,7 @@ def test_requirement_audit_accepts_hello_agents_simple_input_alias() -> None:
     )
 
     assert response["ok"] is True
-    assert "目标用户" in response["covered_dimensions"]
+укажите «целевого пользователя» в ответе[»covered_dimensions»]
 
 
 def test_requirement_audit_marks_unknown_dimensions_missing() -> None:
@@ -52,8 +52,8 @@ def test_requirement_audit_marks_unknown_dimensions_missing() -> None:
 
 
 def test_report_quality_scores_complete_report() -> None:
-    report = "# 报告\n\n" + "\n\n".join(
-        f"## {heading}\n\n待确认内容" for heading in REQUIRED_REPORT_HEADINGS
+report = "# report\n\n" + "\n\n".join(
+f"## {heading}\n\nСодержание требует подтверждения" для заголовка в REQUIRED_REPORT_HEADINGS
     )
 
     response = json.loads(ReportQualityTool().run({"report_text": report}))
@@ -82,7 +82,7 @@ def test_report_quality_rejects_empty_input() -> None:
 
 
 def test_report_quality_does_not_reward_empty_pending_heading() -> None:
-    report = "# 报告\n\n" + "\n\n".join(
+report = "# report\n\n" + "\n\n".join(
         f"## {heading}" for heading in REQUIRED_REPORT_HEADINGS
     )
 

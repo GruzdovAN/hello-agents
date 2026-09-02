@@ -1,8 +1,8 @@
 """
-arXiv API 检索工具
+Инструмент поиска API arXiv
 
-通过 arXiv 官方 API 检索学术论文，返回结构化结果。
-文档: https://info.arxiv.org/help/api/
+Ищите научные статьи через официальный API arXiv и получайте структурированные результаты.
+Документация: https://info.arxiv.org/help/api/.
 """
 import urllib.request
 import urllib.parse
@@ -13,10 +13,10 @@ from hello_agents.tools import Tool, ToolParameter, ToolResponse, ToolStatus
 
 
 class ArxivSearchTool(Tool):
-    """arXiv 学术论文检索工具
+"""инструмент поиска академических статей arXiv
 
-    从 arXiv 数据库检索学术论文，支持关键词搜索、作者筛选、时间范围等条件。
-    返回论文的标题、作者、摘要、发表日期和 PDF 链接。
+Извлекайте научные статьи из базы данных arXiv, поддерживая поиск по ключевым словам, фильтрацию авторов, временной диапазон и другие условия.
+Возвращает название статьи, автора, аннотацию, дату публикации и ссылку PDF.
     """
 
     BASE_URL = "http://export.arxiv.org/api/query"
@@ -24,21 +24,21 @@ class ArxivSearchTool(Tool):
     def __init__(self):
         super().__init__(
             name="arxiv_search",
-            description="在 arXiv 学术论文数据库中搜索论文。"
-                        "支持按关键词、作者、时间范围筛选。"
-                        "返回论文标题、作者、摘要、发表日期和链接。"
-                        "当需要查找最新的学术研究论文时使用此工具。"
+описание="Поиск статей в базе данных научных статей arXiv."
+«Поддерживает фильтрацию по ключевым словам, авторам и временному диапазону».
+«Возвращает название статьи, автора, аннотацию, дату публикации и ссылку».
+«Используйте этот инструмент, когда вам нужно найти последние научные исследования».
         )
 
     def _build_query(self, parameters: Dict[str, Any]) -> str:
-        """构建 arXiv API 查询字符串"""
+"""Построение строки запроса API arXiv"""
         parts = []
         keyword = parameters.get("keyword", "")
         author = parameters.get("author", "")
         category = parameters.get("category", "")
 
         if keyword:
-            # 对关键词进行 URL 编码并构建查询
+# URL-адрес кодирует ключевые слова и строит запрос
             terms = [f"all:{t.strip()}" for t in keyword.split() if t.strip()]
             parts.append("+AND+".join(terms))
 
@@ -46,7 +46,7 @@ class ArxivSearchTool(Tool):
             parts.append(f'au:{author.replace(" ", "+")}')
 
         if category:
-            # arXiv 分类如 cs.AI, cs.CL, stat.ML
+# Классификация arXiv, такая как cs.AI, cs.CL, stat.ML
             parts.append(f"cat:{category.strip()}")
 
         if not parts:
@@ -55,7 +55,7 @@ class ArxivSearchTool(Tool):
         return "+AND+".join(parts)
 
     def _parse_atom_response(self, xml_text: str) -> List[Dict[str, Any]]:
-        """解析 arXiv API 返回的 Atom XML"""
+"""Разбор XML-кода Atom, возвращенного API arXiv"""
         ns = {
             "atom": "http://www.w3.org/2005/Atom",
             "arxiv": "http://arxiv.org/schemas/atom"
@@ -76,7 +76,7 @@ class ArxivSearchTool(Tool):
                     link = l.get("href")
                     break
             if not link:
-                # 用 id 构造 arXiv 页面链接
+# Используйте id для создания ссылки на страницу arXiv
                 paper_id = entry.find("atom:id", ns)
                 if paper_id is not None and paper_id.text:
                     arxiv_id = paper_id.text.split("/abs/")[-1]
@@ -118,11 +118,11 @@ class ArxivSearchTool(Tool):
 
             if not papers:
                 return ToolResponse.success(
-                    text="未找到匹配的论文，请尝试调整关键词。",
+text="Подходящая статья не найдена, попробуйте изменить ключевые слова.",
                     data={"count": 0, "papers": []}
                 )
 
-            # 格式化输出
+# Форматирование вывода
             lines = [f"找到 {len(papers)} 篇论文：\n"]
             for i, p in enumerate(papers, 1):
                 authors_str = ", ".join(p["authors"][:3])
@@ -143,7 +143,7 @@ class ArxivSearchTool(Tool):
         except urllib.error.URLError as e:
             return ToolResponse.error(
                 code="NETWORK_ERROR",
-                message=f"arXiv API 请求失败: {str(e)}"
+message=f"Ошибка запроса API arXiv: {str(e)}"
             )
         except ET.ParseError as e:
             return ToolResponse.error(
@@ -153,14 +153,14 @@ class ArxivSearchTool(Tool):
         except Exception as e:
             return ToolResponse.error(
                 code="INTERNAL_ERROR",
-                message=f"检索过程出错: {str(e)}"
+message=f"Ошибка при получении: {str(e)}"
             )
 
     def get_parameters(self) -> List[ToolParameter]:
         return [
             ToolParameter(
                 name="keyword", type="string",
-                description="搜索关键词，如 'large language model reasoning'",
+описание="Поиск по ключевым словам, например, "рассуждение на основе большой языковой модели"",
                 required=False
             ),
             ToolParameter(
@@ -170,12 +170,12 @@ class ArxivSearchTool(Tool):
             ),
             ToolParameter(
                 name="category", type="string",
-                description="arXiv 分类，如 cs.AI(人工智能) / cs.CL(计算语言学) / stat.ML(机器学习)",
+description="Классификация arXiv, например cs.AI (искусственный интеллект) / cs.CL (компьютерная лингвистика) / stat.ML (машинное обучение)",
                 required=False
             ),
             ToolParameter(
                 name="max_results", type="integer",
-                description="最大返回结果数（默认5，最多20）",
+описание="Максимальное количество возвращаемых результатов (по умолчанию 5, максимум 20)",
                 required=False
             ),
         ]

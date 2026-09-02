@@ -1,4 +1,4 @@
-"""网页搜索工具 - 使用 Brave Search API 进行网络搜索"""
+"""Инструмент веб-поиска — поиск в Интернете с помощью API Brave Search."""
 
 import os
 import json
@@ -10,11 +10,10 @@ from hello_agents.tools import Tool, ToolParameter, ToolResponse, tool_action
 
 
 class WebSearchTool(Tool):
-    """网页搜索工具
+    """Инструмент веб-поиска
 
-    使用 Brave Search API 进行网络搜索。
-    需要配置环境变量 BRAVE_API_KEY 或在初始化时传入 API key。
-    """
+    Используйте Brave Search API для выполнения веб-поиска.
+    Вам необходимо настроить переменную среды BRAVE_API_KEY или передать ключ API во время инициализации."""
 
     def __init__(
         self,
@@ -22,16 +21,15 @@ class WebSearchTool(Tool):
         max_results: int = 5,
         timeout: int = 10,
     ):
-        """初始化网页搜索工具
+        """Инициализировать инструмент веб-поиска
 
-        Args:
-            api_key: Brave Search API key，如未提供则从环境变量 BRAVE_API_KEY 读取
-            max_results: 最大返回结果数，默认 5
-            timeout: 请求超时时间（秒），默认 10
-        """
+        Аргументы:
+            api_key: API-ключ Brave Search. Если он не указан, он будет прочитан из переменной среды BRAVE_API_KEY.
+            max_results: максимальное количество возвращаемых результатов, по умолчанию 5.
+            таймаут: таймаут запроса (секунды), по умолчанию 10"""
         super().__init__(
             name="web_search",
-            description="使用搜索引擎搜索网络信息",
+            description="Веб-поиск",
             expandable=True
         )
 
@@ -41,7 +39,7 @@ class WebSearchTool(Tool):
         self._base_url = "https://api.search.brave.com/res/v1/web/search"
 
     def run(self, parameters: Dict[str, Any]) -> ToolResponse:
-        """执行搜索（默认行为）"""
+        """Выполнить поиск (поведение по умолчанию)"""
         query = parameters.get("query", "")
         count = parameters.get("count", self.max_results)
         return self._search(query, count)
@@ -51,41 +49,41 @@ class WebSearchTool(Tool):
             ToolParameter(
                 name="query",
                 type="string",
-                description="搜索查询词",
+description="Поискслового запроса",
                 required=True
             ),
             ToolParameter(
                 name="count",
                 type="integer",
-                description=f"返回结果数量，默认 {self.max_results}",
+                description=f"返回结果数量，по умолчанию {self.max_results}",
                 required=False
             ),
         ]
 
     def _search(self, query: str, count: int = None) -> ToolResponse:
-        """执行搜索的核心实现
+        """Основная реализация для выполнения поиска
 
-        Args:
-            query: 搜索查询
-            count: 返回结果数量
+        Аргументы:
+            запрос: поисковый запрос
+            count: количество возвращенных результатов
 
-        Returns:
-            ToolResponse: 搜索结果
-        """
+        Возврат:
+            ToolResponse: Результаты поиска"""
         if not query:
             return ToolResponse.error(
                 code="INVALID_INPUT",
-                message="搜索查询不能为空"
+                message="Поиск查询не может быть пустым"
             )
 
         if not self.api_key:
             return ToolResponse.error(
                 code="MISSING_API_KEY",
-                message="未配置 Brave API Key。请设置环境变量 BRAVE_API_KEY 或在初始化时传入 api_key 参数"
+message="неконфигурация Brave API Key. Пожалуйста, установите переменную среды BRAVE_API_KEY или передайте параметр api_key во время инициализации"
             )
 
         try:
-            # 构建请求
+            # Запрос на сборку
+
             params = {
                 "q": query,
                 "count": count or self.max_results,
@@ -97,20 +95,23 @@ class WebSearchTool(Tool):
             request.add_header("Accept-Encoding", "gzip")
             request.add_header("X-Subscription-Token", self.api_key)
 
-            # 发送请求
+            # Отправить запрос
+
             with urlopen(request, timeout=self.timeout) as response:
                 data = json.loads(response.read().decode("utf-8"))
 
-            # 解析结果
+            # Результаты анализа
+
             results = self._parse_search_results(data)
 
             if not results:
                 return ToolResponse.success(
-                    text=f"未找到与 '{query}' 相关的结果",
+                    text=f"Не найдено совпадений для '{query}' 相关的结果",
                     data={"query": query, "results": []}
                 )
 
-            # 格式化输出
+            # Форматированный вывод
+
             formatted = self._format_results(results)
 
             return ToolResponse.success(
@@ -126,41 +127,41 @@ class WebSearchTool(Tool):
             if e.code == 401:
                 return ToolResponse.error(
                     code="AUTH_ERROR",
-                    message="API Key 无效或已过期"
+                    message="API Key недопустимый或ужеустаревший"
                 )
             elif e.code == 429:
                 return ToolResponse.error(
                     code="RATE_LIMIT",
-                    message="API 请求频率超限，请稍后再试"
+                    message="API запрос频率超限，Пожалуйста,稍后再试"
                 )
             else:
                 return ToolResponse.error(
                     code="HTTP_ERROR",
-                    message=f"搜索请求失败 (HTTP {e.code}): {e.reason}"
+                    message=f"Поискзапросошибка (HTTP {e.code}): {e.reason}"
                 )
         except URLError as e:
             return ToolResponse.error(
                 code="NETWORK_ERROR",
-                message=f"网络错误: {str(e)}"
+                message=f"Сетевая ошибка: {str(e)}"
             )
         except Exception as e:
             return ToolResponse.error(
                 code="SEARCH_ERROR",
-                message=f"搜索失败: {str(e)}"
+                message=f"Поискошибка: {str(e)}"
             )
 
     def _parse_search_results(self, data: dict) -> List[dict]:
-        """解析 Brave Search API 响应
+        """Анализ ответов Brave Search API
 
-        Args:
-            data: API 响应数据
+        Аргументы:
+            данные: данные ответа API
 
-        Returns:
-            搜索结果列表
-        """
+        Возврат:
+            Список результатов поиска"""
         results = []
 
-        # 提取 web 搜索结果
+        # Извлечение результатов веб-поиска
+
         web_results = data.get("web", {}).get("results", [])
 
         for item in web_results:
@@ -174,15 +175,14 @@ class WebSearchTool(Tool):
         return results
 
     def _format_results(self, results: List[dict]) -> str:
-        """格式化搜索结果
+        """Форматировать результаты поиска
 
-        Args:
-            results: 搜索结果列表
+        Аргументы:
+            результаты: список результатов поиска
 
-        Returns:
-            格式化的文本
-        """
-        lines = [f"找到 {len(results)} 个结果:\n"]
+        Возврат:
+            форматированный текст"""
+        lines = [f"Найдено {len(results)} 个结果:\n"]
 
         for i, result in enumerate(results, 1):
             lines.append(f"{i}. **{result['title']}**")
@@ -193,13 +193,12 @@ class WebSearchTool(Tool):
 
         return "\n".join(lines)
 
-    @tool_action("search_web", "搜索网络信息")
+@tool_action("search_web", "Информация о поисковой сети")
     def _search_action(self, query: str, count: int = None) -> str:
-        """搜索网络
+        """Поиск в Интернете
 
-        Args:
-            query: 搜索查询词
-            count: 返回结果数量（可选）
-        """
+        Аргументы:
+            запрос: термин поискового запроса
+            count: количество возвращенных результатов (необязательно)"""
         response = self._search(query, count)
         return response.text

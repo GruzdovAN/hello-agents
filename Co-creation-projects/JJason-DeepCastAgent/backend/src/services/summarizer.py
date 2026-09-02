@@ -1,4 +1,4 @@
-"""任务总结工具。"""
+"""Инструмент сводки задач."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ class SummarizationService:
         self._config = config
 
     def summarize_task(self, state: SummaryState, task: TodoItem, context: str) -> str:
-        """使用总结代理生成特定于任务的总结。"""
+"""Используйте агент сводных данных для создания сводок по конкретным задачам."""
         prompt = self._build_prompt(state, task, context)
 
         agent = self._agent_factory()
@@ -40,12 +40,12 @@ class SummarizationService:
 
         summary_text = strip_tool_calls(summary_text).strip()
 
-        return summary_text or "暂无可用信息"
+вернуть summary_text или «Информации пока нет»
 
     def stream_task_summary(
         self, state: SummaryState, task: TodoItem, context: str
     ) -> tuple[Iterator[str], Callable[[], str]]:
-        """流式传输任务的总结文本，同时收集完整输出。"""
+"""Потоковая передача сводного текста задачи при сборе полного вывода."""
         prompt = self._build_prompt(state, task, context)
         remove_thinking = self._config.strip_thinking_tokens
         raw_buffer = ""
@@ -54,7 +54,7 @@ class SummarizationService:
         agent = self._agent_factory()
 
         def flush_visible() -> Iterator[str]:
-            """处理缓冲区，提取并 yield 所有不在 <think>...</think> 块中的可见文本。如果遇到不完整的 <think> 标签，会暂停输出等待更多数据。"""
+"""Обработка буфера, извлечение и получение всего видимого текста за пределами блока <think>...</think>. Если встречается неполный тег <think>, вывод будет приостановлен для ожидания дополнительных данных."""
             nonlocal emit_index, raw_buffer
             while True:
                 start = raw_buffer.find("<think>", emit_index)
@@ -110,13 +110,13 @@ class SummarizationService:
         return generator(), get_summary
 
     def _build_prompt(self, state: SummaryState, task: TodoItem, context: str) -> str:
-        """构建两种模式共享的总结提示。"""
+"""Подсказки по созданию сводных данных, общие для обоих режимов."""
         return (
-            f"任务主题：{state.research_topic}\n"
-            f"任务名称：{task.title}\n"
-            f"任务目标：{task.intent}\n"
-            f"检索查询：{task.query}\n"
-            f"任务上下文：\n{context}\n"
+f"Тема задачи: {state.research_topic}\n"
+f"Имя задачи: {task.title}\n"
+f"Цель задачи: {task.intent}\n"
+f"Поисковый запрос: {task.query}\n"
+f"Контекст задачи:\n{контекст}\n"
             f"{build_note_guidance(task)}\n"
             "请按照以上协作要求先同步笔记，然后返回一份面向用户的 Markdown 总结（仍遵循任务总结模板）。"
         )

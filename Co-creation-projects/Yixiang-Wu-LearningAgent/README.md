@@ -1,313 +1,272 @@
-# LearningAgent - AI 智能学习助手
+# LearningAgent — AI-помощник в обучении
 
-> 基于 HelloAgents 框架的个性化学习助手，通过 AI 对话帮助你创建学习计划、记录知识和追踪学习进度
+> Персональный помощник на HelloAgents: планы обучения, заметки и прогресс через диалог с ИИ
 
-## 📝 项目简介
+## 📝 О проекте
 
-LearningAgent 是一个智能学习助手，旨在帮助学习者：
-- **系统化学习**：根据领域描述、GitHub 项目或学术论文自动生成个性化学习路径
-- **知识管理**：智能分类和标签化学习笔记，支持多种输入方式（文本/文件/URL）
-- **互动学习**：通过对话和问答巩固知识，提供自由对话和结构化测验两种模式
-- **进度追踪**：自动评估学习进度，提供个性化学习建议
+LearningAgent помогает учиться:
 
-**适用场景**：编程学习、技能提升、学术论文研读、开源项目分析等
+- **Системное обучение**: путь по описанию области, репозиторию GitHub или научной статье
+- **Управление знаниями**: классификация и теги заметок; ввод текстом, файлом или URL
+- **Интерактив**: закрепление через диалог — свободный режим и структурированный тест
+- **Прогресс**: оценка по плану, заметкам и сессиям
 
-## ✨ 核心功能
+**Сценарии**: программирование, навыки, статьи, разбор open source
 
-- [x] **智能学习计划生成** - 基于领域描述、GitHub 仓库或 PDF 论文自动生成学习路径
-- [x] **智能知识笔记** - LLM 自动分析、分类和标签化，支持文本/文件/URL 三种输入
-- [x] **互动式学习** - Free 模式（自由对话）和 Quiz 模式（结构化测验）
-- [x] **学习进度评估** - 分析学习计划、知识笔记和会话记录，生成进度报告
-- [x] **流式输出** - 实时显示 AI 响应，提升用户体验
+## ✨ Основные возможности
 
-## 🛠️ 技术栈
+- [x] **План обучения** — по области, GitHub или PDF
+- [x] **Умные заметки** — LLM: анализ, категории, теги; текст / файл / URL
+- [x] **Интерактив** — Free и Quiz
+- [x] **Оценка прогресса** — отчёт по плану, заметкам и сессиям
+- [x] **Потоковый вывод** — ответы в реальном времени
 
-- **HelloAgents 框架**：
-  - SimpleAgent（MainAgent、SummaryAgent）
-  - ReActAgent（CreatePlanAgent）
-  - ReflectionAgent（VibeLearningAgent）
-- **专业层智能体**：RepoAnalyzerAgent、PaperAnalyzerAgent、QuizGeneratorAgent
-- **核心技术**：
-  - 三层 Agent 架构设计
-  - 混合策略摘要更新（<5个文件完全重写，≥5个增量更新）
-  - 流式输出支持
-- **LLM 提供商**：支持 OpenAI、DeepSeek、Qwen、ModelScope 等 10+ 服务
-- **开发工具**：pytest、black、mypy、flake8
+## 🛠️ Стек
 
-## 🚀 快速开始
+- **HelloAgents**:
+  - SimpleAgent (MainAgent, SummaryAgent)
+  - ReActAgent (CreatePlanAgent)
+  - ReflectionAgent (VibeLearningAgent)
+- **Специалисты**: RepoAnalyzerAgent, PaperAnalyzerAgent, QuizGeneratorAgent
+- **Ядро**:
+  - Трёхуровневая архитектура агентов
+  - Гибридное обновление сводки (<5 файлов — полная перезапись, ≥5 — инкремент)
+  - Потоковый вывод
+- **LLM**: OpenAI, DeepSeek, Qwen, ModelScope и др. (10+)
+- **Инструменты**: pytest, black, mypy, flake8
 
-### 环境要求
+## 🚀 Быстрый старт
+
+### Требования
 
 - Python 3.10+
-- Conda（推荐）或 venv
+- Conda (рекомендуется) или venv
 
-### 安装依赖
+### Установка
 
 ```bash
-# 克隆仓库
 git clone https://github.com/Yixiang-Wu/learningAgent.git
 cd learningAgent
 
-# 创建 conda 虚拟环境
 conda create -n learning-agent python=3.10
 conda activate learning-agent
 
-# 安装依赖
 pip install -r requirements.txt
 ```
 
-### 配置 API 密钥
+### API-ключ
 
 ```bash
-# 复制环境变量模板
 cp .env.example .env
 
-# 编辑 .env 文件，填入你的 API 密钥
 # LLM_MODEL_ID=gpt-4o-mini
 # LLM_API_KEY=your_api_key_here
 # LLM_BASE_URL=https://api.openai.com/v1
 ```
 
-### 运行项目
+### Запуск
 
 ```bash
-# 启动 LearningAgent REPL
 python main.py
 
-# 在 REPL 中使用命令
-> /help                    # 显示帮助
-> /create Python           # 创建学习计划
-> /add Python # 装饰器模式  # 添加知识笔记
-> /vibe Python             # 开始互动学习
-> /vibe Python --mode quiz # 开始测验模式
-> /summary Python          # 查看学习总结
-> /list                    # 列出所有学习领域
-> /exit                    # 退出
+> /help                    # Справка
+> /create Python           # План обучения
+> /add Python # декораторы # Заметка
+> /vibe Python             # Интерактив
+> /vibe Python --mode quiz # Тест
+> /summary Python          # Сводка
+> /list                    # Список областей
+> /exit                    # Выход
 ```
 
-## 📖 使用示例
+## 📖 Примеры
 
-### 示例 1：创建学习计划
+### Пример 1: план обучения
 
 ```bash
 > /create Python
 ```
 
-AI 会引导你：
-1. 询问学习目标（如："想在工作中应用"、"想达到研究生水平"）
-2. 分析领域/GitHub 项目/PDF 论文
-3. 搜索最佳学习资源
-4. 生成结构化的学习计划（保存到 `~/.learningAgent/{domain}/plan.md`）
+ИИ спросит цель, проанализирует область/GitHub/PDF, подберёт ресурсы и сохранит план в `~/.learningAgent/{domain}/plan.md`
 
-**生成计划示例**：
+**Фрагмент плана**:
 ```markdown
-# Python 学习计划
+# План обучения Python
 
-## 领域概述
-Python 是一种高级编程语言...
+## Обзор области
+Python — язык высокого уровня...
 
-## 前置知识检查清单
-- [ ] 基本计算机概念
-- [ ] 逻辑思维能力
+## Чеклист предварительных знаний
+- [ ] Базовые понятия компьютера
+- [ ] Логическое мышление
 
-## 分阶段学习路径
-### 阶段 1：Python 基础（2-3周）
-- 变量和数据类型
-- 控制流和函数
+## Поэтапный путь
+### Этап 1: основы Python (2–3 недели)
+- Переменные и типы
+- Управление потоком и функции
 ...
 
-## 推荐资源
-- 书籍：《Python 编程：从入门到实践》
-- 课程：廖雪峰 Python 教程
+## Рекомендуемые ресурсы
+- Книга: «Automate the Boring Stuff with Python»
+- Курс: официальный tutorial Python
 ...
 ```
 
-### 示例 2：添加知识笔记
+### Пример 2: заметки
 
 ```bash
-# 文本输入
-> /add Python # 装饰器模式
-> /add 机器学习 决策树是一种监督学习算法...
+# Текст
+> /add Python # паттерн декоратор
+> /add Машинное обучение Дерево решений — алгоритм с учителем...
 
-# 文件输入
+# Файл
 > /add ~/notes/react-hooks.md
 
-# URL 输入
+# URL
 > /add https://blog.example.com/post
 ```
 
-AI 会自动：
-1. 分析内容并识别领域
-2. 提取关键概念和标签
-3. 生成带时间戳的文件名
-4. 保存到 `~/.learningAgent/{domain}/knowledge/`
-5. 更新知识摘要文件
+ИИ: определит область, извлечёт концепции и теги, имя с timestamp, сохранит в `~/.learningAgent/{domain}/knowledge/`, обновит сводку.
 
-**保存示例**：
+**Пример структуры**:
 ```
 ~/.learningAgent/
 ├── Python/
 │   ├── knowledge/
-│   │   ├── 20250111-算法-Python-装饰器.md
-│   │   └── 20250111-通用-列表推导式.md
+│   │   ├── 20250111-алгоритмы-Python-декораторы.md
+│   │   └── 20250111-общее-list-comprehension.md
 │   └── knowledge_summary.md
 ```
 
-### 示例 3：互动学习
+### Пример 3: интерактив
 
 ```bash
-# Free 模式 - 自由对话
 > /vibe Python
-
-# Quiz 模式 - 结构化测验
 > /vibe Python --mode quiz
 ```
 
-**Free 模式**：
-- AI 生成开放性问题，鼓励讨论
-- 动态调整对话方向
-- 引导深入思考
+**Free**: открытые вопросы, гибкий диалог, углубление.
 
-**Quiz 模式**：
-- 结构化测验题
-- 自动评估答案
-- 难度逐步递增
+**Quiz**: структурированные вопросы, оценка ответов, рост сложности.
 
-每次会话自动记录并生成总结。
+Сессии логируются и суммируются.
 
-### 示例 4：查看学习总结
+### Пример 4: сводка
 
 ```bash
 > /summary Python
 ```
 
-生成进度报告包含：
-1. **当前水平评估** - 整体掌握度百分比、所处学习阶段
-2. **知识点分析** - 掌握良好的知识点、需要加强的知识点
-3. **下一步建议** - 具体学习主题推荐
-4. **总体建议** - 鼓励和指导、学习策略调整
+Отчёт: уровень и % освоения, сильные и слабые темы, следующие шаги, общие рекомендации.
 
-## 🎯 项目亮点
+## 🎯 Сильные стороны
 
-### 1. 三层 Agent 架构设计
+### 1. Три уровня агентов
 
-清晰的职责分离：
-- **协调层**（Layer 1）：MainAgent - 意图识别和路由
-- **功能层**（Layer 2）：CreatePlanAgent、VibeLearningAgent、SummaryAgent
-- **专业层**（Layer 3）：RepoAnalyzerAgent、PaperAnalyzerAgent、QuizGeneratorAgent
+- **Координация (L1)**: MainAgent — намерения и маршрутизация
+- **Функции (L2)**: CreatePlanAgent, VibeLearningAgent, SummaryAgent
+- **Специалисты (L3)**: RepoAnalyzerAgent, PaperAnalyzerAgent, QuizGeneratorAgent
 
-### 2. 混合策略摘要更新
+### 2. Гибридное обновление сводки
 
-优化性能和存储：
-- **< 5 个文件**：完全重写摘要
-- **≥ 5 个文件**：增量更新摘要
+- **< 5 файлов**: полная перезапись
+- **≥ 5 файлов**: инкремент
 
-### 3. 流式输出支持
+### 3. Потоковый вывод
 
-实时显示 AI 响应，提升用户体验：
-- 自动检测终端能力
-- 可配置启用/禁用
-- 优雅处理累积块
+- Определение возможностей терминала
+- Вкл/выкл в конфиге
+- Корректная обработка чанков
 
-### 4. 智能知识管理
+### 4. Умные заметки
 
-- LLM 自动分析和分类
-- 支持多种输入方式（文本/文件/URL）
-- 提取关键概念和标签
-- 生成结构化摘要
+- Анализ и классификация LLM
+- Текст / файл / URL
+- Теги и структурированная сводка
 
-### 5. 完整的测试覆盖
+### 5. Тесты
 
-- 单元测试 > 80% 覆盖率
-- 集成测试
-- 真实环境测试
+- Unit > 80% покрытия
+- Интеграционные и live
 
-## 📊 项目结构
+## 📊 Структура проекта
 
 ```
 learningAgent/
-├── core/                      # 核心层（基础设施）
-│   ├── main_agent.py          # 主 Agent（协调层）
-│   ├── file_manager.py        # 文件管理
-│   └── summary_manager.py     # 摘要管理（混合策略）
-├── agents/                    # 功能层（业务逻辑）
-│   ├── create_plan_agent.py   # 创建学习计划（ReAct）
-│   ├── vibe_learning_agent.py # 互动学习（Reflection）
-│   └── summary_agent.py       # 学习总结（Simple）
-├── specialist/                # 专业层（专项能力）
-│   ├── repo_analyzer.py       # GitHub 仓库分析
-│   ├── paper_analyzer.py      # PDF 论文分析
-│   └── quiz_generator.py      # 测验生成
-├── processors/                # 处理器
-│   └── add_knowledge.py       # 添加知识笔记
-├── cli/                       # 命令行界面
-│   └── repl.py                # REPL 循环
-├── utils/                     # 工具类
-│   ├── streaming.py           # 流式输出
-│   ├── error_handlers.py      # 错误处理
-│   └── exceptions.py          # 异常定义
-├── tests/                     # 测试套件
-├── main.py                    # 入口文件
-├── requirements.txt           # 依赖列表
-└── README.md                  # 项目文档
+├── core/                      # Инфраструктура
+│   ├── main_agent.py          # MainAgent (координация)
+│   ├── file_manager.py        # Файлы
+│   └── summary_manager.py       # Сводки (гибрид)
+├── agents/                    # Бизнес-логика
+│   ├── create_plan_agent.py   # План (ReAct)
+│   ├── vibe_learning_agent.py # Интерактив (Reflection)
+│   └── summary_agent.py       # Итог (Simple)
+├── specialist/                # Специалисты
+│   ├── repo_analyzer.py       # GitHub
+│   ├── paper_analyzer.py      # PDF
+│   └── quiz_generator.py      # Тесты
+├── processors/
+│   └── add_knowledge.py       # Добавление заметок
+├── cli/
+│   └── repl.py                # REPL
+├── utils/
+│   ├── streaming.py
+│   ├── error_handlers.py
+│   └── exceptions.py
+├── tests/
+├── main.py
+├── requirements.txt
+└── README.md
 ```
 
-## 🧪 运行测试
+## 🧪 Тесты
 
 ```bash
-# 运行所有测试
 pytest tests/ -v
-
-# 运行特定测试
 pytest tests/test_agents/test_create_plan_agent.py -v
-
-# 查看测试覆盖率
 pytest tests/ --cov=. --cov-report=term-missing
 ```
 
-## 🔮 未来计划
+## 🔮 Планы
 
-- [ ] Web UI 界面（基于 FastAPI + Vue）
-- [ ] 多语言支持
-- [ ] 导出学习报告为 PDF
-- [ ] 集成更多 LLM 提供商
-- [ ] 学习数据可视化
-- [ ] 社区学习计划分享
+- [ ] Web UI (FastAPI + Vue)
+- [ ] Несколько языков интерфейса
+- [ ] Экспорт отчёта в PDF
+- [ ] Больше LLM-провайдеров
+- [ ] Визуализация прогресса
+- [ ] Обмен планами в сообществе
 
-## 🤝 贡献指南
+## 🤝 Участие
 
-欢迎提交 Issue 和 Pull Request！
+Issue и PR приветствуются.
 
-### 开发流程
+### Процесс
 
-1. Fork 本仓库
-2. 创建特性分支（`git checkout -b feature/AmazingFeature`）
-3. 提交更改（`git commit -m 'feat: Add some AmazingFeature'`）
-4. 推送到分支（`git push origin feature/AmazingFeature`）
-5. 开启 Pull Request
+1. Fork
+2. Ветка `feature/AmazingFeature`
+3. Коммит `feat: Add some AmazingFeature`
+4. Push и Pull Request
 
-### 代码规范
+### Стиль кода
 
-- 使用 `black` 格式化代码
-- 使用 `mypy` 进行类型检查
-- 使用 `flake8` 检查代码质量
-- 编写单元测试
+- `black`, `mypy`, `flake8`
+- Unit-тесты для нового кода
 
-## 📄 许可证
+## 📄 Лицензия
 
 MIT License
 
-## 👤 作者
+## 👤 Автор
 
 - GitHub: [@Yixiang-Wu](https://github.com/Yixiang-Wu)
-- 项目链接: [learningAgent](https://github.com/Yixiang-Wu/learningAgent)
+- Проект: [learningAgent](https://github.com/Yixiang-Wu/learningAgent)
 
-## 🙏 致谢
+## 🙏 Благодарности
 
-- [Datawhale](https://github.com/datawhalechina) 社区
-- [Hello-Agents](https://github.com/datawhalechina/hello-agents) 框架
-- 所有贡献者和学习者
+- [Datawhale](https://github.com/datawhalechina)
+- [Hello-Agents](https://github.com/datawhalechina/hello-agents)
+- Участникам и ученикам
 
 ---
 
-**注意**：本项目作为 Hello-Agents 教程的毕业设计项目，旨在展示如何使用 HelloAgents 框架构建完整的多智能体应用。
+**Примечание**: выпускной проект курса Hello-Agents — пример полноценного многоагентного приложения на HelloAgents.

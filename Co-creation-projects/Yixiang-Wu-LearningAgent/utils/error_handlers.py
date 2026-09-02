@@ -1,4 +1,4 @@
-"""错误处理装饰器和工具函数"""
+"""Ошибка обработки декораторов и служебных функций"""
 
 import logging
 from functools import wraps
@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 def handle_errors(func: Callable) -> Callable:
     """
-    统一错误处理装饰器
+Единый декоратор обработки ошибок
 
-    捕获异常并返回友好的错误消息
+Перехват исключений и возврат дружественных сообщений об ошибках
     """
 
     @wraps(func)
@@ -30,16 +30,16 @@ def handle_errors(func: Callable) -> Callable:
             return f"❌ 错误：{e}\n请先使用 /create 创建学习计划。"
 
         except FileReadError as e:
-            return f"❌ {e}\n请检查文件路径和权限。"
+return f"❌ {e}\nПожалуйста, проверьте путь к файлу и разрешения."
 
         except FileWriteError as e:
-            return f"❌ {e}\n请检查磁盘空间和权限。"
+return f"❌ {e}\nПожалуйста, проверьте место на диске и разрешения."
 
         except LLMError as e:
-            return f"❌ {e}\n请稍后重试或检查配置。"
+return f"❌ {e}\nПовторите попытку позже или проверьте конфигурацию."
 
         except KeyboardInterrupt:
-            return "\n\n👋 操作已取消"
+return "\n\n👋 Операция отменена"
 
         except LearningAgentError as e:
             logger.error(f"LearningAgent error in {func.__name__}: {e}")

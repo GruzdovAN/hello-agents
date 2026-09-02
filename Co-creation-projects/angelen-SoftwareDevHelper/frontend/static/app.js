@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    // 添加消息到聊天界面
+    // 添加消息到Чат界面
     function addMessage(text, isUser = false, toolCalls = null) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
 
-        // 如果有工具调用信息，先渲染工具调用块
+        // 如果有Инструмент调用信息，先渲染Инструмент调用块
         if (toolCalls && toolCalls.length > 0) {
             const toolsContainer = document.createElement('div');
             toolsContainer.className = 'tool-calls-container';
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tcDiv = document.createElement('div');
                 tcDiv.className = 'tool-call-block';
                 
-                // 尝试格式化参数和结果
+                // 尝试格式化参数和Результат
                 let formattedArgs = tc.arguments;
                 try {
                     formattedArgs = JSON.stringify(JSON.parse(tc.arguments), null, 2);
@@ -47,16 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 tcDiv.innerHTML = `
                     <div class="tool-call-header">
                         <span class="tool-icon">🛠️</span>
-                        <span class="tool-name">调用工具: <strong>${tc.name}</strong></span>
+                        <span class="tool-name">调用Инструмент: <strong>${tc.name}</strong></span>
                     </div>
                     <div class="tool-call-details">
                         <div class="tool-args">
-                            <div class="tool-label">输入参数:</div>
+                            <div class="tool-label">输Входные данные数:</div>
                             <pre><code>${formattedArgs}</code></pre>
                         </div>
                         <div class="tool-result">
-                            <div class="tool-label">执行结果:</div>
-                            <pre><code>${formattedResult || '无返回结果'}</code></pre>
+                            <div class="tool-label">执行Результат:</div>
+                            <pre><code>${formattedResult || '无返回Результат'}</code></pre>
                         </div>
                     </div>
                 `;
@@ -76,17 +76,17 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToBottom();
     }
 
-    // 显示加载状态
+    // 显示加载Статус
     function showLoading() {
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'message loading';
         loadingDiv.id = 'loading-msg';
-        loadingDiv.textContent = '助手正在思考...';
+        loadingDiv.textContent = '助手Думаю...';
         chatContainer.appendChild(loadingDiv);
         scrollToBottom();
     }
 
-    // 移除加载状态
+    // 移除加载Статус
     function removeLoading() {
         const loadingDiv = document.getElementById('loading-msg');
         if (loadingDiv) {
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 加载会话列表
+    // 加载Сессии列表
     async function loadSessions() {
         try {
             const response = await fetch('/api/sessions');
@@ -112,9 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const deleteBtn = document.createElement('button');
                 deleteBtn.innerHTML = '🗑️';
                 deleteBtn.className = 'delete-session-btn';
-                deleteBtn.title = '删除会话';
+                deleteBtn.title = 'УдалитьСессии';
                 deleteBtn.onclick = (e) => {
-                    e.stopPropagation(); // 阻止触发切换会话
+                    e.stopPropagation(); // 阻止触发切换Сессии
                     deleteSession(session.id, div);
                 };
                 
@@ -125,13 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionList.appendChild(div);
             });
         } catch (error) {
-            console.error('加载会话列表失败:', error);
+            console.error('Не удалось загрузить список сессий:', error);
         }
     }
 
-    // 删除会话
+    // УдалитьСессии
     async function deleteSession(sessionId, element) {
-        if (!confirm('确定要删除这个会话吗？删除后无法恢复。')) return;
+        if (!confirm('确定要Удалить这个Сессии吗？Удалить后无法恢复。')) return;
         
         try {
             const response = await fetch(`/api/sessions/${sessionId}`, {
@@ -139,25 +139,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (response.ok) {
-                // 添加淡出动画
+                // 添加淡出Анимация
                 element.style.opacity = '0';
                 setTimeout(() => {
                     element.remove();
-                    // 如果删除的是当前会话，新建一个会话
+                    // 如果Удалить的是当前Сессии，新建一个Сессии
                     if (sessionId === currentSessionId) {
                         createNewSession();
                     }
                 }, 300);
             } else {
-                alert('删除失败');
+                alert('Не удалось удалить');
             }
         } catch (error) {
-            console.error('删除会话失败:', error);
-            alert('网络错误，删除失败');
+            console.error('УдалитьСессииОшибка:', error);
+            alert('Сетевая ошибка，Не удалось удалить');
         }
     }
 
-    // 切换会话
+    // 切换Сессии
     async function switchSession(sessionId, title) {
         currentSessionId = sessionId;
         currentSessionTitle.textContent = title;
@@ -180,24 +180,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     addMessage(msg.text, msg.isUser, msg.tool_calls);
                 });
             } else {
-                addMessage('你好！我是你的软件开发学习助手。我可以根据你的水平出题，或者帮你测试代码。请问有什么我可以帮你的？');
+                addMessage('Вы好！我是Вы的软件开发学习助手。我可以根据Вы的水平出题，或者帮Вы测试Код。请问有什么我可以帮Вы的？');
             }
         } catch (error) {
-            console.error('加载会话历史失败:', error);
-            addMessage('加载历史记录失败');
+            console.error('加载СессииИсторияОшибка:', error);
+            addMessage('加载ИсторияОшибка');
         }
     }
 
-    // 新建会话 (仅前端状态)
+    // Новая сессия (仅前端Статус)
     function createNewSession() {
         currentSessionId = null;
         currentSessionTitle.textContent = '👨‍💻 SoftwareDevHelper';
         chatContainer.innerHTML = '';
         document.querySelectorAll('.session-item').forEach(item => item.classList.remove('active'));
-        addMessage('你好！我是你的软件开发学习助手。我可以根据你的水平出题，提供开发建议，并测试你的代码。你想从哪里开始？');
+        addMessage('Вы好！我是Вы的软件开发学习助手。我可以根据Вы的水平出题，提供开发Рекомендации，并测试Вы的Код。Вы想从哪里开始？');
     }
 
-    // 发送文本消息
+    // ОтправитьТекст消息
     async function sendMessage() {
         const text = userInput.value.trim();
         if (!text) return;
@@ -224,19 +224,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (response.ok) {
                 addMessage(data.response, false, data.tool_calls);
-                // 如果是新会话，更新当前 session_id 并刷新列表
+                // 如果是新Сессии，更新当前 session_id 并Обновить список
                 if (!currentSessionId) {
                     currentSessionId = data.session_id;
                     currentSessionTitle.textContent = text.substring(0, 15) + (text.length > 15 ? '...' : '');
                 }
                 loadSessions();
-                loadUserMemory(); // 聊天后可能更新了记忆
+                loadUserMemory(); // Чат后可能更新了Память
             } else {
-                addMessage(`错误: ${data.detail || '请求失败'}`);
+                addMessage(`错误: ${data.detail || 'Ошибка запроса'}`);
             }
         } catch (error) {
             removeLoading();
-            addMessage(`网络错误: ${error.message}`);
+            addMessage(`Сетевая ошибка: ${error.message}`);
         } finally {
             sendBtn.disabled = false;
             userInput.focus();
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('file', file);
         formData.append('session_id', currentSessionId || '');
 
-        addMessage(`[上传项目] ${file.name}`, true);
+        addMessage(`[上传Показатель] ${file.name}`, true);
         showLoading();
         
         projectUpload.value = '';
@@ -272,22 +272,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 addMessage(data.response, false, data.tool_calls);
                 if (!currentSessionId) {
                     currentSessionId = data.session_id;
-                    currentSessionTitle.textContent = "上传项目测试";
+                    currentSessionTitle.textContent = "上传Показатель测试";
                 }
                 loadSessions();
                 loadUserMemory();
             } else {
-                addMessage(`上传失败: ${data.detail || '未知错误'}`);
+                addMessage(`Ошибка загрузки: ${data.detail || 'неизвестная ошибка'}`);
             }
         } catch (error) {
             removeLoading();
             addMessage(`上传出错: ${error.message}`);
         } finally {
-            fileNameDisplay.textContent = '未选择文件';
+            fileNameDisplay.textContent = 'Файл не выбран';
         }
     }
 
-    // 加载用户记忆
+    // 加载用户Память
     async function loadUserMemory() {
         try {
             const response = await fetch('/api/user_memory');
@@ -304,12 +304,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             } else {
                 const li = document.createElement('li');
-                li.textContent = '暂无做题记录';
+                li.textContent = '暂无История заданий';
                 li.style.color = '#999';
                 historyList.appendChild(li);
             }
         } catch (error) {
-            console.error('加载用户记忆失败:', error);
+            console.error('加载用户ПамятьОшибка:', error);
         }
     }
 
@@ -325,21 +325,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ level: newLevel })
             });
         } catch (error) {
-            console.error('更新用户水平失败:', error);
+            console.error('更新用户水平Ошибка:', error);
         }
     }
 
-    // 清空用户记忆记录
+    // Очистить用户Память记录
     async function resetUserMemory() {
-        if (confirm('确定要清空所有的做题记录吗？这会将你的水平重置为入门（Beginner）。')) {
+        if (confirm('确定要Очистить所有的История заданий吗？这会将Вы的水平重置为入门（Beginner）。')) {
             try {
                 await fetch('/api/user_memory', {
                     method: 'DELETE'
                 });
                 loadUserMemory();
-                addMessage('您的做题记录已清空，水平已重置。', false);
+                addMessage('您的История заданий已Очистить，水平已重置。', false);
             } catch (error) {
-                console.error('清空记录失败:', error);
+                console.error('Очистить记录Ошибка:', error);
             }
         }
     }
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetMemoryBtn.addEventListener('click', resetUserMemory);
     }
 
-    // 初始化
+    // Инициализация
     loadSessions();
     loadUserMemory();
     createNewSession();

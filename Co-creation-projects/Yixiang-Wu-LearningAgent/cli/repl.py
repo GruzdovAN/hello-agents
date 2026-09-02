@@ -1,5 +1,5 @@
 # cli/repl.py
-"""REPL 循环实现"""
+"""Реализация цикла REPL"""
 
 from hello_agents import HelloAgentsLLM
 from core.main_agent import MainAgent
@@ -8,7 +8,7 @@ from utils.logger import setup_logger
 
 
 def print_welcome():
-    """打印欢迎信息"""
+"""Распечатать приветственное сообщение"""
     print(
         """
 ╔══════════════════════════════════════════════════════════╗
@@ -19,13 +19,13 @@ def print_welcome():
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
 
-输入 /help 查看可用命令
+Введите /help, чтобы просмотреть доступные команды.
     """
     )
 
 
 def print_goodbye():
-    """打印告别信息"""
+"""Распечатать прощальное сообщение"""
     print(
         """
 ╔══════════════════════════════════════════════════════════╗
@@ -41,59 +41,59 @@ def print_goodbye():
 
 def start_repl():
     """
-    启动 REPL 循环
+Запустить цикл REPL
     """
-    # 设置日志
+# Настраиваем журнал
     logger = setup_logger("learning_agent")
     logger.info("LearningAgent started")
 
-    # 初始化组件
+#Инициализируем компоненты
     try:
         llm = HelloAgentsLLM()
         file_manager = FileManager()
-        # REPL 始终是交互式环境，启用流式输出
+# REPL всегда является интерактивной средой с включенным потоковым выводом
         agent = MainAgent(llm, file_manager, streaming=True)
     except Exception as e:
-        print(f"❌ 初始化失败：{e}")
-        print("请检查配置文件（.env）和 API Key")
+print(f"❌ Ошибка инициализации: {e}")
+print("Пожалуйста, проверьте файл конфигурации (.env) и ключ API")
         return
 
-    # 显示欢迎信息
+# Отображение приветственного сообщения
     print_welcome()
 
-    # REPL 循环
+#цикл REPL
     while True:
         try:
-            # 获取用户输入
+# Получить пользовательский ввод
             user_input = input("\n> ").strip()
 
-            # 空输入跳过
+# Пропустить пустой ввод
             if not user_input:
                 continue
 
-            # 处理命令
+# Команды процесса
             result = agent.process_command(user_input)
 
-            # 检查是否退出
+# Проверяем, выходить ли
             if result == "EXIT":
                 print_goodbye()
                 logger.info("LearningAgent exited normally")
                 break
 
-            # 显示结果
+# показать результаты
             # 注意：如果 agent.streaming=True，流式输出已经打印到 stdout
-            # 这里只打印非流式的结果（如帮助信息、错误消息等）
+#Печатать только результаты, не относящиеся к потоковой передаче (например, справочную информацию, сообщения об ошибках и т. д.)
             if not agent.streaming:
                 print(result)
 
         except KeyboardInterrupt:
-            print("\n\n👋 操作已取消")
+print("\n\n👋 Операция отменена")
             continue
 
         except Exception as e:
             logger.error(f"Error in REPL: {e}", exc_info=True)
-            print(f"❌ 发生错误：{e}")
-            print("输入 /help 查看帮助，或 /exit 退出")
+print(f"❌ Произошла ошибка: {e}")
+print("Введите /help, чтобы просмотреть справку, или /exit, чтобы выйти")
 
 
 if __name__ == "__main__":

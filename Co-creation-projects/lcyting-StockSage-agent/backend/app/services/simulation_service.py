@@ -1,14 +1,14 @@
 """
-智能股票分析助手 — 模拟交易服务层
+Интеллектуальный помощник по анализу акций — уровень имитации торгового сервиса
 
-封装模拟交易操作（持仓查询、资金查询、委托下单、撤单等），供API路由层调用。
+Инкапсулируйте моделируемые торговые операции (запрос позиции, запрос фонда, доверенное размещение заказа, отмену заказа и т. д.) для вызовов уровня маршрутизации API.
 """
 
 import sys
 from pathlib import Path
 from typing import Optional
 
-# 确保skills路径可导入
+# Убедитесь, что путь навыков можно импортировать
 _PROJECT_ROOT = Path(__file__).parent.parent.parent.parent  # backend/app/services -> project root
 _AGENTS_DIR = _PROJECT_ROOT / "agents"
 _SKILLS_MONI = _PROJECT_ROOT / "skills" / "模拟组合管理" / "mx-moni"
@@ -21,19 +21,19 @@ import requests
 from app.config import settings
 from app.utils.mock_trading_normalize import extract_orders_dicts, normalize_mock_order_row
 
-# API基础地址
+# базовый адрес API
 MX_API_URL = "https://mkapi2.dfcfs.com/finskillshub"
 
 
 def _make_request(endpoint: str, body: dict) -> dict:
-    """发送模拟交易API请求
+"""Отправить запрос API имитации торговли
 
     Args:
-        endpoint: API端点路径
-        body: 请求体
+конечная точка: путь к конечной точке API
+тело: тело запроса
 
     Returns:
-        API响应JSON
+Ответ API в формате JSON
     """
     headers = {
         "apikey": settings.MX_APIKEY,
@@ -57,7 +57,7 @@ def _check_api_ready() -> Optional[dict]:
 
 
 def get_positions() -> dict:
-    """查询模拟持仓
+"""Запрос смоделированных позиций
 
     Returns:
         {
@@ -113,7 +113,7 @@ def get_positions() -> dict:
 
 
 def get_balance() -> dict:
-    """查询模拟账户资金
+"""Запрос средств на демо-счете
 
     Returns:
         {
@@ -157,7 +157,7 @@ def get_balance() -> dict:
 
 
 def get_orders() -> dict:
-    """查询委托记录
+"""Запрос комиссионных записей
 
     Returns:
         {
@@ -190,14 +190,14 @@ def get_orders() -> dict:
             return result
 
         data = raw.get("data", {}) or {}
-        # 妙想可能返回 list，或 { rows: [] }，或当日/历史分段字段
+# Miaoxiang может возвращать список, или { rows: [] }, или поле текущего дня/сегмента истории
         orders = extract_orders_dicts(data)
 
         parsed = []
         for order in orders:
             if not isinstance(order, dict):
                 continue
-            # 统一解析字段名与枚举（数值买卖方向、委托状态等）
+# Унифицированный анализ названий полей и перечислений (числовое направление покупки и продажи, статус комиссии и т. д.)
             parsed.append(normalize_mock_order_row(order))
 
         result["success"] = True
@@ -216,13 +216,13 @@ def place_order(
     quantity: int,
     price: Optional[float] = None,
 ) -> dict:
-    """模拟下单（买入/卖出）
+"""Имитировать ордер (купить/продать)
 
     Args:
-        trade_type: 交易类型 "buy" 或 "sell"
-        stock_code: 6位股票代码
-        quantity: 委托数量（必须为100的整数倍）
-        price: 委托价格（None表示市价委托）
+trade_type: тип транзакции «покупка» или «продажа»
+stock_code: 6-значный код акции
+количество: количество заказа (должно быть целым числом, кратным 100).
+цена: цена ордера (Нет указывает на рыночную цену ордера)
 
     Returns:
         {
@@ -239,21 +239,21 @@ def place_order(
         "error": None,
     }
 
-    # 参数校验
+# Проверка параметров
     if trade_type not in ("buy", "sell"):
-        result["error"] = "交易类型无效，请使用 buy 或 sell"
+result["error"] = "Неверный тип транзакции, используйте покупку или продажу"
         return result
 
     if not stock_code or len(str(stock_code)) < 6:
-        result["error"] = "请输入有效的6位股票代码"
+result["error"] = "Пожалуйста, введите действительный 6-значный код акции"
         return result
 
     if quantity <= 0:
-        result["error"] = "委托数量必须大于0"
+result["error"] = "Количество комиссий должно быть больше 0"
         return result
 
     if quantity % 100 != 0:
-        result["error"] = "A股交易数量必须为100股的整数倍"
+result["error"] = "Количество транзакций с акциями A должно быть целым кратным 100 акциям"
         return result
 
     api_error = _check_api_ready()
@@ -284,7 +284,7 @@ def place_order(
         result["order_id"] = order_id
         direction_cn = "买入" if trade_type == "buy" else "卖出"
         price_info = f"@{price}元" if price else "市价"
-        result["message"] = f"{direction_cn}委托已提交: {stock_code} {quantity}股 {price_info}"
+result["message"] = f"Заказ {direction_cn} отправлен: {stock_code} {quantity} акций {price_info}"
         return result
 
     except Exception as e:
@@ -293,10 +293,10 @@ def place_order(
 
 
 def cancel_order(order_id: str, stock_code: str = "") -> dict:
-    """撤单
+"""Отменить заказ
 
     Args:
-        order_id: 委托编号
+order_id: номер заказа
         stock_code: 股票代码（可选）
 
     Returns:
@@ -313,7 +313,7 @@ def cancel_order(order_id: str, stock_code: str = "") -> dict:
     }
 
     if not order_id:
-        result["error"] = "请提供委托编号"
+result["error"] = "Укажите номер комиссии"
         return result
 
     api_error = _check_api_ready()
@@ -336,7 +336,7 @@ def cancel_order(order_id: str, stock_code: str = "") -> dict:
             return result
 
         result["success"] = True
-        result["message"] = f"委托 {order_id} 已撤销"
+result["message"] = f"Делегирование {order_id} отозвано"
         return result
 
     except Exception as e:
@@ -345,7 +345,7 @@ def cancel_order(order_id: str, stock_code: str = "") -> dict:
 
 
 def cancel_all_orders() -> dict:
-    """一键撤单（撤销所有未成交委托）
+"""Отмена заказов одним кликом (отмена всех невыполненных заказов)
 
     Returns:
         {
@@ -373,7 +373,7 @@ def cancel_all_orders() -> dict:
             return result
 
         result["success"] = True
-        result["message"] = "所有未成交委托已撤销"
+result["message"] = "Все невыполненные заказы отменены"
         return result
 
     except Exception as e:

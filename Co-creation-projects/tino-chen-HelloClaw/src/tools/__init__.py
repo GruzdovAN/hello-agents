@@ -1,4 +1,4 @@
-"""HelloClaw Tools 模块"""
+"""Модуль инструментов HelloClaw"""
 
 from .builtin.memory import MemoryTool
 from .builtin.execute_command import ExecuteCommandTool

@@ -87,7 +87,7 @@ export function HomePage() {
     try {
       const res = await postRecommend(merged)
       if (!res.success || !res.data) {
-        throw new ApiError(res.message || '推荐失败')
+        throw new ApiError(res.message || 'Ошибка рекомендации')
       }
 
       setStageIndex(PROGRESS_STAGES.length - 1)
@@ -98,7 +98,7 @@ export function HomePage() {
       })
       navigate('/result')
     } catch (err) {
-      setError(err instanceof Error ? err.message : '推荐失败，请稍后重试')
+      setError(err instanceof Error ? err.message : 'Ошибка рекомендации — повторите позже')
     } finally {
       stopFakeProgress()
       setLoading(false)
@@ -124,10 +124,10 @@ export function HomePage() {
           <p className="hero__title">{BRAND_TAGLINE}</p>
           <div className="hero__cta">
             <button type="button" className="btn btn--primary" onClick={scrollToForm}>
-              开始定片
+              Выбрать фильм
             </button>
             <Link to="/browse" className="btn btn--ghost">
-              逛片库
+              Смотреть каталог
             </Link>
           </div>
         </header>
@@ -136,10 +136,10 @@ export function HomePage() {
       <main className="home-main" id="tonight" ref={formRef}>
         <div className="home-act">
           <header className="home-act__header">
-            <p className="section-kicker">第二幕</p>
-            <h2 className="home-act__title">定下今晚</h2>
+            <p className="section-kicker">Второй акт</p>
+            <h2 className="home-act__title">Определите вечер</h2>
             <p className="home-act__lead muted">
-              说说心情与人群，其余可随手带过。
+              Расскажите о настроении и компании — остальное по желанию.
             </p>
           </header>
 

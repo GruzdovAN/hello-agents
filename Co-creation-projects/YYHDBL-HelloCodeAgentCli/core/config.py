@@ -1,4 +1,4 @@
-"""配置管理 - Code Agent CLI 统一配置"""
+"""Управление конфигурацией — единая конфигурация Code Agent CLI"""
 
 import os
 from typing import Optional, Dict, Any, List
@@ -7,71 +7,71 @@ from pydantic import BaseModel, Field
 
 
 class Config(BaseModel):
-    """Code Agent CLI 统一配置类
+    """Единый класс конфигурации Code Agent CLI
     
-    集中管理所有配置项，支持：
-    - 环境变量加载
-    - 默认值设置
-    - 类型验证
+    Централизованное управление параметрами:
+    - загрузка из переменных окружения
+    - значения по умолчанию
+    - проверка типов
     """
     
-    # ==================== 基础配置 ====================
-    project_name: str = Field(default="code_agent", description="项目名称")
-    debug: bool = Field(default=False, description="调试模式")
-    log_level: str = Field(default="INFO", description="日志级别")
+    # ==================== Базовая конфигурация ====================
+    project_name: str = Field(default="code_agent", description="Имя проекта")
+    debug: bool = Field(default=False, description="Режим отладки")
+    log_level: str = Field(default="INFO", description="Уровень логирования")
     
-    # ==================== LLM 配置 ====================
-    default_model: str = Field(default="gpt-3.5-turbo", description="默认模型")
-    default_provider: str = Field(default="openai", description="默认提供商")
-    temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="温度参数")
-    max_tokens: Optional[int] = Field(default=None, description="最大 token 数")
-    llm_timeout: int = Field(default=60, gt=0, description="LLM 请求超时（秒）")
+    # ==================== Конфигурация LLM ====================
+    default_model: str = Field(default="gpt-3.5-turbo", description="Модель по умолчанию")
+    default_provider: str = Field(default="openai", description="Провайдер по умолчанию")
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Параметр temperature")
+    max_tokens: Optional[int] = Field(default=None, description="Максимум токенов")
+    llm_timeout: int = Field(default=60, gt=0, description="Таймаут запроса LLM (с)")
     
-    # ==================== Agent 配置 ====================
-    max_react_steps: int = Field(default=20, gt=0, le=50, description="ReAct 最大步数")
-    max_history_turns: int = Field(default=50, gt=0, description="最大历史对话轮数")
-    observation_summary_threshold: int = Field(default=2000, gt=0, description="工具输出摘要阈值")
+    # ==================== Конфигурация Agent ====================
+    max_react_steps: int = Field(default=20, gt=0, le=50, description="Максимум шагов ReAct")
+    max_history_turns: int = Field(default=50, gt=0, description="Максимум раундов истории диалога")
+    observation_summary_threshold: int = Field(default=2000, gt=0, description="Порог суммаризации вывода инструментов")
     
-    # ==================== 上下文配置 ====================
-    context_max_tokens: int = Field(default=8000, gt=0, description="上下文最大 token 数")
-    context_reserve_ratio: float = Field(default=0.15, ge=0.0, le=0.5, description="生成预留比例")
-    context_enable_compression: bool = Field(default=True, description="启用上下文压缩")
-    context_lazy_fetch: bool = Field(default=True, description="按需获取上下文")
+    # ==================== Конфигурация контекста ====================
+    context_max_tokens: int = Field(default=8000, gt=0, description="Максимум токенов контекста")
+    context_reserve_ratio: float = Field(default=0.15, ge=0.0, le=0.5, description="Доля резерва под генерацию")
+    context_enable_compression: bool = Field(default=True, description="Включить сжатие контекста")
+    context_lazy_fetch: bool = Field(default=True, description="Подгружать контекст по запросу")
     
-    # ==================== 工具配置 ====================
-    terminal_timeout: int = Field(default=60, gt=0, description="终端命令超时（秒）")
-    terminal_max_output_size: int = Field(default=10 * 1024 * 1024, gt=0, description="终端输出最大大小")
-    terminal_confirm_dangerous: bool = Field(default=True, description="危险命令需要确认")
-    terminal_allow_shell_mode: bool = Field(default=True, description="允许 Shell 模式")
-    context_fetch_max_tokens: int = Field(default=800, gt=0, description="单个数据源最大 token")
-    context_fetch_context_lines: int = Field(default=5, ge=0, description="代码上下文行数")
+    # ==================== Конфигурация инструментов ====================
+    terminal_timeout: int = Field(default=60, gt=0, description="Таймаут команд терминала (с)")
+    terminal_max_output_size: int = Field(default=10 * 1024 * 1024, gt=0, description="Максимальный размер вывода терминала")
+    terminal_confirm_dangerous: bool = Field(default=True, description="Опасные команды требуют подтверждения")
+    terminal_allow_shell_mode: bool = Field(default=True, description="Разрешить режим Shell")
+    context_fetch_max_tokens: int = Field(default=800, gt=0, description="Максимум токенов на один источник данных")
+    context_fetch_context_lines: int = Field(default=5, ge=0, description="Число строк контекста кода")
     
-    # ==================== 补丁执行器配置 ====================
-    patch_max_files: int = Field(default=10, gt=0, description="单个补丁最大文件数")
-    patch_max_total_lines: int = Field(default=800, gt=0, description="单个补丁最大总行数")
+    # ==================== Конфигурация исполнителя патчей ====================
+    patch_max_files: int = Field(default=10, gt=0, description="Максимум файлов в одном патче")
+    patch_max_total_lines: int = Field(default=800, gt=0, description="Максимум строк изменений в одном патче")
     patch_allowed_suffixes: List[str] = Field(
         default=[".py", ".md", ".toml", ".json", ".yml", ".yaml", ".txt", ".html", ".css", ".js", ".ts"],
-        description="允许修改的文件后缀"
+        description="Разрешённые суффиксы изменяемых файлов"
     )
     
-    # ==================== 存储配置 ====================
-    helloagents_dir: str = Field(default=".helloagents", description="状态存储目录")
+    # ==================== Конфигурация хранилища ====================
+    helloagents_dir: str = Field(default=".helloagents", description="Каталог хранения состояния")
     
-    # ==================== 安全配置 ====================
-    confirm_delete_files: bool = Field(default=True, description="删除文件需要确认")
-    confirm_large_changes: bool = Field(default=True, description="大规模变更需要确认")
-    large_change_threshold_files: int = Field(default=6, gt=0, description="大规模变更文件数阈值")
-    large_change_threshold_lines: int = Field(default=400, gt=0, description="大规模变更行数阈值")
+    # ==================== Конфигурация безопасности ====================
+    confirm_delete_files: bool = Field(default=True, description="Удаление файлов требует подтверждения")
+    confirm_large_changes: bool = Field(default=True, description="Крупные изменения требуют подтверждения")
+    large_change_threshold_files: int = Field(default=6, gt=0, description="Порог числа файлов для крупного изменения")
+    large_change_threshold_lines: int = Field(default=400, gt=0, description="Порог строк для крупного изменения")
     
     @classmethod
     def from_env(cls, **overrides) -> "Config":
-        """从环境变量创建配置
+        """Создаёт конфигурацию из переменных окружения
         
-        环境变量命名规则：
-        - CODE_AGENT_<配置项大写> 或传统命名
+        Правила имён:
+        - CODE_AGENT_<ИМЯ_ПАРАМЕТРА> или традиционные имена
         
         Args:
-            **overrides: 手动覆盖的配置项
+            **overrides: ручные переопределения
         """
         env_config = {
             "debug": os.getenv("DEBUG", "false").lower() == "true" or os.getenv("CODE_AGENT_DEBUG", "false").lower() == "true",
@@ -88,47 +88,47 @@ class Config(BaseModel):
         if os.getenv("MAX_TOKENS"):
             env_config["max_tokens"] = int(os.getenv("MAX_TOKENS"))
         
-        # 合并覆盖配置
+        # Объединение переопределений
         env_config.update(overrides)
         
         return cls(**env_config)
     
     def get_state_dir(self, repo_root: Path) -> Path:
-        """获取状态存储目录的绝对路径"""
+        """Возвращает абсолютный путь каталога состояния"""
         state_path = Path(self.helloagents_dir)
         if state_path.is_absolute():
             return state_path
         return repo_root / state_path
     
     def get_notes_dir(self, repo_root: Path) -> Path:
-        """获取笔记目录"""
+        """Возвращает каталог заметок"""
         return self.get_state_dir(repo_root) / "notes"
     
     def get_sessions_dir(self, repo_root: Path) -> Path:
-        """获取会话目录"""
+        """Возвращает каталог сессий"""
         return self.get_state_dir(repo_root) / "sessions"
     
     def get_backups_dir(self, repo_root: Path) -> Path:
-        """获取备份目录"""
+        """Возвращает каталог резервных копий"""
         return self.get_state_dir(repo_root) / "backups"
     
     def get_todos_dir(self, repo_root: Path) -> Path:
-        """获取待办目录"""
+        """Возвращает каталог задач"""
         return self.get_state_dir(repo_root) / "todos"
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典"""
+        """Преобразует в словарь"""
         return self.dict()
     
     def print_summary(self):
-        """打印配置摘要"""
+        """Печатает сводку конфигурации"""
         print("=" * 50)
-        print("Code Agent CLI 配置")
+        print("Конфигурация Code Agent CLI")
         print("=" * 50)
-        print(f"调试模式: {self.debug}")
-        print(f"ReAct 步数: {self.max_react_steps}")
-        print(f"历史轮数: {self.max_history_turns}")
-        print(f"终端超时: {self.terminal_timeout}s")
-        print(f"补丁限制: {self.patch_max_files} 文件, {self.patch_max_total_lines} 行")
-        print(f"状态目录: {self.helloagents_dir}")
+        print(f"Режим отладки: {self.debug}")
+        print(f"Шаги ReAct: {self.max_react_steps}")
+        print(f"Раундов истории: {self.max_history_turns}")
+        print(f"Таймаут терминала: {self.terminal_timeout}s")
+        print(f"Лимиты патча: {self.patch_max_files} файлов, {self.patch_max_total_lines} строк")
+        print(f"Каталог состояния: {self.helloagents_dir}")
         print("=" * 50)

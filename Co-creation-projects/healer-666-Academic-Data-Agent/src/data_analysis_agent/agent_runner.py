@@ -248,9 +248,9 @@ def build_plaintext_event_handler() -> EventHandler:
         elif event_type == "review_started":
             print(f"      Reviewer round {payload.get('review_round', '?')} started.")
         elif event_type == "review_rejected":
-            print(f"      [REJECT] 审稿人意见：{payload.get('critique', '')}")
+            print(f"      [REJECT] Замечания ревьюера: {payload.get('critique', '')}")
         elif event_type == "review_accepted":
-            print("      [OK] 审稿通过：报告达到当前质量档位要求。")
+            print("      [OK] Ревью пройден: отчёт соответствует текущему уровню качества.")
         elif event_type == "review_max_reached":
             print("      Reviewer max rounds reached. Final report was not formally accepted.")
 
@@ -407,12 +407,12 @@ _SEARCH_SIGNAL_KEYWORDS = (
     "cpi",
     "ppv",
     "odds ratio",
-    "临床",
-    "阈值",
-    "正常范围",
-    "染色体",
-    "宏观",
-    "统计口径",
+    "клинический",
+    "порог",
+    "нормальный диапазон",
+    "хромосома",
+    "макро",
+    "статистическая методология",
 )
 
 
@@ -626,11 +626,11 @@ def _create_run_directory(output_dir: str | Path) -> tuple[Path, Path, Path, Pat
 
 def _build_run_context_text(run_dir: Path, cleaned_data_path: Path, figures_dir: Path, logs_dir: Path) -> str:
     return (
-        f"\n本次任务的专属输出根目录为：{run_dir.as_posix()}\n"
-        f"清洗后的数据必须保存到：{cleaned_data_path.as_posix()}\n"
-        f"所有图表必须保存到：{figures_dir.as_posix()}\n"
-        f"运行轨迹与日志目录为：{logs_dir.as_posix()}\n"
-        "请务必严格遵守“先清洗落盘，再重读分析”的两阶段流水线。\n"
+        f"\nКорневой каталог вывода этой задачи: {run_dir.as_posix()}\n"
+        f"Очищенные данные должны быть сохранены в: {cleaned_data_path.as_posix()}\n"
+        f"Все графики должны быть сохранены в: {figures_dir.as_posix()}\n"
+        f"Каталог трасс и логов: {logs_dir.as_posix()}\n"
+        "Строго соблюдайте двухэтапный pipeline: сначала очистка и сохранение, затем повторное чтение и анализ.\n"
     )
 
 
@@ -1549,7 +1549,7 @@ def run_analysis(
             visual_review_result = VisualReviewResult(
                 status="skipped",
                 decision="Skipped",
-                summary="当前质量档位与视觉审稿模式组合未启用视觉审稿。",
+                summary="Для текущего уровня качества и режима визуального ревью проверка графиков не включена.",
             )
 
         if visual_review_result.duration_ms:
@@ -1684,10 +1684,10 @@ def run_analysis(
             {
                 "role": "user",
                 "content": (
-                    f"[审稿人拒稿意见]：{reviewer_reply.critique}\n"
-                    "你必须逐条回应并修复以下全部问题，重新分析并重写报告。"
-                    f"下一轮所有新图表必须保存到：{(figures_dir / f'review_round_{review_round + 1}').as_posix()}。"
-                    "不要重复原报告中的问题，也不要忽略任何已经指出的主要缺陷。"
+                    f"[Отказ ревьюера]: {reviewer_reply.critique}\n"
+                    "Ответь на каждое замечание и исправь все проблемы; пересмотри анализ и перепиши отчёт."
+                    f"Все новые графики следующего раунда должны быть сохранены в: {(figures_dir / f'review_round_{review_round + 1}').as_posix()}."
+                    "Не повторяй проблемы исходного отчёта и не игнорируй указанные критические недостатки."
                 ),
             }
         )

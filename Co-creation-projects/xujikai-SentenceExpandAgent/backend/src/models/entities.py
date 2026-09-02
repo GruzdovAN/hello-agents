@@ -1,25 +1,25 @@
 """
-数据实体定义 - 英语句子扩写智能体
+Определение объекта данных — агент расширения английского предложения
 """
 from pydantic import BaseModel
 from typing import Optional, Literal
 
 
-# 扩写阶段枚举
+# Перечисление фаз расширения
 Stage = Literal["stage1", "stage2", "stage3", "done"]
 
 
-# 单次扩写轮次记录
+# Рекорд одного раунда расширения
 class RoundRecord(BaseModel):
-    """记录单个扩写轮次的完整信息"""
+"""Запись полной информации об одном раунде расширения"""
     stage: Stage
-    question: str  # 记者提问
-    user_answer: str  # 用户输入的句子
-    evaluation: str  # 语法点评
-    expanded_sentence: str  # 本轮扩写结果
+вопрос: str # Вопрос репортера
+user_answer: str # Предложение, введенное пользователем.
+оценка: str # Грамматические комментарии
+expanded_sentence: str # Результаты этого раунда расширения
 
 
-# 整个会话状态
+# Состояние всего сеанса
 class SessionState(BaseModel):
     """会话完整状态管理"""
     session_id: str
@@ -30,23 +30,23 @@ class SessionState(BaseModel):
     final_polished: Optional[str] = None
 
 
-# 前端发起请求
+# Интерфейс инициирует запрос
 class StartRequest(BaseModel):
-    """开始新的扩写会话"""
+"""Начать новый сеанс расширения"""
     seed_sentence: str
     mode: Literal["manual", "auto"]
 
 
-# 用户提交扩写句子（手动模式）
+# Пользователь отправляет расширение предложения (ручной режим)
 class SubmitRequest(BaseModel):
-    """提交用户扩写的句子"""
+"""Отправлять расширенные пользователем предложения"""
     session_id: str
     user_sentence: str
 
 
-# 智能体单次响应
+#Отдельный ответ агента
 class AgentResponse(BaseModel):
-    """智能体响应数据"""
+"""Данные ответа агента"""
     session_id: str
     stage: Stage
     question: Optional[str] = None

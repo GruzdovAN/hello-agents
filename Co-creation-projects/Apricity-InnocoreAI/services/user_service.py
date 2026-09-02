@@ -1,5 +1,5 @@
 """
-用户服务
+Обслуживание пользователей
 """
 
 from typing import Optional, List
@@ -12,53 +12,53 @@ from ..core.exceptions import UserNotFoundError, UserAlreadyExistsError
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserService:
-    """用户服务类"""
+"""Класс обслуживания пользователей"""
     
     def __init__(self, db: Session):
         self.db = db
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """验证密码"""
+"""Подтвердить пароль"""
         return pwd_context.verify(plain_password, hashed_password)
     
     @staticmethod
     def get_password_hash(password: str) -> str:
-        """获取密码哈希"""
+"""Получить хеш пароля"""
         return pwd_context.hash(password)
     
     def get_user_by_id(self, user_id: int) -> Optional[User]:
-        """根据ID获取用户"""
+"""Получить пользователей по идентификатору"""
         user_db = self.db.query(UserDB).filter(UserDB.id == user_id).first()
         if not user_db:
             raise UserNotFoundError(f"User with id {user_id} not found")
         return User.from_orm(user_db)
     
     def get_user_by_email(self, email: str) -> Optional[User]:
-        """根据邮箱获取用户"""
+"""Получить пользователей по адресу электронной почты"""
         user_db = self.db.query(UserDB).filter(UserDB.email == email).first()
         if not user_db:
             raise UserNotFoundError(f"User with email {email} not found")
         return User.from_orm(user_db)
     
     def get_user_by_username(self, username: str) -> Optional[User]:
-        """根据用户名获取用户"""
+"""Получить пользователей по имени пользователя"""
         user_db = self.db.query(UserDB).filter(UserDB.username == username).first()
         if not user_db:
             raise UserNotFoundError(f"User with username {username} not found")
         return User.from_orm(user_db)
     
     def create_user(self, user_create: UserCreate) -> User:
-        """创建用户"""
-        # 检查邮箱是否已存在
+"""Создать пользователя"""
+# Проверяем, существует ли уже почтовый ящик
         if self.db.query(UserDB).filter(UserDB.email == user_create.email).first():
             raise UserAlreadyExistsError(f"Email {user_create.email} already registered")
         
-        # 检查用户名是否已存在
+# Проверяем, существует ли уже имя пользователя
         if self.db.query(UserDB).filter(UserDB.username == user_create.username).first():
             raise UserAlreadyExistsError(f"Username {user_create.username} already taken")
         
-        # 创建新用户
+# Создать нового пользователя
         hashed_password = self.get_password_hash(user_create.password)
         user_db = UserDB(
             username=user_create.username,
@@ -76,12 +76,12 @@ class UserService:
         return User.from_orm(user_db)
     
     def update_user(self, user_id: int, user_update: UserUpdate) -> User:
-        """更新用户信息"""
+"""Обновить информацию о пользователе"""
         user_db = self.db.query(UserDB).filter(UserDB.id == user_id).first()
         if not user_db:
             raise UserNotFoundError(f"User with id {user_id} not found")
         
-        # 更新字段
+#Обновить поля
         update_data = user_update.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(user_db, field, value)
@@ -92,7 +92,7 @@ class UserService:
         return User.from_orm(user_db)
     
     def delete_user(self, user_id: int) -> bool:
-        """删除用户"""
+"""Удалить пользователя"""
         user_db = self.db.query(UserDB).filter(UserDB.id == user_id).first()
         if not user_db:
             raise UserNotFoundError(f"User with id {user_id} not found")
@@ -103,7 +103,7 @@ class UserService:
         return True
     
     def authenticate_user(self, email: str, password: str) -> Optional[User]:
-        """验证用户登录"""
+"""Подтвердить вход пользователя"""
         try:
             user = self.get_user_by_email(email)
             if self.verify_password(password, user.hashed_password):
@@ -113,7 +113,7 @@ class UserService:
         return None
     
     def change_password(self, user_id: int, current_password: str, new_password: str) -> bool:
-        """修改密码"""
+"""Изменить пароль"""
         user_db = self.db.query(UserDB).filter(UserDB.id == user_id).first()
         if not user_db:
             raise UserNotFoundError(f"User with id {user_id} not found")

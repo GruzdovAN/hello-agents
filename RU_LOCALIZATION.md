@@ -47,6 +47,8 @@
 | Notebook | [`code/chapter1/FirstAgentTest.ipynb`](code/chapter1/FirstAgentTest.ipynb) |
 | Переименования | `共创路径.md` → `code/chapter16/co-creation-path.md`; `运行指南.md` → `code/chapter12/data_generation/run-guide.md` |
 | Extra P0/P1 | [`Extra-Chapter/`](Extra-Chapter/) — см. таблицу ниже; ASCII-имена, одна RU-локаль |
+| Co-creation-projects | [`Co-creation-projects/`](Co-creation-projects/) — README ~46 проектов, UI, промпты; пилот `YYHDBL-HelloCodeAgentCli` |
+| Co-creation-projects | README ~46 проектов, доп. docs, UI full-stack, промпты и runtime-строки; пилот `YYHDBL-HelloCodeAgentCli` |
 
 Структура глав после локализации: **один файл на главу** (без пары CN+EN).
 
@@ -73,7 +75,6 @@
 |--------|--------|
 | Extra03 / 06 / 07 / 11 / 12 / 13 | Низкий ROI для обучения: дубли гл. 5, env уже в `code/`, GUI/Web/post-train — расширение за ядро, видео — орг. CN-ссылки |
 | [`Additional-Chapter/`](Additional-Chapter/) | Короткие гайды Node/n8n; достаточно внешних docs |
-| [`Co-creation-projects/`](Co-creation-projects/) | ~47 студенческих проектов, большой объём |
 | Сгенерированные отчёты | `template_output/`, `evaluation_results/`, `generated_data/` — артефакты прогонов, не учебник |
 | Идентификаторы кода | Совместимость с API/фреймворками; перевод ломал бы запуск |
 | Картинки в `docs/images/` и Extra | Без смены ассетов; подписи в MD — на русском |

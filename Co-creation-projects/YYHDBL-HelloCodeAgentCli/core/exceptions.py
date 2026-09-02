@@ -1,21 +1,21 @@
-"""异常体系"""
+"""Иерархия исключений"""
 
 class HelloAgentsException(Exception):
-    """HelloAgents基础异常类"""
+    """Базовое исключение HelloAgents"""
     pass
 
 class LLMException(HelloAgentsException):
-    """LLM相关异常"""
+    """Исключения, связанные с LLM"""
     pass
 
 class AgentException(HelloAgentsException):
-    """Agent相关异常"""
+    """Исключения, связанные с агентом (Agent)"""
     pass
 
 class ConfigException(HelloAgentsException):
-    """配置相关异常"""
+    """Исключения, связанные с конфигурацией"""
     pass
 
 class ToolException(HelloAgentsException):
-    """工具相关异常"""
+    """Исключения, связанные с инструментами"""
     pass

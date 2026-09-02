@@ -45,7 +45,7 @@ function drawMarkers() {
     })
     marker.bindPopup(
       `<b>${site.site_name}</b><br/>${site.province}${site.city}<br/>` +
-      `经纬度: ${site.latitude.toFixed(2)}, ${site.longitude.toFixed(2)}`
+      `Координаты: ${site.latitude.toFixed(2)}, ${site.longitude.toFixed(2)}`
     )
     marker.on('click', () => emit('select', site))
     marker.addTo(map)

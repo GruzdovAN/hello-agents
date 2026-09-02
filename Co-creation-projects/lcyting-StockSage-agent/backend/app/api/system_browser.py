@@ -1,5 +1,5 @@
 """
-桌面 / exe 场景：由后端唤起系统默认浏览器打开外链。
+Сценарий Desktop/exe: серверная часть вызывает системный браузер по умолчанию для открытия внешних ссылок.
 
 部分环境下前端 window.open 会被拦截；与 run_exe.py 中 webbrowser.open 打开仪表盘一致。
 """
@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from app.utils.response import error_response, success_response
 
-router = APIRouter(prefix="/system", tags=["系统"])
+router = APIRouter(prefix="/system", tags=["system"])
 
 
 class OpenExternalUrlBody(BaseModel):
@@ -36,7 +36,7 @@ def _normalize_http_url(url: str) -> str | None:
 
 @router.post("/open-external-url")
 async def open_external_url(body: OpenExternalUrlBody):
-    """在本机默认浏览器中打开 http(s) 链接。"""
+"""Откройте ссылку http(s) в локальном браузере по умолчанию."""
     ok_url = _normalize_http_url(body.url)
     if not ok_url:
         return error_response(400, "仅允许有效的 http(s) 外链")

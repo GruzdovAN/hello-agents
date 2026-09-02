@@ -121,8 +121,8 @@ def _parse_visual_response(raw_response: str) -> tuple[str, str, tuple[VisualRev
             VisualReviewFinding(
                 figure=str(item.get("figure", "")).strip() or "unknown",
                 severity=str(item.get("severity", "")).strip() or "medium",
-                issue=str(item.get("issue", "")).strip() or "未提供具体问题。",
-                suggested_fix=str(item.get("suggested_fix", "")).strip() or "请检查该图表的可读性与标注。",
+                issue=str(item.get("issue", "")).strip() or "Конкретная проблема не указана.",
+                suggested_fix=str(item.get("suggested_fix", "")).strip() or "Проверьте читаемость и подписи графика.",
             )
         )
     return decision, summary, tuple(findings)
@@ -260,7 +260,7 @@ def run_visual_review(
         return VisualReviewResult(
             status="unavailable",
             decision="Unavailable",
-            summary="视觉审稿未启用：未检测到完整的视觉模型配置。",
+            summary="Визуальный ревью не включён: неполная конфигурация визуальной модели.",
             duration_ms=_elapsed_ms(started_at),
             warning="missing_vision_configuration",
         )
@@ -276,7 +276,7 @@ def run_visual_review(
         return VisualReviewResult(
             status="skipped",
             decision="Skipped",
-            summary="视觉审稿已跳过：当前轮没有可审查的栅格图表。",
+            summary="Визуальный ревью пропущен: нет растровых графиков для проверки.",
             skipped_figures=skipped,
             duration_ms=_elapsed_ms(started_at),
             warning="no_supported_figures",
@@ -300,7 +300,7 @@ def run_visual_review(
         return VisualReviewResult(
             status="failed",
             decision="Failed",
-            summary="视觉审稿失败：候选图表均无法完成图像预处理。",
+            summary="Визуальный ревью не удался: препроцессинг графиков не выполнен.",
             skipped_figures=tuple(skipped_figures),
             duration_ms=_elapsed_ms(started_at),
             warning="image_preparation_failed",
@@ -380,7 +380,7 @@ def run_visual_review(
         return VisualReviewResult(
             status="failed",
             decision="Failed",
-            summary=f"视觉审稿失败：{exc}",
+            summary=f"Визуальный ревью не удался: {exc}",
             figures_reviewed=tuple(image.path.as_posix() for image in prepared_images),
             skipped_figures=tuple(skipped_figures),
             duration_ms=_elapsed_ms(started_at),

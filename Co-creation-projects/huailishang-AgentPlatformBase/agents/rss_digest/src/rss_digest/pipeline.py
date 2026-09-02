@@ -69,11 +69,11 @@ def _normalize_summary_payload(payload: dict) -> dict:
         score = 0
 
     return {
-        "article_type": str(payload.get("article_type", "未分类")).strip() or "未分类",
+        "article_type": str(payload.get("article_type", "Без категории")).strip() or "Без категории",
         "score": score,
-        "worth_reading": str(payload.get("worth_reading", "选择性阅读")).strip() or "选择性阅读",
-        "one_line": str(payload.get("one_line", "暂无一句话结论")).strip() or "暂无一句话结论",
-        "summary": str(payload.get("summary", "暂无摘要")).strip() or "暂无摘要",
+        "worth_reading": str(payload.get("worth_reading", "Выборочно")).strip() or "Выборочно",
+        "one_line": str(payload.get("one_line", "Нет краткого вывода")).strip() or "Нет краткого вывода",
+        "summary": str(payload.get("summary", "Нет резюме")).strip() or "Нет резюме",
         "key_points": _string_list(payload.get("key_points"), limit=4),
         "why_it_matters": str(payload.get("why_it_matters", "")).strip(),
         "engineering_takeaway": str(payload.get("engineering_takeaway", "")).strip(),
@@ -256,7 +256,7 @@ def summarize_articles(conn, cfg, llm_client: LLMClient, translation_client: LLM
             )
             normalized = _normalize_summary_payload(summary_payload)
         except Exception as exc:
-            return row, {"summary": f"摘要生成失败: {exc}"}, None, None, "summary_failed"
+            return row, {"summary": f"Ошибка генерации резюме: {exc}"}, None, None, "summary_failed"
 
         translation_cn = None
         translated_path = None
@@ -274,7 +274,7 @@ def summarize_articles(conn, cfg, llm_client: LLMClient, translation_client: LLM
                     write_text(translated_path_obj, translation_cn)
                     translated_path = str(translated_path_obj)
             except Exception as exc:
-                translation_cn = f"全文翻译失败: {exc}"
+                translation_cn = f"Ошибка полного перевода: {exc}"
 
         return row, normalized, translation_cn, translated_path, None
 

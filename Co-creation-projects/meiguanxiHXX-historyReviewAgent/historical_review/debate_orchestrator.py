@@ -1,4 +1,4 @@
-"""多角色历史辩论编排：观点碰撞 → 终局综合（最可能事实 / 可疑点 / 阴谋论辨析）。"""
+"""Оркестрация многоролевых исторических дебатов: столкновение взглядов → итоговый синтез."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ ROLES: tuple[RoleSpec, ...] = (
     RoleSpec("official", "官修史书与王朝叙事", SYSTEM_OFFICIAL),
     RoleSpec("unofficial", "野史与边缘叙事", SYSTEM_UNOFFICIAL),
     RoleSpec("political", "政治语境与权力结构", SYSTEM_POLITICAL),
-    RoleSpec("foreign", "域外与他者视角", SYSTEM_FOREIGN),
+RoleSpec("иностранный", "Внешние и другие перспективы", SYSTEM_FOREIGN),
     RoleSpec("suspicion", "蹊跷与阴谋论辨析", SYSTEM_SUSPICION),
 )
 
@@ -94,20 +94,20 @@ def iter_debate_events(
     llm_timeout: int | None = None,
 ) -> Iterator[dict[str, Any]]:
     """
-    逐步产出辩论过程事件，供 SSE / 日志展示。
+Постепенно создавайте события процесса обсуждения для отображения SSE/журнала.
 
-    事件类型
+тип события
     --------
     - progress: step, total, message
     - round1_start / round1_end: role, content（end）
     - digest_start / digest_end: content（end）
     - round2_start / round2_end: role, content（end）
     - synthesis_start / synthesis_end: content（end）
-    - complete: markdown（全文）
+- Complete: уценка (полный текст)
     """
     topic = (topic or "").strip()
     if not topic:
-        raise ValueError("议题不能为空")
+raise ValueError("议题не может быть пустым")
 
     if llm is None:
         llm = create_llm(
@@ -121,12 +121,12 @@ def iter_debate_events(
 
     step = 0
 
-    yield _yield_progress(step, f"议题已接收：{topic[:80]}{'…' if len(topic) > 80 else ''}")
+выход _yield_progress(step, f"Тема получена: {topic[:80]}{'...' if len(topic) > 80 else ''}")
     step += 1
 
     evidence_block = ""
     if use_evidence_bundle:
-        yield _yield_progress(step, "正在抓取维基与 DuckDuckGo 考据附录（可能需几十秒）…")
+выход _yield_progress(шаг, «Извлечение вики-приложений и доказательств DuckDuckGo (может занять десятки секунд)...»)
         evidence_block = EVIDENCE_PREAMBLE + "\n\n" + build_evidence_bundle(topic)
         yield {
             "event": "evidence_done",
@@ -141,8 +141,8 @@ def iter_debate_events(
     step += 1
 
     lines: list[str] = [
-        "# 多角色历史辩论记录\n",
-        f"## 议题\n{topic}\n",
+"#Многосимвольная запись исторических дебатов\n",
+f"## Тема\n{тема}\n",
     ]
 
     round1: dict[str, str] = {}
@@ -173,7 +173,7 @@ def iter_debate_events(
         "event": "digest_start",
         "step": step,
         "total": TOTAL_STEPS,
-        "message": "秘书：正在压缩第一轮五角色发言…",
+"message": "Секретарь: Сокращаем первый раунд речей из пяти персонажей...",
     }
     digest = _summarize_round1_for_context(llm, round1)
     digest_md = f"### 秘书摘要（供第二轮引用）\n\n{digest}\n"
@@ -197,13 +197,13 @@ def iter_debate_events(
             "message": f"第二轮观点碰撞 · {role.display_name}：正在调用模型…",
         }
         peer_bits = "\n".join(
-            f"- **{r.display_name}**（摘录）：{_excerpt(round1[r.key], 420)}"
+f"- **{r.display_name}** (отрывок): {_excerpt(round1[r.key], 420)}"
             for r in ROLES
             if r.key != role.key
         )
         user_msg = USER_ROUND2_TEMPLATE.format(
             topic=topic,
-            other_summaries=digest + "\n\n**他角色第一轮摘录（供点名反驳）**：\n" + peer_bits,
+Other_summaries=digest + "\n\n**Выдержки из первого раунда его персонажа (для именования и опровержения)**:\n" +peer_bits,
             self_previous=_excerpt(round1[role.key], 520),
         )
         out = _invoke(llm, role.system_prompt, user_msg, temperature=debate_temperature)
@@ -229,9 +229,9 @@ def iter_debate_events(
     full_transcript = "\n".join(lines)
     final_user = USER_SYNTHESIZER_TEMPLATE.format(topic=topic, full_transcript=full_transcript)
     verdict = _invoke(llm, SYSTEM_SYNTHESIZER, final_user, temperature=synthesizer_temperature)
-    tail = "---\n\n# 终局综合\n\n" + verdict
+хвост = "---\n\n# Итоговое резюме\n\n" + вердикт
     lines.append("---\n")
-    lines.append("# 终局综合\n")
+lines.append("# Окончательный синтез\n")
     lines.append(verdict)
     full_md = "\n".join(lines)
 
@@ -249,7 +249,7 @@ def iter_debate_events(
         "step": step,
         "total": TOTAL_STEPS,
         "markdown": full_md,
-        "message": "全部完成",
+"message": "Все завершено",
     }
 
 
@@ -266,7 +266,7 @@ def run_historical_debate(
     llm_max_tokens: int | None = 4096,
     llm_timeout: int | None = None,
 ) -> str:
-    """执行两轮角色辩论 + 终局综合报告（无流式，供 CLI 等）。"""
+"""Выполните два раунда дебатов персонажей + отчет о синтезе финала (без потоковой передачи, для CLI и т. д.)."""
     last: dict[str, Any] | None = None
     for ev in iter_debate_events(
         topic,
@@ -282,13 +282,13 @@ def run_historical_debate(
     ):
         last = ev
     if not last or last.get("event") != "complete":
-        raise RuntimeError("辩论未正常结束")
+поднять RuntimeError("Дебаты не закончились нормально")
     md = last.get("markdown")
     if not isinstance(md, str):
-        raise RuntimeError("缺少完整 Markdown")
+поднять RuntimeError("Отсутствует полная разметка")
     return md
 
 
 def debate_event_json(ev: dict[str, Any]) -> str:
-    """序列化单条事件（SSE data 行）。"""
+"""Сериализация одного события (строки данных SSE)."""
     return json.dumps(ev, ensure_ascii=False)

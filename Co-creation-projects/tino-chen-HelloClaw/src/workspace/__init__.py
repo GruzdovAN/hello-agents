@@ -1,4 +1,4 @@
-"""工作空间管理模块"""
+"""Модуль управления рабочим пространством"""
 
 from .manager import WorkspaceManager
 

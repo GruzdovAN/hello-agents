@@ -11,13 +11,13 @@
             <span class="text-xl font-bold text-white tracking-tight">DeepCast</span>
           </div>
           <div class="flex items-center gap-2">
-            <button class="player-nav-btn text-blue-300" @click="$emit('downloadReport')" aria-label="下载研究报告">
+            <button class="player-nav-btn text-blue-300" @click="$emit('downloadReport')" aria-label="Скачать отчёт">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              报告
+              Отчёт
             </button>
-            <button class="player-nav-btn text-gray-400" @click="$emit('reset')" aria-label="制作新播客">
+            <button class="player-nav-btn text-gray-400" @click="$emit('reset')" aria-label="Создать новый подкаст">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-              新播客
+              Новый подкаст
             </button>
           </div>
         </div>
@@ -68,13 +68,13 @@
 
               <!-- Action Buttons -->
               <div class="flex flex-col gap-2.5">
-                <a :href="audioUrl" download class="player-btn-primary" aria-label="下载播客 MP3 文件">
+                <a :href="audioUrl" download class="player-btn-primary" aria-label="Скачать MP3 подкаста">
                   <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                  下载 MP3
+                  Скачать MP3
                 </a>
-                <button class="player-btn-ghost" @click="$emit('reset')" aria-label="制作新播客">
+                <button class="player-btn-ghost" @click="$emit('reset')" aria-label="Создать новый подкаст">
                   <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                  制作新播客
+                  Создать новый подкаст
                 </button>
               </div>
             </div>
@@ -92,9 +92,9 @@
                 <div class="w-3 h-3 rounded-full bg-[#28c840]"></div>
               </div>
               <div class="flex-1 text-center">
-                <span class="text-sm font-medium text-gray-400 tracking-wide">研究报告</span>
+                <span class="text-sm font-medium text-gray-400 tracking-wide">Отчёт</span>
               </div>
-              <button class="report-download-btn" @click="$emit('downloadReport')" aria-label="下载研究报告">
+              <button class="report-download-btn" @click="$emit('downloadReport')" aria-label="Скачать отчёт">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               </button>
             </div>

@@ -1,5 +1,6 @@
 import logging
 import random
+import re
 import time
 from typing import Dict, List
 from hello_agents import SimpleAgent, HelloAgentsLLM, Message
@@ -9,64 +10,67 @@ from game_logic import GameSession
 
 logger = logging.getLogger("game.agent")
 
-# 人物候选池，用于随机注入 system prompt，强制 LLM 从不同方向发散
+# Пул категорий персонажей для случайной подстановки в system prompt
 _FIGURE_DOMAINS = [
-    "中国古代帝王（如汉武帝、唐太宗、武则天、康熙等）",
-    "中国古代文人墨客（如李白、杜甫、苏轼、王羲之等）",
-    "中国古代军事家（如岳飞、霍去病、戚继光、韩信等）",
-    "中国神话人物（如女娲、嫦娥、哪吒、二郎神等）",
-    "西游记人物（如孙悟空、猪八戒、唐僧、沙僧等）",
-    "三国人物（如诸葛亮、曹操、刘备、关羽、周瑜等）",
-    "西方历史人物（如拿破仑、凯撒、亚历山大、牛顿等）",
-    "西方神话人物（如宙斯、雅典娜、赫拉克勒斯、阿喀琉斯等）",
-    "世界科学家（如爱因斯坦、居里夫人、达芬奇、伽利略等）",
-    "知名虚构角色（如哈利·波特、福尔摩斯、哆啦A梦、白雪公主等）",
-    "现代体育明星（如姚明、李娜、迈克尔·乔丹、贝利等）",
-    "中国近现代人物（如鲁迅、梁启超、郑成功、林则徐等）",
-    "网络红人与UP主（如李子柒、papi酱、散打哥、罗翔等知名网络人物）",
+    "Древнекитайские императоры (например, У-ди, Тай-цзун, У Цзэтянь, Канси и др.)",
+    "Древнекитайские поэты и учёные (например, Ли Бо, Ду Фу, Су Ши, Ван Сичжи и др.)",
+    "Древнекитайские полководцы (например, Юэ Фэй, Хуо Цюйбин, Ци Цзиguang, Хань Синь и др.)",
+    "Персонажи китайской мифологии (например, Нюйва, Чанъэ, Нэчжа, Эрлан-шэнь и др.)",
+    "Персонажи «Путешествия на Запад» (например, Сунь Укун, Чжу Бэцze, Тан Саньцzang, Ша Уцzin и др.)",
+    "Персонажи эпохи Трёх царств (например, Чжугэ Лян, Цao Цao, Лiu Бэй, Гуань Юй, Чжоу Юй и др.)",
+    "Западные исторические личности (например, Наполеон, Цезарь, Александр Македонский, Ньютон и др.)",
+    "Персонажи западной мифологии (например, Зевс, Афина, Геракл, Ахиллес и др.)",
+    "Мировые учёные (например, Эйнштейн, Мария Склодовская-Кюри, Леонардо да Vinci, Галилей и др.)",
+    "Известные вымышленные персонажи (например, Гарри Поттер, Шерлок Холмс, Дораэмон, Белоснежка и др.)",
+    "Современные спортивные звёзды (например, Яо Мин, Ли На, Майкл Джordan, Пелé и др.)",
+    "Китайские личности нового времени (например, Лu Синь, Лян Цichao, Чжэн Chenggong, Линь Zexu и др.)",
+    "Интернет-знаменитости и блогеры (например, Li Ziqi, papi, известные онлайн-личности и др.)",
 ]
+
+_NAME_PREFIXES = ("Название:", "Название：", "Имя:", "Имя：")
+_BIO_PREFIXES = ("Краткое описание:", "Краткое описание：", "Описание:", "Описание：", "Биография:", "Биография：")
 
 
 def _build_random_figure_prompt() -> str:
     """Dynamically build a system prompt with a random domain and seed to avoid LLM caching."""
     domain = random.choice(_FIGURE_DOMAINS)
     seed = random.randint(10000, 99999)
-    return f"""你是一个随机知名人物生成器。随机种子：{seed}
-本次请从【{domain}】这个方向随机选择一个人物。
-要求：
-1. 必须是大众熟知、有足够信息可供猜测的人物
-2. 必须是人物（真实或虚构），不要选建筑、动植物、自然景观等物体
-3. 输出格式严格如下（两行，不要多余内容）：
-名称：<人物名称>
-简介：<一句话概括其性格特点与主要成就，50字以内>
-4. 每次必须随机选择，不要总是选同一个"""
+    return f"""Вы — генератор случайных известных личностей. Случайное зерно: {seed}
+На этот раз выберите одну личность из категории «{domain}».
+Требования:
+1. Это должна быть широко известная личность, о которой достаточно информации для угадывания
+2. Только личность (реальная или вымышленная), не здания, растения, животные, природные объекты и т.п.
+3. Строго такой формат вывода (две строки, без лишнего текста):
+Название: <имя личности>
+Краткое описание: <одно предложение о характере и главных достижениях, до 50 слов>
+4. Каждый раз выбирайте случайно, не повторяйте одного и того же"""
 
-_HINT_SYSTEM_PROMPT = """你是一位博学的助手。
-根据提供的搜索资料，生成3条适合猜谜游戏的提示。
-要求：
-1. 每条提示单独一行，格式为：提示N：<内容>
-2. 提示由模糊到具体，第1条最模糊，第3条最具体
-3. 不能直接说出答案的名称
-4. 只输出3行提示，不要其他内容"""
+_HINT_SYSTEM_PROMPT = """Вы — эрудированный помощник.
+На основе предоставленных материалов поиска сгенерируйте 3 подсказки для игры «угадай, кто я».
+Требования:
+1. Каждая подсказка на отдельной строке, формат: Подсказка N: <текст>
+2. Подсказки от общих к конкретным: 1-я самая расплывчатая, 3-я самая конкретная
+3. Нельзя называть ответ напрямую
+4. Только 3 строки подсказок, без другого текста"""
 
-_SEMANTIC_MATCH_PROMPT = """你是一位知识渊博的助手。请判断以下两个名称是否指代同一个人物或事物。
-只需回答 "是" 或 "否"，不要输出任何其他内容。
-名称A：{guess}
-名称B：{actual}"""
+_SEMANTIC_MATCH_PROMPT = """Вы — эрудированный помощник. Определите, указывают ли следующие два названия на одну и ту же личность или предмет.
+Ответьте только «да» или «нет», без каких-либо других слов.
+Название A: {guess}
+Название B: {actual}"""
 
-_ROLEPLAY_SYSTEM_PROMPT = """你正在参与一个猜谜游戏，扮演一个神秘人物（代号：【谜底】）。
+_ROLEPLAY_SYSTEM_PROMPT = """Вы участвуете в игре «угадай, кто я», изображая таинственную личность (кодовое имя: 【загадка】).
 
-## 人物背景（仅供你参考，不可直接透露）：
+## Предыстория персонажа (только для вашей справки, нельзя раскрывать напрямую):
 {bio}
 
-## 对话规则：
-1. 以该人物的第一人称身份回答，语气、措辞符合其性格特点与所处时代/背景
-2. 用户会通过提问来猜测你的身份，**必须直接针对用户的问题给出明确回应**（如"是的"/"不是"/"确实如此"等），不能回避或答非所问
-3. 在给出明确回应的基础上，可以用符合人物身份的语气补充一句，增加趣味性
-4. 每次回答要简短（1-2句话），不要长篇大论
-5. 回答内容要基于该人物真实的生平、性格、成就，不要编造
-6. **严禁在任何情况下说出该人物的名称**（包括姓名、字号、封号、外号等一切称谓）
-7. 如果用户的问题与该人物完全无关，可以用符合人物身份的方式婉转说明"""
+## Правила диалога:
+1. Отвечайте от первого лица этой личности, тон и стиль должны соответствовать её характеру и эпохе
+2. Пользователь будет задавать вопросы, чтобы угадать вашу личность; **обязательно давайте прямой ответ на вопрос** (например, «да» / «нет» / «именно так» и т.п.), не уходите от темы
+3. После прямого ответа можно добавить одну фразу в духе персонажа, чтобы сделать игру интереснее
+4. Каждый ответ должен быть коротким (1–2 предложения), без длинных монологов
+5. Опирайтесь на реальную биографию, характер и достижения персонажа, ничего не выдумывайте
+6. **Категорически запрещено называть имя персонажа** (включая имя, прозвище, титул, прозвища и любые другие обозначения)
+7. Если вопрос совсем не связан с персонажем, вежливо объясните это в его манере"""
 
 
 class HistoricalFigureAgent:
@@ -131,7 +135,7 @@ class HistoricalFigureAgent:
             ts = int(time.time() * 1000)
             messages = [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"请随机给我一个（时间戳：{ts}，随机数：{random.randint(1, 9999)}）"},
+                {"role": "user", "content": f"Дайте мне случайную личность (метка времени: {ts}, случайное число: {random.randint(1, 9999)})"},
             ]
             raw = self._llm.invoke(messages).strip()
             logger.info(f"[AGENT] LLM generated subject raw: {raw!r}")
@@ -146,9 +150,9 @@ class HistoricalFigureAgent:
         bio = ""
         for line in raw.splitlines():
             line = line.strip()
-            if line.startswith("名称：") or line.startswith("名称:") or line.startswith("姓名：") or line.startswith("姓名:"):
+            if line.startswith(_NAME_PREFIXES):
                 name = line.split("：", 1)[-1].split(":", 1)[-1].strip()
-            elif line.startswith("简介：") or line.startswith("简介:"):
+            elif line.startswith(_BIO_PREFIXES):
                 bio = line.split("：", 1)[-1].split(":", 1)[-1].strip()
         if not name:
             logger.warning("[AGENT] Failed to parse subject name, using fallback")
@@ -158,11 +162,11 @@ class HistoricalFigureAgent:
     def _fallback_figure(self) -> Dict[str, str]:
         """Return a minimal fallback person when LLM fails."""
         persons = [
-            ("孔子", "春秋时期思想家、教育家，儒家学派创始人，性格温和而坚定，一生致力于礼乐仁义"),
-            ("孙悟空", "《西游记》中的神话英雄，天性顽皮好斗、嫉恶如仇，七十二变，大闹天宫"),
-            ("武则天", "中国历史上唯一的女皇帝，铁腕治国，心思缜密，开创武周政权"),
-            ("诸葛亮", "三国时期蜀汉丞相，足智多谋、鞠躬尽瘁，以隆中对和空城计闻名"),
-            ("哈利·波特", "《哈利·波特》系列中的魔法师主角，勇敢善良，最终击败伏地魔"),
+            ("Конфуций", "Мыслитель и педагог эпохи Чуньцю, основатель конфуцианства, мягкий и твёрдый характер, всю жизнь посвятил ритуалам и человечности"),
+            ("Сунь Укун", "Мифический герой «Путешествия на Запад», озорной и воинственный, 72 превращения, смутил Небесную обитель"),
+            ("У Цзэтянь", "Единственная женщина-императрица в истории Китая, жёстко правила, проницательная, основала династию Чжоу"),
+            ("Чжугэ Лян", "Канцлер державы Шу эпохи Трёх царств, мудрый и преданный, известен планом из Лунчжун и приёмом с пустым городом"),
+            ("Гарри Поттер", "Главный герой серии «Гарри Поттер», смелый и добрый, в итоге победил Волан-де-Морта"),
         ]
         name, bio = random.choice(persons)
         return {"name": name, "bio": bio}
@@ -176,13 +180,13 @@ class HistoricalFigureAgent:
 
         try:
             search_results = self._search_tool.run(
-                {"query": f"{name} 简介 特点 介绍"}
+                {"query": f"{name} биография особенности описание"}
             )
             logger.info(f"[AGENT] Search results for hints, length: {len(search_results)} chars")
 
             messages = [
                 {"role": "system", "content": _HINT_SYSTEM_PROMPT},
-                {"role": "user", "content": f"答案：{name}\n\n搜索资料：\n{search_results}\n\n请生成3条提示："},
+                {"role": "user", "content": f"Ответ: {name}\n\nМатериалы поиска:\n{search_results}\n\nСгенерируйте 3 подсказки:"},
             ]
             raw = self._llm.invoke(messages).strip()
             logger.info(f"[AGENT] LLM hint raw output: {raw!r}")
@@ -199,9 +203,8 @@ class HistoricalFigureAgent:
             line = line.strip()
             if not line:
                 continue
-            # Remove prefix like "提示1：" / "提示1:" / "1." etc.
-            import re
-            cleaned = re.sub(r'^(提示\d[：:]\s*|\d+[\.、]\s*)', '', line).strip()
+            # Remove prefix like "Подсказка1:" / "Подсказка 1:" / "1." etc.
+            cleaned = re.sub(r'^(Подсказка\s*\d[：:]\s*|\d+[\.、]\s*)', '', line, flags=re.IGNORECASE).strip()
             if cleaned:
                 hints.append(cleaned)
         # Ensure exactly 3 hints
@@ -215,9 +218,9 @@ class HistoricalFigureAgent:
     def _fallback_hints(self, name: str) -> List[str]:
         """Return fallback hints when search/LLM fails."""
         return [
-            "这是一个广为人知的事物",
-            "它在各自的领域中具有重要地位或影响力",
-            "它的名字在国内外都有很高的知名度",
+            "Это широко известная личность",
+            "Она занимает важное место в своей области или эпохе",
+            "Её имя хорошо знакомо во многих странах",
         ]
 
     # ── Role-play Agent ───────────────────────────────────────────────────────
@@ -231,7 +234,7 @@ class HistoricalFigureAgent:
             system_prompt=system_prompt,
             enable_tool_calling=False,
         )
-        subject_name = self.game_session.current_figure.get("name", "未知")
+        subject_name = self.game_session.current_figure.get("name", "Неизвестно")
         logger.info(f"[AGENT] Role-play agent created | subject={subject_name}")
         return agent
 
@@ -269,7 +272,7 @@ class HistoricalFigureAgent:
             prompt = _SEMANTIC_MATCH_PROMPT.format(guess=guess.strip(), actual=actual)
             result = self._llm.invoke([{"role": "user", "content": prompt}]).strip()
             logger.info(f"[AGENT] Semantic match | guess={guess!r} actual={actual!r} llm_answer={result!r}")
-            return result.startswith("是")
+            return result.lower().startswith("да")
         except Exception as e:
             logger.error(f"[AGENT] Semantic match failed: {e}", exc_info=True)
             return False
@@ -297,7 +300,7 @@ class HistoricalFigureAgent:
             return response
         except Exception as e:
             logger.error(f"[AGENT] LLM call failed: {e}", exc_info=True)
-            return "抱歉，我现在有些恍惚，请再问一次吧。"
+            return "Извините, я немного растерялся — повторите вопрос, пожалуйста."
 
     def get_conversation_history(self) -> List[Message]:
         """Get full conversation history"""
@@ -348,4 +351,4 @@ def provide_hint(figure: Dict, hints: List[str], hint_index: int = 0) -> str:
     """
     if hints and hint_index < len(hints):
         return hints[hint_index]
-    return "这是一个广为人知的事物"
+    return "Это широко известная личность"

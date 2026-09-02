@@ -1,81 +1,81 @@
-# 智能股票分析助手 — 部署文档 (DEPLOY.md)
+# Интеллектуальный помощник по анализу акций — документация по развёртыванию (DEPLOY.md)
 
-> **版本**: v0.1.0  
-> **日期**: 2026-05-09  
-> **适用**: 生产环境 / 开发环境部署
-
----
-
-## 目录
-
-1. [环境要求](#1-环境要求)
-2. [本地开发部署](#2-本地开发部署)
-3. [Docker 容器化部署](#3-docker-容器化部署)
-4. [exe 独立打包部署](#4-exe-独立打包部署)
-5. [配置说明](#5-配置说明)
-6. [健康检查](#6-健康检查)
-7. [常见问题](#7-常见问题)
+> **Версия**: v0.1.0  
+> **Дата**: 2026-05-09  
+> **Назначение**: развёртывание в production / development
 
 ---
 
-## 1. 环境要求
+## Содержание
 
-| 组件 | 最低版本 | 说明 |
+1. [Требования к окружению](#1-требования-к-окружению)
+2. [Локальное развёртывание для разработки](#2-локальное-развёртывание-для-разработки)
+3. [Контейнеризация с Docker](#3-контейнеризация-с-docker)
+4. [Сборка автономного exe](#4-сборка-автономного-exe)
+5. [Описание конфигурации](#5-описание-конфигурации)
+6. [Проверка работоспособности](#6-проверка-работоспособности)
+7. [Частые вопросы](#7-частые-вопросы)
+
+---
+
+## 1. Требования к окружению
+
+| Компонент | Минимальная версия | Описание |
 |------|---------|------|
-| Python | 3.10+ | 后端运行时 |
-| Node.js | 18+ | 前端构建 |
-| Docker | 24+ | 容器化部署（可选） |
-| Docker Compose | 2.0+ | 服务编排（可选） |
-| Git | 2.0+ | 版本控制 |
+| Python | 3.10+ | Среда выполнения бэкенда |
+| Node.js | 18+ | Сборка фронтенда |
+| Docker | 24+ | Контейнерное развёртывание (опционально) |
+| Docker Compose | 2.0+ | Оркестрация сервисов (опционально) |
+| Git | 2.0+ | Контроль версий |
 
-### 外部服务依赖
+### Внешние сервисы
 
-| 服务 | 用途 | 必需？ |
+| Сервис | Назначение | Обязателен? |
 |------|------|--------|
-| DeepSeek API | LLM 大模型推理 | 是（智能体功能） |
-| 东方财富妙想 API | 金融数据获取 | 是（行情/财务/资讯） |
+| DeepSeek API | LLM-инференс | Да (функции агента) |
+| 东方财富妙想 API | Получение финансовых данных | Да (котировки/финансы/новости) |
 
 ---
 
-## 2. 本地开发部署
+## 2. Локальное развёртывание для разработки
 
-### 2.1 克隆项目
+### 2.1 Клонирование проекта
 
 ```bash
 git clone <your-repo-url>
 cd 智能股票分析器
 ```
 
-### 2.2 配置环境变量
+### 2.2 Настройка переменных окружения
 
 ```bash
 cp .env.example .env
-# 编辑 .env，填入 LLM_API_KEY、MX_APIKEY
-# 本地开发请使用 BACKEND_PORT=8000（与 vite proxy 一致）
+# Отредактируйте .env: укажите LLM_API_KEY, MX_APIKEY
+# Для локальной разработки используйте BACKEND_PORT=8000 (как в vite proxy)
 ```
 
-### 2.3 后端启动
+### 2.3 Запуск бэкенда
 
 ```bash
-# 创建虚拟环境（推荐）
+# Создание виртуального окружения (рекомендуется)
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
-# 安装依赖
+# Установка зависимостей
 pip install -r backend/requirements.txt
 
-# 启动后端服务（开发模式，热重载）
+# Запуск бэкенда (режим разработки, hot reload)
 cd backend
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-# 或从项目根目录启动
+# Или из корня проекта
 python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-API 文档地址：http://localhost:8000/docs
+Документация API: http://localhost:8000/docs
 
-### 2.4 前端启动
+### 2.4 Запуск фронтенда
 
 ```bash
 cd frontend
@@ -83,108 +83,108 @@ npm install
 npm run dev
 ```
 
-前端访问地址：http://localhost:5173
+Фронтенд: http://localhost:5173
 
-> 开发模式下 Vite 自动将 `/api` 代理到 `http://localhost:8000`，无需额外配置。
+> В режиме разработки Vite автоматически проксирует `/api` на `http://localhost:8000` — дополнительная настройка не нужна.
 
-### 2.5 验证
+### 2.5 Проверка
 
 ```bash
-# 健康检查（端口与 BACKEND_PORT 一致，默认开发为 8000）
+# Проверка работоспособности (порт совпадает с BACKEND_PORT, по умолчанию 8000)
 curl http://localhost:8000/api/v1/system/health
 
-# 前端构建验证
+# Проверка сборки фронтенда
 cd frontend && npm run build
 ```
 
-> **端口提示**：`backend/app/config.py` 中开发模式默认后端端口为 **8000**，与 `frontend/vite.config.js` 里 `/api` → `http://localhost:8000` 一致。若在 `.env` 中修改 `BACKEND_PORT`，请同步修改 Vite `proxy.target`，否则前端无法代理到后端。
+> **Подсказка по портам**: в `backend/app/config.py` порт бэкенда в режиме разработки по умолчанию **8000**, как и `proxy.target` в `frontend/vite.config.js` (`/api` → `http://localhost:8000`). При изменении `BACKEND_PORT` в `.env` синхронизируйте `proxy.target` в Vite, иначе фронтенд не сможет проксировать запросы к бэкенду.
 
 ---
 
-## 3. Docker 容器化部署
+## 3. Контейнеризация с Docker
 
-### 3.1 项目结构
+### 3.1 Структура проекта
 
 ```
 智能股票分析器/
-├── backend/           # 后端 FastAPI
+├── backend/           # Бэкенд FastAPI
 │   └── Dockerfile
-├── frontend/          # 前端 Vue3
+├── frontend/          # Фронтенд Vue3
 │   ├── Dockerfile
 │   └── nginx.conf
-├── docker-compose.yml # 服务编排
-├── .dockerignore      # 构建忽略
-└── .env               # 环境变量
+├── docker-compose.yml # Оркестрация сервисов
+├── .dockerignore      # Исключения при сборке
+└── .env               # Переменные окружения
 ```
 
-### 3.2 一键启动
+### 3.2 Запуск одной командой
 
 ```bash
-# 确保 .env 已配置正确
+# Убедитесь, что .env настроен корректно
 docker compose up -d
 ```
 
-### 3.3 分步构建
+### 3.3 Пошаговая сборка
 
 ```bash
-# 构建后端镜像
+# Сборка образа бэкенда
 docker build -t stock-analyzer-backend -f backend/Dockerfile .
 
-# 构建前端镜像
+# Сборка образа фронтенда
 docker build -t stock-analyzer-frontend -f frontend/Dockerfile .
 
-# 运行后端
+# Запуск бэкенда
 docker run -d -p 8000:8000 \
   -v stock_data:/app/data \
   --name stock-backend \
   stock-analyzer-backend
 
-# 运行前端
+# Запуск фронтенда
 docker run -d -p 8080:80 \
   --name stock-frontend \
   stock-analyzer-frontend
 ```
 
-### 3.4 服务端口
+### 3.4 Порты сервисов
 
-| 服务 | 端口 | 访问地址 |
+| Сервис | Порт | Адрес |
 |------|------|----------|
-| 后端 API | 8000 | http://localhost:8000/docs |
-| 前端界面 | 8080 | http://localhost:8080 |
+| API бэкенда | 8000 | http://localhost:8000/docs |
+| Интерфейс | 8080 | http://localhost:8080 |
 
-### 3.5 常用命令
+### 3.5 Частые команды
 
 ```bash
-# 查看服务状态
+# Статус сервисов
 docker compose ps
 
-# 查看日志
+# Логи
 docker compose logs -f backend
 docker compose logs -f frontend
 
-# 重启服务
+# Перезапуск
 docker compose restart
 
-# 停止并清理
+# Остановка и очистка
 docker compose down
 
-# 重新构建并启动
+# Пересборка и запуск
 docker compose up -d --build
 ```
 
-### 3.6 数据持久化
+### 3.6 Персистентность данных
 
-SQLite 数据库通过 Docker Volume 持久化：
+База SQLite сохраняется через Docker Volume:
 
-- **Volume 名称**: `stock_analyzer_data`
-- **挂载路径**: `/app/data`
-- **数据库文件**: `/app/data/stock_analyzer.db`
+- **Имя Volume**: `stock_analyzer_data`
+- **Путь монтирования**: `/app/data`
+- **Файл БД**: `/app/data/stock_analyzer.db`
 
 ```bash
-# 查看 Volume
+# Просмотр Volume
 docker volume ls | grep stock
 
-# 备份数据库
+# Резервное копирование БД
 docker compose exec backend python -c "
 import shutil
 shutil.copy('/app/data/stock_analyzer.db', '/tmp/backup.db')
@@ -194,139 +194,138 @@ docker compose cp backend:/tmp/backup.db ./backup.db
 
 ---
 
-## 4. exe 独立打包部署
+## 4. Сборка автономного exe
 
-将前后端打包为一个独立 `.exe` 文件，无需安装 Python/Node.js 即可运行。
+Упаковка фронтенда и бэкенда в один `.exe` — без установки Python/Node.js.
 
-### 4.1 环境要求
+### 4.1 Требования
 
-| 组件 | 用途 | 仅打包时需要？ |
+| Компонент | Назначение | Только для сборки? |
 |------|------|:---:|
-| Python 3.10+ | PyInstaller 打包 | 是 |
-| Node.js 18+ | 前端构建 | 是 |
-| PyInstaller | Python → exe | 是 |
+| Python 3.10+ | Сборка PyInstaller | Да |
+| Node.js 18+ | Сборка фронтенда | Да |
+| PyInstaller | Python → exe | Да |
 
-> 运行时仅需 Windows 系统，无需任何依赖。
+> Для запуска достаточно Windows, без дополнительных зависимостей.
 
-### 4.2 一键打包
+### 4.2 Сборка одной командой
 
 ```bash
-# 1. 安装打包依赖
+# 1. Установка зависимостей для сборки
 pip install pyinstaller
 
-# 2. 执行打包脚本（从项目根目录）
+# 2. Запуск скрипта сборки (из корня проекта)
 python scripts/build_exe.py
 
-# 3. 或设置环境变量强制重建前端
-# 编辑 .env，设置 BUILD_EXE=1，然后执行上述命令
+# 3. Или принудительная пересборка фронтенда через переменную окружения
+# Отредактируйте .env: BUILD_EXE=1, затем выполните команду выше
 ```
 
-### 4.3 打包产物
+### 4.3 Результат сборки
 
 ```
 dist_exe/
-├── stock_analyzer.exe      # 主程序（前后端合一）
-├── .env.example             # 配置模板
-└── data/                    # 数据目录（运行时自动使用）
+├── stock_analyzer.exe      # Основная программа (фронтенд + бэкенд)
+├── .env.example             # Шаблон конфигурации
+└── data/                    # Каталог данных (создаётся при запуске)
 ```
 
-### 4.4 使用方式
+### 4.4 Использование
 
 ```bash
-# 1. 将 dist_exe/ 目录拷贝到目标 Windows 机器
-# 2. 将 .env.example 重命名为 .env
-# 3. 编辑 .env，填入 API Key（LLM_API_KEY、MX_APIKEY）
-# 4. 双击 stock_analyzer.exe 启动
-# 5. 浏览器访问 http://127.0.0.1:<BACKEND_PORT>/dashboard（默认与 `app.config` 一致：exe 常为 5174，以 exe 旁 `.env` 为准）
+# 1. Скопируйте каталог dist_exe/ на целевую Windows-машину
+# 2. Переименуйте .env.example в .env
+# 3. Укажите API Key в .env (LLM_API_KEY, MX_APIKEY)
+# 4. Запустите stock_analyzer.exe двойным щелчком
+# 5. Откройте в браузере http://127.0.0.1:<BACKEND_PORT>/dashboard
+#    (по умолчанию как в app.config: для exe часто 5174 — смотрите .env рядом с exe)
 ```
 
-- 启动后自动打开浏览器（设置环境变量 `NO_BROWSER=1` 可禁用自动打开）
-- exe 窗口显示运行日志
-- 退出时关闭窗口即可
+- После запуска браузер откроется автоматически (`NO_BROWSER=1` отключает автозапуск)
+- Окно exe показывает логи работы
+- Для выхода закройте окно
 
-### 4.5 环境变量触发
-
-可通过环境变量 `BUILD_EXE` 控制打包行为：
+### 4.5 Переменная окружения BUILD_EXE
 
 ```bash
 # Windows PowerShell
 $env:BUILD_EXE="1"
 python scripts/build_exe.py
 
-# 或在 .env 中设置
+# Или в .env
 # BUILD_EXE=1
 ```
 
-### 4.6 自定义端口
+### 4.6 Настройка порта
 
-编辑 `.env`：
+В `.env`:
 ```
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=9000
 ```
-重启 exe 即可。
+Перезапустите exe.
 
 ---
 
-## 5. 配置说明
+## 5. Описание конфигурации
 
-### 5.1 环境变量完整列表
+### 5.1 Полный список переменных окружения
 
-| 变量名 | 默认值 | 说明 |
+| Переменная | Значение по умолчанию | Описание |
 |--------|--------|------|
-| `LLM_MODEL_ID` | `deepseek-chat` | LLM 模型名称 |
-| `LLM_API_KEY` | — | **必需** LLM API 密钥 |
-| `LLM_BASE_URL` | `https://api.deepseek.com` | LLM 服务地址 |
-| `LLM_TIMEOUT` | `60` | LLM HTTP 超时(秒)；后端会与更长下限合并，避免多轮 Agent 过早断开 |
-| `BUFFETT_MAX_REFLECTIONS` | `0` | 巴菲特评估初稿后的反思轮数（可选，见 `.env.example`） |
-| `MX_APIKEY` | — | **必需** 东方财富妙想 API 密钥 |
-| `MX_API_URL` | `https://mkapi2.dfcfs.com/finskillshub` | 妙想 API 地址 |
-| `MX_CACHE_TTL_SECONDS` | `600` | 妙想查询进程内缓存 TTL（秒） |
-| `MX_REPLAY_FIXTURES` | 关闭 | 为 true 时优先回放 `MX_FIXTURE_DIR` 下 fixture，不调妙想 HTTP |
-| `MX_FIXTURE_DIR` | `backend/fixtures/mx_raw` | 回放目录 |
-| `BACKEND_HOST` | `0.0.0.0` | 后端监听地址 |
-| `BACKEND_PORT` | **开发 `8000`** / **exe 默认 `5174`** | 未设置环境变量时由 `config.py` 按是否冻结自动选择 |
-| `FRONTEND_PORT` | `5173` | 前端开发端口 |
-| `FRONTEND_DIR` | — | 可选：显式指定已构建的前端 `dist` 目录 |
-| `DATA_DIR` | — | 可选：数据目录；默认 exe 旁或项目根下 `data` |
-| `DATABASE_URL` | `sqlite:///./data/stock_analyzer.db` | 数据库连接 |
-| `BUILD_EXE` | — | 打包脚本使用：`1`/`true`/`rebuild` 时强制重建前端 |
-| `REDIS_*` | 见 `.env.example` | **预留**，当前版本未使用（`requirements.txt` 中 redis 已注释） |
-| `JWT_SECRET_KEY` | `dev-secret-key` | **预留**，当前版本无登录鉴权，可不配置 |
-| `JWT_EXPIRE_MINUTES` | `1440` | **预留**，接入用户认证后生效 |
+| `LLM_MODEL_ID` | `deepseek-chat` | Имя LLM-модели |
+| `LLM_API_KEY` | — | **Обязательно** API-ключ LLM |
+| `LLM_BASE_URL` | `https://api.deepseek.com` | Адрес LLM-сервиса |
+| `LLM_TIMEOUT` | `60` | HTTP-таймаут LLM (с); бэкенд объединяет с более высоким нижним пределом, чтобы многошаговый Agent не обрывался преждевременно |
+| `BUFFETT_MAX_REFLECTIONS` | `0` | Число раундов рефлексии после черновика оценки Баффета (опционально, см. `.env.example`) |
+| `MX_APIKEY` | — | **Обязательно** API-ключ 东方财富妙想 |
+| `MX_API_URL` | `https://mkapi2.dfcfs.com/finskillshub` | Адрес API 妙想 |
+| `MX_CACHE_TTL_SECONDS` | `600` | TTL in-process кэша запросов 妙想 (с) |
+| `MX_REPLAY_FIXTURES` | выкл. | При true — приоритетно воспроизводит fixture из `MX_FIXTURE_DIR`, без HTTP к 妙想 |
+| `MX_FIXTURE_DIR` | `backend/fixtures/mx_raw` | Каталог воспроизведения |
+| `BACKEND_HOST` | `0.0.0.0` | Адрес прослушивания бэкенда |
+| `BACKEND_PORT` | **dev `8000`** / **exe по умолчанию `5174`** | Без переменной окружения выбирается в `config.py` по признаку frozen |
+| `FRONTEND_PORT` | `5173` | Порт фронтенда в dev |
+| `FRONTEND_DIR` | — | Опционально: явный путь к собранному `dist` фронтенда |
+| `DATA_DIR` | — | Опционально: каталог данных; по умолчанию рядом с exe или `data` в корне проекта |
+| `DATABASE_URL` | `sqlite:///./data/stock_analyzer.db` | Подключение к БД |
+| `BUILD_EXE` | — | Для скрипта сборки: `1`/`true`/`rebuild` — принудительная пересборка фронтенда |
+| `REDIS_*` | см. `.env.example` | **Зарезервировано**, в текущей версии не используется (redis в `requirements.txt` закомментирован) |
+| `JWT_SECRET_KEY` | `dev-secret-key` | **Зарезервировано**, в текущей версии нет аутентификации |
+| `JWT_EXPIRE_MINUTES` | `1440` | **Зарезервировано**, вступит в силу после подключения аутентификации |
 
-接口路径补充（与 Swagger 一致）：
+Дополнение по путям API (согласовано со Swagger):
 
-- AI 舆情流式：`POST /api/v1/sentiment/analyze/stream`（兼容：`POST /api/v1/agent/sentiment/stream`）
-- AI 数据流式：`POST /api/v1/data-analysis/analyze/stream`（兼容：`POST /api/v1/agent/data-analysis/stream`）
-- exe / 桌面：`POST /api/v1/system/open-external-url` 在本机默认浏览器打开允许的 http(s) 链接
+- Потоковый AI-анализ настроений: `POST /api/v1/sentiment/analyze/stream` (совместимость: `POST /api/v1/agent/sentiment/stream`)
+- Потоковый AI-анализ данных: `POST /api/v1/data-analysis/analyze/stream` (совместимость: `POST /api/v1/agent/data-analysis/stream`)
+- exe / desktop: `POST /api/v1/system/open-external-url` открывает разрешённые http(s) ссылки в браузере по умолчанию
 
-### 5.2 安全配置（生产环境）
+### 5.2 Безопасность (production)
 
-当前版本 **不要求** JWT；对外暴露 API 时建议：
+Текущая версия **не требует** JWT. При публичном доступе к API рекомендуется:
 
-- 使用 Nginx/网关限制来源 IP 或加独立鉴权层
-- 勿将 `.env` 中的 `LLM_API_KEY`、`MX_APIKEY` 提交到版本库
-- 用户认证（JWT）实现后，可用以下命令预生成密钥：
+- ограничить IP через Nginx/шлюз или добавить отдельный слой аутентификации;
+- не коммитить `LLM_API_KEY`, `MX_APIKEY` из `.env` в репозиторий;
+- после реализации аутентификации (JWT) сгенерировать ключ:
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(32))"
-# 写入 .env: JWT_SECRET_KEY=<生成的密钥>
+# Записать в .env: JWT_SECRET_KEY=<сгенерированный ключ>
 ```
 
-### 5.3 Nginx 反向代理配置（生产示例）
+### 5.3 Пример конфигурации Nginx reverse proxy (production)
 
 ```nginx
 server {
     listen 80;
     server_name your-domain.com;
 
-    # 前端静态文件
+    # Статика фронтенда
     location / {
         proxy_pass http://frontend:80;
     }
 
-    # 后端 API
+    # API бэкенда
     location /api {
         proxy_pass http://backend:8000;
         proxy_set_header Host $host;
@@ -338,15 +337,15 @@ server {
 
 ---
 
-## 6. 健康检查
+## 6. Проверка работоспособности
 
-### 6.1 后端健康检查
+### 6.1 Health check бэкенда
 
 ```bash
 curl http://localhost:8000/api/v1/system/health
 ```
 
-正常响应：
+Нормальный ответ:
 ```json
 {
   "code": 0,
@@ -360,47 +359,47 @@ curl http://localhost:8000/api/v1/system/health
 }
 ```
 
-- `agent_ready: false` → LLM_API_KEY 未配置
-- `skills_ready: false` → MX_APIKEY 未配置
+- `agent_ready: false` → LLM_API_KEY не настроен
+- `skills_ready: false` → MX_APIKEY не настроен
 
-### 6.2 Docker 健康检查
+### 6.2 Health check в Docker
 
-Docker Compose 自动监控后端 `/api/v1/system/health` 端点，30秒间隔检查。
+Docker Compose автоматически проверяет `/api/v1/system/health` каждые 30 с.
 
 ```bash
-# 查看健康状态
+# Просмотр статуса
 docker compose ps
-# 输出中 (healthy) 表示通过
+# (healthy) в выводе означает успех
 ```
 
 ---
 
-## 7. 常见问题
+## 7. Частые вопросы
 
-### Q: 如何获取 API 密钥？
+### В: Как получить API-ключи?
 
 - **DeepSeek API**: https://platform.deepseek.com
 - **东方财富妙想 API**: https://dl.dfcfs.com/m/itc4
 
-### Q: 启动后前端能访问但数据为空？
+### В: Фронтенд открывается, но данных нет?
 
-检查 `.env` 中的 `MX_APIKEY` 是否有效，运行健康检查确认 `skills_ready: true`。
+Проверьте `MX_APIKEY` в `.env` и убедитесь, что health check показывает `skills_ready: true`.
 
-### Q: Docker 构建速度慢？
+### В: Docker-сборка медленная?
 
-项目已配置 `.dockerignore` 排除不必要的文件。首次构建需下载基础镜像，后续使用缓存。
+Настроен `.dockerignore` для исключения лишних файлов. Первый раз скачиваются базовые образы, далее используется кэш.
 
-### Q: SQLite 数据库如何迁移至 PostgreSQL？
+### В: Как мигрировать SQLite на PostgreSQL?
 
-修改 `DATABASE_URL`：
+Измените `DATABASE_URL`:
 ```
 DATABASE_URL=postgresql://user:password@host:5432/stock_analyzer
 ```
-并在 `requirements.txt` 中替换 `aiosqlite` 为 `asyncpg`。
+И замените в `requirements.txt` `aiosqlite` на `asyncpg`.
 
-### Q: 如何扩容至多副本？
+### В: Как масштабировать на несколько реплик?
 
-后端无状态设计支持多副本（SQLite 需切换为 PostgreSQL/MySQL）：
+Бэкенд stateless и поддерживает несколько реплик (для SQLite нужен PostgreSQL/MySQL):
 
 ```yaml
 # docker-compose.yml
@@ -413,36 +412,36 @@ services:
       replicas: 2
 ```
 
-> 注意：多副本时需将数据存储切换为数据库服务器（PostgreSQL）并添加 Redis 缓存。
+> При нескольких репликах переключите хранилище на сервер БД (PostgreSQL) и добавьте Redis-кэш.
 
 ---
 
-## 附录
+## Приложение
 
-### A. 网络架构
+### A. Сетевая архитектура
 
 ```
-浏览器(8080)
+Браузер(8080)
     │
     ▼
-Nginx(前端容器:80)
-    │ /           → dist/ (SPA静态文件)
+Nginx(контейнер фронтенда:80)
+    │ /           → dist/ (SPA статика)
     │ /api/*      → proxy_pass
     │
     ▼
-FastAPI(后端容器:8000)
+FastAPI(контейнер бэкенда:8000)
     │
     ├── SQLite (/app/data)
-    ├── HelloAgents (智能体推理)
-    └── 东方财富妙想API (外部金融数据)
+    ├── HelloAgents (инференс агента)
+    └── 东方财富妙想API (внешние финансовые данные)
 ```
 
-### B. 开发 vs 生产对比
+### B. Сравнение dev и production
 
-| 项目 | 开发 | 生产 |
+| Параметр | Разработка | Production |
 |------|------|------|
-| 后端启动 | `uvicorn --reload` | `uvicorn` (无热重载) |
-| 前端启动 | `vite dev` (5173) | Nginx (80) |
-| API 代理 | Vite proxy | Nginx reverse proxy |
-| 数据库 | 本地文件 | Docker Volume |
-| CORS | 允许所有来源 | 仅允许前端域名 |
+| Запуск бэкенда | `uvicorn --reload` | `uvicorn` (без hot reload) |
+| Запуск фронтенда | `vite dev` (5173) | Nginx (80) |
+| Прокси API | Vite proxy | Nginx reverse proxy |
+| База данных | локальный файл | Docker Volume |
+| CORS | все источники | только домен фронтенда |

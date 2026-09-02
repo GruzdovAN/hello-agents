@@ -1,4 +1,4 @@
-"""内置工具模块"""
+"""Встроенный инструментальный модуль."""
 
 from .memory import MemoryTool
 from .execute_command import ExecuteCommandTool

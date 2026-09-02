@@ -12,11 +12,11 @@ def create_mind_echo_agent(user_id: str = "user001"):
     llm = HelloAgentsLLM()
 
     system_prompt = """
-你是 MindEchoAgent（心境回响），负责情绪陪伴与音乐推荐。
-你需要：
-1）识别用户心境，每次对话先判断状态（MOOD/COMFORT/MUSIC/ESCALATE）
-2）状态决定调用哪个工具，比如提供安抚/音乐推荐
-3）若用户出现“持续焦虑、睡不着、失眠”等关键词或状态为 ESCALATE，必须升级到 SleepAgent（A2A）
+Ты MindEchoAgent (Эхо настроения), отвечаешь за эмоциональное сопровождение и музыкальные рекомендации.
+Ты должен:
+1) Распознавать настроение пользователя; в каждом диалоге сначала определять состояние (MOOD/COMFORT/MUSIC/ESCALATE)
+2) По состоянию вызывать нужный инструмент: успокоение / музыкальные рекомендации
+3) При ключевых словах «постоянная тревога», «не могу уснуть», «бессонница» или состоянии ESCALATE — эскалировать к SleepAgent (A2A)
 """
 
     agent = SimpleAgent(
@@ -32,11 +32,11 @@ def create_mind_echo_agent(user_id: str = "user001"):
     registry.register_tool(MoodMusicTool())
     registry.register_tool(MoodSummaryTool())
 
-    # A2A 工具：指向 SleepAgent 服务
+    # A2A-инструмент: сервис SleepAgent
     sleep_tool = A2ATool(
-        agent_url="http://localhost:6000",  # SleepAgent 默认端口
+        agent_url="http://localhost:6000",  # стандартный порт SleepAgent
         name="sleep_agent",
-        description="睡眠专家，处理失眠/焦虑等问题"
+        description="Эксперт по сну: бессонница, тревога и др."
     )
     registry.register_tool(sleep_tool)
 

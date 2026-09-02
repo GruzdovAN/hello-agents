@@ -1,6 +1,6 @@
 """
-InnoCore AI 校验官 (Validator Agent)
-负责生成引用格式并联网校验元数据
+Агент валидатора InnoCore AI
+Отвечает за создание справочных форматов и проверку метаданных онлайн.
 """
 
 import asyncio
@@ -16,25 +16,25 @@ from core.database import db_manager
 from core.exceptions import AgentException, ExternalAPIException
 
 class ValidatorAgent(BaseAgent):
-    """校验官智能体"""
+"""Агент цензора"""
     
     def __init__(self, llm=None):
         super().__init__("Validator", llm)
         
-        # API配置
+# Конфигурация API
         self.crossref_base_url = "https://api.crossref.org/works"
         self.google_scholar_url = "https://serpapi.com/search"
         
-        # 添加工具
-        self.add_tool("generate_bibtex", self._generate_bibtex, "生成BibTeX引用")
+# Добавить инструменты
+self.add_tool("generate_bibtex", self._generate_bibtex, "Создать цитату BibTeX")
         self.add_tool("generate_apa", self._generate_apa, "生成APA格式引用")
         self.add_tool("generate_ieee", self._generate_ieee, "生成IEEE格式引用")
-        self.add_tool("verify_metadata", self._verify_metadata, "校验元数据")
-        self.add_tool("crossref_lookup", self._crossref_lookup, "CrossRef查询")
-        self.add_tool("scholar_lookup", self._scholar_lookup, "Google Scholar查询")
+self.add_tool("verify_metadata", self._verify_metadata, "Проверить метаданные")
+self.add_tool("crossref_lookup", self._crossref_lookup, "CrossRef查询")
+self.add_tool("scholar_lookup", self._scholar_lookup, "Академия Google")
     
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """执行引用校验任务"""
+"""Выполнение задач по проверке ссылок"""
         await self.validate_input(input_data)
         
         self.set_state("running")
@@ -44,22 +44,22 @@ class ValidatorAgent(BaseAgent):
             formats = input_data.get("formats", ["bibtex", "apa", "ieee"])
             verify_external = input_data.get("verify_external", True)
             
-            # 1. 生成多种格式的引用
+# 1. Генерируйте ссылки в нескольких форматах
             citations = await self._generate_citations(paper_info, formats)
             
-            # 2. 外部校验元数据
+# 2. Метаданные внешней проверки
             verification_result = {}
             if verify_external:
                 verification_result = await self._verify_paper_metadata(paper_info)
             
-            # 3. 合并和更新引用信息
+# 3. Объединение и обновление справочной информации
             final_citations = await self._merge_citation_data(
                 citations, 
                 verification_result, 
                 paper_info
             )
             
-            # 4. 缓存结果
+# 4. Кеширование результатов
             await self._cache_citation_results(final_citations)
             
             self.set_state("completed")
@@ -79,11 +79,11 @@ class ValidatorAgent(BaseAgent):
             raise AgentException(f"Validator Agent执行失败: {str(e)}")
     
     def get_required_fields(self) -> List[str]:
-        """获取必需的输入字段"""
+"""Получить необходимые поля ввода"""
         return ["paper_info"]
     
     async def _generate_citations(self, paper_info: Dict, formats: List[str]) -> Dict[str, Any]:
-        """生成多种格式的引用"""
+"""Создание цитат в нескольких форматах"""
         citations = {}
         
         for format_type in formats:
@@ -104,8 +104,8 @@ class ValidatorAgent(BaseAgent):
         return citations
     
     async def _generate_bibtex_citation(self, paper_info: Dict) -> str:
-        """生成BibTeX格式引用"""
-        # 生成引用键
+"""Создание цитат в формате BibTeX"""
+# Генерируем ссылочный ключ
         first_author = paper_info.get("authors", [""])[0]
         if isinstance(first_author, str):
             last_name = first_author.split()[-1].lower()
@@ -118,22 +118,22 @@ class ValidatorAgent(BaseAgent):
         
         citation_key = f"{last_name}{year}{title_key}"
         
-        # 构建BibTeX条目
+# Создаем запись BibTeX
         entry_type = self._determine_entry_type(paper_info)
         
         bibtex = f"@{entry_type}{{{citation_key},\n"
         
-        # 添加作者
+#Добавить автора
         authors = paper_info.get("authors", [])
         if authors:
             bibtex += f"  author = {{{self._format_bibtex_authors(authors)}}},\n"
         
-        # 添加标题
+#Добавить заголовок
         title = paper_info.get("title", "")
         if title:
             bibtex += f"  title = {{{title}}},\n"
         
-        # 添加期刊/会议信息
+#Добавить информацию о журнале/конференции
         if entry_type == "article":
             journal = paper_info.get("journal", "")
             if journal:
@@ -160,32 +160,32 @@ class ValidatorAgent(BaseAgent):
             if pages:
                 bibtex += f"  pages = {{{pages}}},\n"
         
-        # 添加年份
+#Добавить год
         if year:
             bibtex += f"  year = {{{year}}},\n"
         
-        # 添加DOI
+# Добавить DOI
         doi = paper_info.get("doi", "")
         if doi:
             bibtex += f"  doi = {{{doi}}},\n"
         
-        # 添加URL
+#Добавить URL
         url = paper_info.get("url", "")
         if url:
             bibtex += f"  url = {{{url}}},\n"
         
-        # 移除最后的逗号并关闭
+# Удалить последнюю запятую и закрыть
         bibtex = bibtex.rstrip(",\n") + "\n}"
         
         return bibtex
     
     async def _generate_apa_citation(self, paper_info: Dict) -> str:
-        """生成APA格式引用"""
+"""Создать цитату в формате APA"""
         authors = paper_info.get("authors", [])
         year = paper_info.get("year", "")
         title = paper_info.get("title", "")
         
-        # 格式化作者
+# Формат автора
         if len(authors) == 0:
             author_text = ""
         elif len(authors) == 1:
@@ -197,13 +197,13 @@ class ValidatorAgent(BaseAgent):
         else:
             author_text = ", ".join(authors[:6]) + f", ... {authors[-1]}"
         
-        # 构建APA引用
+# Создать цитируемость APA
         if year:
             apa_citation = f"{author_text} ({year}). {title}."
         else:
             apa_citation = f"{author_text}. {title}."
         
-        # 添加期刊信息
+#Добавляем информацию журнала
         journal = paper_info.get("journal", "")
         volume = paper_info.get("volume", "")
         number = paper_info.get("number", "")
@@ -222,7 +222,7 @@ class ValidatorAgent(BaseAgent):
             else:
                 apa_citation += "."
         
-        # 添加DOI
+# Добавить DOI
         doi = paper_info.get("doi", "")
         if doi:
             apa_citation += f" https://doi.org/{doi}"
@@ -230,12 +230,12 @@ class ValidatorAgent(BaseAgent):
         return apa_citation
     
     async def _generate_ieee_citation(self, paper_info: Dict) -> str:
-        """生成IEEE格式引用"""
+"""Создать ссылку на формат IEEE"""
         authors = paper_info.get("authors", [])
         year = paper_info.get("year", "")
         title = paper_info.get("title", "")
         
-        # 格式化作者（IEEE使用首字母缩写）
+# Автор формата (IEEE использует аббревиатуры)
         ieee_authors = []
         for author in authors[:3]:  # IEEE通常只列出前3个作者
             if isinstance(author, str):
@@ -252,13 +252,13 @@ class ValidatorAgent(BaseAgent):
         
         author_text = ", ".join(ieee_authors)
         
-        # 构建IEEE引用
+# Создаем ссылку IEEE
         if title:
             ieee_citation = f'"{title},"'
         else:
             ieee_citation = ""
         
-        # 添加期刊信息
+#Добавляем информацию журнала
         journal = paper_info.get("journal", "")
         volume = paper_info.get("volume", "")
         number = paper_info.get("number", "")
@@ -275,7 +275,7 @@ class ValidatorAgent(BaseAgent):
             if pages:
                 ieee_citation += f", pp. {pages}"
         
-        # 添加年份和月份
+#Добавить год и месяц
         if year:
             month = paper_info.get("month", "")
             if month:
@@ -283,7 +283,7 @@ class ValidatorAgent(BaseAgent):
             else:
                 ieee_citation += f", {year}."
         
-        # 添加DOI
+# Добавить DOI
         doi = paper_info.get("doi", "")
         if doi:
             ieee_citation += f" doi: {doi}"
@@ -291,7 +291,7 @@ class ValidatorAgent(BaseAgent):
         return ieee_citation
     
     def _determine_entry_type(self, paper_info: Dict) -> str:
-        """确定BibTeX条目类型"""
+"""Определить тип записи BibTeX"""
         if paper_info.get("journal"):
             return "article"
         elif paper_info.get("booktitle"):
@@ -302,11 +302,11 @@ class ValidatorAgent(BaseAgent):
             return "misc"
     
     def _format_bibtex_authors(self, authors: List[str]) -> str:
-        """格式化BibTeX作者"""
+"""Формат автора BibTeX"""
         formatted_authors = []
         for author in authors:
             if isinstance(author, str):
-                # 将 "First Last" 转换为 "Last, First"
+# Преобразование «Первый Последний» в «Последний, Первый»
                 parts = author.split()
                 if len(parts) >= 2:
                     formatted_authors.append(f"{parts[-1]}, {' '.join(parts[:-1])}")
@@ -332,7 +332,7 @@ class ValidatorAgent(BaseAgent):
         title = paper_info.get("title", "")
         
         try:
-            # 1. CrossRef校验
+# 1. Проверка перекрестных ссылок
             if doi:
                 crossref_data = await self._crossref_lookup_by_doi(doi)
                 if crossref_data:
@@ -344,7 +344,7 @@ class ValidatorAgent(BaseAgent):
                             self._generate_corrections(discrepancies)
                         )
             
-            # 2. Google Scholar校验
+# 2. Проверка Google Scholar
             if title:
                 scholar_data = await self._scholar_lookup_by_title(title)
                 if scholar_data:
@@ -356,7 +356,7 @@ class ValidatorAgent(BaseAgent):
                             self._generate_corrections(discrepancies)
                         )
             
-            # 确定最终状态
+# Определить окончательный статус
             if verification_result["crossref_verified"] or verification_result["scholar_verified"]:
                 if not verification_result["discrepancies"]:
                     verification_result["status"] = "verified"
@@ -373,7 +373,7 @@ class ValidatorAgent(BaseAgent):
         return verification_result
     
     async def _crossref_lookup_by_doi(self, doi: str) -> Optional[Dict]:
-        """通过DOI查询CrossRef"""
+"""Запрос CrossRef по DOI"""
         try:
             url = f"{self.crossref_base_url}/{doi}"
             
@@ -383,7 +383,7 @@ class ValidatorAgent(BaseAgent):
                         data = await response.json()
                         return self._parse_crossref_data(data)
                     else:
-                        self._add_to_history(f"CrossRef查询失败，状态码: {response.status}")
+self._add_to_history(f"Ошибка запроса CrossRef, код состояния: {response.status}")
                         return None
                         
         except Exception as e:
@@ -391,11 +391,11 @@ class ValidatorAgent(BaseAgent):
             return None
     
     async def _scholar_lookup_by_title(self, title: str) -> Optional[Dict]:
-        """通过标题查询Google Scholar"""
+"""Поиск в Академии Google по названию"""
         try:
             config = self.config.external_apis
             if not config.serpapi_key:
-                self._add_to_history("SerpApi key缺失，跳过Google Scholar查询")
+self._add_to_history("Ключ SerpApi отсутствует, пропустите запрос Google Scholar")
                 return None
             
             params = {
@@ -410,7 +410,7 @@ class ValidatorAgent(BaseAgent):
                         data = await response.json()
                         return self._parse_scholar_data(data)
                     else:
-                        self._add_to_history(f"Google Scholar查询失败，状态码: {response.status}")
+self._add_to_history(f"Ошибка запроса Google Scholar, код состояния: {response.status}")
                         return None
                         
         except Exception as e:
@@ -418,7 +418,7 @@ class ValidatorAgent(BaseAgent):
             return None
     
     def _parse_crossref_data(self, data: Dict) -> Dict:
-        """解析CrossRef数据"""
+"""Разбор данных CrossRef"""
         message = data.get("message", {})
         
         return {
@@ -435,14 +435,14 @@ class ValidatorAgent(BaseAgent):
         }
     
     def _parse_scholar_data(self, data: Dict) -> Dict:
-        """解析Google Scholar数据"""
+"""Парсинг данных Google Scholar"""
         organic_results = data.get("organic_results", [])
         if not organic_results:
             return {}
         
         first_result = organic_results[0]
         
-        # 提取年份
+#Извлечь год
         publication_info = first_result.get("publication_info", {})
         year = ""
         if "summary" in publication_info:
@@ -459,10 +459,10 @@ class ValidatorAgent(BaseAgent):
         }
     
     def _compare_metadata(self, original: Dict, reference: Dict) -> List[Dict]:
-        """比较元数据差异"""
+"""Сравнить различия в метаданных"""
         discrepancies = []
         
-        # 比较标题
+# Сравнить названия
         orig_title = original.get("title", "").lower().strip()
         ref_title = reference.get("title", "").lower().strip()
         if orig_title and ref_title and orig_title != ref_title:
@@ -473,7 +473,7 @@ class ValidatorAgent(BaseAgent):
                 "similarity": self._calculate_similarity(orig_title, ref_title)
             })
         
-        # 比较作者
+# Сравнить авторов
         orig_authors = set([author.lower() for author in original.get("authors", [])])
         ref_authors = set([author.lower() for author in reference.get("authors", [])])
         if orig_authors and ref_authors and orig_authors != ref_authors:
@@ -485,7 +485,7 @@ class ValidatorAgent(BaseAgent):
                 "extra_in_original": list(orig_authors - ref_authors)
             })
         
-        # 比较年份
+# Сравнить годы
         orig_year = str(original.get("year", ""))
         ref_year = str(reference.get("year", ""))
         if orig_year and ref_year and orig_year != ref_year:
@@ -498,7 +498,7 @@ class ValidatorAgent(BaseAgent):
         return discrepancies
     
     def _calculate_similarity(self, text1: str, text2: str) -> float:
-        """计算文本相似度"""
+"""Рассчитать сходство текста"""
         if not text1 or not text2:
             return 0.0
         
@@ -511,7 +511,7 @@ class ValidatorAgent(BaseAgent):
         return len(intersection) / len(union) if union else 0.0
     
     def _generate_corrections(self, discrepancies: List[Dict]) -> Dict:
-        """生成修正建议"""
+"""Сгенерировать предложения по исправлению"""
         corrections = {}
         
         for discrepancy in discrepancies:
@@ -521,18 +521,18 @@ class ValidatorAgent(BaseAgent):
             elif field == "year":
                 corrections[field] = discrepancy["reference"]
             elif field == "authors":
-                # 对于作者，建议使用参考数据的完整列表
+# Для авторов рекомендуется полный перечень справочной информации.
                 corrections[field] = discrepancy["reference"]
         
         return corrections
     
     async def _merge_citation_data(self, citations: Dict, verification: Dict, paper_info: Dict) -> Dict[str, Any]:
-        """合并引用数据"""
+"""Объединить справочные данные"""
         final_citations = {}
         
         for format_type, citation_text in citations.items():
-            if isinstance(citation_text, str) and not citation_text.startswith("生成失败"):
-                # 添加校验状态标记
+если isinstance(citation_text, str), а не citation_text.startswith("Генерация не удалась"):
+#Добавить отметку статуса проверки
                 verification_status = verification.get("status", "unknown")
                 
                 if verification_status == "verified":
@@ -546,7 +546,7 @@ class ValidatorAgent(BaseAgent):
             else:
                 final_citations[format_type] = citation_text
         
-        # 添加元数据
+#Добавляем метаданные
         final_citations["metadata"] = {
             "original_info": paper_info,
             "verification": verification,
@@ -557,14 +557,14 @@ class ValidatorAgent(BaseAgent):
         return final_citations
     
     async def _cache_citation_results(self, citations: Dict):
-        """缓存引用结果"""
+"""Кэшировать результаты ссылок"""
         try:
             metadata = citations.get("metadata", {})
             original_info = metadata.get("original_info", {})
             doi = original_info.get("doi", "")
             
             if doi:
-                # 缓存BibTeX格式
+# Кэшируем формат BibTeX
                 bibtex = citations.get("bibtex", "")
                 if bibtex and not bibtex.startswith("生成失败"):
                     verification = metadata.get("verification", {})
@@ -581,9 +581,9 @@ class ValidatorAgent(BaseAgent):
         except Exception as e:
             self._add_to_history(f"缓存引用失败: {str(e)}")
     
-    # 工具方法
+# Служебные методы
     async def _generate_bibtex(self, paper_info: Dict) -> str:
-        """生成BibTeX工具"""
+"""Создание инструментов BibTeX"""
         return await self._generate_bibtex_citation(paper_info)
     
     async def _generate_apa(self, paper_info: Dict) -> str:
@@ -595,16 +595,16 @@ class ValidatorAgent(BaseAgent):
         return await self._generate_ieee_citation(paper_info)
     
     async def _verify_metadata(self, paper_info: Dict) -> Dict:
-        """校验元数据工具"""
+"""Инструмент проверки метаданных"""
         return await self._verify_paper_metadata(paper_info)
     
     async def _crossref_lookup(self, identifier: str) -> Dict:
-        """CrossRef查询工具"""
+"""Инструмент запроса CrossRef"""
         if identifier.startswith("10."):  # DOI
             return await self._crossref_lookup_by_doi(identifier)
         else:
-            return {"error": "请提供有效的DOI"}
+return {"error": "Укажите действительный DOI"}
     
     async def _scholar_lookup(self, title: str) -> Dict:
-        """Google Scholar查询工具"""
+"""Инструмент запросов Google Scholar"""
         return await self._scholar_lookup_by_title(title)

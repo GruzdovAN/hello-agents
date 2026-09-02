@@ -1,4 +1,4 @@
-"""仅用 DuckDuckGo 的轻量检索，避免 HelloAgents SearchTool 初始化时打印 Tavily/SerpAPI 提示。"""
+"""Лёгкий поиск только через DuckDuckGo без лишних подсказок Tavily/SerpAPI при инициализации SearchTool."""
 
 from __future__ import annotations
 
@@ -11,26 +11,26 @@ def duckduckgo_search_text(
 ) -> str:
     query = (query or "").strip()
     if not query:
-        return "【检索】查询为空。"
+        return "【Поиск】Запрос пуст."
 
     try:
         from ddgs import DDGS
     except ImportError:
-        return "【检索】未安装 duckduckgo-search，请执行：pip install duckduckgo-search"
+        return "【Поиск】Пакет duckduckgo-search не установлен. Выполните: pip install duckduckgo-search"
 
     try:
         with DDGS(timeout=15) as client:  # type: ignore[call-arg]
             rows = client.text(query, max_results=max_results, backend="duckduckgo")
     except Exception as e:  # pragma: no cover
-        return f"【检索】DuckDuckGo 请求失败：{e}"
+        return f"【Поиск】Ошибка запроса DuckDuckGo: {e}"
 
     if not rows:
-        return "【检索】无结果。"
+        return "【Поиск】Результатов нет."
 
-    lines: list[str] = ["【DuckDuckGo 检索摘要】"]
+    lines: list[str] = ["【Сводка поиска DuckDuckGo】"]
     for i, entry in enumerate(rows, 1):
         url = entry.get("href") or entry.get("url") or ""
-        title = entry.get("title") or url or "(无标题)"
+        title = entry.get("title") or url or "(без заголовка)"
         body = entry.get("body") or entry.get("content") or ""
         if len(body) > max_body_chars:
             body = body[:max_body_chars] + "…"

@@ -1,5 +1,5 @@
 """
-健康建议 Agent
+Агент по вопросам здоровья
 """
 
 import json
@@ -24,7 +24,7 @@ class AdviceAgent(BaseAgent):
             risk_factors = ra.get("risk_factors", risk_factors)
             potential_conditions = ra.get("potential_conditions", potential_conditions)
             confidence = ra.get("confidence", confidence)
-        retrieved_memory = str(input_data.get("retrieved_memory") or "（暂无召回记忆）")
+извлекаемая_память = str(input_data.get("полученная_память") или "(Пока нет вызванной памяти)")
 
         prompt = self._build_prompt(
             overall_risk_level,
@@ -40,7 +40,7 @@ class AdviceAgent(BaseAgent):
             result = json.loads(response)
         except json.JSONDecodeError:
             result = {
-                "summary": "解析失败，返回原始结果",
+"summary": "Парсинг не удался, верните исходный результат",
                 "raw_response": response
             }
 
@@ -56,35 +56,35 @@ class AdviceAgent(BaseAgent):
         retrieved_memory: str,
     ) -> str:
         return f"""
-你是一名专业的健康管理助手。
-请基于以下健康风险评估结果，为用户生成合理、可执行的健康建议。
+Вы профессиональный помощник по управлению здравоохранением.
+Пожалуйста, сформулируйте разумные и практические рекомендации для пользователей на основе следующих результатов оценки риска для здоровья.
 
-健康风险评估结果：
-- 总体风险等级：{overall_risk_level}
+Результаты оценки риска для здоровья:
+– Общий уровень риска: {overall_risk_level}.
 - 风险因素：{risk_factors}
-- 潜在健康问题：{potential_conditions}
-- 评估置信度：{confidence}
+– Возможные заболевания: {potential_conditions}.
+- Оценить уверенность: {confidence}
 
-历史记忆召回（RAG）：
+Восстановление исторической памяти (RAG):
 {retrieved_memory}
 
-请遵循以下原则：
-- 不进行医学诊断
-- 建议应偏向生活方式、预防、监测和就医提示
-- 建议应具体、可执行
-- 根据风险等级调整建议的优先级
+Пожалуйста, следуйте этим рекомендациям:
+- Отсутствие медицинского диагноза.
+- Рекомендации должны быть сосредоточены на образе жизни, профилактике, мониторинге и медицинских советах.
+- Предложения должны быть конкретными и реализуемыми.
+- Настройте приоритет рекомендаций в зависимости от уровня риска.
 
-请以 JSON 格式返回，例如：
+Пожалуйста, верните его в формате JSON, например:
 {{
   "advice": [
     {{
-      "target": "<对应的风险因素>",
-      "category": "生活方式 | 饮食 | 运动 | 就医建议 | 监测",
-      "suggestion": "<具体可执行建议>",
+"target": "<соответствующий фактор риска>",
+"category": "Образ жизни | Диета | Физические упражнения | Медицинские консультации | Мониторинг",
+"suggestion": "<Конкретные предложения по исполняемым файлам>",
       "priority": "high | medium | low"
     }}
   ],
-  "overall_tone": "<整体建议风格，如：保守 / 积极干预>"
+"overall_tone": "<Общий стиль предложения, например: консервативное/активное вмешательство>"
 }}
 """
 

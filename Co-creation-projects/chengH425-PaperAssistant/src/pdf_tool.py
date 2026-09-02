@@ -1,8 +1,8 @@
 """
-PDF 转 Markdown 工具
+Инструмент PDF в Markdown
 
-从 PDF 文件中提取文本并转换为结构化的 Markdown 格式。
-支持本地文件和 URL，适用于学术论文 PDF 的读取。
+Извлекайте текст из файлов PDF и конвертируйте в структурированный формат Markdown.
+Поддерживает локальные файлы и URL-адреса, подходящие для чтения PDF-файлов научных статей.
 """
 import os
 import re
@@ -12,13 +12,13 @@ from hello_agents.tools import Tool, ToolParameter, ToolResponse, ToolStatus
 
 
 class PDFExtractTool(Tool):
-    """PDF 转 Markdown 工具
+"""Инструмент PDF в Markdown
 
-    从 PDF 文件中提取文本内容，自动识别论文结构（标题、章节、段落），
-    并转换为格式化的 Markdown 输出。支持本地文件路径和 URL。
+Извлекайте текстовое содержимое из файлов PDF и автоматически определяйте структуру статьи (заголовок, главы, абзацы),
+и преобразован в форматированный вывод Markdown. Поддерживает локальные пути к файлам и URL-адреса.
     """
 
-    # 常见论文章节标题模式
+# Общие шаблоны заголовков глав статей
     SECTION_PATTERNS = [
         r'^(abstract|摘要|Abstract)$',
         r'^(introduction|引言|Introduction)$',
@@ -40,15 +40,15 @@ class PDFExtractTool(Tool):
         super().__init__(
             name="pdf_extract",
             description="从 PDF 文件中提取文本并转换为 Markdown 格式。"
-                        "自动识别论文结构（标题、章节、段落），"
-                        "清理 PDF 断行和页码等噪声。"
-                        "支持本地 PDF 文件路径或 PDF URL。"
+«Автоматически распознавать структуру документа (название, главы, абзацы)»
+«Очистите PDF-файлы от помех, таких как разрывы строк и номера страниц».
+«Поддерживает локальные пути к файлам PDF или URL-адреса PDF».
                         "适合将论文 PDF 转为 Markdown 后用于进一步分析。"
         )
 
     def _extract_raw_text(self, file_path: str, start_page: int = 1,
                            end_page: int = -1) -> str:
-        """使用 PyPDF2 提取原始文本"""
+"""Используйте PyPDF2 для извлечения необработанного текста"""
         try:
             from PyPDF2 import PdfReader
         except ImportError:
@@ -73,24 +73,24 @@ class PDFExtractTool(Tool):
         return "\n".join(all_text)
 
     def _clean_text(self, text: str) -> str:
-        """清理 PDF 提取的噪声"""
-        # 移除独立的页码行
+"""Чистый шум при извлечении PDF"""
+# Удаление отдельных строк номеров страниц
         text = re.sub(r'^\d{1,4}$', '', text, flags=re.MULTILINE)
-        # 移除页眉页脚常见模式（如 "作者名 / 期刊名" 跨页重复）
+# Удалить общие шаблоны верхнего и нижнего колонтитула (например, «имя автора/название журнала», повторяющееся на страницах)
         text = re.sub(r'^\d+\s*\n', '\n', text, flags=re.MULTILINE)
-        # 合并多余的连续空行
+# Объединяем лишние последовательные пустые строки
         text = re.sub(r'\n{4,}', '\n\n\n', text)
-        # 清理尾部空格
+# Очистка конечных пробелов
         text = re.sub(r'[ \t]+$', '', text, flags=re.MULTILINE)
-        # 移除零宽字符
+# Удалить символы нулевой ширины
         text = re.sub(r'[​‌‍﻿]', '', text)
         return text.strip()
 
     def _fix_broken_lines(self, text: str) -> str:
-        """修复 PDF 提取中常见的断行问题。
+"""Исправлены распространенные проблемы с переносом строк при извлечении PDF-файлов.
 
-        PDF 提取经常在段落中间产生不必要的换行。
-        将不以标点/冒号结尾且下一行以小写字母开头的行合并。
+Извлечение PDF часто приводит к ненужным разрывам строк в середине абзацев.
+Объедините строки, которые не заканчиваются знаками препинания/двоеточия, и следующая строка начинается со строчной буквы.
         """
         lines = text.split('\n')
         fixed = []
@@ -102,11 +102,11 @@ class PDFExtractTool(Tool):
                 i += 1
                 continue
 
-            # 如果当前行不以句号/问号/感叹号/冒号/引号结尾，
-            # 且下一行存在且不以大写字母、数字编号或空行开头 → 合并
+# Если текущая строка не заканчивается точкой/вопросительным знаком/восклицательным знаком/двоеточием/кавычкой,
+# и следующая строка существует и не начинается с заглавной буквы, цифры или пустой строки → объединить
             if (i + 1 < len(lines) and
                 not re.search(r'[.!?:\"»)]$', line) and
-                len(line) > 20 and  # 短行（标题）不合并
+len(line) > 20 и # Короткие строки (заголовки) не объединяются
                 lines[i + 1].strip() and
                 not re.match(r'^[A-Z0-9#]', lines[i + 1].strip()) and
                 not re.match(r'^\[', lines[i + 1].strip())):
@@ -120,7 +120,7 @@ class PDFExtractTool(Tool):
         return '\n'.join(fixed)
 
     def _to_markdown(self, text: str) -> str:
-        """将清理后的文本转换为 Markdown"""
+"""Конвертируйте очищенный текст в Markdown"""
         lines = text.split('\n')
         md_lines = []
         in_code_block = False
@@ -129,15 +129,15 @@ class PDFExtractTool(Tool):
             stripped = line.strip()
 
             if not stripped:
-                # 空行 = 段落分隔
+# Пустые строки = разрывы абзацев
                 md_lines.append('')
                 continue
 
-            # 跳过纯页码和短数字行
+# Пропустить чистый номер страницы и короткие числовые строки
             if re.match(r'^\d{1,4}$', stripped):
                 continue
 
-            # 检测编号章节标题：1. / 1.1 / 2.3.1 等
+# Название главы с номером теста: 1. / 1.1 / 2.3.1 и т. д.
             numbered_heading = re.match(
                 r'^(\d{1,2}(?:\.\d{1,2}){0,2})\s+(.+)', stripped
             )
@@ -147,7 +147,7 @@ class PDFExtractTool(Tool):
                 md_lines.append(f'\n{prefix} {stripped}')
                 continue
 
-            # 检测常见学术章节标题
+# Обнаружение распространенных названий академических глав
             is_section = False
             for pattern in self.SECTION_PATTERNS:
                 if re.match(pattern, stripped, re.IGNORECASE):
@@ -157,31 +157,31 @@ class PDFExtractTool(Tool):
                 md_lines.append(f'\n## {stripped}')
                 continue
 
-            # 检测全大写短行 → 很可能是标题
+# Обнаружение коротких строк заглавными буквами → наиболее вероятные заголовки
             if (stripped.isupper() and len(stripped) < 60 and
                 len(stripped.split()) >= 2):
                 md_lines.append(f'\n### {stripped.title()}')
                 continue
 
-            # 检测列表项
+# Элементы контрольного списка
             list_match = re.match(r'^[\-\•\*\d+]\s{1,3}', stripped)
             if list_match:
                 md_lines.append(f'- {stripped[list_match.end():]}')
                 continue
 
-            # 普通段落
+# Обычный абзац
             md_lines.append(stripped)
 
-        # 合并结果
+# Объединить результаты
         result = '\n'.join(md_lines)
-        # 清理多余空行
+# Очистим лишние пустые строки
         result = re.sub(r'\n{3,}', '\n\n', result)
-        # 确保标题前后有空行
+# Убедитесь, что до и после заголовка есть пустые строки
         result = re.sub(r'([^\n])\n(#{1,4}\s)', r'\1\n\n\2', result)
         return result.strip()
 
     def _download_pdf(self, url: str, save_dir: str = "outputs") -> str:
-        """下载远程 PDF 文件"""
+"""Загрузка удаленных PDF-файлов"""
         import urllib.request
 
         os.makedirs(save_dir, exist_ok=True)
@@ -217,34 +217,34 @@ class PDFExtractTool(Tool):
                     message=f"文件不存在: {file_path}"
                 )
 
-            # 1. 提取原始文本
+# 1. Извлечь исходный текст
             raw_text = self._extract_raw_text(file_path, start_page, end_page)
 
             if not raw_text:
                 return ToolResponse.error(
                     code="INVALID_FORMAT",
-                    message="未能从 PDF 中提取到文本。可能是扫描版 PDF（图片格式），建议使用 OCR 工具预处理。"
+message="Не удалось извлечь текст из PDF. Это может быть отсканированный PDF-файл (формат изображения). Для предварительной обработки рекомендуется использовать инструмент оптического распознавания символов."
                 )
 
-            # 2. 清洗 → 3. 修复断行 → 4. 转 Markdown
+# 2. Очистить → 3. Исправить разрывы строк → 4. Преобразовать в Markdown
             cleaned = self._clean_text(raw_text)
             fixed = self._fix_broken_lines(cleaned)
             markdown = self._to_markdown(fixed)
 
-            # 可选截断（max_chars=0 时不限制）
+# Необязательное усечение (без ограничений, если max_chars=0)
             truncated = max_chars > 0 and len(markdown) > max_chars
             if truncated:
                 markdown = markdown[:max_chars]
                 last_break = max(markdown.rfind('\n\n'), markdown.rfind('\n'))
                 if last_break > max_chars * 0.8:
                     markdown = markdown[:last_break]
-                markdown += f"\n\n> *内容已截断（共显示前 {max_chars} 字符）。设为 0 可获取全文。*"
+markdown += f"\n\n> *Содержимое усечено (показаны первые символы: {max_chars}). Установите значение 0, чтобы получить полный текст.*"
 
             stats = {
                 "total_chars": len(markdown),
                 "word_count": len(markdown.split()),
                 "line_count": len(markdown.split("\n")),
-                "pages": f"{start_page}-{end_page if end_page != -1 else '全部'}",
+"pages": f"{start_page}-{end_page if end_page != -1 else '全部'}",
                 "truncated": truncated,
                 "format": "markdown"
             }
@@ -266,7 +266,7 @@ class PDFExtractTool(Tool):
         return [
             ToolParameter(
                 name="file_path", type="string",
-                description="PDF 文件本地路径",
+описание="Локальный путь к PDF-файлу",
                 required=False
             ),
             ToolParameter(
@@ -276,12 +276,12 @@ class PDFExtractTool(Tool):
             ),
             ToolParameter(
                 name="start_page", type="integer",
-                description="起始页码（默认 1）",
+описание="Номер стартовой страницы (по умолчанию 1)",
                 required=False
             ),
             ToolParameter(
                 name="end_page", type="integer",
-                description="结束页码（-1 表示全部）",
+описание="Номер конечной страницы (-1 означает все)",
                 required=False
             ),
             ToolParameter(

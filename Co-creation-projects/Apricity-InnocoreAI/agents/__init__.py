@@ -1,6 +1,4 @@
-"""
-InnoCore AI 智能体模块
-"""
+"""Модуль агента InnoCore AI"""
 
 from .base import BaseAgent
 from .hunter import HunterAgent

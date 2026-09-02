@@ -16,9 +16,9 @@ if __name__ == "__main__":
         max_steps=5
     )
 
-    question = "请开始分析"
+    question = "Начните анализ"
     try:
         plan_result = planning_agent.run(question)
-        print(f"任务规划: {plan_result}")
+        print(f"Планирование задач: {plan_result}")
     except Exception as e:
-        print(f"执行过程中出现错误: {e}")
+        print(f"Ошибка при выполнении: {e}")

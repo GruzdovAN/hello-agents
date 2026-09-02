@@ -1,7 +1,5 @@
-"""
-InnoCore AI - 研创·智核
-Intelligent Research Innovation Assistant
-"""
+"""InnoCore AI — исследования и инновации ·Интеллектуальное ядро
+Интеллектуальный помощник по инновациям в исследованиях"""
 
 __version__ = "1.0.0"
 __author__ = "InnoCore AI Team"

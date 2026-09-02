@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_config_value(value: Any) -> str:
-    """以纯字符串形式返回配置值。"""
+"""Вернуть значение конфигурации в виде чистой строки."""
     return value if isinstance(value, str) else value.value
 
 
 def strip_thinking_tokens(text: str) -> str:
-    """移除模型响应中的 ``<think>`` 部分。"""
+"""Удалите часть ``<think>`` из ответа модели."""
     while "<think>" in text and "</think>" in text:
         start = text.find("<think>")
         end = text.find("</think>") + len("</think>")
@@ -31,12 +31,12 @@ def deduplicate_and_format_sources(
     fetch_full_page: bool = False,
 ) -> str:
     """
-    格式化并去重搜索结果以供下游提示使用。
+Форматирование и дедупликация результатов поиска для последующих подсказок.
     
     Args:
-        search_response: 原始搜索响应（字典或列表）。
+search_response: необработанный ответ поиска (слово или список).
         max_tokens_per_source: 每个来源截取的最大 Token 数。
-        fetch_full_page: 是否尝试使用完整页面内容（如果可用）。
+fetch_full_page: следует ли пытаться использовать полное содержимое страницы, если оно доступно.
         
     Returns:
         格式化后的上下文文本字符串。
@@ -71,14 +71,14 @@ def deduplicate_and_format_sources(
             if len(raw_content) > char_limit:
                 raw_content = f"{raw_content[:char_limit]}... [truncated]"
             formatted_parts.append(
-                f"详细信息内容限制为 {max_tokens_per_source} 个 token: {raw_content}\n\n"
+f"Содержание подробной информации ограничено токенами {max_tokens_per_source}: {raw_content}\n\n"
             )
 
     return "".join(formatted_parts).strip()
 
 
 def format_sources(search_results: dict[str, Any] | None) -> str:
-    """返回总结搜索来源的项目符号列表。"""
+"""Возвращает маркированный список, суммирующий источники поиска."""
     if not search_results:
         return ""
 

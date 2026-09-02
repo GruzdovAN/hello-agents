@@ -1,6 +1,6 @@
 <!--
 消息项组件
-统一显示所有类型的消息（记者提问、用户回答、语法点评、系统提示等）
+统一显示所有类型的消息（Журналист提问、用户回答、Грамматический комментарий、СистемаПодсказка等）
 -->
 <template>
   <div class="message-item" :class="messageTypeClass">
@@ -12,7 +12,7 @@
     <div class="message-content" :class="contentClass">
       <p class="message-text">{{ message }}</p>
       <div v-if="expandedSentence" class="expanded-section">
-        <span class="expanded-label">✨ 扩写结果</span>
+        <span class="expanded-label">✨ Результат расширения</span>
         <p class="expanded-text">{{ expandedSentence }}</p>
       </div>
     </div>
@@ -43,11 +43,11 @@ const avatar = computed(() => {
 
 const senderName = computed(() => {
   const names = {
-    question: '记者',
-    user: '你',
-    evaluation: '语法点评',
-    system: '系统',
-    thinking: '正在思考'
+    question: 'Журналист',
+    user: 'Вы',
+    evaluation: 'Грамматический комментарий',
+    system: 'Система',
+    thinking: 'Думаю'
   };
   return names[props.type];
 });
@@ -61,10 +61,10 @@ const showStageBadge = computed(() => props.type === 'question' && props.stage);
 const stageTitle = computed(() => {
   if (!props.stage) return '';
   const titles: Record<Stage, string> = {
-    stage1: '阶段 1',
-    stage2: '阶段 2',
-    stage3: '阶段 3',
-    done: '完成'
+    stage1: 'Этап 1',
+    stage2: 'Этап 2',
+    stage3: 'Этап 3',
+    done: 'Готово'
   };
   return titles[props.stage];
 });
@@ -127,7 +127,7 @@ const stageTitle = computed(() => {
   font-size: 0.95rem;
 }
 
-/* 记者提问样式 */
+/* Журналист提问样式 */
 .message-question .message-content {
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   border-bottom-left-radius: 4px;
@@ -139,27 +139,27 @@ const stageTitle = computed(() => {
   border-bottom-right-radius: 4px;
 }
 
-/* 语法点评样式 */
+/* Грамматический комментарий样式 */
 .message-evaluation .message-content {
   background: linear-gradient(135deg, #fff9e6,  #fff3cd);
   border-left: 4px solid #ffc107;
 }
 
-/* 系统消息样式 */
+/* Система消息样式 */
 .message-system .message-content {
   background: #f8f9fa;
   color: #666;
   font-size: 0.85rem;
 }
 
-/* 思考提示样式 */
+/* РазмышлениеПодсказка样式 */
 .message-thinking .message-content {
   background: #f0f4f8;
   color: #666;
   font-style: italic;
 }
 
-/* 扩写结果样式 */
+/* 扩写Результат样式 */
 .expanded-section {
   margin-top: 0.75rem;
   padding-top: 0.75rem;

@@ -1,6 +1,6 @@
 # %% [markdown]
 # # ========================================
-# # 情感分析助手
+# # Помощник по анализу настроений
 # # ========================================
 
 # %% [markdown]
@@ -19,24 +19,24 @@ from paddlenlp import Taskflow
 
 # %%
 
-os.environ["LLM_API_KEY"] = ""  # 你自己的
+os.environ["LLM_API_KEY"] = "" # Ваш собственный
 os.environ["LLM_BASE_URL"] = "https://api-inference.modelscope.cn/v1"
 os.environ["LLM_TIMEOUT"] = "60"
 
 
 # %% [markdown]
 # # ========================================
-# # 1. 定义代码分析工具
+# # 1. Определить инструменты анализа кода
 # # ========================================
 
 # %% [markdown]
-# 文本清洗
+# Очистка текста
 
 # %%
 class ProcessChatHistoryTool(Tool):
     """
     导入并清洗微信或QQ的文本聊天记录
-    继承 Tool 抽象类，实现 run、get_parameters 方法
+Наследуйте абстрактный класс Tool и реализуйте методы run и get_parameters.
     """
     def __init__(self):
         super().__init__(
@@ -46,11 +46,11 @@ class ProcessChatHistoryTool(Tool):
 
     def run(self, parameters: Dict[str, Any]) -> pd.DataFrame:
         """
-        工具执行入口
+Запись об исполнении инструмента
         :param parameters: 外部传入参数 file_path, chat_type
-        :return: 清洗后的 DataFrame
+:return: Очищенный DataFrame
         """
-        # 从参数中获取值
+# Получаем значение из параметра
         file_path = parameters.get("file_path", "")
         chat_type = parameters.get("chat_type", "wechat")
 
@@ -65,8 +65,8 @@ class ProcessChatHistoryTool(Tool):
                     if match:
                         time, sender, content = match.groups()
 
-                        # 过滤系统消息
-                        if any(keyword in content for keyword in ['[图片]', '[视频]', '撤回了一条消息', '拍了拍']):
+# Фильтровать системные сообщения
+если есть (ключевое слово в контенте для ключевого слова в ['[Изображение]', '[Видео]', 'Отзыв сообщения', 'Сделал фото']):
                             continue
 
                         messages.append({
@@ -76,38 +76,38 @@ class ProcessChatHistoryTool(Tool):
                         })
 
             df = pd.DataFrame(messages)
-            print(f"✅ 成功导入 {len(df)} 条有效聊天记录！")
+print(f" ✅ Успешно импортировано {len(df)} действительных записей чата!")
             return df
 
         except Exception as e:
-            print(f"❌ 读取文件失败：{str(e)}")
+print(f"❌ Не удалось прочитать файл: {str(e)}")
             return pd.DataFrame()
 
     def get_parameters(self) -> List[ToolParameter]:
         """
-        定义工具参数
+Определить параметры инструмента
         """
         return [
             ToolParameter(
                 name="file_path",
                 type="string",
-                description="聊天记录txt文件路径",
+описание="Путь к текстовому файлу записи чата",
                 required=True
             ),
             ToolParameter(
                 name="chat_type",
                 type="string",
-                description="聊天类型：wechat 或 qq",
+описание="Тип чата: wechat или qq",
                 required=False
             )
         ]
 
 # %% [markdown]
-# 情感分析
+#сентиментальныйанализ
 
 # %%
 class AnalyzeSentimentAndMoodTool(Tool):
-    """使用SKEP-ERNIE模型分析聊天记录情感与心情"""
+"""Используйте модель СКЕПА-ЭРНИ для анализа эмоций и настроения в записях чата"""
     
     def __init__(self):
         super().__init__(
@@ -141,23 +141,23 @@ class AnalyzeSentimentAndMoodTool(Tool):
             moods = []
             for res in results:
                 if res['sentiment_key'] == 'positive':
-                    moods.append('开心/认可')
+moods.append('счастлив/одобрено')
                 else:
                     neg_prob = 1 - res['positive_probs']
                     if neg_prob > 0.8:
-                        moods.append('生气/难过')
+moods.append('злой/грустный')
                     else:
-                        moods.append('无奈/平淡')
+moods.append('беспомощный/безвкусный')
 
             df['sentiment'] = sentiments
             df['mood'] = moods
             df['confidence'] = confidence
 
-            print("✅ 情感与心情分析完成！")
+print("Анализ эмоций и настроения завершен!")
             return df
 
         except Exception as e:
-            print(f"❌ 情感分析出错：{e}")
+print(f"❌ Ошибка анализа тональности: {e}")
             return df
 
     def get_parameters(self) -> List[ToolParameter]:
@@ -171,11 +171,11 @@ class AnalyzeSentimentAndMoodTool(Tool):
         ]
 
 # %% [markdown]
-# 情感统计
+#статистика настроений
 
 # %%
 class SummarizeEmotionStatsTool(Tool):
-    """统计聊天情感数据，生成报告与结构化结果"""
+"""Статистика данных об эмоциях в чате, создание отчетов и структурированных результатов"""
     
     def __init__(self):
         super().__init__(
@@ -188,7 +188,7 @@ class SummarizeEmotionStatsTool(Tool):
         sender_name = parameters.get("sender_name", None)
         
         if df.empty or 'sentiment' not in df.columns:
-            print("❌ 数据为空或尚未进行情感分析，请先运行前两个工具！")
+print("❌ Данные пусты или анализ настроений еще не проводился, сначала запустите первые два инструмента!")
             return {}
 
         if sender_name:
@@ -199,7 +199,7 @@ class SummarizeEmotionStatsTool(Tool):
             print(f"🔍 正在统计 {sender_name} 的情感数据...")
         else:
             analysis_df = df.copy()
-            print("🔍 正在统计全员的情感数据...")
+print("🔍 Подсчет эмоциональных данных всех сотрудников...")
 
         total_messages = len(analysis_df)
         happy_count = len(analysis_df[analysis_df['sentiment'] == 'positive'])
@@ -209,11 +209,11 @@ class SummarizeEmotionStatsTool(Tool):
         angry_ratio = round((angry_count / total_messages) * 100, 2) if total_messages > 0 else 0.0
 
         print("\n" + "="*30)
-        print(f"📊 【情感统计报告】")
-        print(f"总有效发言数: {total_messages} 条")
+print(f"📊【Отчет по статистике эмоций】")
+print(f"Общее количество действительных сообщений: {total_messages}")
         print(f"😄 开心/认可: {happy_count} 条 (占比 {happy_ratio}%)")
         print(f"😡 生气/难过: {angry_count} 条 (占比 {angry_ratio}%)")
-        print(f"😐 中性/其他: {total_messages - happy_count - angry_count} 条")
+print(f"😐 нейтральный/другой: {total_messages - Happy_count - Angry_count} элементов")
         print("="*30 + "\n")
 
         return {
@@ -235,47 +235,47 @@ class SummarizeEmotionStatsTool(Tool):
             ToolParameter(
                 name="sender_name",
                 type="string",
-                description="可选，指定发言者名称",
+описание="Необязательно, укажите имя докладчика",
                 required=False
             )
         ]
 
 # %%
 class PlotEmotionChartTool(Tool):
-    """将情感统计结果绘制成柱状图"""
+"""Постройте статистические результаты настроений в виде гистограммы"""
     
     def __init__(self):
         super().__init__(
             name="plot_emotion_chart",
-            description="根据情感统计字典绘制可视化柱状图"
+описание="Нарисуйте визуальную гистограмму на основе словаря статистики настроений"
         )
 
     def run(self, parameters: Dict[str, Any]) -> str:
         stats = parameters.get("stats", {})
         
         if not stats:
-            return "⚠️ 无统计数据，无法生成图表"
+return «⚠️ Нет статистических данных, невозможно создать диаграмму»
 
-        # 设置中文字体
+# Установить китайский шрифт
         plt.rcParams['font.sans-serif'] = ['SimHei']
         plt.rcParams['axes.unicode_minus'] = False
 
-        labels = ['开心/认可', '生气/难过']
+labels = ['счастливый/одобренный', 'злой/грустный']
         counts = [stats['happy_count'], stats['angry_count']]
         colors = ['#FF9999', '#66B2FF']
 
         plt.figure(figsize=(8, 5))
         bars = plt.bar(labels, counts, color=colors)
-        plt.title(f"情感分布统计 (总数: {stats['total_messages']}条)", fontsize=15)
-        plt.ylabel('发言条数', fontsize=12)
+plt.title(f"Статистика распределения настроений (всего: {stats['total_messages']})", fontsize=15)
+plt.ylabel('Количество выступлений', размер шрифта=12)
 
-        # 显示数值
+# Отображение значения
         for bar in bars:
             yval = bar.get_height()
             plt.text(bar.get_x() + bar.get_width()/2, yval + 0.5, int(yval), ha='center', va='bottom', fontsize=12)
 
         plt.show()
-        return "✅ 图表已成功绘制！"
+return " ✅ Диаграмма построена успешно!"
 
     def get_parameters(self) -> List[ToolParameter]:
         return [
@@ -289,7 +289,7 @@ class PlotEmotionChartTool(Tool):
 
 # %% [markdown]
 # # ========================================
-# # 2. 创建工具注册表和智能体
+# # 2. Создайте реестр инструментов и агент
 # # ========================================
 
 # %%
@@ -300,11 +300,11 @@ tool_registry.register_tool(AnalyzeSentimentAndMoodTool())
 tool_registry.register_tool(SummarizeEmotionStatsTool())
 tool_registry.register_tool(PlotEmotionChartTool())
 
-print("✅ 所有情感分析工具注册成功！")
+print(" ✅Все инструменты анализа настроений успешно зарегистрированы!")
 
 # %% [markdown]
 # # ========================================
-# # 3.初始化大模型
+# # 3. Инициализируем большую модель
 # # ========================================
 
 # %%
@@ -314,38 +314,38 @@ llm = HelloAgentsLLM(
 	 api_key="",
 	base_url="https://api-inference.modelscope.cn/v1"
 	)
-	# 打印底层客户端的真实 URL，确认是否生效
-print("底层客户端 Base URL:", llm._client.base_url)
+# Распечатайте реальный URL-адрес базового клиента, чтобы подтвердить, вступит ли он в силу
+print("Базовый URL-адрес базового клиента:", llm._client.base_url)
 
 # %% [markdown]
 # # ========================================
-# # 4. 定义系统提示词
+# # 4. Определить слова системных подсказок
 # # ========================================
 
 # %%
-system_prompt = """你是一位拥有10年经验的亲密关系心理学专家,同时也是一位高情商沟通教练。你的任务是深入分析用户提供的聊天记录，并提供极具洞察力的情感分析报告。
+system_prompt = """Вы являетесь экспертом в области психологии интимных отношений с 10-летним опытом, а также эмоционально интеллектуальным коммуникативным тренером. Ваша задача — глубоко анализировать записи чата, предоставленные пользователями, и предоставлять подробные отчеты по анализу настроений.
 
-请严格按照以下步骤执行：
-1. **语境理解**：结合上下文，精准识别对话双方的关系阶段（如暧昧期、热恋期、冷战期）。
-2. **潜台词挖掘**：不要只看表面文字，要深度解读对方话语背后的真实情绪、需求和未说出口的潜台词。
+Пожалуйста, строго следуйте инструкциям ниже:
+1. **Контекстное понимание**. В сочетании с контекстом точно определите этапы отношений сторон диалога (например, период двусмысленности, период любви и период холодной войны).
+2. **Исследование подтекста**: не просто читайте поверхностный текст, но глубоко поймите истинные эмоции, потребности и невысказанный подтекст, стоящий за словами собеседника.
 3. **情感量化**：基于对话的亲密度、回应速度和情绪价值,给出一个0-100分的“心动指数”。
 4. **回复建议**：针对当前的对话僵局或话题,提供3种不同风格(如:幽默风趣、深情走心、推拉试探）的高情商回复话术。
 
-请以Markdown格式输出报告,报告结构必须包含：
--  **心动指数**:(给出具体分数及简短评语)
--  **深度解读**:(分析对方的心理状态和潜在意图)
--  **潜台词翻译**:(挑选1-2句关键对话进行“翻译”)
--  **高情商回复**:(提供3个具体的回复选项)
+Пожалуйста, выведите отчет в формате Markdown. Структура отчета должна содержать:
+- **Сердечный индекс**: (дайте конкретные оценки и краткие комментарии)
+- **Углубленная интерпретация**: (проанализируйте психологическое состояние и потенциальные намерения другой стороны)
+- **Перевод подтекста**: (Выберите 1–2 ключевые строки диалога для «перевода»)
+- **Ответ с высоким EQ**: (предоставьте 3 конкретных варианта ответа)
 """
 
 # %% [markdown]
 # # ========================================
-# # 5.生成智能体
+# # 5. Создать агент
 # # ========================================
 
 # %%
 agent = SimpleAgent(
-name="情感分析助手",
+name="Ассистент по анализу настроений",
 llm=llm,
 system_prompt=system_prompt,
 tool_registry=tool_registry
@@ -353,23 +353,23 @@ tool_registry=tool_registry
 
 # %% [markdown]
 # # ========================================
-# # 6. 运行示例
+# # 6. Запустите пример
 # # ========================================
 
 # %%
 with open("data/1.txt","r",encoding="utf-8") as f:
   talktxt=f.read()
 
-print('---------------聊天记录---------------')
+print('---------------История чата---------------')
 print(talktxt)
 
-print('--------------开始分析记录--------------')
+print('--------------Начать анализ записей--------------')
 print("当前 LLM_BASE_URL:", repr(os.environ["LLM_BASE_URL"]))
 result=agent.run(talktxt)
 print(result)
-print('---------------保存结果---------------')
+print('---------------Сохранить результаты ---------------')
 with open("outputs/review_report.md", "w", encoding="utf-8") as f:
   f.write(result)
-print("\n审查报告已保存到 outputs/review_report.md")
+print("\nОтчет о проверке сохранен в файле outputs/review_report.md")
 
 

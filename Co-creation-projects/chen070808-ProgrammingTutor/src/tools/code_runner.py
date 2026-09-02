@@ -6,15 +6,15 @@ from typing import Dict, Any
 
 class CodeRunner(Tool):
     """
-    安全执行 Python 代码并返回输出的工具。
-    警告：此工具使用 exec()，在生产环境中不安全。
-    对于真实产品，请使用 Docker 等沙箱环境。
+    Инструмент для безопасного выполнения Python-кода с возвратом вывода.
+    Предупреждение: этот инструмент использует exec() и небезопасен в production.
+    Для реального продукта используйте песочницу, например Docker.
     """
     
     def __init__(self):
         super().__init__(
             name="code_runner",
-            description="执行 Python 代码并返回标准输出/错误。输入应为包含 'code' 键的字典。"
+            description="Выполняет Python-код и возвращает stdout/stderr. Вход — словарь с ключом 'code'."
         )
 
     def get_parameters(self) -> Dict[str, Any]:
@@ -23,7 +23,7 @@ class CodeRunner(Tool):
             "properties": {
                 "code": {
                     "type": "string",
-                    "description": "要执行的 Python 代码片段"
+                    "description": "Фрагмент Python-кода для выполнения"
                 }
             },
             "required": ["code"]
@@ -32,21 +32,21 @@ class CodeRunner(Tool):
     def run(self, parameters: Dict[str, Any]) -> str:
         code = parameters.get("code", "")
         if not code:
-            return "错误：未提供代码。"
+            return "Ошибка: код не указан."
 
-        # 捕获标准输出和标准错误
+        # Перехват stdout и stderr
         stdout_capture = io.StringIO()
         stderr_capture = io.StringIO()
 
         try:
             with contextlib.redirect_stdout(stdout_capture), contextlib.redirect_stderr(stderr_capture):
-                # 创建受限的全局作用域
+                # Создание ограниченной глобальной области видимости
                 safe_globals = {
                     "__builtins__": __builtins__,
                     "print": print,
                     "range": range,
                     "len": len,
-                    # 根据需要添加更多安全的内置函数
+                    # При необходимости добавить другие безопасные встроенные функции
                 }
                 exec(code, safe_globals)
             
@@ -55,14 +55,14 @@ class CodeRunner(Tool):
             
             result = ""
             if output:
-                result += f"输出:\n{output}\n"
+                result += f"Вывод:\n{output}\n"
             if errors:
-                result += f"错误:\n{errors}\n"
+                result += f"Ошибка:\n{errors}\n"
             
             if not result:
-                result = "代码执行成功，无输出。"
+                result = "Код выполнен успешно, вывода нет."
                 
             return result
 
         except Exception as e:
-            return f"运行时错误: {str(e)}"
+            return f"Ошибка выполнения: {str(e)}"

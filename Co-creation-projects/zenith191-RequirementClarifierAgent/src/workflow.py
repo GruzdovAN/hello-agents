@@ -1,4 +1,4 @@
-"""需求澄清多智能体工作流。"""
+"""Мультиагентный workflow уточнения требований."""
 
 from __future__ import annotations
 
@@ -16,12 +16,12 @@ MAX_REQUIREMENT_LENGTH = 50_000
 
 
 class WorkflowExecutionError(RuntimeError):
-    """工作流输入或某个智能体阶段执行失败。"""
+    """Ошибка входа workflow или этапа агента."""
 
 
 @dataclass(frozen=True)
 class WorkflowResult:
-    """保留全部中间产物，便于追踪和测试。"""
+    """Сохраняет все промежуточные артефакты для трассировки и тестов."""
 
     requirement: str
     audit: dict[str, object]
@@ -33,14 +33,14 @@ class WorkflowResult:
 
 
 class RequirementClarifierWorkflow:
-    """协调四个 HelloAgents 智能体完成顺序协作。"""
+    """Координирует четыре агента HelloAgents в последовательной кооперации."""
 
     def __init__(self, team: AgentTeam, tool_registry: ToolRegistry) -> None:
         self.team = team
         self.tool_registry = tool_registry
 
     def run(self, requirement: str) -> WorkflowResult:
-        """执行确定性初检、三阶段分析、报告整合和结构质检。"""
+        """Выполняет первичную проверку, три этапа анализа, интеграцию отчёта и проверку структуры."""
 
         requirement = self._validate_requirement(requirement)
         self._clear_agent_histories()
@@ -50,38 +50,38 @@ class RequirementClarifierWorkflow:
             self._clear_agent_histories()
 
     def _run_validated(self, requirement: str) -> WorkflowResult:
-        """处理已校验的单次需求，调用方负责清理 Agent 历史。"""
+        """Обрабатывает проверенное требование; очистка истории — на стороне вызывающего."""
 
         audit = self._run_tool(
-            "requirement_audit", {"requirement_text": requirement}, "需求初检"
+            "requirement_audit", {"requirement_text": requirement}, "Первичная проверка"
         )
 
         analysis = self._run_agent(
-            "需求分析",
+            "Анализ требований",
             self.team.analyst,
-            "请分析以下原始需求，并参考确定性初检结果。\n\n"
+            "Проанализируй следующее исходное требование с учётом детерминированной первичной проверки.\n\n"
             f"{self._tagged('requirement', requirement)}\n\n"
             f"{self._tagged('audit', json.dumps(audit, ensure_ascii=False, indent=2))}",
         )
         architecture = self._run_agent(
-            "方案设计",
+            "Проектирование решения",
             self.team.architect,
-            "请根据原始需求和需求分析提出可交付的 MVP 技术方案。\n\n"
+            "На основе исходного требования и анализа предложи поставляемое MVP техническое решение.\n\n"
             f"{self._tagged('requirement', requirement)}\n\n"
             f"{self._tagged('analysis', analysis)}",
         )
         risk_review = self._run_agent(
-            "风险审查",
+            "Ревью рисков",
             self.team.reviewer,
-            "请独立审查以下需求分析和技术方案。\n\n"
+            "Независимо проверь следующий анализ требований и техническое решение.\n\n"
             f"{self._tagged('requirement', requirement)}\n\n"
             f"{self._tagged('analysis', analysis)}\n\n"
             f"{self._tagged('architecture', architecture)}",
         )
         report = self._run_agent(
-            "报告整合",
+            "Интеграция отчёта",
             self.team.synthesizer,
-            "请把以下材料整合为最终需求澄清与技术方案报告。\n\n"
+            "Объедини следующие материалы в финальный отчёт уточнения требований и технического решения.\n\n"
             f"{self._tagged('requirement', requirement)}\n\n"
             f"{self._tagged('audit', json.dumps(audit, ensure_ascii=False, indent=2))}\n\n"
             f"{self._tagged('analysis', analysis)}\n\n"
@@ -90,7 +90,7 @@ class RequirementClarifierWorkflow:
         )
 
         quality = self._run_tool(
-            "report_quality_check", {"report_text": report}, "报告质检"
+            "report_quality_check", {"report_text": report}, "Проверка отчёта"
         )
 
         return WorkflowResult(
@@ -105,7 +105,7 @@ class RequirementClarifierWorkflow:
 
     @staticmethod
     def save_report(result: WorkflowResult, output_path: str | Path) -> Path:
-        """以 UTF-8 保存最终 Markdown 报告。"""
+        """Сохраняет финальный Markdown-отчёт в UTF-8."""
 
         path = Path(output_path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -115,13 +115,13 @@ class RequirementClarifierWorkflow:
     @staticmethod
     def _validate_requirement(requirement: str) -> str:
         if not isinstance(requirement, str):
-            raise WorkflowExecutionError("需求必须是字符串")
+            raise WorkflowExecutionError("Требование должно быть строкой")
         requirement = requirement.strip()
         if not requirement:
-            raise WorkflowExecutionError("需求不能为空")
+            raise WorkflowExecutionError("Требование не может быть пустым")
         if len(requirement) > MAX_REQUIREMENT_LENGTH:
             raise WorkflowExecutionError(
-                f"需求文本不能超过 {MAX_REQUIREMENT_LENGTH} 个字符"
+                f"Текст требования не может превышать {MAX_REQUIREMENT_LENGTH} символов"
             )
         return requirement
 
@@ -130,37 +130,37 @@ class RequirementClarifierWorkflow:
         try:
             response = agent.run(prompt)
         except Exception as exc:
-            raise WorkflowExecutionError(f"{stage}阶段执行失败：{exc}") from exc
+            raise WorkflowExecutionError(f"Этап «{stage}» завершился с ошибкой: {exc}") from exc
         if not isinstance(response, str) or not response.strip():
-            raise WorkflowExecutionError(f"{stage}阶段返回了空结果")
+            raise WorkflowExecutionError(f"Этап «{stage}» вернул пустой результат")
         return response.strip()
 
     def _run_tool(
         self, name: str, parameters: dict[str, object], stage: str
     ) -> dict[str, object]:
-        """通过官方 ToolRegistry 获取工具并解析其字符串协议。"""
+        """Получает инструмент через ToolRegistry и парсит строковый протокол."""
 
         tool = self.tool_registry.get_tool(name)
         if tool is None:
-            raise WorkflowExecutionError(f"{stage}失败：工具 {name} 未注册")
+            raise WorkflowExecutionError(f"{stage}: инструмент {name} не зарегистрирован")
         try:
             raw_result = tool.run(parameters)
         except Exception as exc:
-            raise WorkflowExecutionError(f"{stage}失败：工具执行异常：{exc}") from exc
+            raise WorkflowExecutionError(f"{stage}: ошибка выполнения инструмента: {exc}") from exc
         try:
             payload = json.loads(raw_result)
         except (TypeError, ValueError) as exc:
-            raise WorkflowExecutionError(f"{stage}失败：工具返回的不是有效 JSON") from exc
+            raise WorkflowExecutionError(f"{stage}: инструмент вернул не JSON") from exc
         if not isinstance(payload, dict):
-            raise WorkflowExecutionError(f"{stage}失败：工具结果必须是 JSON 对象")
+            raise WorkflowExecutionError(f"{stage}: результат инструмента должен быть JSON-объектом")
         if not payload.get("ok"):
             raise WorkflowExecutionError(
-                f"{stage}失败：{payload.get('message', '未知工具错误')}"
+                f"{stage}: {payload.get('message', 'неизвестная ошибка инструмента')}"
             )
         return payload
 
     def _clear_agent_histories(self) -> None:
-        """避免多次运行时把上一条需求带入下一条需求。"""
+        """Не переносить предыдущее требование в следующий запуск."""
 
         for agent in (
             self.team.analyst,
@@ -174,6 +174,6 @@ class RequirementClarifierWorkflow:
 
     @staticmethod
     def _tagged(tag: str, content: str) -> str:
-        """转义不可信内容，防止内容伪造工作流边界标签。"""
+        """Экранирует недоверенный контент, чтобы не подделать границы workflow."""
 
         return f"<{tag}>\n{escape(content, quote=False)}\n</{tag}>"

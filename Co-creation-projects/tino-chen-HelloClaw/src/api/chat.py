@@ -1,4 +1,4 @@
-"""聊天 API 路由"""
+"""Маршрутизация API чата"""
 import json
 from typing import Optional
 from fastapi import APIRouter
@@ -9,26 +9,26 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 class ChatRequest(BaseModel):
-    """聊天请求"""
+    """запрос в чат"""
     message: str
     session_id: Optional[str] = None
 
 
 class ChatResponse(BaseModel):
-    """聊天响应"""
+    """Ответ в чате"""
     content: str
     session_id: Optional[str] = None
 
 
 def get_agent():
-    """获取全局 Agent 实例"""
+    """Получить глобальный экземпляр агента"""
     from ..main import get_agent as _get_agent
     return _get_agent()
 
 
 @router.post("/send/sync", response_model=ChatResponse)
 async def send_message_sync(request: ChatRequest):
-    """发送消息并获取同步响应"""
+    """Отправьте сообщение и получите синхронный ответ"""
     agent = get_agent()
     if not agent:
         return ChatResponse(content="Agent not initialized", session_id=request.session_id)
@@ -39,18 +39,17 @@ async def send_message_sync(request: ChatRequest):
 
 @router.post("/send/stream")
 async def send_message_stream(request: ChatRequest):
-    """发送消息并获取流式响应 (SSE)
+    """Отправьте сообщение и получите потоковый ответ (SSE)
 
-    事件类型：
-    - session: 会话信息（包含 session_id）
-    - step_start: 步骤开始
-    - chunk: LLM 文本块
-    - tool_start: 工具调用开始
-    - tool_finish: 工具调用结束
-    - step_finish: 步骤结束
-    - done: 完成
-    - error: 错误
-    """
+    Тип события:
+    - сеанс: информация о сеансе (включая session_id)
+    -step_start: начало шага
+    - чанк: текстовый блок LLM
+    -tool_start: запуск инструмента
+    -tool_finish: вызов инструмента завершается
+    -step_finish: конец шага
+    - сделано: завершено
+    - ошибка: ошибка"""
 
     async def event_generator():
         agent = get_agent()
@@ -66,9 +65,11 @@ async def send_message_stream(request: ChatRequest):
                 event_type = event.type.value
                 event_data = event.data
 
-                # 处理不同类型的事件
+                # Обрабатывать разные типы событий
+
                 if event_type == "agent_start":
-                    # 发送会话信息
+                    # Отправить информацию о сеансе
+
                     session_id = getattr(agent, '_current_session_id', None)
                     yield {
                         "event": "session",
@@ -76,7 +77,8 @@ async def send_message_stream(request: ChatRequest):
                     }
 
                 elif event_type == "step_start":
-                    # 步骤开始
+                    # Начало шага
+
                     yield {
                         "event": "step_start",
                         "data": json.dumps({
@@ -86,7 +88,8 @@ async def send_message_stream(request: ChatRequest):
                     }
 
                 elif event_type == "llm_chunk":
-                    # LLM 文本块
+                    # Текстовый блок LLM
+
                     chunk = event_data.get("chunk", "")
                     yield {
                         "event": "chunk",
@@ -94,7 +97,8 @@ async def send_message_stream(request: ChatRequest):
                     }
 
                 elif event_type == "tool_call_start":
-                    # 工具调用开始
+                    # Начинается вызов инструмента
+
                     yield {
                         "event": "tool_start",
                         "data": json.dumps({
@@ -104,7 +108,8 @@ async def send_message_stream(request: ChatRequest):
                     }
 
                 elif event_type == "tool_call_finish":
-                    # 工具调用结束
+                    # Вызов инструмента завершается
+
                     yield {
                         "event": "tool_finish",
                         "data": json.dumps({
@@ -114,7 +119,8 @@ async def send_message_stream(request: ChatRequest):
                     }
 
                 elif event_type == "step_finish":
-                    # 步骤结束
+                    # Конец шага
+
                     yield {
                         "event": "step_finish",
                         "data": json.dumps({
@@ -123,7 +129,8 @@ async def send_message_stream(request: ChatRequest):
                     }
 
                 elif event_type == "agent_finish":
-                    # Agent 完成，保存会话
+                    # Агент завершает работу, сохраните сеанс
+
                     session_id = agent.save_current_session()
                     final_content = event_data.get("result", "")
 
@@ -154,5 +161,5 @@ async def send_message_stream(request: ChatRequest):
 
 @router.post("/send")
 async def send_message(request: ChatRequest):
-    """发送消息（暂返回同步响应）"""
+    """Отправить сообщение (временно вернуть синхронный ответ)"""
     return await send_message_sync(request)

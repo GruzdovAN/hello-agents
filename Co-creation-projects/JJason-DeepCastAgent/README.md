@@ -1,176 +1,176 @@
 # DeepCast
 
-> 你的私人 AI 播客制作人：从深度研究到音频节目的全自动化引擎
+> Ваш личный ИИ-продюсер подкастов: от глубокого исследования до аудиопрограммы на автомате
 
-## 📝 项目简介
+## 📝 О проекте
 
-**DeepCast** 是一个基于 [HelloAgents](https://github.com/datawhalechina/Hello-Agents) 框架构建的自动化播客生成智能体。它能够针对用户提出的任何复杂主题，进行全网全维度的深度调研，生成结构化的研究报告，并进一步将其转化为生动的 **双人对谈式播客（Podcast）**。
+**DeepCast** — агент (Agent) автоматической генерации подкастов на [HelloAgents](https://github.com/datawhalechina/Hello-Agents). По любой сложной теме он проводит всестороннее веб-исследование, формирует структурированный отчёт и превращает его в живой **диалог двух ведущих (Podcast)**.
 
-DeepCast 旨在解决现代人在海量碎片化信息中难以获取深度知识的问题。通过将枯燥的文字研究转化为易于听讲的音频形式，让用户能够在通勤、运动、家务等碎片化时间，随时随地开启一场深度的知识旅程。
+Цель — помочь получать глубокие знания из потока коротких фрагментов: сухой текст становится аудио для дороги, спорта, быта.
 
-## ✨ 核心功能
+## ✨ Основные возможности
 
-- [X] **深度全网调研**：自动拆解复杂课题，利用混合搜索（Tavily + SerpApi）进行多轮实时信息检索与总结。
-- [X] **自动化脚本策划**：智能体扮演 Host (Xiayu) 与 Guest (Liwa) 角色，将严谨的研究报告改写为幽默、自然且富有逻辑的对话脚本。
-- [X] **高品质语音合成**：集成 ECNU-TTS 模型，生成具备角色个性化特征的逼真语音。
-- [X] **一键流式合成**：自动处理音频拼接与合成，提供前端流式进度感知，从任务提交到音频下载实现全流程自动化。
+- [X] **Глубокое веб-исследование**: разбор темы, гибридный поиск (Tavily + SerpApi), несколько раундов актуальной информации и сводок.
+- [X] **Автоматический сценарий**: агенты Host (Xiayu) и Guest (Liwa) переписывают отчёт в естественный, логичный и с юмором диалог.
+- [X] **Качественный синтез речи**: ECNU-TTS с индивидуальными голосами ролей.
+- [X] **Склейка в один поток**: склейка аудио, прогресс на фронтенде — от задачи до скачивания MP3.
 
-## 🛠️ 技术栈
+## 🛠️ Стек технологий
 
-- **智能体框架**: [HelloAgents](https://github.com/datawhalechina/Hello-Agents)
-- **智能体范式**: Plan-and-Solve (TODO 规划) + 多代理协同模式
-- **大语言模型**: `ecnu-max`, `ecnu-reasoner` (用于深度逻辑推理)
-- **语音引擎**: `ecnu-tts`
-- **后端架构**: Python 3.10+, FastAPI, Loguru
-- **前端架构**: Vue 3, Vite, TypeScript, Tailwind CSS
-- **搜索增强**: Tavily API, SerpApi (Google Hybrid Search)
-- **音频处理**: Pydub, FFmpeg
+- **Фреймворк агентов**: [HelloAgents](https://github.com/datawhalechina/Hello-Agents)
+- **Парадигма**: Plan-and-Solve (планирование TODO) + кооперация нескольких агентов
+- **Большие языковые модели**: `ecnu-max`, `ecnu-reasoner` (глубокие рассуждения)
+- **Синтез речи**: `ecnu-tts`
+- **Бэкенд**: Python 3.10+, FastAPI, Loguru
+- **Фронтенд**: Vue 3, Vite, TypeScript, Tailwind CSS
+- **Поиск**: Tavily API, SerpApi (гибрид Google)
+- **Аудио**: Pydub, FFmpeg
 
-## 🧭 项目结构说明
+## 🧭 Структура проекта
 
 ```
 .
-├─ backend/                        # 后端服务（FastAPI + 研究智能体）
-│  ├─ src/                         # 核心业务源码
-│  │  ├─ main.py                   #   FastAPI 入口 & SSE 流式接口
-│  │  ├─ agent.py                  #   DeepResearchAgent 核心编排器
-│  │  ├─ config.py                 #   配置中心（环境变量 / LLM / TTS）
-│  │  ├─ models.py                 #   Pydantic 数据模型（TodoItem, SummaryState 等）
-│  │  ├─ prompts.py                #   所有 Agent 的系统提示词模板
-│  │  ├─ utils.py                  #   通用工具函数
-│  │  └─ services/                 #   解耦的业务服务层
-│  │     ├─ planner.py             #     研究规划（课题拆解为 TodoItem）
-│  │     ├─ search.py              #     混合搜索（Tavily + SerpApi）
-│  │     ├─ summarizer.py          #     单任务搜索结果摘要
-│  │     ├─ reporter.py            #     综合研究报告生成
-│  │     ├─ script_generator.py    #     报告 → 双人对谈脚本
-│  │     ├─ audio_generator.py     #     TTS 逐句语音合成
-│  │     ├─ audio_synthesizer.py   #     FFmpeg 多段音频拼接
-│  │     ├─ notes.py               #     笔记持久化 & 索引管理
-│  │     ├─ text_processing.py     #     文本清洗与预处理
-│  │     └─ tool_events.py         #     工具调用事件处理
-│  ├─ scripts/                     # 开发 & 验证脚本
-│  │  ├─ verify_ecnu_llm.py        #   验证 LLM 连通性
-│  │  ├─ verify_ecnu_tts.py        #   验证 TTS 服务
-│  │  ├─ verify_ffmpeg.py          #   检查 FFmpeg 可用性
-│  │  ├─ verify_search.py          #   测试搜索 API
-│  │  ├─ test_agent_workflow.py    #   端到端工作流测试
-│  │  └─ test_audio_generator.py   #   音频生成单元测试
-│  ├─ output/                      # 运行时输出（.gitignore）
-│  │  ├─ notes/                    #   Markdown 笔记 + notes_index.json
-│  │  └─ audio/                    #   逐句 MP3 + 最终 podcast_*.mp3
-│  ├─ env.example                  # 环境变量模板
-│  ├─ pyproject.toml               # Python 项目元数据 & 依赖
-│  └─ requirements.txt             # pip 依赖清单
-├─ frontend/                       # 前端应用（Vue 3 + Vite + TypeScript）
+├─ backend/                        # Бэкенд (FastAPI + исследовательский агент)
+│  ├─ src/                         # Основной код
+│  │  ├─ main.py                   #   Точка входа FastAPI и SSE-поток
+│  │  ├─ agent.py                  #   Оркестратор DeepResearchAgent
+│  │  ├─ config.py                 #   Конфигурация (env / LLM / TTS)
+│  │  ├─ models.py                 #   Модели Pydantic (TodoItem, SummaryState и др.)
+│  │  ├─ prompts.py                #   Системные промпты агентов
+│  │  ├─ utils.py                  #   Общие утилиты
+│  │  └─ services/                 #   Слой сервисов
+│  │     ├─ planner.py             #     План исследования (тема → TodoItem)
+│  │     ├─ search.py              #     Гибридный поиск (Tavily + SerpApi)
+│  │     ├─ summarizer.py          #     Сводка по одной подзадаче поиска
+│  │     ├─ reporter.py            #     Итоговый отчёт
+│  │     ├─ script_generator.py    #     Отчёт → диалог двух ведущих
+│  │     ├─ audio_generator.py     #     Пофразовый TTS
+│  │     ├─ audio_synthesizer.py   #     Склейка сегментов через FFmpeg
+│  │     ├─ notes.py               #     Заметки и индекс
+│  │     ├─ text_processing.py     #     Очистка и подготовка текста
+│  │     └─ tool_events.py         #     События вызовов инструментов
+│  ├─ scripts/                     # Скрипты разработки и проверки
+│  │  ├─ verify_ecnu_llm.py        #   Проверка LLM
+│  │  ├─ verify_ecnu_tts.py        #   Проверка TTS
+│  │  ├─ verify_ffmpeg.py          #   Наличие FFmpeg
+│  │  ├─ verify_search.py          #   Тест поисковых API
+│  │  ├─ test_agent_workflow.py    #   E2E-тест workflow
+│  │  └─ test_audio_generator.py   #   Юнит-тест генерации аудио
+│  ├─ output/                      # Вывод при работе (.gitignore)
+│  │  ├─ notes/                    #   Markdown-заметки + notes_index.json
+│  │  └─ audio/                    #   MP3 по фразам + итог podcast_*.mp3
+│  ├─ env.example                  # Шаблон переменных окружения
+│  ├─ pyproject.toml               # Метаданные и зависимости Python
+│  └─ requirements.txt             # Список pip-зависимостей
+├─ frontend/                       # Фронтенд (Vue 3 + Vite + TypeScript)
 │  ├─ src/
-│  │  ├─ App.vue                   #   根组件（状态管理 & 事件路由）
-│  │  ├─ main.ts                   #   Vue 应用入口
-│  │  ├─ style.css                 #   全局样式（Tailwind CSS + DaisyUI）
-│  │  ├─ components/               #   页面组件
-│  │  │  ├─ SetupView.vue          #     主题输入 & 启动界面
-│  │  │  ├─ ProductionView.vue     #     制作流程（进度步骤 + 终端日志）
-│  │  │  ├─ PlayerView.vue         #     黑胶唱片播放器 & 报告阅读器
-│  │  │  └─ TerminalLog.vue        #     macOS 风格实时日志终端
+│  │  ├─ App.vue                   #   Корневой компонент (состояние и маршрутизация)
+│  │  ├─ main.ts                   #   Точка входа Vue
+│  │  ├─ style.css                 #   Глобальные стили (Tailwind CSS + DaisyUI)
+│  │  ├─ components/               #   Компоненты страниц
+│  │  │  ├─ SetupView.vue          #     Ввод темы и старт
+│  │  │  ├─ ProductionView.vue     #     Процесс (шаги + терминал)
+│  │  │  ├─ PlayerView.vue         #     Проигрыватель и чтение отчёта
+│  │  │  └─ TerminalLog.vue        #     Терминал логов в стиле macOS
 │  │  └─ services/
-│  │     └─ api.ts                 #   SSE 流式通信（fetch + ReadableStream）
-│  ├─ index.html                   # HTML 入口
-│  ├─ vite.config.ts               # Vite 构建 & 代理配置
-│  ├─ tsconfig.json                # TypeScript 配置
-│  └─ package.json                 # 前端依赖 & 脚本
-├─ .github/                        # GitHub 配置
-│  └─ copilot-instructions.md      #   Copilot 编码指引
-└─ README.md                       # 本文件
+│  │     └─ api.ts                 #   SSE (fetch + ReadableStream)
+│  ├─ index.html                   # HTML-вход
+│  ├─ vite.config.ts               # Сборка Vite и прокси
+│  ├─ tsconfig.json                # TypeScript
+│  └─ package.json                 # Зависимости и скрипты фронтенда
+├─ .github/                        # Конфигурация GitHub
+│  └─ copilot-instructions.md      #   Подсказки для Copilot
+└─ README.md                       # Этот файл
 ```
 
-### 数据流转路径
+### Поток данных
 
 ```
-用户输入主题
-  → PlanningService（smart_llm）→ TodoItem[] 任务列表
-  → [并行工作线程] SearchTool → SummarizationService（fast_llm）
+Ввод темы пользователем
+  → PlanningService（smart_llm）→ список задач TodoItem[]
+  → [параллельные потоки] SearchTool → SummarizationService（fast_llm）
   → ReportingService（smart_llm）→ report.md
-  → ScriptGenerationService（fast_llm）→ 双人对话脚本
+  → ScriptGenerationService（fast_llm）→ сценарий диалога
   → AudioGenerationService → PodcastSynthesisService → podcast.mp3
 ```
 
-## 🚀 快速开始
+## 🚀 Быстрый старт
 
-### 环境要求
+### Требования
 
 - Python 3.10+
 - Node.js 18+
-- **FFmpeg**: 必须安装并配置到系统环境变量，或在 `.env` 中指定绝对路径。
+- **FFmpeg**: в PATH или абсолютный путь в `.env`.
 
-### 1. 安装依赖
+### 1. Установка зависимостей
 
-**后端**:
+**Бэкенд**:
 
 ```bash
 cd backend
-# 推荐使用 uv 包管理器
+# Рекомендуется uv
 uv sync
-# 或使用 pip
+# или pip
 pip install -r requirements.txt
 ```
 
-**前端**:
+**Фронтенд**:
 
 ```bash
 cd frontend
 npm install
 ```
 
-### 2. 配置环境变量
+### 2. Переменные окружения
 
-在 `backend` 目录下创建 `.env` 文件（可参考 `env.example`）：
+В каталоге `backend` создайте `.env` (шаблон `env.example`):
 
 ```bash
 cp env.example .env
 ```
 
-**关键配置项说明**：
+**Ключевые параметры**:
 
-- `LLM_API_KEY`: ECNU 模型 API 密钥。
-- `TTS_API_KEY`: ECNU TTS 服务密钥。
-- `TAVILY_API_KEY` / `SERP_API_KEY`: 搜索服务密钥（至少配置一项）。
-- `FFMPEG_PATH`: 如果 FFmpeg 未加入环境变量，请填入其可执行文件的绝对路径。
+- `LLM_API_KEY`: ключ API моделей ECNU.
+- `TTS_API_KEY`: ключ ECNU TTS.
+- `TAVILY_API_KEY` / `SERP_API_KEY`: поиск (хотя бы один).
+- `FFMPEG_PATH`: если FFmpeg не в PATH — полный путь к исполняемому файлу.
 
-### 3. 运行项目
+### 3. Запуск
 
-**启动后端**:
+**Бэкенд**:
 
 ```bash
 cd backend
 uv run src/main.py
 ```
 
-**启动前端**:
+**Фронтенд**:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-访问 `http://localhost:5174` 即可开始使用。
+Откройте `http://localhost:5174`.
 
-## 📖 使用示例
+## 📖 Примеры использования
 
-### 通过 Web 界面
+### Через веб-интерфейс
 
-在前端界面输入你想研究的主题，例如：
+Введите тему, например:
 
-> "量子计算在 2024 年有哪些重大突破？"
+> «Какие прорывы в квантовых вычислениях были в 2024 году?»
 
-DeepCast 将依次执行：
+DeepCast выполнит:
 
-1. **任务规划**：拆解知识点。
-2. **深度搜索**：在全球范围内寻找最新研究。
-3. **撰写报告**：生成一份详细的 Markdown 文档。
-4. **生成脚本**：将报告转化为 Xiayu 和 Liwa 的对话。
-5. **合成音频**：调用 TTS 生成并拼接成最终的 MP3 文件。
+1. **Планирование** — разбор на подтемы.
+2. **Глубокий поиск** — свежие материалы по миру.
+3. **Отчёт** — подробный Markdown.
+4. **Сценарий** — диалог Xiayu и Liwa.
+5. **Аудио** — TTS и финальный MP3.
 
-### 通过 Python 代码
+### Через Python
 
 ```python
 from agent import DeepResearchAgent
@@ -179,47 +179,47 @@ from config import Configuration
 config = Configuration.from_env()
 agent = DeepResearchAgent(config=config)
 
-# 流式模式 —— 逐步获取每个阶段的进度事件
-for event in agent.run_stream("人工智能 Agent 的五大核心性质"):
+# Потоковый режим — события прогресса по этапам
+for event in agent.run_stream("Пять ключевых свойств AI Agent"):
     if event["type"] == "final_report":
-        print("📄 报告已生成：", event["report"][:100], "...")
+        print("📄 Отчёт готов:", event["report"][:100], "...")
     elif event["type"] == "podcast_ready":
-        print("🎙️ 播客已就绪：", event["file"])
+        print("🎙️ Подкаст готов:", event["file"])
     elif event["type"] == "log":
         print(event["message"])
 ```
 
-## 🎯 项目亮点
+## 🎯 Сильные стороны
 
-- **从文字到声音的跨越**：不仅提供干货，更提供沉浸式的听觉体验。
-- **多代理协作闭环**：通过规划、研究、总结、改写、合成五个专业 Agent 透明协作。
-- **混合搜索策略**：结合 Tavily 的语义检索和 SerpApi 的海量数据，确保信息的时效性与准确性。
-- **强大的角色人格**：生成的脚本并非简单的朗读，而是具有好奇主持人与渊博专家的角色性格映射。
+- **От текста к звуку**: не только факты, но и погружение на слух.
+- **Замкнутый цикл агентов**: планирование, исследование, сводка, адаптация, синтез — прозрачно.
+- **Гибридный поиск**: семантика Tavily и объём SerpApi — актуальность и точность.
+- **Характеры ролей**: не зачитывание отчёта, а диалог любознательного ведущего и эксперта.
 
-## 📊 性能评估
+## 📊 Оценка производительности
 
-- **搜索准确度**：基于 ECNU-Reasoner 的深度分析，信息召回率较普通搜索提升 40% 以上。
-- **生成效率**：从万字调研到 5 分钟优质播客，全程自动化耗时约 2-3 分钟（视网络及并发而定）。
+- **Точность поиска**: с ECNU-Reasoner полнота выше обычного поиска более чем на 40%.
+- **Скорость**: от десятков тысяч знаков исследования до ~5 минут подкаста за 2–3 минуты автоматизации (сеть и параллелизм).
 
-## 🔮 未来计划
+## 🔮 Планы
 
-- [ ] 支持更多音色和情感控制插件。
-- [ ] 丰富播客背景音乐（BGM）和氛围音效库。
-- [ ] 接入多模态能力，支持生成播客视频（播客短视频剪辑）。
-- [ ] 支持用户上传个人私有知识库进行定制化研究。
+- [ ] Больше голосов и контроль эмоций.
+- [ ] Фоновая музыка (BGM) и звуковые эффекты.
+- [ ] Мультимодальность: короткие видео из подкаста.
+- [ ] Загрузка личной базы знаний для кастомных исследований.
 
-## 🤝 贡献指南
+## 🤝 Как внести вклад
 
-欢迎提出Issue和Pull Request！
+Issues и Pull Request приветствуются!
 
-## 📄 许可证
+## 📄 Лицензия
 
 MIT License
 
-## 👤 作者
+## 👤 Автор
 
 - GitHub: [JJason-DeepCastAgent](https://github.com/JJasonSun/hello-agents)
 
-## 🙏 致谢
+## 🙏 Благодарности
 
-感谢Datawhale社区和Hello-Agents项目！
+Сообществу Datawhale и проекту Hello-Agents!

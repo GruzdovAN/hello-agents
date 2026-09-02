@@ -1,5 +1,5 @@
 # core/file_manager.py
-"""文件管理器 - 统一管理 ~/.learningAgent/ 下的所有文件操作"""
+"""Файловый менеджер - унифицированное управление всеми файловыми операциями в ~/.learningAgent/"""
 
 from pathlib import Path
 from datetime import datetime
@@ -9,35 +9,35 @@ from utils.exceptions import FileReadError, FileWriteError
 
 class FileManager:
     """
-    统一管理 ~/.learningAgent/ 下的所有文件操作
+Унифицированное управление всеми файловыми операциями в ~/.learningAgent/
 
     Attributes:
-        BASE_DIR: 基础目录路径
+BASE_DIR: путь к базовому каталогу.
     """
 
     BASE_DIR = Path.home() / ".learningAgent"
 
     def __init__(self):
-        """初始化文件管理器，确保基础目录存在"""
+"""Инициализируйте файловый менеджер и убедитесь, что базовый каталог существует"""
         self.ensure_structure()
 
     def ensure_structure(self) -> None:
-        """确保基础目录结构存在"""
+"""Убедитесь, что базовая структура каталогов существует"""
         self.BASE_DIR.mkdir(exist_ok=True)
 
     def create_domain(self, domain: str) -> None:
         """
-        创建新的学习领域目录
+Создать новый каталог учебных территорий
 
         Args:
-            domain: 领域名称
+домен: доменное имя
         """
         domain_path = self.BASE_DIR / domain
         domain_path.mkdir(exist_ok=True)
         (domain_path / "knowledge").mkdir(exist_ok=True)
         (domain_path / "sessions").mkdir(exist_ok=True)
 
-        # 创建空的 summary 文件
+# Создаем пустой файл сводки
         (domain_path / "knowledge" / "knowledge_summary.md").write_text(
             "# 知识总结\n\n> 暂无知识笔记\n", encoding="utf-8"
         )
@@ -47,11 +47,11 @@ class FileManager:
 
     def save_plan(self, domain: str, plan_content: str) -> None:
         """
-        保存学习计划
+Сохранить план обучения
 
         Args:
-            domain: 领域名称
-            plan_content: 计划内容（markdown格式）
+домен: доменное имя
+plan_content: содержимое плана (формат уценки)
         """
         plan_path = self.BASE_DIR / domain / "plan.md"
         try:
@@ -61,12 +61,12 @@ class FileManager:
 
     def save_knowledge(self, domain: str, filename: str, content: str) -> None:
         """
-        保存知识笔记
+Сохраняйте заметки по знаниям
 
         Args:
-            domain: 领域名称
-            filename: 文件名
-            content: 文件内容
+домен: доменное имя
+имя файла: имя файла
+содержимое: содержимое файла
         """
         knowledge_path = self.BASE_DIR / domain / "knowledge" / filename
         try:
@@ -76,14 +76,14 @@ class FileManager:
 
     def save_session(self, domain: str, session_content: str) -> Path:
         """
-        保存单次学习会话记录
+Сохраняйте записи отдельных сеансов обучения
 
         Args:
-            domain: 领域名称
-            session_content: 会话内容
+домен: доменное имя
+session_content: содержимое сеанса
 
         Returns:
-            保存的文件路径
+Сохраненный путь к файлу
         """
         date = datetime.now().strftime("%Y-%m-%d")
         time = datetime.now().strftime("%H-%M")
@@ -92,22 +92,22 @@ class FileManager:
         try:
             session_path.write_text(session_content, encoding="utf-8")
         except Exception as e:
-            raise FileWriteError(f"无法保存会话记录：{e}")
+поднять FileWriteError(f «Невозможно сохранить запись сеанса: {e}»)
 
         return session_path
 
     def read_plan(self, domain: str) -> str:
         """
-        读取学习计划
+Чтение учебного плана
 
         Args:
-            domain: 领域名称
+домен: доменное имя
 
         Returns:
-            计划内容
+Планирование контента
 
         Raises:
-            FileNotFoundError: 如果计划不存在
+FileNotFoundError: если план не существует
         """
         plan_path = self.BASE_DIR / domain / "plan.md"
         if not plan_path.exists():
@@ -120,22 +120,22 @@ class FileManager:
 
     def domain_exists(self, domain: str) -> bool:
         """
-        检查领域是否存在
+Проверьте, существует ли область
 
         Args:
-            domain: 领域名称
+домен: доменное имя
 
         Returns:
-            是否存在
+существует
         """
         return (self.BASE_DIR / domain).exists()
 
     def list_domains(self) -> List[str]:
         """
-        列出所有学习领域
+Перечислите все направления обучения
 
         Returns:
-            领域名称列表
+Список названий сфер
         """
         if not self.BASE_DIR.exists():
             return []

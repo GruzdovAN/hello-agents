@@ -1,10 +1,10 @@
 """
-妙想 API 本地 Fixture（原始 JSON 回放）
+Локальное приспособление Miaoxiang API (исходное воспроизведение JSON)
 
 修前端/解析逻辑时设置 MX_REPLAY_FIXTURES=1，可将已成功请求保存为 JSON，
-按 query 哈希命中文件则不再发起网络请求，节省妙想额度。
+Если файл попадает в соответствии с хэшем запроса, сетевые запросы больше не будут инициироваться, что экономит кредит Miaoxiang.
 
-用法见 backend/scripts/capture_mx_fixture.py
+Информацию об использовании см. в backend/scripts/capture_mx_fixture.py.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ def fixture_path(channel: str, query: str) -> Path:
 
 
 def try_load_raw_fixture(channel: str, query: str) -> Optional[dict[str, Any]]:
-    """回放模式且文件存在时返回妙想原始响应 dict，否则 None"""
+"""Возвращает исходный ответ Мяосян в режиме воспроизведения и файл существует, в противном случае - нет"""
     if not settings.MX_REPLAY_FIXTURES:
         return None
     path = fixture_path(channel, query)

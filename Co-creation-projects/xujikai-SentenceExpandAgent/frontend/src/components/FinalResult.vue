@@ -1,26 +1,26 @@
 <!--
-最终结果组件
-显示润色后的满分版本
+最终Результат组件
+显示润色后的Идеальная версия
 -->
 <template>
   <div class="final-result">
     <div class="result-header">
       <span class="icon">🏆</span>
-      <h2 class="title">满分版本</h2>
+      <h2 class="title">Идеальная версия</h2>
     </div>
 
     <div class="result-content">
-      <p class="seed-label">原始句子：</p>
+      <p class="seed-label">Исходное предложение: </p>
       <p class="seed-text">{{ seedSentence }}</p>
 
       <div class="divider"></div>
 
-      <p class="final-label">润色后：</p>
+      <p class="final-label">После редактуры: </p>
       <p class="final-text">{{ polishedSentence }}</p>
     </div>
 
     <button class="restart-btn" @click="handleRestart">
-      🔄 开始新的扩写
+      🔄 Новое расширение
     </button>
   </div>
 </template>

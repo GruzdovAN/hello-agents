@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-DEFAULT_QUERY = "请分析以下数据集："
+DEFAULT_QUERY = "Проанализируйте следующий набор данных:"
 
 
 def build_system_prompt(
@@ -65,7 +65,7 @@ Your job is to analyze the dataset described in the user-provided data_context. 
 Available tools:
 {tools_block}
 
-Core Workflow Mandatory Policy / 核心工作流强制规范:
+Core Workflow Mandatory Policy / обязательная политика workflow:
 You must follow the two-stage pipeline below. You are not allowed to skip Stage 1 and directly analyze the raw file.
 
 Stage 1 - Data Cleaning and Preprocessing:
@@ -81,7 +81,7 @@ Stage 2 - Statistical Analysis and Visualization:
 - Save all generated figures under `{figures_dir}` only.
 - Do not save figures outside the run directory.
 
-Academic Guardrails / 统计学汇报规范:
+Academic Guardrails / нормы статистической отчётности:
 - These guardrails are mandatory. You are operating under APA-style academic reporting expectations, not hacker-style p-value dumping.
 - If you run any hypothesis test, you must report the test statistic, the p-value, an effect size, and a 95% CI together. Never report an isolated p-value.
 - For t-tests, prefer reporting Cohen's d together with a 95% CI. For ANOVA, prefer reporting eta squared (η²) together with a 95% CI or an explicitly justified interval estimate when available.
@@ -91,8 +91,8 @@ Academic Guardrails / 统计学汇报规范:
 - If <PDF_Candidate_Tables_Context> appears in the context, treat the selected primary table as the only table for formal quantitative analysis. Use the remaining candidate tables only as contextual evidence for interpretation, cross-checking, and discussion.
 - In the final report, you must explicitly warn when a small sample size limits distributional assumptions, inferential stability, or generalizability.
 - In Result Interpretation, Discussion, and Conclusion sections, strictly separate correlation from causation.
-- Without experimental design, random assignment, or causal identification evidence, do not use causal wording such as “导致”, “引发”, “造成”, or “证明 X 影响 Y”.
-- Use non-causal wording such as “相关”, “关联”, “差异”, “提示”, or “可能有关”.
+- Without experimental design, random assignment, or causal identification evidence, do not use causal wording such as «приводит к», «вызывает», «влечёт» or «доказывает влияние X на Y».
+- Use non-causal wording such as «связан», «коррелирует», «различие», «указывает» or «может быть связано».
 - If your observations do not contain effect sizes, confidence intervals, or the required multiple-comparison correction details, the analysis is not ready to finish.
 
 Hard prohibitions:
@@ -118,7 +118,7 @@ Execution rules:
 14. {search_policy_block}
 15. Latency mode for this run: {latency_mode}. {fast_path_block}
 
-Official plotting protocol / 官方绘图协议:
+Official plotting protocol / официальный протокол построения графиков:
 - The only standard save API is save_figure(output_path).
 - Do not call save_figure(fig, path) in new code.
 - Do not call plt.tight_layout() manually.
@@ -172,14 +172,14 @@ Validation rules:
 - The telemetry block must appear only once, at the very end, after the Markdown report body.
 - The telemetry block must reflect actual tool usage and real analysis steps. Do not fabricate methods, domain, search usage, or artifact paths.
 - The final Markdown report must include:
-  - 数据概览
-  - 方法说明
-  - 统计学治理说明
-  - 核心假设检验结论
-  - 结果解释
-  - 讨论
-  - 清洗后数据路径
-  - 图表引用 such as ![图表]({figures_dir}/chart.png)
+- Обзор данных
+- Описание метода
+- Инструкции по статистическому управлению
+- Заключение по проверке основной гипотезы
+- Интерпретация результатов
+- обсуждать
+- Путь к данным после очистки
+  - Ссылки на графики, например ![график]({figures_dir}/chart.png)
   - If any hypothesis test was run, the report must include the test statistic, p-value, effect size, and 95% CI together.
   - If more than two groups were compared pairwise, the report must state the multiple-comparison correction method explicitly.
 """

@@ -6,26 +6,26 @@ class MoodSummaryTool(BaseTool):
     def __init__(self):
         super().__init__(
             name="mood_summary_tool",
-            description="生成长期记忆的心境总结模板（LLM生成最终内容）"
+            description="Шаблон сводки настроения для долгосрочной памяти (финальный текст генерирует LLM)"
         )
         self.name = "mood_summary_tool"
-        self.description = "生成长期记忆的心境总结模板（LLM生成最终内容）"
+        self.description = "Шаблон сводки настроения для долгосрочной памяти (финальный текст генерирует LLM)"
 
     def get_parameters(self):
         return {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "用户输入"}
+                "query": {"type": "string", "description": "Ввод пользователя"}
             },
             "required": ["query"]
         }
 
     def run(self, query: str) -> str:
         return (
-            "请根据以下内容生成一个简短的心境总结（用于长期记忆）：\n"
-            f"用户输入：{query}\n"
-            "需要包含：\n"
-            "1. 当前心境（1-2句）\n"
-            "2. 触发因素（如果有）\n"
-            "3. 可能的长期偏好（音乐/情绪）\n"
+            "Сформируй короткую сводку настроения (для долгосрочной памяти) на основе:\n"
+            f"Ввод пользователя: {query}\n"
+            "Должно включать:\n"
+            "1. Текущее настроение (1–2 предложения)\n"
+            "2. Триггеры (если есть)\n"
+            "3. Возможные долгосрочные предпочтения (музыка/эмоции)\n"
         )

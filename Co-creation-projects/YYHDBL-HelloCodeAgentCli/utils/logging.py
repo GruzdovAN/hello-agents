@@ -1,4 +1,4 @@
-"""日志工具"""
+"""Утилиты логирования"""
 
 import logging
 import sys
@@ -10,15 +10,15 @@ def setup_logger(
     format_string: Optional[str] = None
 ) -> logging.Logger:
     """
-    设置日志记录器
+    Настраивает логгер
     
     Args:
-        name: 日志记录器名称
-        level: 日志级别
-        format_string: 日志格式
+        name: Имя логгера
+        level: Уровень логирования
+        format_string: Формат сообщений
         
     Returns:
-        配置好的日志记录器
+        Настроенный логгер
     """
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level.upper()))
@@ -35,5 +35,5 @@ def setup_logger(
     return logger
 
 def get_logger(name: str = "hello_agents") -> logging.Logger:
-    """获取日志记录器"""
+    """Возвращает логгер"""
     return logging.getLogger(name)

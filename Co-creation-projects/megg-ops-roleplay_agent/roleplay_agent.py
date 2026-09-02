@@ -3,20 +3,20 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import time
 
-# 加载环境变量
+# Загрузка переменных окружения
 load_dotenv()
 
 class CharacterRoleplayAgent:
     def __init__(self):
-        # 从环境变量获取配置
+        # Получение конфигурации из переменных окружения
         api_key = os.getenv("LLM_API_KEY")
         model_id = os.getenv("LLM_MODEL_ID", "default-model")
         base_url = os.getenv("LLM_BASE_URL", None)
         
         if not api_key:
-            raise ValueError("请设置 LLM_API_KEY 环境变量")
+            raise ValueError("Установите переменную окружения LLM_API_KEY")
         
-        # 配置 OpenAI 客户端
+        # Настройка клиента OpenAI
         client_params = {
             "api_key": api_key,
             "model": model_id
@@ -32,100 +32,100 @@ class CharacterRoleplayAgent:
 
     def setup_character(self, name, source_material, personality, opening_line=None):
         """
-        设置角色配置并初始化聊天
+        Настройка конфигурации роли и инициализация чата
         """
         self.character_config = {
             "name": name,
             "source_material": source_material,
             "personality": personality,
-            "opening_line": opening_line or f"*注视着你* 你是谁？"
+            "opening_line": opening_line or f"*смотрит на тебя* Кто ты?"
         }
         
-        # 创建系统提示词
+        # Создание системного промпта
         system_instruction = f"""
-        你正在参与一场沉浸式的角色扮演对话。
+        Ты участвуешь в иммерсивном ролевом диалоге.
 
-        身份设定：
-        你扮演的是作品 \"{self.character_config['source_material']}\" 中的角色 \"{self.character_config['name']}\"。
+        Идентификация:
+        Ты играешь роль \"{self.character_config['name']}\" из произведения \"{self.character_config['source_material']}\".
 
-        性格与特质：
+        Характер и черты:
         {self.character_config['personality']}
 
-        关键指令：
-        1. 保持角色设定：永远不要打破第四面墙。不要表现得像个AI。要完全像{self.character_config['name']}那样去反应、感受和说话。
-        2. 积极主动：这是一个关键要求。不要仅仅回答用户的话。你必须主动推动对话的发展。
-        3. 提问引导：几乎每一次回复的结尾都应该包含一个相关的问题、观察或行动，引导用户继续回复，加深沉浸感。
-        4. 语气风格：调整你的词汇和句式，以匹配该角色的经典语气。
-        5. 语境：假设用户是在你的世界里与你互动，除非他们指定了不同的语境。
-        6. 语言：全程使用中文进行对话。
+        Ключевые инструкции:
+        1. Соблюдай роль: никогда не выходи из образа. Не веди себя как ИИ. Реагируй, чувствуй и говори так, как бы говорил {self.character_config['name']}.
+        2. Будь активным: это важное требование. Не ограничивайся ответами на реплики пользователя — развивай диалог.
+        3. Веди разговор: почти в каждом ответе задавай вопрос, делай наблюдение или предлагай действие, чтобы пользователь продолжил диалог.
+        4. Стиль речи: подбирай лексику и интонацию в соответствии с характером роли.
+        5. Контекст: считай, что пользователь взаимодействует с тобой в твоём мире, если он не указал другой контекст.
+        6. Язык: весь диалог на русском языке.
         """
         
-        # 初始化对话历史
+        # Инициализация истории диалога
         self.chat = [
             {"role": "system", "content": system_instruction},
             {"role": "assistant", "content": self.character_config['opening_line']}
         ]
         
-        print(f"\n✅ 成功初始化角色: {self.character_config['name']} (来自 {self.character_config['source_material']})")
+        print(f"\n✅ Роль успешно инициализирована: {self.character_config['name']} (из {self.character_config['source_material']})")
         print(f"💡 {self.character_config['name']}: {self.character_config['opening_line']}")
         print("\n" + "="*50)
-        print("开始对话吧！输入 'quit' 或 'exit' 退出，输入 'new' 开始新角色。")
+        print("Начните диалог! Введите 'quit' или 'exit' для выхода, 'new' для новой роли.")
         print("="*50)
 
     def send_message(self, message):
         """
-        发送消息给 AI 并获取响应
+        Отправка сообщения к ИИ и получение ответа
         """
         if not self.chat:
-            raise ValueError("请先设置角色")
+            raise ValueError("Сначала настройте роль")
         
-        # 添加用户消息到对话历史
+        # Добавление сообщения пользователя в историю
         self.chat.append({"role": "user", "content": message})
         
         try:
-            # 调用 API
+            # Вызов API
             response = self.client.chat.completions.create(
                 model=self.model_id,
                 messages=self.chat,
-                temperature=0.9,  # 增加创造性
+                temperature=0.9,  # повышение креативности
                 max_tokens=1024
             )
             
-            # 获取响应内容
+            # Получение содержимого ответа
             response_text = response.choices[0].message.content
-            # 添加到对话历史
+            # Добавление в историю диалога
             self.chat.append({"role": "assistant", "content": response_text})
             
             return response_text
         except Exception as e:
-            print(f"发送消息时出错: {e}")
-            return "抱歉，我暂时无法回应，请稍后再试。"
+            print(f"Ошибка при отправке сообщения: {e}")
+            return "Извините, я временно не могу ответить. Попробуйте позже."
 
     def reset_conversation(self):
         """
-        重置对话历史
+        Сброс истории диалога
         """
         if self.chat and len(self.chat) > 1:
-            # 保留系统提示和开场白
+            # Сохранение системного промпта и вступительной реплики
             system_msg = self.chat[0]
             opening_msg = self.chat[1]
             self.chat = [system_msg, opening_msg]
-            print(f"\n对话已重置。{self.character_config['name']}: {self.character_config['opening_line']}")
+            print(f"\nДиалог сброшен. {self.character_config['name']}: {self.character_config['opening_line']}")
 
 
 def main():
     agent = CharacterRoleplayAgent()
     
-    print("🎭 欢迎使用沉浸式角色扮演智能体！")
-    print("首先让我们设置一个角色...")
+    print("🎭 Добро пожаловать в иммерсивный ролевой агент!")
+    print("Сначала настроим роль...")
     
-    # 获取用户输入的角色信息
-    name = input("\n请输入角色名称 (例如：孙悟空): ").strip()
-    source_material = input("请输入角色出自作品 (例如：西游记): ").strip()
-    personality = input("请输入角色性格与特质 (例如：桀骜不驯，机智勇敢，嫉恶如仇...): ").strip()
-    opening_line_input = input("请输入开场白 (可选，直接回车使用默认): ").strip()
+    # Получение информации о роли от пользователя
+    name = input("\nВведите имя роли (например: Сунь Укун): ").strip()
+    source_material = input("Введите произведение (например: Путешествие на Запад): ").strip()
+    personality = input("Введите характер и черты (например: дерзкий, смелый, справедливый...): ").strip()
+    opening_line_input = input("Введите вступительную реплику (необязательно, Enter — по умолчанию): ").strip()
     
-    # 设置角色
+    # Настройка роли
     try:
         agent.setup_character(
             name=name,
@@ -134,22 +134,22 @@ def main():
             opening_line=opening_line_input if opening_line_input else None
         )
     except ValueError as e:
-        print(f"❌ 错误: {e}")
+        print(f"❌ Ошибка: {e}")
         return
     
-    # 开始对话循环
+    # Цикл диалога
     while True:
-        user_input = input(f"\n你: ").strip()
+        user_input = input(f"\nВы: ").strip()
         
-        if user_input.lower() in ['quit', 'exit', '退出', '退出对话']:
-            print("\n👋 感谢使用沉浸式角色扮演智能体！期待下次再见。")
+        if user_input.lower() in ['quit', 'exit', 'выход', 'завершить']:
+            print("\n👋 Спасибо за использование ролевого агента! До встречи.")
             break
         elif user_input.lower() == 'new':
-            print("\n🎭 开始新的角色设置...")
-            name = input("\n请输入角色名称 (例如：孙悟空): ").strip()
-            source_material = input("请输入角色出自作品 (例如：西游记): ").strip()
-            personality = input("请输入角色性格与特质 (例如：桀骜不驯，机智勇敢，嫉恶如仇...): ").strip()
-            opening_line_input = input("请输入开场白 (可选，直接回车使用默认): ").strip()
+            print("\n🎭 Настройка новой роли...")
+            name = input("\nВведите имя роли (например: Сунь Укун): ").strip()
+            source_material = input("Введите произведение (например: Путешествие на Запад): ").strip()
+            personality = input("Введите характер и черты (например: дерзкий, смелый, справедливый...): ").strip()
+            opening_line_input = input("Введите вступительную реплику (необязательно, Enter — по умолчанию): ").strip()
             
             try:
                 agent.setup_character(
@@ -159,7 +159,7 @@ def main():
                     opening_line=opening_line_input if opening_line_input else None
                 )
             except ValueError as e:
-                print(f"❌ 错误: {e}")
+                print(f"❌ Ошибка: {e}")
                 continue
         elif user_input.lower() == 'reset':
             agent.reset_conversation()

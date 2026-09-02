@@ -1,6 +1,6 @@
 """
-统一检索接口：retrieve(user_id, query_context)。
-优先 Milvus 语义检索，不可用时回退 SQL 文本记忆。
+Единый интерфейс поиска: get(user_id, query_context).
+Отдайте приоритет семантическому поиску Milvus, возвращаясь к текстовой памяти SQL, когда она недоступна.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from rag.milvus_store import search
 
 def _build_query_text(query_context: Dict[str, Any]) -> str:
     if not query_context:
-        return "健康记忆检索"
+вернуть «Восстановление здоровой памяти»
     keys = [
         "goal",
         "query",
@@ -63,7 +63,7 @@ def retrieve(user_id: str, query_context: Dict[str, Any], top_k: int | None = No
             for r in rows[:k]
         ]
 
-    summary = "\n".join([f"- [{c['source_type']}] {c['text']}" for c in chunks[:k]]) or "（暂无检索结果）"
+summary = "\n".join([f"- [{c['source_type']}] {c['text']}" for c in chunks[:k]]) или "(Результатов поиска пока нет)"
     source_breakdown = dict(Counter([c.get("source_type", "unknown") for c in chunks]))
     ms = int((time.perf_counter() - t0) * 1000)
     return {

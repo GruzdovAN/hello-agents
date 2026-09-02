@@ -1,6 +1,6 @@
 """
-数据库Agent助手 - 测试脚本
-用于测试各个组件的功能
+Агент-помощник для базы данных — тестовый скрипт
+Для проверки работы отдельных компонентов
 """
 import os
 from dotenv import load_dotenv
@@ -12,37 +12,37 @@ load_dotenv()
 
 
 def test_database_connection():
-    """测试数据库连接"""
+    """Проверить подключение к базе данных"""
     print("=" * 60)
-    print("测试1: 数据库连接")
+    print("Тест 1: Подключение к базе данных")
     print("=" * 60)
     
     db_config = DatabaseConfig()
     
     if not db_config.validate():
-        print("❌ 数据库配置不完整")
+        print("❌ Конфигурация базы данных неполная")
         return False
     
-    print(f"配置信息: {db_config.get_connection_string()}")
+    print(f"Информация о конфигурации: {db_config.get_connection_string()}")
     
     oracle_tool = OracleQueryTool(db_config)
     
     if oracle_tool.connect():
-        print("✅ 数据库连接成功")
+        print("✅ Подключение к базе данных успешно")
         schema_info = oracle_tool.get_schema_info()
-        print("\n数据库表结构:")
+        print("\nСтруктура таблиц базы данных:")
         print(schema_info)
         oracle_tool.disconnect()
         return True
     else:
-        print("❌ 数据库连接失败")
+        print("❌ Не удалось подключиться к базе данных")
         return False
 
 
 def test_sql_generation():
-    """测试SQL生成功能"""
+    """Проверить генерацию SQL"""
     print("\n" + "=" * 60)
-    print("测试2: SQL生成")
+    print("Тест 2: Генерация SQL")
     print("=" * 60)
     
     try:
@@ -51,29 +51,29 @@ def test_sql_generation():
         sql_generator = SQLGeneratorTool(llm)
         
         test_queries = [
-            "查询所有员工信息",
-            "查询工资大于5000的员工",
-            "统计各部门的员工数量"
+            "Получить информацию обо всех сотрудниках",
+            "Найти сотрудников с зарплатой больше 5000",
+            "Подсчитать количество сотрудников по отделам"
         ]
         
         for query in test_queries:
-            print(f"\n自然语言: {query}")
-            sql = sql_generator.generate_sql(query, "表 EMPLOYEES: ID (NUMBER), NAME (VARCHAR2), SALARY (NUMBER), DEPARTMENT (VARCHAR2)")
-            print(f"生成的SQL: {sql}")
+            print(f"\nЕстественный язык: {query}")
+            sql = sql_generator.generate_sql(query, "Таблица EMPLOYEES: ID (NUMBER), NAME (VARCHAR2), SALARY (NUMBER), DEPARTMENT (VARCHAR2)")
+            print(f"Сгенерированный SQL: {sql}")
             
             is_valid, msg = sql_generator.validate_sql(sql)
-            print(f"验证结果: {msg}")
+            print(f"Результат проверки: {msg}")
         
         return True
     except Exception as e:
-        print(f"❌ SQL生成测试失败: {e}")
+        print(f"❌ Тест генерации SQL не пройден: {e}")
         return False
 
 
 def test_agent_query():
-    """测试Agent查询功能"""
+    """Проверить запросы через агента"""
     print("\n" + "=" * 60)
-    print("测试3: Agent查询")
+    print("Тест 3: Запрос через агента")
     print("=" * 60)
     
     try:
@@ -82,7 +82,7 @@ def test_agent_query():
         db_config = DatabaseConfig()
         
         if not db_config.validate():
-            print("❌ 数据库配置不完整")
+            print("❌ Конфигурация базы данных неполная")
             return False
         
         agent = DatabaseAgent(
@@ -92,39 +92,39 @@ def test_agent_query():
             max_steps=5
         )
         
-        test_query = "查询所有员工的信息"
-        print(f"\n测试查询: {test_query}")
+        test_query = "Получить информацию обо всех сотрудниках"
+        print(f"\nТестовый запрос: {test_query}")
         result = agent.run(test_query)
-        print(f"\n查询结果:\n{result}")
+        print(f"\nРезультат запроса:\n{result}")
         
         return True
     except Exception as e:
-        print(f"❌ Agent查询测试失败: {e}")
+        print(f"❌ Тест запроса через агента не пройден: {e}")
         return False
 
 
 def main():
-    """运行所有测试"""
-    print("🧪 数据库Agent助手 - 测试套件")
+    """Запустить все тесты"""
+    print("🧪 Агент-помощник для базы данных — тестовый набор")
     print("=" * 60)
     
     results = []
     
-    results.append(("数据库连接", test_database_connection()))
-    results.append(("SQL生成", test_sql_generation()))
-    results.append(("Agent查询", test_agent_query()))
+    results.append(("Подключение к базе данных", test_database_connection()))
+    results.append(("Генерация SQL", test_sql_generation()))
+    results.append(("Запрос через агента", test_agent_query()))
     
     print("\n" + "=" * 60)
-    print("测试结果汇总")
+    print("Сводка результатов тестов")
     print("=" * 60)
     
     for test_name, result in results:
-        status = "✅ 通过" if result else "❌ 失败"
+        status = "✅ Пройден" if result else "❌ Не пройден"
         print(f"{test_name}: {status}")
     
     passed = sum(1 for _, result in results if result)
     total = len(results)
-    print(f"\n总计: {passed}/{total} 测试通过")
+    print(f"\nИтого: {passed}/{total} тестов пройдено")
 
 
 if __name__ == "__main__":

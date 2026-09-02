@@ -1,5 +1,5 @@
 """
-多 Agent 饮食流水线：各阶段固定输出 Schema（Pydantic v2）。
+Многоагентный конвейер приема: фиксированная схема вывода на каждом этапе (Pydantic v2).
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ class NutritionSummary(BaseModel):
 
 
 class FoodParseOutput(BaseModel):
-    """饮食日志解析：由 LLM 从自由文本抽取食物条目并估算营养。"""
+"""Разбор журнала питания: извлечение записей о еде из произвольного текста и оценка питания с помощью LLM."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -65,7 +65,7 @@ class MealPlan(BaseModel):
 
 
 class NutritionistOutput(BaseModel):
-    """营养师 Agent：缺口与检索方向。"""
+"""Агент диетолога: пробелы и направления поиска."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -89,7 +89,7 @@ class NutritionistOutput(BaseModel):
 
 
 class CoachOutput(BaseModel):
-    """运动恢复 Coach：时间与恢复约束。"""
+"""Спортивный тренер по восстановлению: ограничения по времени и восстановлению."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -100,7 +100,7 @@ class CoachOutput(BaseModel):
 
 
 class HabitOutput(BaseModel):
-    """习惯 Agent：对齐 Reflect + 最终可执行菜单。"""
+"""Агент привычки: выравнивание отражения + финальное исполняемое меню."""
 
     model_config = ConfigDict(extra="forbid")
 

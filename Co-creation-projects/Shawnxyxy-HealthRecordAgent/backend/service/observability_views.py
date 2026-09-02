@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 
 def build_diet_observability(row: Dict[str, Any]) -> Dict[str, Any]:
-    """`get_diet_run` 返回的 row。"""
+"""Строка, возвращаемая `get_diet_run`."""
     out = row.get("output") or {}
     steps: List[Dict[str, Any]] = row.get("steps_trace") or []
     timeline: List[Dict[str, Any]] = []
@@ -60,7 +60,7 @@ def build_diet_observability(row: Dict[str, Any]) -> Dict[str, Any]:
             "supported": True,
             "method": "POST",
             "path_template": "/api/diet/runs/{run_id}/replay",
-            "note": "使用同一份 input 重新跑流水线，生成新 run_id；Mock 工具确定性较高，LLM 输出仍可能不同。",
+"note": "Используйте те же входные данные для повторного запуска конвейера и создания нового run_id; инструмент Mock более надежен, и выходные данные LLM могут все равно отличаться.",
         },
     }
 

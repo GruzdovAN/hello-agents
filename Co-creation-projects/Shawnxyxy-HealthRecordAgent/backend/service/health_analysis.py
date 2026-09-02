@@ -1,6 +1,6 @@
 """
-健康分析工作流服务
-负责串联多个 Agent，完成一次完整的健康报告分析
+Службы рабочих процессов аналитики здоровья
+Отвечает за последовательное подключение нескольких агентов для выполнения полного анализа отчетов о состоянии.
 """
 
 import asyncio
@@ -25,7 +25,7 @@ class HealthAnalysisService:
     def __init__(self, task_id: str | None = None, user_id: str | None = None):
         self.task_id = task_id or str(uuid4())
         self.user_id = user_id
-        # 任务初始化
+# Инициализация задачи
         create_task(self.task_id, user_id=user_id)
 
         self.planner = PlannerAgent(task_id=self.task_id)
@@ -35,7 +35,7 @@ class HealthAnalysisService:
         self.report_agent = ReportAgent(task_id=self.task_id)
 
     def _bundle_agent_traces(self, limit_per_agent: int = 80) -> Dict[str, Any]:
-        """阶段 3：各 Agent 的 trace 切片落库。"""
+"""Этап 3: фрагменты трассировки каждого агента помещаются в базу данных."""
         pairs = [
             ("PlannerAgent", self.planner),
             ("HealthIndicatorAgent", self.indicator_agent),
@@ -54,15 +54,15 @@ class HealthAnalysisService:
 
     async def run(self, report_text: str, user_id: str) -> Dict[str, Any]:
         """
-        执行完整的健康分析流程
+Выполните полный процесс анализа состояния здоровья
         """
 
-        # 1.任务规划
+№ 1. Планирование миссии
         update_agent_state(self.task_id, "PlannerAgent", "running")
-        plan_result = await self.planner.run({"goal": f"分析以下体检报告并制定执行计划：\n{report_text}"})
+plan_result = await self.planner.run({"goal": f"Проанализировать следующий отчет о физическом осмотре и сформулировать план выполнения:\n{report_text}"})
         update_agent_state(self.task_id, "PlannerAgent", "completed")
 
-        # 2.健康指标分析
+# 2. Анализ показателей здоровья
         update_agent_state(self.task_id, "HealthIndicatorAgent", "running")
         indicator_result = await self.indicator_agent.run({
             "report_text": report_text,
@@ -70,7 +70,7 @@ class HealthAnalysisService:
         })
         update_agent_state(self.task_id, "HealthIndicatorAgent", "completed", partial_report={"indicator_results": indicator_result})
 
-        # 3. 风险评估
+№ 3. Оценка рисков
         update_agent_state(self.task_id, "RiskAssessmentAgent", "running")
         risk_result = await self.risk_agent.run({
             "indicator_results": indicator_result
@@ -83,12 +83,12 @@ class HealthAnalysisService:
             {
                 "scenario": "health_report_analysis",
                 "risk_focus": str(risk_result.get("overall_risk_level", "")),
-                "query": "历史体检变化与执行反馈",
+"query": "Исторические изменения физического обследования и отзывы о реализации",
             },
         )
         retrieved_memory = rag_result.get("summary", "（暂无召回记忆）")
 
-        # 4. 健康建议生成
+# 4. Создание рекомендаций по вопросам здоровья
         update_agent_state(self.task_id, "AdviceAgent", "running")
         advice_result = await self.advice_agent.run({
             "risk_assessment": risk_result,
@@ -97,7 +97,7 @@ class HealthAnalysisService:
         update_agent_state(self.task_id, "AdviceAgent", "completed", partial_report={"advice": advice_result})
 
 
-        # 5. 报告汇总
+# 5. Краткое содержание отчета
         update_agent_state(self.task_id, "ReportAgent", "running")
         final_report = await self.report_agent.run({
             "indicators": indicator_result,
@@ -126,12 +126,12 @@ class HealthAnalysisService:
 
         return self.task_id
 
-# ---------- 临时本地验证入口 ----------
+# ---------- Временная запись локальной аутентификации ----------
 
 async def _demo():
     demo_text = """
-        男性，28岁，BMI 27.3，血压 145/95 mmHg，
-        总胆固醇 6.2 mmol/L，空腹血糖 6.1 mmol/L。
+Мужчина, 28 лет, ИМТ 27,3, АД 145/95 мм рт. ст.,
+Общий холестерин составил 6,2 ммоль/л, а глюкоза в крови натощак – 6,1 ммоль/л.
         """
 
     workflow = HealthAnalysisService(user_id="local-demo-user")

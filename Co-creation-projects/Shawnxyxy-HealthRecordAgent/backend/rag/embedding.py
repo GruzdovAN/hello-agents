@@ -1,5 +1,5 @@
 """
-Embedding 封装。默认使用 OpenAI 兼容 embedding 接口。
+Встраивание инкапсуляции. По умолчанию используется интерфейс внедрения, совместимый с OpenAI.
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 def _hash_embedding(text: str, dim: int = 64) -> List[float]:
     """
-    本地兜底 embedding（仅在外部 embedding 失败时使用）。
-    目的不是高质量召回，而是保证流程可运行。
+Локальное резервное внедрение (используется только в случае сбоя внешнего внедрения).
+Целью является не качественный отзыв, а обеспечение работоспособности процесса.
     """
     digest = hashlib.sha256(text.encode("utf-8")).digest()
     vals: List[float] = []

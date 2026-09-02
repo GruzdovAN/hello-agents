@@ -1,6 +1,6 @@
 """
-InnoCore AI 洞察专家 (Miner Agent)
-核心大脑。负责阅读、理解、检索历史库、对比分析并生成报告
+InnoCore AI Insight Expert (Агент майнера)
+Основной мозг. Отвечает за чтение, понимание, поиск в исторических базах данных, сравнительный анализ и составление отчетов.
 """
 
 import asyncio
@@ -15,19 +15,19 @@ from core.vector_store import vector_store_manager
 from core.exceptions import AgentException
 
 class MinerAgent(BaseAgent):
-    """洞察专家智能体"""
+"""Эксперт-агент Insight"""
     
     def __init__(self, llm=None):
         super().__init__("Miner", llm)
         
-        # 添加工具
+# Добавить инструменты
         self.add_tool("parse_pdf", self._parse_pdf, "解析PDF文件")
-        self.add_tool("search_memory", self._search_memory, "搜索记忆库")
+self.add_tool("search_memory", self._search_memory, "поиск в памяти")
         self.add_tool("compare_papers", self._compare_papers, "对比论文")
-        self.add_tool("generate_report", self._generate_report, "生成分析报告")
+self.add_tool("generate_report", self._generate_report, "Создать аналитический отчет")
     
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """执行论文分析和创新点挖掘任务"""
+"""Выполнение бумажного анализа и задач по поиску инноваций"""
         await self.validate_input(input_data)
         
         self.set_state("running")
@@ -37,30 +37,30 @@ class MinerAgent(BaseAgent):
             user_id = input_data.get("user_id")
             analysis_type = input_data.get("analysis_type", "full")  # full, quick, innovation_only
             
-            # 获取论文信息
+# Получить информацию о бумаге
             paper = await db_manager.get_paper(paper_id)
             if not paper:
                 raise AgentException(f"论文不存在: {paper_id}")
             
             self._add_to_history(f"开始分析论文: {paper['title']}")
             
-            # 1. 解析PDF内容
+# 1. Анализ PDF-контента
             parsed_content = await self._parse_paper_content(paper)
             
-            # 2. 检索相关历史论文
+# 2. Найдите соответствующие исторические документы
             related_papers = await self._find_related_papers(
                 paper["title"], 
                 paper["abstract"], 
                 user_id
             )
             
-            # 3. 进行对比分析
+№3. Провести сравнительный анализ
             comparison_result = await self._perform_comparison_analysis(
                 parsed_content, 
                 related_papers
             )
             
-            # 4. 生成分析报告
+# 4. Создать отчет об анализе
             report = await self._create_analysis_report(
                 paper, 
                 parsed_content, 
@@ -69,10 +69,10 @@ class MinerAgent(BaseAgent):
                 user_id
             )
             
-            # 5. 保存报告到数据库
+# 5. Сохраняем отчет в базу данных
             report_id = await self._save_analysis_report(paper_id, report, user_id)
             
-            # 6. 更新向量库
+# 6. Обновить векторную библиотеку
             await self._update_vector_store(paper_id, paper, parsed_content, user_id)
             
             self.set_state("completed")
@@ -100,14 +100,14 @@ class MinerAgent(BaseAgent):
             raise AgentException(f"Miner Agent执行失败: {str(e)}")
     
     def get_required_fields(self) -> List[str]:
-        """获取必需的输入字段"""
+"""Получить необходимые поля ввода"""
         return ["paper_id"]
     
     async def _parse_paper_content(self, paper: Dict) -> Dict[str, Any]:
-        """解析论文内容"""
+"""Проанализируйте содержание статьи"""
         file_path = paper.get("file_path")
         if not file_path:
-            # 如果没有PDF文件，使用标题和摘要
+# Если PDF-файла нет, используйте заголовок и краткое описание
             return {
                 "title": paper.get("title", ""),
                 "abstract": paper.get("abstract", ""),
@@ -122,14 +122,14 @@ class MinerAgent(BaseAgent):
                 "parsing_method": "metadata_only"
             }
         
-        # 这里应该使用专门的PDF解析库
-        # 暂时返回模拟的结构化内容
+#Здесь следует использовать специальную библиотеку синтаксического анализа PDF-файлов.
+# Временно возвращаем смоделированный структурированный контент
         return await self._extract_structured_content(file_path)
     
     async def _extract_structured_content(self, file_path: str) -> Dict[str, Any]:
-        """提取结构化内容"""
+"""Извлечение структурированного контента"""
         try:
-            # 这里应该集成Nougat或PyMuPDF进行深度解析
+# Сюда следует интегрировать Nougat или PyMuPDF для углубленного анализа.
             # 暂时返回模拟数据
             mock_content = {
                 "title": "Sample Paper Title",
@@ -158,9 +158,9 @@ class MinerAgent(BaseAgent):
             }
     
     async def _find_related_papers(self, title: str, abstract: str, user_id: str = None) -> List[Dict]:
-        """查找相关论文"""
+"""Найти похожие статьи"""
         try:
-            # 构建查询
+# Построить запрос
             query = f"{title} {abstract}"
             
             # 执行混合搜索
@@ -172,7 +172,7 @@ class MinerAgent(BaseAgent):
                 include_l2=bool(user_id)
             )
             
-            # 获取详细论文信息
+# Получите подробную информацию о бумаге
             related_papers = []
             for result in search_results:
                 payload = result["payload"]
@@ -193,7 +193,7 @@ class MinerAgent(BaseAgent):
             return []
     
     async def _perform_comparison_analysis(self, current_paper: Dict, related_papers: List[Dict]) -> Dict[str, Any]:
-        """执行对比分析"""
+"""Провести сравнительный анализ"""
         if not related_papers:
             return {
                 "comparison_summary": "未找到相关论文进行对比",
@@ -202,38 +202,38 @@ class MinerAgent(BaseAgent):
                 "gaps_identified": []
             }
         
-        # 构建对比分析的prompt
+# Создайте подсказку для сравнительного анализа
         comparison_prompt = f"""
         请分析当前论文与历史相关论文的对比情况：
         
-        当前论文：
-        标题：{current_paper.get('title', '')}
-        摘要：{current_paper.get('abstract', '')}
+Текущие статьи:
+Заголовок: {current_paper.get('title', '')}
+Текст: {current_paper.get('abstract', '')}
         主要内容：{str(current_paper.get('sections', {}))[:1000]}...
         
-        相关论文：
+Сопутствующие документы:
         {self._format_related_papers_for_comparison(related_papers[:5])}
         
-        请从以下角度进行对比分析：
-        1. 方法的创新性和改进点
-        2. 实验设计的优势
-        3. 与现有工作的区别
-        4. 可能的研究空白
+Проведите сравнительный анализ со следующих точек зрения:
+1. Инновации и улучшения метода.
+2. Преимущества экспериментального дизайна
+3. Отличия от существующих работ
+4. Возможные пробелы в исследованиях
         
-        请以JSON格式返回分析结果。
+Пожалуйста, верните результаты анализа в формате JSON.
         """
         
         try:
             response = await self.think(comparison_prompt)
             
-            # 尝试解析JSON响应
+# Попробуйте проанализировать ответ JSON
             try:
                 comparison_result = json.loads(response)
             except json.JSONDecodeError:
-                # 如果JSON解析失败，使用文本解析
+# Если анализ JSON не удался, используйте анализ текста
                 comparison_result = self._parse_text_comparison(response)
             
-            self._add_to_history("对比分析完成")
+self._add_to_history("Сравнительный анализ завершен")
             return comparison_result
             
         except Exception as e:
@@ -246,25 +246,25 @@ class MinerAgent(BaseAgent):
             }
     
     def _format_related_papers_for_comparison(self, papers: List[Dict]) -> str:
-        """格式化相关论文用于对比"""
+"""Отформатируйте связанные статьи для сравнения"""
         formatted = []
         for i, paper in enumerate(papers, 1):
             formatted.append(f"""
-            论文{i}：
-            标题：{paper.get('title', '')}
+Бумага {i}:
+Заголовок: {paper.get('title', '')}
             摘要：{paper.get('abstract', '')[:300]}...
             相似度：{paper.get('similarity_score', 0):.3f}
             """)
         return "\n".join(formatted)
     
     def _parse_text_comparison(self, text: str) -> Dict[str, Any]:
-        """解析文本格式的对比结果"""
-        # 简单的文本解析逻辑
+"""Результаты сравнения разобранных текстовых форматов"""
+# Простая логика анализа текста
         return {
             "comparison_summary": text[:500],
             "unique_contributions": ["基于文本分析的创新点"],
-            "similar_works": ["相关研究工作"],
-            "gaps_identified": ["研究空白识别"]
+"similar_works": ["Сопутствующие исследования"],
+"gaps_identified": ["Исследование по выявлению пробелов"]
         }
     
     async def _create_analysis_report(self, paper: Dict, parsed_content: Dict, 
@@ -273,39 +273,39 @@ class MinerAgent(BaseAgent):
         """创建分析报告"""
         
         report_prompt = f"""
-        基于以下信息，生成一份详细的论文分析报告：
+Создайте подробный отчет по анализу бумаги на основе следующей информации:
         
-        论文信息：
-        标题：{paper.get('title', '')}
+Информация о бумаге:
+Заголовок: {paper.get('title', '')}
         作者：{', '.join(paper.get('authors', []))}
-        摘要：{paper.get('abstract', '')}
+Аннотация: {paper.get('abstract', '')}
         
-        解析内容：
+Разобрать содержимое:
         {str(parsed_content.get('sections', {}))[:1500]}...
         
-        对比分析结果：
+Результаты сравнительного анализа:
         {str(comparison_result)[:1000]}...
         
-        请生成包含以下部分的报告：
-        1. Summary - 论文主要贡献和方法概述
-        2. Innovation - 相比相关论文的创新点
-        3. Limitation - 当前研究的局限性
-        4. Future Ideas - 基于分析的未来研究方向建议
+Создайте отчет со следующими разделами:
+1. Резюме. Обзор основных материалов и методов, использованных в статье.
+2. Инновации – инновационные моменты по сравнению с соответствующими статьями.
+3. Ограничение. Ограничения настоящего исследования.
+4. Идеи на будущее – предложения по будущим направлениям исследований, основанные на анализе.
         
-        请以JSON格式返回报告。
+Пожалуйста, верните отчет в формате JSON.
         """
         
         try:
             response = await self.think(report_prompt)
             
-            # 尝试解析JSON响应
+# Попробуйте проанализировать ответ JSON
             try:
                 report = json.loads(response)
             except json.JSONDecodeError:
-                # 如果JSON解析失败，生成默认报告
+# Если анализ JSON не удался, создайте отчет по умолчанию
                 report = self._generate_default_report(paper, parsed_content, comparison_result)
             
-            # 添加元数据
+#Добавляем метаданные
             report.update({
                 "paper_id": paper.get("id"),
                 "generated_for_user_id": user_id,
@@ -314,7 +314,7 @@ class MinerAgent(BaseAgent):
                 "analysis_method": "miner_agent"
             })
             
-            self._add_to_history("分析报告生成完成")
+self._add_to_history("Создание аналитического отчета завершено")
             return report
             
         except Exception as e:
@@ -322,19 +322,19 @@ class MinerAgent(BaseAgent):
             return self._generate_default_report(paper, parsed_content, comparison_result)
     
     def _generate_default_report(self, paper: Dict, parsed_content: Dict, comparison_result: Dict) -> Dict[str, Any]:
-        """生成默认报告"""
+"""Создать отчет по умолчанию"""
         return {
             "summary": f"本文提出了{paper.get('title', '')}相关的研究工作。",
             "innovation_points": ["需要进一步分析的创新点"],
-            "limitations": ["识别出的研究局限性"],
-            "future_ideas": ["建议的未来研究方向"],
+«ограничения»: [«Выявленные ограничения исследования»],
+"future_ideas": ["Предлагаемые направления будущих исследований"],
             "paper_id": paper.get("id"),
             "generated_at": datetime.now().isoformat(),
             "analysis_method": "default"
         }
     
     async def _save_analysis_report(self, paper_id: str, report: Dict, user_id: str = None) -> str:
-        """保存分析报告到数据库"""
+"""Сохранить отчет об анализе в базу данных"""
         try:
             report_id = await db_manager.create_analysis_report(
                 paper_id=paper_id,
@@ -354,12 +354,12 @@ class MinerAgent(BaseAgent):
             return ""
     
     async def _update_vector_store(self, paper_id: str, paper: Dict, parsed_content: Dict, user_id: str = None):
-        """更新向量库"""
+"""Обновить векторную библиотеку"""
         try:
             title = paper.get("title", "")
             abstract = paper.get("abstract", "")
             
-            # 组合内容
+# Объединить контент
             content = f"{title} {abstract}"
             sections = parsed_content.get("sections", {})
             if sections:
@@ -385,13 +385,13 @@ class MinerAgent(BaseAgent):
         except Exception as e:
             self._add_to_history(f"更新向量库失败: {str(e)}")
     
-    # 工具方法
+# Служебные методы
     async def _parse_pdf(self, file_path: str) -> Dict:
-        """解析PDF工具"""
+"""Инструмент анализа PDF"""
         return await self._extract_structured_content(file_path)
     
     async def _search_memory(self, query: str, user_id: str = None) -> List[Dict]:
-        """搜索记忆库工具"""
+"""Инструмент поиска в памяти"""
         try:
             results = await vector_store_manager.hybrid_search(
                 query=query,
@@ -403,11 +403,11 @@ class MinerAgent(BaseAgent):
             return [{"error": str(e)}]
     
     async def _compare_papers(self, current_paper: Dict, related_papers: List[Dict]) -> Dict:
-        """对比论文工具"""
+"""Инструмент сравнительного эссе"""
         return await self._perform_comparison_analysis(current_paper, related_papers)
     
     async def _generate_report(self, paper_info: Dict, analysis_result: Dict) -> Dict:
-        """生成报告工具"""
+"""Инструмент создания отчетов"""
         return await self._create_analysis_report(
             paper_info, 
             analysis_result.get("parsed_content", {}),

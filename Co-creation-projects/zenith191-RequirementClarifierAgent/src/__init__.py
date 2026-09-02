@@ -1,4 +1,4 @@
-"""RequirementClarifierAgent 核心模块。"""
+"""Основной модуль RequirementClarifierAgent."""
 
 from .agents import AgentTeam, build_agent_team
 from .config import ConfigurationError, LLMSettings

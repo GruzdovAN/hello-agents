@@ -1,5 +1,5 @@
 # agents/summary_agent.py
-"""学习进度评估 Agent - 生成学习总结和建议"""
+"""Агент оценки прогресса в обучении — создание сводок и предложений по обучению"""
 
 from hello_agents import SimpleAgent, HelloAgentsLLM
 from core.file_manager import FileManager
@@ -8,120 +8,120 @@ from pathlib import Path
 
 class SummaryAgent(SimpleAgent):
     """
-    学习进度评估专家
+Эксперт по оценке прогресса в обучении
 
-    功能：
+Функция:
     - 读取学习目标（plan.md）
-    - 读取已掌握知识（knowledge_summary.md）
-    - 读取学习历程（session_summary.md）
-    - 生成当前水平评估
-    - 推荐下一步学习内容
+- Прочитать полученные знания (knowledge_summary.md)
+- Ознакомиться с процессом обучения (session_summary.md)
+- Генерация оценки текущего уровня
+- Рекомендовать следующий учебный контент
     """
 
     def __init__(self, llm: HelloAgentsLLM, file_manager: FileManager, streaming: bool = None):
         """
-        初始化 SummaryAgent
+Инициализировать СуммарныйАгент
 
         Args:
-            llm: HelloAgentsLLM 实例
-            file_manager: FileManager 实例
-            streaming: 是否启用流式输出（None = 自动检测）
+llm: экземпляр HelloAgentsLLM
+file_manager: экземпляр FileManager
+потоковая передача: включать ли потоковую передачу (Нет = определяется автоматически)
         """
         system_prompt = """
-你是学习评估专家。
+Вы являетесь экспертом в области оценки обучения.
 
-任务：
-1. 对比学习目标和现状，评估掌握程度（百分比）
-2. 识别强项和弱项
-3. 推荐下一步学习内容
-4. 提供具体的学习建议
+Задача:
+1. Сравните цели обучения и текущую ситуацию и оцените мастерство (в процентах).
+2. Определите сильные и слабые стороны
+3. Порекомендуйте следующий учебный контент.
+4. Предоставьте конкретные предложения по изучению
 
-输出格式：
-# 📊 学习进度报告
+Выходной формат:
+# 📊 Отчет о ходе обучения
 
-## 当前水平
-- 整体掌握度：XX%
-- 处于阶段：入门/熟练/精通
+## Текущий уровень
+- Общее мастерство: XX%
+- На этапе: Новичок/Опыт/Мастерство
 
-## ✅ 掌握良好的知识点
-- [知识点1]：简短评价
-- [知识点2]：简短评价
+## ✅ Овладейте хорошими очками знаний
+- [Точка знаний 1]: Краткая оценка
+- [Точка знаний 2]: Краткая оценка
 
-## ⚠️ 需要加强的知识点
-- [知识点1]：原因分析
-- [知识点2]：原因分析
+## ⚠️ Очки знаний, которые необходимо усилить
+- [Точка знаний 1]: Анализ причин
+- [Точка знаний 2]: Анализ причин
 
-## 📌 下一步学习建议
-1. [具体主题1]：学习建议
-2. [具体主题2]：学习建议
+## 📌Предложения для следующего этапа обучения
+1. [Конкретная тема 1]: Рекомендации по обучению
+2. [Конкретная тема 2]: Рекомендации по обучению
 
-## 💡 总体建议
-[鼓励和指导]
+## 💡 Общие рекомендации
+[Поощрение и руководство]
 """
 
         self.llm = llm
         self.file_manager = file_manager
 
-        # 添加流式输出支持
+# Добавить поддержку потокового вывода
         from utils.streaming import should_stream
         self.streaming = should_stream(streaming)
 
-        # 使用父类初始化
+# Инициализируем, используя родительский класс
         super().__init__("SummaryAgent", llm, system_prompt)
 
     def run(self, domain: str) -> str:
         """
-        生成学习进度总结
+Создание сводки о ходе обучения
 
         Args:
-            domain: 领域名称
+домен: доменное имя
 
         Returns:
-            学习进度报告
+отчет о ходе обучения
         """
-        # 检查领域是否存在
+# Проверяем, существует ли область
         if not self.file_manager.domain_exists(domain):
             return f"❌ 领域 '{domain}' 不存在。请先使用 /create 创建学习计划。"
 
-        # 读取必要的文件
+# Прочитать необходимые файлы
         try:
-            # 读取学习计划
+#Читать план обучения
             plan = self.file_manager.read_plan(domain)
 
-            # 读取知识摘要
+# Прочитать сводку знаний
             knowledge_summary_path = (
                 self.file_manager.BASE_DIR / domain / "knowledge" / "knowledge_summary.md"
             )
             if knowledge_summary_path.exists():
                 knowledge_summary = knowledge_summary_path.read_text(encoding="utf-8")
             else:
-                knowledge_summary = "暂无知识笔记"
+Knowledge_summary = "Пока нет заметок по знаниям"
 
-            # 读取会话摘要
+# Прочитать сводку сеанса
             session_summary_path = (
                 self.file_manager.BASE_DIR / domain / "sessions" / "session_summary.md"
             )
             if session_summary_path.exists():
                 session_summary = session_summary_path.read_text(encoding="utf-8")
             else:
-                session_summary = "暂无学习记录"
+session_summary = "Пока нет записей об обучении"
 
         except Exception as e:
-            return f"❌ 读取文件失败：{e}"
+return f"❌ Не удалось прочитать файл: {e}"
 
-        # 生成总结
-        user_prompt = f"""请分析以下学习情况：
+# Создать сводку
+user_prompt = f"""Проанализируйте следующую учебную ситуацию:
 
-【学习目标】
+【Цели обучения】
 {plan[:2000]}
 
-【已掌握知识】
+【Знания уже освоены】
 {knowledge_summary[:2000]}
 
-【学习历程】
+【Процесс обучения】
 {session_summary[:2000]}
 
-请按照系统提示词的格式生成学习进度报告。
+Создайте отчет о ходе обучения в соответствии с форматом слов системной подсказки.
 """
 
         messages = [
@@ -139,20 +139,20 @@ class SummaryAgent(SimpleAgent):
             else:
                 return self.llm.invoke(messages).strip()
         except Exception as e:
-            # 如果 LLM 调用失败，返回简化版本
-            return f"""# 📊 学习进度报告
+# Если вызов LLM не удался, верните упрощенную версию
+return f"""# 📊 Отчет о ходе обучения
 
-## 当前水平
-- 领域：{domain}
-- 状态：学习进行中
+## Текущий уровень
+- Домен: {домен}
+- Статус: в процессе обучения
 
-## 📚 学习内容
-- 学习计划：已创建
+## 📚 Учебный контент
+- План исследования: создан
 - 知识笔记：{'有' if knowledge_summary != '暂无知识笔记' else '无'}
 - 学习记录：{'有' if session_summary != '暂无学习记录' else '无'}
 
-## 💡 建议
-请继续添加知识笔记和参与互动学习，以获得更准确的进度评估。
+## 💡 Предложения
+Пожалуйста, продолжайте добавлять заметки и участвовать в интерактивном обучении для более точной оценки прогресса.
 
-⚠️ 生成详细报告时遇到问题：{e}
+⚠️ Проблема с созданием подробного отчета: {e}
 """

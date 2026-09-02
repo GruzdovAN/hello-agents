@@ -1,5 +1,5 @@
 # main.py
-"""LearningAgent 主入口文件"""
+"""Основной файл записи LearningAgent"""
 
 import sys
 from cli.repl import start_repl
@@ -7,7 +7,7 @@ from cli.repl import start_repl
 
 def main():
     """
-    主函数
+основная функция
     """
     start_repl()
 

@@ -1,4 +1,4 @@
-"""使用官方 HelloAgents SimpleAgent 构建协作团队。"""
+"""Сборка командной группы на официальных SimpleAgent HelloAgents."""
 
 from __future__ import annotations
 
@@ -18,17 +18,17 @@ from .prompts import (
 
 
 class AgentLike(Protocol):
-    """便于离线测试注入替身，同时生产环境始终使用 SimpleAgent。"""
+    """Для подмены в офлайн-тестах; в продакшене всегда SimpleAgent."""
 
     def run(self, input_text: str, **kwargs: object) -> str:
-        """处理一个阶段的输入并返回文本。"""
+        """Обрабатывает ввод этапа и возвращает текст."""
 
         ...
 
 
 @dataclass(frozen=True)
 class AgentTeam:
-    """顺序协作的四个角色。"""
+    """Четыре роли в последовательной кооперации."""
 
     analyst: AgentLike
     architect: AgentLike
@@ -37,7 +37,7 @@ class AgentTeam:
 
 
 def build_agent_team(settings: LLMSettings, tool_registry: ToolRegistry) -> AgentTeam:
-    """用同一个 HelloAgentsLLM 实例创建四个官方 SimpleAgent。"""
+    """Создаёт четыре официальные SimpleAgent с одним экземпляром HelloAgentsLLM."""
 
     settings.validate()
     llm = HelloAgentsLLM(
@@ -51,26 +51,26 @@ def build_agent_team(settings: LLMSettings, tool_registry: ToolRegistry) -> Agen
 
     return AgentTeam(
         analyst=SimpleAgent(
-            name="需求分析师",
+            name="Аналитик требований",
             llm=llm,
             system_prompt=REQUIREMENT_ANALYST_PROMPT,
             config=config,
             tool_registry=tool_registry,
         ),
         architect=SimpleAgent(
-            name="方案架构师",
+            name="Архитектор решений",
             llm=llm,
             system_prompt=SOLUTION_ARCHITECT_PROMPT,
             config=config,
         ),
         reviewer=SimpleAgent(
-            name="风险审查员",
+            name="Ревьюер рисков",
             llm=llm,
             system_prompt=RISK_REVIEWER_PROMPT,
             config=config,
         ),
         synthesizer=SimpleAgent(
-            name="报告整合员",
+            name="Интегратор отчёта",
             llm=llm,
             system_prompt=REPORT_SYNTHESIZER_PROMPT,
             config=config,

@@ -8,14 +8,14 @@ from config import get_config
 logger = logging.getLogger("game.logic")
 
 class GameSession:
-    """游戏会话管理类"""
+    """Класс управления игровой сессией"""
     
     def __init__(self):
         self.session_id = str(uuid.uuid4())
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
 
-        # 游戏状态
+        # Состояние игры
         self.current_figure: Optional[Dict] = None
         self.hints: List[str] = []  # pre-generated hints by agent
         self.questions_asked = 0
@@ -24,16 +24,16 @@ class GameSession:
         self.is_correct = False
         self.guess_history: List[str] = []
         
-        # 配置
+        # Конфигурация
         _config = get_config()
         self.max_questions = _config.MAX_QUESTIONS
         self.max_hints = _config.MAX_HINTS
         
-        # 初始化游戏状态（current_figure 由 Agent 初始化时填充）
+        # Инициализация состояния игры (current_figure заполняется при инициализации Agent)
         self._reset_state()
     
     def _reset_state(self):
-        """重置游戏状态（不加载事物，由 Agent 负责填充）"""
+        """Сброс состояния игры (без загрузки персонажа — это делает Agent)"""
         self.current_figure = None
         self.hints = []
         self.questions_asked = 0
@@ -44,7 +44,7 @@ class GameSession:
         self.updated_at = datetime.now()
     
     def ask_question(self) -> bool:
-        """记录提问，返回是否还可以继续提问"""
+        """Записать вопрос и вернуть, можно ли продолжать задавать вопросы"""
         self.questions_asked += 1
         self.updated_at = datetime.now()
         
@@ -54,7 +54,7 @@ class GameSession:
         return True
     
     def make_guess(self, guess_name: str, semantic_match_fn=None) -> Dict[str, Any]:
-        """进行猜测，返回猜测结果"""
+        """Сделать догадку и вернуть результат"""
         self.updated_at = datetime.now()
         self.guess_history.append(guess_name)
 
@@ -70,31 +70,31 @@ class GameSession:
             self.is_game_over = True
             return {
                 "correct": True,
-                "message": "恭喜你猜对了！",
+                "message": "Поздравляем, вы угадали!",
                 "figure_info": self.current_figure
             }
         else:
-            # 检查是否达到提问上限
+            # Проверка достижения лимита вопросов
             if self.questions_asked >= self.max_questions:
                 self.is_game_over = True
                 return {
                     "correct": False,
-                    "message": "游戏结束！正确答案是：{}".format(self.current_figure["name"]),
+                    "message": "Игра окончена! Правильный ответ: {}".format(self.current_figure["name"]),
                     "figure_info": self.current_figure
                 }
             else:
                 return {
                     "correct": False,
-                    "message": "猜错了，请继续提问或猜测",
+                    "message": "Неверно, продолжайте задавать вопросы или угадывать",
                     "remaining_questions": self.max_questions - self.questions_asked
                 }
     
     def get_hint(self) -> Optional[Dict[str, Any]]:
-        """获取提示（从预生成的 hints 列表中按序返回）"""
+        """Получить подсказку (по порядку из предварительно сгенерированного списка hints)"""
         if self.hints_used >= self.max_hints:
             return {
                 "available": False,
-                "message": "提示次数已用完"
+                "message": "Подсказки исчерпаны"
             }
 
         hint_index = self.hints_used
@@ -104,7 +104,7 @@ class GameSession:
         hint_text = (
             self.hints[hint_index]
             if self.hints and hint_index < len(self.hints)
-            else "这是一个广为人知的事物"
+            else "Это широко известная личность"
         )
 
         return {
@@ -115,7 +115,7 @@ class GameSession:
         }
     
     def get_game_status(self) -> Dict[str, Any]:
-        """获取当前游戏状态"""
+        """Получить текущее состояние игры"""
         return {
             "session_id": self.session_id,
             "questions_asked": self.questions_asked,
@@ -128,11 +128,11 @@ class GameSession:
         }
     
     def reset_game(self):
-        """重置游戏状态（由 Agent 重新生成填充）"""
+        """Сбросить состояние игры (Agent заново генерирует персонажа)"""
         self._reset_state()
     
     def get_figure_for_prompt(self) -> Dict[str, str]:
-        """获取用于Agent提示的事物信息"""
+        """Получить информацию о персонаже для промпта Agent"""
         if not self.current_figure:
             return {}
 
@@ -143,28 +143,28 @@ class GameSession:
 
 
 class GameManager:
-    """游戏会话管理器"""
+    """Менеджер игровых сессий"""
     
     def __init__(self):
         self.active_sessions: Dict[str, GameSession] = {}
     
     def create_session(self) -> GameSession:
-        """创建新游戏会话"""
+        """Создать новую игровую сессию"""
         session = GameSession()
         self.active_sessions[session.session_id] = session
         return session
     
     def get_session(self, session_id: str) -> Optional[GameSession]:
-        """获取游戏会话"""
+        """Получить игровую сессию"""
         return self.active_sessions.get(session_id)
     
     def end_session(self, session_id: str):
-        """结束游戏会话"""
+        """Завершить игровую сессию"""
         if session_id in self.active_sessions:
             del self.active_sessions[session_id]
     
     def cleanup_old_sessions(self, max_age_minutes: int = 60):
-        """清理过期会话"""
+        """Очистить просроченные сессии"""
         now = datetime.now()
         expired_sessions = []
         
@@ -176,5 +176,5 @@ class GameManager:
             del self.active_sessions[session_id]
 
 
-# 全局游戏管理器实例
+# Глобальный экземпляр менеджера игр
 game_manager = GameManager()

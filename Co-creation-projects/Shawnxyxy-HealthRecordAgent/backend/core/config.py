@@ -1,5 +1,5 @@
 """
-HealthAgent 核心配置模块
+Модуль основной конфигурации HealthAgent
 """
 
 from dataclasses import dataclass, field
@@ -59,7 +59,7 @@ class HealthAgentConfig:
     agent: AgentConfig = field(default_factory=AgentConfig)
     rag: RAGConfig = field(default_factory=RAGConfig)
 
-# 全局配置
+# Глобальная конфигурация
 _config = HealthAgentConfig()
 
 

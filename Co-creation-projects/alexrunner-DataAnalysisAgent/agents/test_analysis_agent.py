@@ -16,16 +16,16 @@ if __name__ == "__main__":
         max_steps=5
     )
 
-    plan_result = ["分析不同年龄段用户的偏好"]
+    plan_result = ["Анализ предпочтений пользователей разных возрастных групп"]
     task_result = []
 
     for task in plan_result:
-        print(f"执行任务: {task}")
+        print(f"Выполнение задачи: {task}")
         try:
             answer = analysis_agent.run(task)
             task_result.append({ "task": task, "result": answer })
-            print(f"任务结果: {answer}")
+            print(f"Результат задачи: {answer}")
         except Exception as e:
-            print(f"执行过程中出现错误: {e}")
+            print(f"Ошибка при выполнении: {e}")
 
-    print(f"\n所有任务结果: {task_result}")
+    print(f"\nРезультаты всех задач: {task_result}")

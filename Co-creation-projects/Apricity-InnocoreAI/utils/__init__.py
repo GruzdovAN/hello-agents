@@ -1,6 +1,4 @@
-"""
-InnoCore AI 工具模块
-"""
+"""Модуль инструментов InnoCore AI"""
 
 from .pdf_parser import PDFParser
 from .embedding import EmbeddingGenerator

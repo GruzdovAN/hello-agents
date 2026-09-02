@@ -1,7 +1,7 @@
 """
-智能股票分析助手 — 用户偏好API路由
+Интеллектуальный помощник по анализу акций — маршрутизация API по пользовательским предпочтениям
 
-提供偏好的读取、更新和投资画像查询接口。
+Предоставьте предпочтительные интерфейсы для чтения, обновления и запроса инвестиционного портрета.
 """
 
 from fastapi import APIRouter, Depends
@@ -17,30 +17,30 @@ router = APIRouter(prefix="/preferences", tags=["用户偏好"])
 
 
 # =========================================================================
-# 请求体模型
+# Запросить модель тела
 # =========================================================================
 
 class PreferenceUpdateRequest(BaseModel):
-    """偏好更新请求体——所有字段可选，支持部分更新"""
+"""Тело запроса на обновление предпочтений - все поля являются необязательными, поддерживаются частичные обновления"""
 
-    risk_tolerance: Optional[str] = Field(None, description="风险承受度: conservative/moderate/aggressive", pattern="^(conservative|moderate|aggressive)$")
-    investment_style: Optional[str] = Field(None, description="投资风格: value/growth/momentum/dividend/blend", pattern="^(value|growth|momentum|dividend|blend)$")
-    investment_horizon: Optional[str] = Field(None, description="投资期限: short/medium/long", pattern="^(short|medium|long)$")
-    target_return_rate: Optional[float] = Field(None, description="目标年化收益率(%)", ge=0, le=100)
-    max_position_ratio: Optional[float] = Field(None, description="单票最大仓位(%)", ge=1, le=100)
-    max_drawdown_limit: Optional[float] = Field(None, description="最大回撤预警线(%)", le=0)
-    notification_enabled: Optional[bool] = Field(None, description="是否启用通知")
-    notification_channels: Optional[List[str]] = Field(None, description="通知渠道")
-    market_alert_threshold: Optional[float] = Field(None, description="异动提醒阈值(%)", ge=0, le=100)
-    language: Optional[str] = Field(None, description="界面语言: zh/en", pattern="^(zh|en)$")
-    theme: Optional[str] = Field(None, description="主题: light/dark/auto", pattern="^(light|dark|auto)$")
-    default_view: Optional[str] = Field(None, description="默认首页: dashboard/watchlist", pattern="^(dashboard|watchlist)$")
-    preferred_sectors: Optional[List[str]] = Field(None, description="偏好行业列表")
-    excluded_sectors: Optional[List[str]] = Field(None, description="排除行业列表")
+Risk_tolerance: Необязательно[str] = Поле(Нет, описание="风险承受度: консервативный/умеренный/агрессивный", шаблон="^(консервативный|умеренный|агрессивный)$")
+Investment_style: Необязательный[str] = Field(None,description="投资风格: значение/рост/импульс/дивиденд/смесь", шаблон="^(значение|рост|импульс|дивиденд|смесь)$")
+Investment_horizon: Необязательно[str] = Поле(Нет, описание="投资期限: короткий/средний/длинный", шаблон="^(короткий|средний|длинный)$")
+target_return_rate: Необязательный[float] = Field(None,description="Целевая годовая доходность (%)", ge=0, le=100)
+max_position_ratio: Необязательно[float] = Поле(Нет, описание="Максимальная позиция одного билета (%)", ge=1, le=100)
+max_drawdown_limit: Необязательно[float] = Поле(Нет, описание="Линия предупреждения о максимальном откате (%)", le=0)
+Notification_enabled: Необязательный[bool] = Поле(Нет, описание="Включены ли уведомления")
+Notification_channels: Необязательный[List[str]] = Поле(Нет, описание="Каналы уведомлений")
+market_alert_threshold: Необязательно[float] = Поле(Нет, описание="Изменить порог оповещения (%)", ge=0, le=100)
+язык: Необязательный[str] = Поле(Нет, описание="Язык интерфейса: ж/ен", шаблон="^(ж|ен)$")
+тема: Необязательно[str] = Поле(Нет, описание="主题: светлый/темный/авто", шаблон="^(светлый|темный|авто)$")
+default_view: Необязательно[str] = Поле(Нет, описание="Домашняя страница по умолчанию: панель мониторинга/список наблюдения", шаблон="^(панель мониторинга|список наблюдения)$")
+предпочтительные_секторы: Необязательный[List[str]] = Поле(Нет, описание="Список предпочтительных отраслей")
+исключенные_секторы: Необязательный[List[str]] = Поле(Нет, описание="Список исключенных отраслей")
 
 
 # =========================================================================
-# API接口
+# API-интерфейс
 # =========================================================================
 
 @router.get("/")
@@ -62,7 +62,7 @@ async def update_preferences(
     user_id: str = "default",
     db: AsyncSession = Depends(get_db_session),
 ):
-    """更新用户偏好（支持部分更新，仅传入需要修改的字段）"""
+"""Обновление пользовательских настроек (поддержка частичного обновления, передача только тех полей, которые необходимо изменить)"""
     try:
         # 仅提交非None的字段
         update_data = request.model_dump(exclude_none=True)
@@ -80,7 +80,7 @@ async def get_profile(
     user_id: str = "default",
     db: AsyncSession = Depends(get_db_session),
 ):
-    """获取用户投资画像摘要"""
+"""Получите сводку инвестиционного портрета пользователей"""
     try:
         result = await preference_service.get_profile_summary(db, user_id)
         return success_response(data=result)

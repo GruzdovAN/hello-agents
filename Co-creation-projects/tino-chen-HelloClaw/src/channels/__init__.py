@@ -1,4 +1,4 @@
-"""HelloClaw Channels 模块"""
+"""Модуль каналов HelloClaw"""
 
 from .cli_channel import CLIChannel
 

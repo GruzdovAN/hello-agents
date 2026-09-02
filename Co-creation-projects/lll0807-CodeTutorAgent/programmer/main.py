@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from hello_agents.core.llm import HelloAgentsLLM
 from services.knowledge import LearningKnowledgeService
 
-# 2. 初始化 Tutor（自动创建所有子智能体）
+# Инициализация Tutor (автоматически создаёт все подагенты)
 from agents.tutor import TutorAgent
 
 load_dotenv()
@@ -12,24 +12,24 @@ load_dotenv()
 if "src" not in sys.path:
     sys.path.append(os.path.abspath("src"))
 
-# 初始化 LLM
+# Инициализация LLM
 llm = HelloAgentsLLM()
 
-print("✅ 环境配置完成")
-print("✅ LLM 已初始化")
+print("✅ Конфигурация окружения завершена")
+print("✅ LLM инициализирован")
 
-print("创建智能编程导师...")
+print("Создание интеллектуального наставника по программированию...")
 knowledge = LearningKnowledgeService(user_id="1")
 tutor = TutorAgent(llm, knowledge)
 
 while True:
-    user_goal = input("请输入：")
-    # 我想学习 Python 中的列表推导式
-    # 我想更新学习计划
-    print(f"用户目标: {user_goal}\n")
+    user_goal = input("Введите запрос: ")
+    # Хочу изучить list comprehensions в Python
+    # Хочу обновить план обучения
+    print(f"Цель пользователя: {user_goal}\n")
 
-    # Tutor 会调用 call_planner 工具
-    response = tutor.run(f"用户说：'{user_goal}'。")
+    # Tutor вызывает инструмент call_planner
+    response = tutor.run(f"Пользователь сказал: '{user_goal}'.")
 
-    print("=== Tutor 回应 ===")
+    print("=== Ответ Tutor ===")
     print(response)

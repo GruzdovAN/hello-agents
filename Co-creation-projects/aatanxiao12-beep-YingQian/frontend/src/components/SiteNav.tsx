@@ -13,7 +13,7 @@ export function SiteNav({ active, tone = 'default' }: SiteNavProps) {
       className={
         tone === 'over-hero' ? 'site-nav site-nav--over-hero' : 'site-nav'
       }
-      aria-label="主导航"
+      aria-label="Главная навигация"
     >
       {tone === 'over-hero' ? (
         <span className="site-nav__spacer" aria-hidden="true" />
@@ -27,13 +27,13 @@ export function SiteNav({ active, tone = 'default' }: SiteNavProps) {
           to="/"
           className={active === 'home' ? 'site-nav__link is-active' : 'site-nav__link'}
         >
-          荐片
+          Рекомендации
         </Link>
         <Link
           to="/browse"
           className={active === 'browse' ? 'site-nav__link is-active' : 'site-nav__link'}
         >
-          片库
+          Каталог
         </Link>
       </div>
     </nav>

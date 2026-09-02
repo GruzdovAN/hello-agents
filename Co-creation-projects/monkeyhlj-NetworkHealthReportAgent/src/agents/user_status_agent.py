@@ -8,8 +8,8 @@ from src.agents.base import BaseNetworkAgent
 class UserStatusAgent(BaseNetworkAgent):
     def __init__(self) -> None:
         prompt = (
-            "你是网络用户状态分析Agent。请调用network_data工具读取终端接入与合规数据，"
-            "输出终端风险和访问健康度。"
+            "Ты агент анализа состояния сетевых пользователей. Вызови инструмент network_data для данных "
+            "о подключении терминалов и соответствии политикам; оцени риски терминалов и здоровье доступа."
         )
         super().__init__(name="UserStatusAgent", system_prompt=prompt)
 
@@ -22,7 +22,7 @@ class UserStatusAgent(BaseNetworkAgent):
                 "compliant_rate": 0.0,
                 "high_risk_terminals": 0,
                 "status": "unknown",
-                "summary": "无终端合规数据。",
+                "summary": "Нет данных о соответствии терминалов.",
             }
 
         compliant_rate = terminal_row["compliant_rate"]
@@ -44,7 +44,7 @@ class UserStatusAgent(BaseNetworkAgent):
             "guest_network_ratio": terminal_row["guest_network_ratio"],
             "status": status,
             "summary": (
-                f"终端合规率{compliant_rate:.2%}，高风险终端{high_risk}台，"
-                f"未知终端{unknown_clients}台。"
+                f"Доля соответствующих терминалов {compliant_rate:.2%}, высокий риск — {high_risk} шт., "
+                f"неизвестных терминалов — {unknown_clients}."
             ),
         }

@@ -1,5 +1,5 @@
 """
-RAG 模块导出。
+Экспорт модуля RAG.
 """
 
 from rag.retriever import retrieve

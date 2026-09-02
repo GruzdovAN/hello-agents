@@ -52,7 +52,7 @@ class GuessWhoAmIGame {
 
       const result = await response.json();
 
-      if (!result.success) throw new Error(result.error || '启动失败');
+      if (!result.success) throw new Error(result.error || 'Не удалось запустить');
 
       const data = result.data;
       this.sessionId = data.session_id;
@@ -79,8 +79,8 @@ class GuessWhoAmIGame {
       this.updateStats();
 
     } catch (error) {
-      alert(`无法开始游戏：${
-          error.message}\n请确认后端服务已在 http://localhost:8000 启动`);
+      alert(`Не удалось начать игру: ${
+          error.message}\nУбедитесь, что бэкенд запущен на http://localhost:8000`);
       console.error('Start game error:', error);
     } finally {
       this.hideLoadingOverlay();
@@ -95,7 +95,7 @@ class GuessWhoAmIGame {
 
     if (!message) return;
     if (!this.sessionId) {
-      alert('请先开始游戏');
+      alert('Сначала начните игру');
       return;
     }
 
@@ -114,7 +114,7 @@ class GuessWhoAmIGame {
 
       const result = await response.json();
 
-      if (!result.success) throw new Error(result.error || '消息发送失败');
+      if (!result.success) throw new Error(result.error || 'Не удалось отправить сообщение');
 
       const data = result.data;
       this.addMessage(data.response, 'agent');
@@ -128,7 +128,7 @@ class GuessWhoAmIGame {
       }
 
     } catch (error) {
-      this.addMessage(`⚠️ 发送失败：${error.message}`, 'agent');
+      this.addMessage(`⚠️ Ошибка отправки: ${error.message}`, 'agent');
       console.error('Send message error:', error);
     } finally {
       this.setControlsDisabled(false);
@@ -139,7 +139,7 @@ class GuessWhoAmIGame {
   async requestHint() {
     if (!this.sessionId) return;
     if (this.remainingHints <= 0) {
-      alert('提示次数已用完');
+      alert('Подсказки закончились');
       return;
     }
 
@@ -156,11 +156,11 @@ class GuessWhoAmIGame {
 
       const result = await response.json();
 
-      if (!result.success) throw new Error(result.error || '获取提示失败');
+      if (!result.success) throw new Error(result.error || 'Не удалось получить подсказку');
 
       const data = result.data;
-      const hintText = data.hint || data.message || '暂无提示';
-      this.addMessage(`💡 提示：${hintText}`, 'agent');
+      const hintText = data.hint || data.message || 'Подсказок нет';
+      this.addMessage(`💡 Подсказка: ${hintText}`, 'agent');
 
       this.remainingHints = data.remaining_hints !== undefined ?
           data.remaining_hints :
@@ -168,7 +168,7 @@ class GuessWhoAmIGame {
       this.updateStats();
 
     } catch (error) {
-      alert(`获取提示失败：${error.message}`);
+      alert(`Не удалось получить подсказку：${error.message}`);
       console.error('Hint error:', error);
     } finally {
       this.setControlsDisabled(false);
@@ -181,7 +181,7 @@ class GuessWhoAmIGame {
     const guess = guessInput.value.trim();
 
     if (!guess) {
-      alert('请输入猜测的人物姓名');
+      alert('Введите имя для угадывания');
       return;
     }
     if (!this.sessionId) return;
@@ -199,16 +199,16 @@ class GuessWhoAmIGame {
 
       const result = await response.json();
 
-      if (!result.success) throw new Error(result.error || '猜测失败');
+      if (!result.success) throw new Error(result.error || 'Ошибка угадывания');
 
       const data = result.data;
       guessInput.value = '';
 
       if (data.is_correct) {
-        this.addMessage(`🎉 恭喜！你猜对了！答案就是：${guess}`, 'agent');
+        this.addMessage(`🎉 Поздравляем! Верно: ${guess}`, 'agent');
         this.endGame(true, data.figure_info, data.portrait_images || []);
       } else {
-        this.addMessage(`❌ 猜错了！${data.message || '再想想看~'}`, 'agent');
+        this.addMessage(`❌ Неверно! ${data.message || 'Подумайте ещё~'}`, 'agent');
         this.remainingQuestions = data.remaining_questions !== undefined ?
             data.remaining_questions :
             this.remainingQuestions - 1;
@@ -220,7 +220,7 @@ class GuessWhoAmIGame {
       }
 
     } catch (error) {
-      alert(`提交猜测失败：${error.message}`);
+      alert(`Ошибка отправки догадки: ${error.message}`);
       console.error('Guess error:', error);
     } finally {
       this.setControlsDisabled(false);
@@ -263,15 +263,15 @@ class GuessWhoAmIGame {
     const figureInfoEl = document.getElementById('figure-info');
 
     if (isWin) {
-      resultTitle.textContent = '🎉 恭喜你猜对了！';
-      resultMessage.textContent = '你成功猜出了这个人物的身份！';
+      resultTitle.textContent = '🎉 Поздравляем, вы угадали!';
+      resultMessage.textContent = 'Вы угадали личность!';
     } else {
-      resultTitle.textContent = '⏰ 游戏结束';
-      resultMessage.textContent = '提问次数已用完，下次加油！';
+      resultTitle.textContent = '⏰ Игра окончена';
+      resultMessage.textContent = 'Вопросы закончились — в следующий раз повезёт!';
     }
 
     if (figureInfo) {
-      const name = figureInfo.figure_name || figureInfo.name || '未知';
+      const name = figureInfo.figure_name || figureInfo.name || 'неизвестно';
       const dynasty = figureInfo.dynasty || '';
       const occupation = figureInfo.occupation || figureInfo.profession || '';
       const achievements = figureInfo.achievements || '';
@@ -294,15 +294,15 @@ class GuessWhoAmIGame {
 
       figureInfoEl.innerHTML = `
         ${portraitHtml}
-        <p><strong>答案：</strong>${name}</p>
-        ${dynasty ? `<p><strong>朝代/时代：</strong>${dynasty}</p>` : ''}
-        ${occupation ? `<p><strong>职业/身份：</strong>${occupation}</p>` : ''}
+        <p><strong>Ответ:</strong>${name}</p>
+        ${dynasty ? `<p><strong>Эпоха/династия:</strong>${dynasty}</p>` : ''}
+        ${occupation ? `<p><strong>Профессия/роль:</strong>${occupation}</p>` : ''}
         ${
-          achievements ? `<p><strong>主要成就：</strong>${achievements}</p>` :
+          achievements ? `<p><strong>Главные достижения:</strong>${achievements}</p>` :
                          ''}
         ${
           characteristics ?
-              `<p><strong>关键特征：</strong>${characteristics}</p>` :
+              `<p><strong>Ключевые черты:</strong>${characteristics}</p>` :
               ''}
       `;
     } else {
@@ -350,7 +350,7 @@ class GuessWhoAmIGame {
       <div class="welcome-message">
         <div class="message agent-message">
           <div class="message-content">
-            你好！我是一个知名人物，你可以通过提问来猜测我的身份。开始吧！
+            Привет! Я известная личность — угадайте, кто я, задавая вопросы. Начнём!
           </div>
         </div>
       </div>`;
@@ -359,9 +359,9 @@ class GuessWhoAmIGame {
   // Update stats display
   updateStats() {
     document.getElementById('remaining-questions').textContent =
-        `剩余提问: ${this.remainingQuestions}`;
+        `Осталось вопросов: ${this.remainingQuestions}`;
     document.getElementById('remaining-hints').textContent =
-        `剩余提示: ${this.remainingHints}`;
+        `Осталось подсказок: ${this.remainingHints}`;
   }
 
   // Disable/enable game controls
@@ -377,7 +377,7 @@ class GuessWhoAmIGame {
   setStartBtnLoading(loading) {
     const btn = document.getElementById('start-game');
     btn.disabled = loading;
-    btn.textContent = loading ? '正在启动...' : '开始游戏';
+    btn.textContent = loading ? 'Запуск...' : 'Начать игру';
   }
 
   // Show full-screen loading overlay with step text rotation
@@ -387,10 +387,10 @@ class GuessWhoAmIGame {
     overlay.classList.remove('hidden');
 
     const steps = [
-      '🔍 正在随机选择人物...',
-      '📚 正在搜索人物资料...',
-      '🤖 AI 正在准备提示...',
-      '🎤 正在准备角色扮演...',
+      '🔍 Случайный выбор личности...',
+      '📚 Поиск сведений о личности...',
+      '🤖 ИИ готовит подсказки...',
+      '🎤 Подготовка ролевой игры...',
     ];
     let idx = 0;
     stepEl.textContent = steps[0];

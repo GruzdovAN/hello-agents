@@ -1,5 +1,5 @@
 """
-分析历史记录服务 — 管理各类分析报告的历史存储与查询
+Служба истории анализа — управляет историческим хранением и запросом различных аналитических отчетов.
 """
 
 from datetime import date
@@ -44,7 +44,7 @@ async def get_history_list(
     user_id: str = "default",
     limit: int = 20,
 ) -> dict:
-    """获取历史记录列表"""
+"""Получить список истории"""
     try:
         async with async_session_factory() as db:
             conditions = [AnalysisHistory.user_id == user_id]
@@ -82,7 +82,7 @@ async def get_history_detail(record_id: int) -> dict:
 
 
 async def delete_history(record_id: int) -> dict:
-    """删除单条历史记录"""
+"""Удалить одну запись истории"""
     try:
         async with async_session_factory() as db:
             record = await db.get(AnalysisHistory, record_id)
@@ -96,7 +96,7 @@ async def delete_history(record_id: int) -> dict:
 
 
 async def clear_today_history(analysis_type: Optional[str] = None) -> dict:
-    """清空今日历史记录"""
+"""Очистить сегодняшнюю историю"""
     try:
         today = date.today().isoformat()
         async with async_session_factory() as db:

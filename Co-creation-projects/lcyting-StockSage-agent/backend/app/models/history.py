@@ -1,5 +1,5 @@
 """
-兼容入口：分析历史 ORM 定义见 history_models.py
+Совместимый вход: определение ORM истории анализа, см. History_models.py
 """
 from app.models.history_models import AnalysisHistory
 

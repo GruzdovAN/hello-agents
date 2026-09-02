@@ -11,17 +11,17 @@ import { GENRE_OPTIONS } from '../types'
 type Mode = 'search' | 'discover'
 
 const SORT_OPTIONS = [
-  { value: 'popularity.desc', label: '热度' },
-  { value: 'vote_average.desc', label: '评分' },
-  { value: 'primary_release_date.desc', label: '新片优先' },
+  { value: 'popularity.desc', label: 'Популярность' },
+  { value: 'vote_average.desc', label: 'Рейтинг' },
+  { value: 'primary_release_date.desc', label: 'Сначала новинки' },
 ] as const
 
 const LANG_OPTIONS = [
-  { value: '', label: '语言不限' },
-  { value: 'zh', label: '华语' },
-  { value: 'en', label: '英语' },
-  { value: 'ja', label: '日语' },
-  { value: 'ko', label: '韩语' },
+  { value: '', label: 'Любой язык' },
+  { value: 'zh', label: 'Китайский' },
+  { value: 'en', label: 'Английский' },
+  { value: 'ja', label: 'Японский' },
+  { value: 'ko', label: 'Корейский' },
 ] as const
 
 export function BrowsePage() {
@@ -56,7 +56,7 @@ export function BrowsePage() {
       setSelected(null)
     } catch (err) {
       setResults(null)
-      setError(err instanceof Error ? err.message : '发现失败')
+      setError(err instanceof Error ? err.message : 'Ошибка поиска')
     } finally {
       setLoading(false)
     }
@@ -80,7 +80,7 @@ export function BrowsePage() {
       setSelected(null)
     } catch (err) {
       setResults(null)
-      setError(err instanceof Error ? err.message : '搜索失败')
+      setError(err instanceof Error ? err.message : 'Ошибка поиска')
     } finally {
       setLoading(false)
     }
@@ -99,14 +99,14 @@ export function BrowsePage() {
       <SiteNav active="browse" />
 
       <header className="browse-hero">
-        <p className="section-kicker">片库</p>
-        <h1 className="browse-title">找一部确认今晚</h1>
+        <p className="section-kicker">Каталог</p>
+        <h1 className="browse-title">Найдите фильм на вечер</h1>
         <p className="browse-lead">
-          搜片名，或按类型与年份筛选。点海报看详情，可标记已看。
+          Поиск по названию или фильтры. Нажмите постер для деталей, отметьте просмотренные.
         </p>
       </header>
 
-      <div className="mode-tabs" role="tablist" aria-label="查询方式">
+      <div className="mode-tabs" role="tablist" aria-label="Способ поиска">
         <button
           type="button"
           role="tab"
@@ -119,7 +119,7 @@ export function BrowsePage() {
             setError(null)
           }}
         >
-          关键词搜索
+          Поиск по ключевым словам
         </button>
         <button
           type="button"
@@ -128,7 +128,7 @@ export function BrowsePage() {
           className={mode === 'discover' ? 'mode-tab is-active' : 'mode-tab'}
           onClick={() => setMode('discover')}
         >
-          条件发现
+          Поиск по фильтрам
         </button>
       </div>
 
@@ -138,31 +138,31 @@ export function BrowsePage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="片名、关键词，例如：盗梦空间"
+            placeholder="Название или ключевые слова, например: Inception"
             autoComplete="off"
-            aria-label="搜索关键词"
+            aria-label="Ключевые слова"
           />
           <input
             type="number"
             className="browse-year"
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            placeholder="年份"
+            placeholder="Год"
             min={1900}
             max={2100}
-            aria-label="上映年份"
+            aria-label="Год выхода"
           />
           <button
             type="submit"
             className="btn btn--primary"
             disabled={loading || !query.trim()}
           >
-            {loading ? '检索中…' : '搜索'}
+            {loading ? 'Поиск…' : 'Поиск'}
           </button>
         </form>
       ) : (
         <div className="browse-filters">
-          <div className="chip-row" aria-label="类型，最多三项">
+          <div className="chip-row" aria-label="Жанры, до трёх">
             {GENRE_OPTIONS.map((g) => (
               <button
                 key={g}
@@ -176,30 +176,30 @@ export function BrowsePage() {
           </div>
           <div className="browse-filters__row">
             <label>
-              <span className="sr-only">起始年份</span>
+              <span className="sr-only">Год от</span>
               <input
                 type="number"
                 value={yearGte}
                 onChange={(e) => setYearGte(e.target.value)}
-                placeholder="起始年"
+                placeholder="С"
                 min={1900}
                 max={2100}
               />
             </label>
             <label>
-              <span className="sr-only">片长上限</span>
+              <span className="sr-only">Макс. длительность</span>
               <select
                 value={maxRuntime}
                 onChange={(e) => setMaxRuntime(e.target.value)}
               >
-                <option value="">片长不限</option>
-                <option value="90">≤ 90 分</option>
-                <option value="120">≤ 120 分</option>
-                <option value="150">≤ 150 分</option>
+                <option value="">Любая длительность</option>
+                <option value="90">≤ 90 мин</option>
+                <option value="120">≤ 120 мин</option>
+                <option value="150">≤ 150 мин</option>
               </select>
             </label>
             <label>
-              <span className="sr-only">语言</span>
+              <span className="sr-only">Язык</span>
               <select value={lang} onChange={(e) => setLang(e.target.value)}>
                 {LANG_OPTIONS.map((o) => (
                   <option key={o.value || 'any'} value={o.value}>
@@ -209,7 +209,7 @@ export function BrowsePage() {
               </select>
             </label>
             <label>
-              <span className="sr-only">排序</span>
+              <span className="sr-only">Сортировка</span>
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -224,7 +224,7 @@ export function BrowsePage() {
               onClick={() => void runDiscover()}
               disabled={loading}
             >
-              {loading ? '刷新中…' : '刷新结果'}
+              {loading ? 'Обновление…' : 'Обновить'}
             </button>
           </div>
         </div>
@@ -237,10 +237,10 @@ export function BrowsePage() {
       )}
 
       <div className={selected ? 'browse-split has-detail' : 'browse-split'}>
-        <section className="catalog-grid" aria-label="影片列表">
-          {loading && !results && <p className="muted">正在连接片库…</p>}
+        <section className="catalog-grid" aria-label="Список фильмов">
+          {loading && !results && <p className="muted">Подключение к каталогу…</p>}
           {results && results.length === 0 && (
-            <p className="muted">没有符合条件的影片，换个关键词或放宽筛选试试。</p>
+            <p className="muted">Нет подходящих фильмов — измените запрос или фильтры.</p>
           )}
           {results &&
             results.map((m, i) => (
@@ -255,7 +255,7 @@ export function BrowsePage() {
             ))}
           {!loading && results == null && mode === 'search' && (
             <p className="browse-empty muted">
-              输入片名确认年份与海报，或切换到「条件发现」按口味逛一圈。
+              Введите название или переключитесь на «Поиск по фильтрам».
             </p>
           )}
         </section>
@@ -271,7 +271,7 @@ export function BrowsePage() {
 
       {seenList.length > 0 && (
         <p className="browse-seen-hint muted">
-          已标记 {seenList.length} 部已看；返回智能推荐时会自动带入排除列表。
+          Отмечено {seenList.length} просмотренных; они исключаются из рекомендаций.
         </p>
       )}
 

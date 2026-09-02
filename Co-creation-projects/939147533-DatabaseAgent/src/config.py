@@ -1,5 +1,5 @@
 """
-数据库配置管理
+Управление конфигурацией базы данных
 """
 import os
 from typing import Optional
@@ -9,7 +9,7 @@ load_dotenv()
 
 
 class DatabaseConfig:
-    """Oracle数据库配置类"""
+    """Класс конфигурации Oracle-базы данных"""
     
     def __init__(
         self,
@@ -26,9 +26,9 @@ class DatabaseConfig:
         self.password = password or os.getenv("DB_PASSWORD", "")
         
     def get_connection_string(self) -> str:
-        """获取Oracle连接字符串"""
+        """Получить строку подключения Oracle"""
         return f"{self.username}/{self.password}@{self.host}:{self.port}/{self.service_name}"
     
     def validate(self) -> bool:
-        """验证配置是否完整"""
+        """Проверить, что конфигурация полная"""
         return all([self.host, self.port, self.service_name, self.username, self.password])

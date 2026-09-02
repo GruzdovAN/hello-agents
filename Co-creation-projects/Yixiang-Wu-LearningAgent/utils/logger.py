@@ -1,4 +1,4 @@
-"""日志配置"""
+"""Конфигурация журнала"""
 
 import logging
 import sys
@@ -8,32 +8,32 @@ from config import Config
 
 def setup_logger(name: str = "learning_agent") -> logging.Logger:
     """
-    配置并返回日志记录器
+Настроить и вернуть логгер
 
     Args:
-        name: 日志记录器名称
+имя: имя регистратора
 
     Returns:
-        配置好的日志记录器
+Настроенный регистратор
     """
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, Config.LOG_LEVEL.upper()))
 
-    # 避免重复添加 handler
+# Избегайте повторного добавления обработчиков
     if logger.handlers:
         return logger
 
-    # 控制台 handler
+# обработчик консоли
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
 
-    # 文件 handler
+# обработчик файла
     log_dir = Path.home() / ".learningAgent" / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     file_handler = logging.FileHandler(log_dir / "app.log")
     file_handler.setLevel(logging.DEBUG)
 
-    # 格式化
+# формат
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",

@@ -1,8 +1,8 @@
 """
-文献检索工具 — Semantic Scholar API
+Инструмент поиска литературы — API Semantic Scholar
 
-覆盖 2 亿+ 学术论文，涵盖计算机科学、医学、生物学、物理学、化学、
-社会科学、经济学、人文艺术等全学科领域。
+Охватывает более 200 миллионов научных статей по информатике, медицине, биологии, физике, химии,
+Все предметные области, включая социальные науки, экономику, гуманитарные науки и искусство.
 
 API 文档: https://api.semanticscholar.org/api-docs/
 """
@@ -18,48 +18,48 @@ from hello_agents.tools import Tool, ToolParameter, ToolResponse, ToolStatus
 
 
 class LiteratureSearchTool(Tool):
-    """全学科文献检索工具
+"""Полнопрофильный инструмент поиска литературы
 
-    通过 Semantic Scholar API 在多学科数据库中检索学术论文。
-    覆盖 2 亿+ 论文，支持关键词、作者、年份、学科领域等筛选条件。
-    返回论文标题、作者、摘要、发表信息、引用次数、PDF 链接等。
+Ищите научные статьи в междисциплинарных базах данных с помощью Semantic Scholar API.
+Охватывает более 200 миллионов статей и поддерживает условия фильтрации, такие как ключевые слова, авторы, годы, предметные области и т. д.
+Возвращает название статьи, автора, аннотацию, информацию о публикации, количество цитирований, ссылку PDF и т. д.
     """
 
     BASE_URL = "https://api.semanticscholar.org/graph/v1/paper/search"
 
-    # 请求的论文字段
+#Запрашиваемые бумажные поля
     FIELDS = [
         "title", "abstract", "authors", "year", "venue",
         "externalIds", "citationCount", "influentialCitationCount",
         "openAccessPdf", "journal", "publicationTypes", "fieldsOfStudy"
     ]
 
-    # 中文学科关键词映射
+# Сопоставление ключевых слов по теме китайского языка
     FIELD_ALIASES = {
-        "计算机科学": "Computer Science",
-        "人工智能": "Artificial Intelligence",
-        "机器学习": "Machine Learning",
-        "医学": "Medicine",
-        "生物学": "Biology",
-        "物理学": "Physics",
-        "化学": "Chemistry",
-        "数学": "Mathematics",
-        "经济学": "Economics",
-        "心理学": "Psychology",
-        "社会学": "Sociology",
-        "语言学": "Linguistics",
-        "哲学": "Philosophy",
-        "历史": "History",
-        "工程": "Engineering",
-        "环境科学": "Environmental Science",
-        "材料科学": "Materials Science",
-        "教育学": "Education",
-        "法学": "Law",
-        "政治学": "Political Science",
-        "商学": "Business",
-        "艺术": "Art",
-        "地理": "Geography",
-        "地质": "Geology",
+«Информатика»: «Информатика»,
+«Искусственный интеллект»: «Искусственный интеллект»,
+«Машинное обучение»: «Машинное обучение»,
+«Медицина»: «Медицина»,
+«Биология»: «Биология»,
+«Физика»: «Физика»,
+«Химия»: «Химия»,
+«Математика»: «Математика»,
+«Экономика»: «Экономика»,
+«Психология»: «Психология»,
+«Социология»: «Социология»,
+«Лингвистика»: «Лингвистика»,
+«Философия»: «Философия»,
+«История»: «История»,
+«Инжиниринг»: «Инжиниринг»,
+«Наука об окружающей среде»: «Наука об окружающей среде»,
+«Материаловедение»: «Материаловедение»,
+«Образование»: «Образование»,
+«Закон»: «Закон»,
+«Политология»: «Политология»,
+«Коммерция»: «Бизнес»,
+«Искусство»: «Искусство»,
+«География»: «География»,
+«Геология»: «Геология»,
     }
 
     def __init__(self):
@@ -67,26 +67,26 @@ class LiteratureSearchTool(Tool):
             name="literature_search",
             description="通过 Semantic Scholar 在全学科数据库中检索学术论文。"
                         "覆盖 2 亿+ 论文，涵盖计算机科学、医学、生物、物理、化学、"
-                        "社会科学、经济学、人文等所有学术领域。"
+«Социальные науки, экономика, гуманитарные науки, все академические области».
                         "支持按关键词、作者、年份范围、学科领域筛选。"
                         "返回论文标题、作者、摘要、期刊、引用次数、PDF 链接等信息。"
                         "当需要跨学科检索学术文献时使用此工具，比 arXiv 覆盖面更广。"
         )
 
     def _map_field(self, field_input: str) -> str:
-        """将中文/模糊学科名映射到 Semantic Scholar 领域"""
+"""Сопоставление китайских/нечетких названий предметов с полями Semantic Scholar"""
         if not field_input:
             return ""
         field_input = field_input.strip()
-        # 直接匹配
+# Прямое совпадение
         for cn, en in self.FIELD_ALIASES.items():
             if cn in field_input or field_input.lower() in cn.lower():
                 return en
-        # 已经是英文则直接返回
+# Если он уже на английском языке, вернитесь напрямую
         return field_input
 
     def _build_url(self, parameters: Dict[str, Any]) -> str:
-        """构建 Semantic Scholar 搜索 URL"""
+"""Создание URL-адреса поиска Semantic Scholar"""
         keyword = parameters.get("keyword", "")
         author = parameters.get("author", "")
         field = parameters.get("field", "")
@@ -94,7 +94,7 @@ class LiteratureSearchTool(Tool):
         year_to = parameters.get("year_to", "")
         limit = min(parameters.get("max_results", 5), 20)
 
-        # 构建查询字符串
+# Создаем строку запроса
         query_parts = []
         if keyword:
             query_parts.append(keyword.strip())
@@ -109,12 +109,12 @@ class LiteratureSearchTool(Tool):
             "fields": ",".join(self.FIELDS)
         }
 
-        # 学科筛选
+# Тематический фильтр
         mapped_field = self._map_field(field) if field else ""
         if mapped_field:
             params["fieldsOfStudy"] = mapped_field
 
-        # 年份筛选
+# Фильтр года
         if year_from or year_to:
             year_filter = f"{year_from or '1900'}-{year_to or '2026'}"
             params["year"] = year_filter
@@ -122,7 +122,7 @@ class LiteratureSearchTool(Tool):
         return f"{self.BASE_URL}?{urllib.parse.urlencode(params)}"
 
     def _format_paper(self, paper: Dict, index: int, keyword: str = "") -> str:
-        """格式化单篇论文为 Markdown"""
+"""Отформатируйте отдельный документ как Markdown"""
         title = paper.get("title", "N/A")
         year = paper.get("year", "N/A")
         venue = paper.get("venue", "")
@@ -130,31 +130,31 @@ class LiteratureSearchTool(Tool):
         journal_name = journal.get("name", "") if journal else ""
         publication_venue = venue or journal_name or "N/A"
 
-        # 作者列表
+# Список авторов
         authors_list = paper.get("authors", [])
         author_names = [a.get("name", "") for a in authors_list[:5]]
         authors_str = ", ".join(author_names)
         if len(authors_list) > 5:
             authors_str += " et al."
 
-        # 摘要：优先取 TLDR，其次取 abstract
-        abstract = paper.get("abstract") or "暂无摘要"
+# Аннотация: сначала возьмите TLDR, затем абстрагируйте
+Abstract = paper.get("абстракт") или "Пока нет реферата"
         if len(abstract) > 400:
             abstract = abstract[:400] + "..."
 
-        # 引用次数
+# Количество цитирований
         citations = paper.get("citationCount", 0)
 
         # DOI
         external_ids = paper.get("externalIds", {}) or {}
         doi = external_ids.get("DOI", "")
 
-        # PDF 链接
+# PDF-ссылка
         open_access = paper.get("openAccessPdf", {}) or {}
         pdf_url = open_access.get("url", "")
         arxiv_id = external_ids.get("ArXiv", "")
 
-        # 领域标签
+# тег поля
         fields = paper.get("fieldsOfStudy", []) or []
         fields_str = ", ".join(fields[:3]) if fields else ""
 
@@ -163,10 +163,10 @@ class LiteratureSearchTool(Tool):
             lines.append(f"> 作者: {authors_str}")
         lines.append(f"> 发表: {year} | {publication_venue}")
         if fields_str:
-            lines.append(f"> 领域: {fields_str}")
-        lines.append(f"> 引用: {citations} 次")
+lines.append(f"> поля: {fields_str}")
+lines.append(f"> citations: {citations} next")
 
-        # 链接
+# Связь
         links = []
         if doi:
             links.append(f"[DOI](https://doi.org/{doi})")
@@ -182,7 +182,7 @@ class LiteratureSearchTool(Tool):
         return "\n".join(lines)
 
     def _make_request(self, url: str, api_key: str, max_retries: int = 3) -> Dict:
-        """发送 API 请求，带指数退避重试"""
+"""Отправить запрос API, повторить попытку с экспоненциальной задержкой"""
         last_error = None
         for attempt in range(max_retries):
             try:
@@ -201,7 +201,7 @@ class LiteratureSearchTool(Tool):
 
             except urllib.error.HTTPError as e:
                 if e.code == 429:
-                    # 速率限制：等待后重试
+# Ограничение скорости: подождите и попробуйте еще раз
                     wait = 2 ** (attempt + 1)  # 2s, 4s, 8s
                     if attempt < max_retries - 1:
                         time.sleep(wait)
@@ -247,17 +247,17 @@ class LiteratureSearchTool(Tool):
             offset = data.get("offset", 0)
 
             if not papers:
-                # 尝试推荐相似的搜索词
+# Попробуйте порекомендовать похожие поисковые запросы
                 suggestion = ""
                 if keyword:
-                    suggestion = f"\n\n建议：尝试更简短的关键词，或更换同义词。如将 '{keyword}' 改为更通用的表述。"
+предложение = f"\n\nПредложение: попробуйте более короткие ключевые слова или измените синонимы. Например, замените '{keyword}' на более общее выражение."
                 return ToolResponse.success(
                     text=f"未找到匹配的论文（共 {total} 条结果）。{suggestion}",
                     data={"count": 0, "total": total, "papers": []}
                 )
 
-            # 格式化输出
-            lines = [f"找到 {total} 篇论文（显示前 {len(papers)} 篇，偏移 {offset}）：\n"]
+# Форматирование вывода
+lines = [f"{total} найденных документов (показаны первые {len(papers)}, смещение {offset}):\n"]
             for i, paper in enumerate(papers, 1):
                 lines.append(self._format_paper(paper, i, keyword))
 
@@ -289,11 +289,11 @@ class LiteratureSearchTool(Tool):
             )
 
         except RuntimeError as e:
-            # _make_request 中已含重试逻辑，此处为最终失败
+# _make_request уже содержит логику повтора, вот окончательный сбой
             return ToolResponse.error(
                 code="API_ERROR",
-                message=f"[检索失败] {str(e)}\n\n"
-                        "请等待 1-2 分钟后重试。在此期间可使用其他数据源（OpenAlex、CrossRef、PubMed）。"
+message=f"[Ошибка получения] {str(e)}\n\n"
+«Пожалуйста, подождите 1–2 минуты и повторите попытку. Тем временем можно использовать другие источники данных (OpenAlex, CrossRef, PubMed).»
             )
         except json.JSONDecodeError:
             return ToolResponse.error(
@@ -303,14 +303,14 @@ class LiteratureSearchTool(Tool):
         except Exception as e:
             return ToolResponse.error(
                 code="INTERNAL_ERROR",
-                message=f"检索过程出错: {str(e)}"
+message=f"Ошибка при получении: {str(e)}"
             )
 
     def get_parameters(self) -> List[ToolParameter]:
         return [
             ToolParameter(
                 name="keyword", type="string",
-                description="搜索关键词，支持中英文。如 'transformer attention mechanism' 或 '深度学习 图像分割'",
+описание="Поиск по ключевым словам, поддержка китайского и английского языков. Например, "механизм преобразования внимания" или "сегментация изображений глубокого обучения"",
                 required=False
             ),
             ToolParameter(
@@ -320,22 +320,22 @@ class LiteratureSearchTool(Tool):
             ),
             ToolParameter(
                 name="field", type="string",
-                description="学科领域，支持中英文。如 '计算机科学'/'Computer Science'、'医学'/'Medicine'、'物理学'/'Physics'",
+описание="Предметная область, поддерживает китайский и английский языки. Например, "Информатика"/"Информатика", "Медицина"/"Медицина", "Физика"/"Физика"",
                 required=False
             ),
             ToolParameter(
                 name="year_from", type="string",
-                description="起始年份，如 '2020'",
+описание="Начальный год, например '2020'",
                 required=False
             ),
             ToolParameter(
                 name="year_to", type="string",
-                description="截止年份，如 '2026'",
+описание="Год окончания, например '2026'",
                 required=False
             ),
             ToolParameter(
                 name="max_results", type="integer",
-                description="最大返回结果数（默认5，最大20）",
+описание="Максимальное количество возвращаемых результатов (по умолчанию 5, максимум 20)",
                 required=False
             ),
         ]

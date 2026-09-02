@@ -13,8 +13,8 @@ class MermaidAgentService:
         self.pipeline = MermaidPipeline(self.validator)
 
     async def stream_chat(self, mode: str, prompt: str, direction: str = "TD") -> AsyncGenerator[Dict[str, Any], None]:
-        yield {"type": "status", "phase": "start", "message": "开始生成"}
-        yield {"type": "status", "phase": "generating", "message": "模型生成中"}
+        yield {"type": "status", "phase": "start", "message": "Начало генерации"}
+        yield {"type": "status", "phase": "generating", "message": "Генерация моделью"}
 
         try:
             llm_timeout = max(30, int(settings.llm_timeout))
@@ -25,14 +25,14 @@ class MermaidAgentService:
             optimized_text = ""
             generated_from_optimized = False
             if mode == "standard":
-                yield {"type": "status", "phase": "optimizing", "message": "文本优化中"}
+                yield {"type": "status", "phase": "optimizing", "message": "Оптимизация текста"}
                 standard_result = await asyncio.wait_for(
                     asyncio.to_thread(self.pipeline.generate_standard, prompt), timeout=standard_timeout
                 )
                 optimized_text = standard_result.get("optimized_text", "")
                 raw_code = standard_result.get("mermaid_code", "")
                 generated_from_optimized = bool(standard_result.get("generated_from_optimized", False))
-                yield {"type": "status", "phase": "creating", "message": "基于优化文本生成流程图"}
+                yield {"type": "status", "phase": "creating", "message": "Построение блок-схемы по оптимизированному тексту"}
             else:
                 raw_code = await asyncio.wait_for(
                     asyncio.to_thread(self.pipeline.generate_once, mode, prompt), timeout=single_timeout
@@ -41,7 +41,7 @@ class MermaidAgentService:
             extracted = prune_complexity(raw_code, mode)
             extracted = apply_direction(extracted, direction)
 
-            yield {"type": "status", "phase": "validating", "message": "语法校验中"}
+            yield {"type": "status", "phase": "validating", "message": "Проверка синтаксиса"}
             validation = await asyncio.wait_for(
                 asyncio.to_thread(self.pipeline.post_validate, extracted), timeout=validate_timeout
             )
@@ -62,13 +62,13 @@ class MermaidAgentService:
             yield {
                 "type": "error",
                 "phase": "timeout",
-                "message": "生成超时，请简化输入后重试。",
+                "message": "Превышено время генерации. Упростите ввод и повторите.",
             }
             yield {"type": "done"}
         except Exception as exc:
             yield {
                 "type": "error",
                 "phase": "exception",
-                "message": f"生成失败: {str(exc)}",
+                "message": f"Ошибка генерации: {str(exc)}",
             }
             yield {"type": "done"}

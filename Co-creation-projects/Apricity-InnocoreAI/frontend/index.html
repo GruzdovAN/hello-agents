@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>研创·智核 - InnoCore AI</title>
+    <title>InnoCore AI — платформа ИИ для науки</title>
     <style>
         * {
             margin: 0;
@@ -492,36 +492,36 @@
 <body>
     <div class="container">
         <header>
-            <h1>🧠 研创·智核</h1>
-            <p>基于多智能体架构的智能科研助手平台</p>
+            <h1>🧠 InnoCore AI</h1>
+            <p>Мультиагентная платформа для научных исследований</p>
         </header>
 
         <main class="main-content">
             <div class="status" id="systemStatus">
-                ✅ 系统初始化中...
+                ✅ Инициализация системы...
             </div>
 
             <div class="nav-buttons">
-                <a href="/docs" class="btn" target="_blank">📚 API 文档</a>
-                <a href="/health" class="btn" target="_blank">🔍 健康检查</a>
-                <button class="btn" onclick="checkSystemStatus()">🔄 刷新状态</button>
+                <a href="/docs" class="btn" target="_blank">📚 API-документация</a>
+                <a href="/health" class="btn" target="_blank">🔍 Проверка здоровья</a>
+                <button class="btn" onclick="checkSystemStatus()">🔄 Обновить статус</button>
             </div>
 
             <section>
-                <h2>🚀 核心功能</h2>
+                <h2>🚀 Основные функции</h2>
 
-                <!-- 工作流模式选择 -->
+                <!-- Выбор режима -->
                 <div
                     style="margin-bottom: 20px; padding: 15px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <h3 style="margin: 0 0 10px 0; color: #667eea;">🔄 工作模式</h3>
+                    <h3 style="margin: 0 0 10px 0; color: #667eea;">🔄 Режим работы</h3>
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <label style="display: flex; align-items: center; cursor: pointer;">
                             <input type="radio" name="work-mode" value="individual" checked style="margin-right: 8px;">
-                            <span>单独模式 - 独立使用每个智能体</span>
+                            <span>Отдельный — каждый агент по отдельности</span>
                         </label>
                         <label style="display: flex; align-items: center; cursor: pointer;">
                             <input type="radio" name="work-mode" value="workflow" style="margin-right: 8px;">
-                            <span>协调模式 - 自动化完整工作流 ⭐</span>
+                            <span>Согласованный — полный автоматический workflow ⭐</span>
                         </label>
                     </div>
                 </div>
@@ -529,140 +529,140 @@
                 <div class="features">
                     <div class="feature-card" onclick="activateAgent('workflow')" id="workflow-card"
                         style="display: none; grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <h3>🔄 完整工作流</h3>
-                        <p>自动协调所有智能体：搜索论文 → 深度分析 → 生成引用 → 撰写报告</p>
+                        <h3>🔄 Полный workflow</h3>
+                        <p>Все агенты: поиск → анализ → цитирование → отчёт</p>
                         <button class="btn" style="background: white; color: #667eea;"
-                            onclick="event.stopPropagation(); activateAgent('workflow')">启动工作流</button>
+                            onclick="event.stopPropagation(); activateAgent('workflow')">Запустить workflow</button>
                     </div>
 
                     <div class="feature-card" onclick="activateAgent('hunter')" id="hunter-card">
                         <h3>🕵️ Hunter Agent</h3>
-                        <p>智能文献搜索与监控，自动抓取 ArXiv、IEEE 等平台的最新论文</p>
-                        <button class="btn" onclick="event.stopPropagation(); activateAgent('hunter')">开始搜索</button>
+                        <p>Умный поиск и мониторинг литературы (ArXiv, IEEE и др.)</p>
+                        <button class="btn" onclick="event.stopPropagation(); activateAgent('hunter')">Начать поиск</button>
                     </div>
 
                     <div class="feature-card" onclick="activateAgent('miner')" id="miner-card">
                         <h3>🧠 Miner Agent</h3>
-                        <p>深度论文分析，挖掘创新点，生成结构化研究报告</p>
-                        <button class="btn" onclick="event.stopPropagation(); activateAgent('miner')">分析论文</button>
+                        <p>Глубокий анализ статей и структурированные отчёты</p>
+                        <button class="btn" onclick="event.stopPropagation(); activateAgent('miner')">Анализировать</button>
                     </div>
 
                     <div class="feature-card" onclick="activateAgent('coach')" id="coach-card">
                         <h3>✍️ Coach Agent</h3>
-                        <p>个性化写作助手，提供学术润色、风格迁移和实时指导</p>
-                        <button class="btn" onclick="event.stopPropagation(); activateAgent('coach')">写作助手</button>
+                        <p>Помощник по академическому письму и стилю</p>
+                        <button class="btn" onclick="event.stopPropagation(); activateAgent('coach')">Помощник по письму</button>
                     </div>
 
                     <div class="feature-card" onclick="activateAgent('validator')" id="validator-card">
                         <h3>🔎 Validator Agent</h3>
-                        <p>引用格式校验，确保学术引用的准确性和标准化</p>
-                        <button class="btn" onclick="event.stopPropagation(); activateAgent('validator')">校验引用</button>
+                        <p>Проверка формата цитирования</p>
+                        <button class="btn" onclick="event.stopPropagation(); activateAgent('validator')">Проверить цитаты</button>
                     </div>
                 </div>
             </section>
 
-            <!-- Hunter Agent 交互面板 -->
+            <!-- Hunter Agent -->
             <div class="interaction-panel" id="hunter-panel">
-                <h3>🕵️ 文献搜索</h3>
+                <h3>🕵️ Поиск литературы</h3>
                 <div class="input-group">
-                    <label for="search-keywords">搜索关键词</label>
+                    <label for="search-keywords">Ключевые слова</label>
                     <input type="text" id="search-keywords"
-                        placeholder="例如: machine learning, natural language processing">
+                        placeholder="Напр.: machine learning, natural language processing">
                 </div>
                 <div class="input-group">
-                    <label for="search-source">搜索来源</label>
+                    <label for="search-source">Источник</label>
                     <select id="search-source">
                         <option value="arxiv">ArXiv</option>
                         <option value="ieee">IEEE</option>
                         <option value="pubmed">PubMed</option>
-                        <option value="all">全部来源</option>
+                        <option value="all">Все источники</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="search-limit">论文数量限制</label>
+                    <label for="search-limit">Лимит статей</label>
                     <input type="number" id="search-limit" value="10" min="1" max="50">
                 </div>
-                <button class="btn" onclick="executeHunterTask()">开始搜索</button>
+                <button class="btn" onclick="executeHunterTask()">Начать поиск</button>
                 <div class="loading" id="hunter-loading">
                     <div class="spinner"></div>
-                    <p>正在搜索论文...</p>
+                    <p>Поиск статей...</p>
                 </div>
                 <div class="response-area" id="hunter-response"></div>
             </div>
 
             <!-- Miner Agent 交互面板 -->
             <div class="interaction-panel" id="miner-panel">
-                <h3>🧠 论文分析</h3>
+                <h3>🧠 Анализ статьи</h3>
                 <div class="input-group">
-                    <label for="paper-upload">上传论文 (PDF)</label>
+                    <label for="paper-upload">Загрузить PDF</label>
                     <div class="file-upload" id="paper-upload-area">
-                        <p>📄 点击或拖拽PDF文件到此处</p>
+                        <p>📄 Нажмите или перетащите PDF сюда</p>
                         <input type="file" id="paper-file" accept=".pdf" style="display: none;">
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="paper-url">或输入论文URL</label>
+                    <label for="paper-url">Или URL статьи</label>
                     <input type="url" id="paper-url" placeholder="https://arxiv.org/abs/...">
                 </div>
                 <div class="input-group">
-                    <label for="analysis-type">分析类型</label>
+                    <label for="analysis-type">Тип анализа</label>
                     <select id="analysis-type">
-                        <option value="summary">内容摘要</option>
-                        <option value="innovation">创新点分析</option>
-                        <option value="comparison">对比分析</option>
-                        <option value="comprehensive">综合分析</option>
+                        <option value="summary">Краткое содержание</option>
+                        <option value="innovation">Инновации</option>
+                        <option value="comparison">Сравнение</option>
+                        <option value="comprehensive">Комплексный</option>
                     </select>
                 </div>
-                <button class="btn" onclick="executeMinerTask()">开始分析</button>
+                <button class="btn" onclick="executeMinerTask()">Анализировать</button>
                 <div class="loading" id="miner-loading">
                     <div class="spinner"></div>
-                    <p>正在分析论文...</p>
+                    <p>Анализ статьи...</p>
                 </div>
                 <div class="response-area" id="miner-response"></div>
             </div>
 
             <!-- Coach Agent 交互面板 -->
             <div class="interaction-panel" id="coach-panel">
-                <h3>✍️ 写作助手</h3>
+                <h3>✍️ Помощник по письму</h3>
                 <div class="input-group">
-                    <label for="writing-text">您的文本</label>
-                    <textarea id="writing-text" placeholder="请输入需要润色的学术文本..."></textarea>
+                    <label for="writing-text">Ваш текст</label>
+                    <textarea id="writing-text" placeholder="Вставьте текст для редактуры..."></textarea>
                 </div>
                 <div class="input-group">
-                    <label for="writing-style">写作风格</label>
+                    <label for="writing-style">Стиль</label>
                     <select id="writing-style">
-                        <option value="formal">正式学术风格</option>
-                        <option value="nature">Nature风格</option>
-                        <option value="science">Science风格</option>
-                        <option value="ieee">IEEE风格</option>
+                        <option value="formal">Формальный академический</option>
+                        <option value="nature">Стиль Nature</option>
+                        <option value="science">Стиль Science</option>
+                        <option value="ieee">Стиль IEEE</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="writing-task">任务类型</label>
+                    <label for="writing-task">Тип задачи</label>
                     <select id="writing-task">
-                        <option value="polish">润色改进</option>
-                        <option value="translate">中译英</option>
-                        <option value="explain">解释概念</option>
-                        <option value="expand">内容扩展</option>
+                        <option value="polish">Редактура и улучшение</option>
+                        <option value="translate">Перевод (CN→EN)</option>
+                        <option value="explain">Объяснение концепции</option>
+                        <option value="expand">Расширение текста</option>
                     </select>
                 </div>
-                <button class="btn" onclick="executeCoachTask()">开始处理</button>
+                <button class="btn" onclick="executeCoachTask()">Начать обработку</button>
                 <div class="loading" id="coach-loading">
                     <div class="spinner"></div>
-                    <p>正在处理文本...</p>
+                    <p>Обработка текста...</p>
                 </div>
                 <div class="response-area" id="coach-response"></div>
             </div>
 
             <!-- Validator Agent 交互面板 -->
             <div class="interaction-panel" id="validator-panel">
-                <h3>🔎 引用校验</h3>
+                <h3>🔎 Проверка цитирования</h3>
                 <div class="input-group">
-                    <label for="citation-input">引用信息</label>
-                    <textarea id="citation-input" placeholder="请输入引用信息，可以是DOI、标题、或BibTeX格式..."></textarea>
+                    <label for="citation-input">Данные цитирования</label>
+                    <textarea id="citation-input" placeholder="DOI, название статьи или BibTeX..."></textarea>
                 </div>
                 <div class="input-group">
-                    <label for="citation-format">输出格式</label>
+                    <label for="citation-format">Формат вывода</label>
                     <select id="citation-format">
                         <option value="bibtex">BibTeX</option>
                         <option value="apa">APA</option>
@@ -670,45 +670,45 @@
                         <option value="mla">MLA</option>
                     </select>
                 </div>
-                <button class="btn" onclick="executeValidatorTask()">校验引用</button>
+                <button class="btn" onclick="executeValidatorTask()">Проверить цитату</button>
                 <div class="loading" id="validator-loading">
                     <div class="spinner"></div>
-                    <p>正在校验引用...</p>
+                    <p>Проверка цитирования...</p>
                 </div>
                 <div class="response-area" id="validator-response"></div>
             </div>
 
             <!-- Workflow 协调面板 -->
             <div class="interaction-panel" id="workflow-panel">
-                <h3>🔄 完整工作流</h3>
-                <p style="color: #666; margin-bottom: 20px;">自动协调所有智能体完成完整的研究流程</p>
+                <h3>🔄 Полный workflow</h3>
+                <p style="color: #666; margin-bottom: 20px;">Автоматическая координация всех агентов для полного цикла исследования</p>
 
                 <div class="input-group">
-                    <label for="workflow-keywords">研究关键词</label>
-                    <input type="text" id="workflow-keywords" placeholder="例如: deep learning for computer vision">
+                    <label for="workflow-keywords">Ключевые слова</label>
+                    <input type="text" id="workflow-keywords" placeholder="Напр.: deep learning for computer vision">
                 </div>
 
                 <div class="input-group">
-                    <label for="workflow-limit">搜索论文数量</label>
+                    <label for="workflow-limit">Количество статей</label>
                     <select id="workflow-limit">
-                        <option value="3">3篇（快速）</option>
-                        <option value="5" selected>5篇（推荐）</option>
-                        <option value="10">10篇（详细）</option>
+                        <option value="3">3 (быстро)</option>
+                        <option value="5" selected>5 (рекомендуется)</option>
+                        <option value="10">10 (подробно)</option>
                     </select>
                 </div>
 
                 <div class="input-group">
-                    <label for="workflow-analysis-type">分析类型</label>
+                    <label for="workflow-analysis-type">Тип анализа</label>
                     <select id="workflow-analysis-type">
-                        <option value="summary">摘要分析</option>
-                        <option value="innovation">创新点分析</option>
-                        <option value="comparison">对比分析</option>
-                        <option value="comprehensive">综合分析</option>
+                        <option value="summary">Краткое содержание</option>
+                        <option value="innovation">Инновации</option>
+                        <option value="comparison">Сравнение</option>
+                        <option value="comprehensive">Комплексный</option>
                     </select>
                 </div>
 
                 <div class="input-group">
-                    <label for="workflow-citation-format">引用格式</label>
+                    <label for="workflow-citation-format">Формат цитирования</label>
                     <select id="workflow-citation-format">
                         <option value="bibtex">BibTeX</option>
                         <option value="apa">APA</option>
@@ -720,16 +720,16 @@
                 <div class="input-group">
                     <label>
                         <input type="checkbox" id="workflow-generate-report" checked>
-                        生成综合报告
+                        Создать сводный отчёт
                     </label>
                 </div>
 
                 <button class="btn" onclick="executeWorkflow()"
-                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🚀 启动完整工作流</button>
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🚀 Запустить полный workflow</button>
 
                 <div class="loading" id="workflow-loading">
                     <div class="spinner"></div>
-                    <p>工作流执行中，请稍候...</p>
+                    <p>Workflow выполняется, подождите...</p>
                 </div>
 
                 <div class="response-area" id="workflow-response"></div>
@@ -740,7 +740,7 @@
     <script>
         let currentAgent = null;
 
-        // 页面加载时检查系统状态
+        // 页面加载时检查СистемаСтатус
         document.addEventListener('DOMContentLoaded', function () {
             checkSystemStatus();
             setupFileUpload();
@@ -762,7 +762,7 @@
             });
         }
 
-        // 检查系统状态
+        // 检查СистемаСтатус
         async function checkSystemStatus() {
             const statusDiv = document.getElementById('systemStatus');
             try {
@@ -771,13 +771,13 @@
 
                 if (response.ok) {
                     statusDiv.className = 'status';
-                    statusDiv.innerHTML = `✅ 系统运行正常 | 状态: ${data.status} | 时间: ${new Date().toLocaleString()}`;
+                    statusDiv.innerHTML = `✅ Система работает нормально | Статус: ${data.status} | Время: ${new Date().toLocaleString()}`;
                 } else {
-                    throw new Error('系统状态异常');
+                    throw new Error('Аномальный статус системы');
                 }
             } catch (error) {
                 statusDiv.className = 'error';
-                statusDiv.innerHTML = `❌ 系统连接失败: ${error.message}`;
+                statusDiv.innerHTML = `❌ Ошибка подключения к системе: ${error.message}`;
             }
         }
 
@@ -804,7 +804,7 @@
             const limit = document.getElementById('search-limit').value;
 
             if (!keywords.trim()) {
-                showError('hunter-response', '请输入搜索关键词');
+                showError('hunter-response', 'Введите ключевые слова');
                 return;
             }
 
@@ -826,12 +826,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('hunter-response', `找到 ${data.papers?.length || 0} 篇相关论文`, data);
+                    showSuccess('hunter-response', `Найдено ${data.papers?.length || 0} релевантных статей`, data);
                 } else {
-                    showError('hunter-response', data.detail || '搜索失败');
+                    showError('hunter-response', data.detail || 'Ошибка поиска');
                 }
             } catch (error) {
-                showError('hunter-response', `网络错误: ${error.message}`);
+                showError('hunter-response', `Сетевая ошибка: ${error.message}`);
             } finally {
                 hideLoading('hunter-loading');
             }
@@ -843,7 +843,7 @@
             const analysisType = document.getElementById('analysis-type').value;
 
             if (!paperUrl.trim()) {
-                showError('miner-response', '请输入论文URL或上传PDF文件');
+                showError('miner-response', 'Введите URL статьи или загрузите PDF');
                 return;
             }
 
@@ -864,12 +864,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('miner-response', '论文分析完成', data);
+                    showSuccess('miner-response', 'Анализ статьи завершён', data);
                 } else {
-                    showError('miner-response', data.detail || '分析失败');
+                    showError('miner-response', data.detail || 'АнализОшибка');
                 }
             } catch (error) {
-                showError('miner-response', `网络错误: ${error.message}`);
+                showError('miner-response', `Сетевая ошибка: ${error.message}`);
             } finally {
                 hideLoading('miner-loading');
             }
@@ -882,7 +882,7 @@
             const task = document.getElementById('writing-task').value;
 
             if (!text.trim()) {
-                showError('coach-response', '请输入需要处理的文本');
+                showError('coach-response', 'Введите текст для обработки');
                 return;
             }
 
@@ -904,12 +904,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('coach-response', '文本处理完成', data);
+                    showSuccess('coach-response', 'Текст обработан', data);
                 } else {
-                    showError('coach-response', data.detail || '处理失败');
+                    showError('coach-response', data.detail || 'Ошибка обработки');
                 }
             } catch (error) {
-                showError('coach-response', `网络错误: ${error.message}`);
+                showError('coach-response', `Сетевая ошибка: ${error.message}`);
             } finally {
                 hideLoading('coach-loading');
             }
@@ -921,7 +921,7 @@
             const format = document.getElementById('citation-format').value;
 
             if (!citation.trim()) {
-                showError('validator-response', '请输入引用信息');
+                showError('validator-response', 'Введите данные цитирования');
                 return;
             }
 
@@ -942,12 +942,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('validator-response', '引用校验完成', data);
+                    showSuccess('validator-response', 'Проверка цитирования завершена', data);
                 } else {
-                    showError('validator-response', data.detail || '校验失败');
+                    showError('validator-response', data.detail || 'ПроверкаОшибка');
                 }
             } catch (error) {
-                showError('validator-response', `网络错误: ${error.message}`);
+                showError('validator-response', `Сетевая ошибка: ${error.message}`);
             } finally {
                 hideLoading('validator-loading');
             }
@@ -962,7 +962,7 @@
             const generateReport = document.getElementById('workflow-generate-report').checked;
 
             if (!keywords.trim()) {
-                showError('workflow-response', '请输入研究关键词');
+                showError('workflow-response', 'Введите ключевые слова');
                 return;
             }
 
@@ -986,12 +986,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showSuccess('workflow-response', '🎉 工作流执行完成！', data);
+                    showSuccess('workflow-response', '🎉 Workflow выполнен!', data);
                 } else {
-                    showError('workflow-response', data.detail || '工作流执行失败');
+                    showError('workflow-response', data.detail || 'Ошибка выполнения workflow');
                 }
             } catch (error) {
-                showError('workflow-response', `网络错误: ${error.message}`);
+                showError('workflow-response', `Сетевая ошибка: ${error.message}`);
             } finally {
                 hideLoading('workflow-loading');
             }
@@ -1038,7 +1038,7 @@
             showLoading('miner-loading');
 
             try {
-                // 使用新的 PDF 解析端点
+                // Используется新的 PDF 解析端点
                 const response = await fetch('/api/v1/analysis/upload-pdf', {
                     method: 'POST',
                     body: formData
@@ -1050,55 +1050,55 @@
                     // 自动填充 URL 字段
                     document.getElementById('paper-url').value = data.file_path || '';
 
-                    // 显示解析结果
+                    // 显示解析Результат
                     const uploadInfo = `
                         <div class="paper-card">
                             <h4>📄 ${data.title || file.name}</h4>
                             <div class="authors">
-                                👥 作者: ${data.authors ? data.authors.join(', ') : '未知'}
+                                👥 Авторы: ${data.authors ? data.authors.join(', ') : 'неизвестно'}
                             </div>
                             <div class="abstract">
-                                📝 ${data.abstract || '无摘要'}
+                                📝 ${data.abstract || 'без описания'}
                             </div>
                             <div class="meta">
-                                <span>📄 ${data.page_count || 0} 页</span>
-                                <span>📊 ${data.word_count || 0} 词</span>
-                                <span>✅ 已解析</span>
+                                <span>📄 ${data.page_count || 0} стр.</span>
+                                <span>📊 ${data.word_count || 0} слов</span>
+                                <span>✅ Разобрано</span>
                             </div>
                         </div>
                     `;
 
-                    showSuccess('miner-response', '✅ PDF 文件上传并解析成功！现在可以选择分析类型并开始分析。', {
+                    showSuccess('miner-response', '✅ PDF загружен и разобран. Выберите тип анализа и начните анализ.', {
                         upload_info: uploadInfo
                     });
                 } else {
-                    showError('miner-response', data.detail || '上传失败');
+                    showError('miner-response', data.detail || 'Ошибка загрузки');
                 }
             } catch (error) {
-                showError('miner-response', `上传错误: ${error.message}`);
+                showError('miner-response', `Ошибка загрузки: ${error.message}`);
             } finally {
                 hideLoading('miner-loading');
             }
         }
 
-        // 显示加载状态
+        // 显示加载Статус
         function showLoading(loadingId) {
             document.getElementById(loadingId).classList.add('active');
         }
 
-        // 隐藏加载状态
+        // 隐藏加载Статус
         function hideLoading(loadingId) {
             document.getElementById(loadingId).classList.remove('active');
         }
 
-        // 显示成功消息
+        // 显示Успешно消息
         function showSuccess(responseId, message, data = null) {
             const responseDiv = document.getElementById(responseId);
 
             let content = `<div class="success">✅ ${message}</div>`;
 
             if (data) {
-                // 工作流结果
+                // 工作流Результат
                 if (data.steps && Array.isArray(data.steps)) {
                     content += formatWorkflowResult(data);
                 }
@@ -1106,29 +1106,29 @@
                 else if (data.upload_info) {
                     content += data.upload_info;
                 }
-                // 论文搜索结果
+                // 论文ПоискРезультат
                 else if (data.papers && Array.isArray(data.papers)) {
                     content += formatPaperResults(data);
                 }
-                // 论文分析结果
+                // 论文АнализРезультат
                 else if (data.analysis) {
                     content += formatAnalysisResult(data);
                 }
-                // 写作助手结果
+                // 写作助手Результат
                 else if (data.result && typeof data.result === 'string') {
                     content += formatWritingResult(data);
                 }
-                // 引用校验结果
+                // 引用ПроверкаРезультат
                 else if (data.formatted_citation) {
                     content += formatCitationResult(data);
                 }
-                // 其他类型的数据用格式化的 JSON 展示
+                // Другое类型的数据用格式化的 JSON 展示
                 else {
                     const jsonStr = JSON.stringify(data, null, 2);
                     const jsonId = 'json-' + Date.now();
                     content += `
                         <div style="position: relative;">
-                            <button class="copy-btn" onclick="copyToClipboard('${jsonId}', event)">📋 复制</button>
+                            <button class="copy-btn" onclick="copyToClipboard('${jsonId}', event)">📋 Копировать</button>
                             <pre id="${jsonId}">${syntaxHighlight(jsonStr)}</pre>
                         </div>
                     `;
@@ -1138,12 +1138,12 @@
             responseDiv.innerHTML = content;
         }
 
-        // 格式化论文搜索结果
+        // 格式化论文ПоискРезультат
         function formatPaperResults(data) {
             let html = `
                 <div class="result-header">
-                    <span>📚 搜索结果</span>
-                    <span class="result-stats">共找到 ${data.papers.length} 篇论文</span>
+                    <span>📚 Результаты поиска</span>
+                    <span class="result-stats">Найдено ${data.papers.length} статей</span>
                 </div>
             `;
 
@@ -1152,15 +1152,15 @@
                     <div class="paper-card">
                         <h4>${index + 1}. ${escapeHtml(paper.title)}</h4>
                         <div class="authors">
-                            👥 作者: ${paper.authors.join(', ')}
+                            👥 Авторы: ${paper.authors.join(', ')}
                         </div>
                         <div class="abstract">
                             📝 ${escapeHtml(paper.abstract)}
                         </div>
                         <div class="meta">
                             <span>📅 ${paper.published_date}</span>
-                            <span>🔗 <a href="${paper.url}" target="_blank">查看原文</a></span>
-                            ${paper.pdf_url ? `<span>📄 <a href="${paper.pdf_url}" target="_blank">下载PDF</a></span>` : ''}
+                            <span>🔗 <a href="${paper.url}" target="_blank">Открыть оригинал</a></span>
+                            ${paper.pdf_url ? `<span>📄 <a href="${paper.pdf_url}" target="_blank">СкачатьPDF</a></span>` : ''}
                             <span>🆔 ${paper.id}</span>
                         </div>
                     </div>
@@ -1170,11 +1170,11 @@
             return html;
         }
 
-        // 格式化论文分析结果
+        // 格式化论文АнализРезультат
         function formatAnalysisResult(data) {
             let html = `
                 <div class="result-header">
-                    <span>🧠 论文分析</span>
+                    <span>🧠 Анализ статьи</span>
                     <span class="result-stats">${data.analysis_type}</span>
                 </div>
             `;
@@ -1184,11 +1184,11 @@
                     <div class="paper-card">
                         <h4>${escapeHtml(data.paper_info.title)}</h4>
                         <div class="authors">
-                            👥 作者: ${data.paper_info.authors.join(', ')}
+                            👥 Авторы: ${data.paper_info.authors.join(', ')}
                         </div>
                         <div class="meta">
                             <span>📅 ${data.paper_info.published_date}</span>
-                            <span>🔗 <a href="${data.paper_info.url}" target="_blank">查看原文</a></span>
+                            <span>🔗 <a href="${data.paper_info.url}" target="_blank">Открыть оригинал</a></span>
                             <span>🏷️ ${data.paper_info.categories.join(', ')}</span>
                         </div>
                     </div>
@@ -1197,7 +1197,7 @@
 
             const analysisId = 'analysis-' + Date.now();
             html += '<div class="paper-card">';
-            html += '<h4>📊 分析结果 <button class="copy-btn" onclick="copyToClipboard(\'' + analysisId + '\', event)" style="float: right;">📋 复制</button></h4>';
+            html += '<h4>📊 Результат анализа <button class="copy-btn" onclick="copyToClipboard(\'' + analysisId + '\', event)" style="float: right;">📋 Копировать</button></h4>';
             html += '<div class="markdown-content" id="' + analysisId + '">';
             html += renderMarkdown(data.analysis);
             html += '</div>';
@@ -1314,7 +1314,7 @@
             return html;
         }
 
-        // 格式化行内 Markdown 元素
+        // 格式化行内 Markdown ¥素
         function formatInlineMarkdown(text) {
             // 转义 HTML
             text = escapeHtml(text);
@@ -1325,7 +1325,7 @@
             // 斜体 *text*
             text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-            // 行内代码 `code`
+            // 行内Код `code`
             text = text.replace(/`([^`]+)`/g, '<code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; color: #e83e8c; font-size: 0.9em;">$1</code>');
 
             // 链接 [text](url)
@@ -1334,11 +1334,11 @@
             return text;
         }
 
-        // 格式化写作助手结果
+        // 格式化写作助手Результат
         function formatWritingResult(data) {
             let html = `
                 <div class="result-header">
-                    <span>✍️ 写作助手</span>
+                    <span>✍️ Помощник по письму</span>
                     <span class="result-stats">${data.task} - ${data.style}</span>
                 </div>
             `;
@@ -1346,7 +1346,7 @@
             if (data.original) {
                 html += `
                     <div class="paper-card">
-                        <h4>📝 原文</h4>
+                        <h4>📝 Оригинал</h4>
                         <div class="abstract" style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
                             ${escapeHtml(data.original)}
                         </div>
@@ -1356,7 +1356,7 @@
 
             const resultId = 'writing-result-' + Date.now();
             html += '<div class="paper-card">';
-            html += '<h4>✨ 处理结果 <button class="copy-btn" onclick="copyToClipboard(\'' + resultId + '\', event)" style="float: right;">📋 复制</button></h4>';
+            html += '<h4>✨ Результат <button class="copy-btn" onclick="copyToClipboard(\'' + resultId + '\', event)" style="float: right;">📋 Копировать</button></h4>';
             html += '<div class="markdown-content" id="' + resultId + '">';
             html += renderMarkdown(data.result);
             html += '</div>';
@@ -1365,14 +1365,14 @@
             return html;
         }
 
-        // 格式化引用校验结果
+        // 格式化引用ПроверкаРезультат
         function formatCitationResult(data) {
 
             const jsonId = 'citation-' + Date.now();
             let html = `
                 <div class="result-header">
-                    <span>🔎 引用校验</span>
-                    <span class="result-stats">${data.format.toUpperCase()} ${data.verified ? '✅ 已验证' : '⚠️ 未验证'}</span>
+                    <span>🔎 Проверка цитирования</span>
+                    <span class="result-stats">${data.format.toUpperCase()} ${data.verified ? '✅ Проверено' : '⚠️ Не проверено'}</span>
                 </div>
             `;
 
@@ -1395,7 +1395,7 @@
                     }
                 }
 
-                // 处理年份
+                // 处理Год
                 let year = 'N/A';
                 if (meta.year) {
                     year = meta.year;
@@ -1413,12 +1413,12 @@
 
                 html += `
                     <div class="paper-card">
-                        <h4>📄 论文信息</h4>
+                        <h4>📄 Информация о статье</h4>
                         <div class="authors">
-                            📖 标题: ${escapeHtml(title)}
+                            📖 Название: ${escapeHtml(title)}
                         </div>
                         <div class="authors">
-                            👥 作者: ${escapeHtml(authors)}
+                            👥 Авторы: ${escapeHtml(authors)}
                         </div>
                         <div class="meta">
                             <span>📅 ${year}</span>
@@ -1432,7 +1432,7 @@
 
             html += `
                 <div class="paper-card">
-                    <h4>📋 格式化引用 <button class="copy-btn" onclick="copyToClipboard('${jsonId}', event)" style="float: right;">📋 复制</button></h4>
+                    <h4>📋 Форматированная цитата <button class="copy-btn" onclick="copyToClipboard('${jsonId}', event)" style="float: right;">📋 Копировать</button></h4>
                     <pre id="${jsonId}" style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea; overflow-x: auto;">${escapeHtml(data.formatted_citation)}</pre>
                 </div>
             `;
@@ -1448,12 +1448,12 @@
             return html;
         }
 
-        // 格式化工作流结果
+        // 格式化工作流Результат
         function formatWorkflowResult(data) {
             let html = `
                 <div class="result-header">
-                    <span>🔄 工作流执行结果</span>
-                    <span class="result-stats">${data.status === 'completed' ? '✅ 完成' : '⚠️ 部分完成'}</span>
+                    <span>🔄 Результат workflow</span>
+                    <span class="result-stats">${data.status === 'completed' ? '✅ Готово' : '⚠️ Частично готово'}</span>
                 </div>
             `;
 
@@ -1461,44 +1461,44 @@
             if (data.summary) {
                 html += `
                     <div class="paper-card">
-                        <h4>📊 执行摘要</h4>
+                        <h4>📊 Сводка выполнения</h4>
                         <div class="meta">
-                            <span>📚 找到 ${data.summary.total_papers} 篇论文</span>
-                            <span>🧠 分析 ${data.summary.analyzed_papers} 篇</span>
-                            <span>📝 生成 ${data.summary.generated_citations} 条引用</span>
+                            <span>📚 Найдено ${data.summary.total_papers} статей</span>
+                            <span>🧠 Проанализировано ${data.summary.analyzed_papers}</span>
+                            <span>📝 Создано ${data.summary.generated_citations} цитат</span>
                         </div>
-                        <p style="margin-top: 10px; color: #666;">关键词: ${data.summary.keywords}</p>
+                        <p style="margin-top: 10px; color: #666;">Ключевые слова: ${data.summary.keywords}</p>
                     </div>
                 `;
             }
 
-            // 显示各步骤结果
+            // 显示各步骤Результат
             if (data.steps && data.steps.length > 0) {
                 data.steps.forEach((step, index) => {
                     const statusIcon = step.status === 'completed' ? '✅' : step.status === 'failed' ? '❌' : '⏳';
 
                     html += `
                         <div class="paper-card">
-                            <h4>${statusIcon} 步骤 ${step.step}: ${step.name}</h4>
+                            <h4>${statusIcon} Шаг ${step.step}: ${step.name}</h4>
                     `;
 
                     if (step.status === 'completed' && step.result) {
-                        // 论文搜索结果
+                        // 论文ПоискРезультат
                         if (step.result.papers) {
-                            html += `<p>找到 ${step.result.total_found} 篇论文</p>`;
+                            html += `<p>Найдено ${step.result.total_found} статей</p>`;
                             step.result.papers.slice(0, 3).forEach((paper, i) => {
                                 html += `
                                     <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
                                         <strong>${i + 1}. ${escapeHtml(paper.title)}</strong><br>
-                                        <small>作者: ${paper.authors.slice(0, 3).join(', ')}${paper.authors.length > 3 ? ' et al.' : ''}</small>
+                                        <small>Авторы: ${paper.authors.slice(0, 3).join(', ')}${paper.authors.length > 3 ? ' et al.' : ''}</small>
                                     </div>
                                 `;
                             });
                         }
 
-                        // 分析结果
+                        // АнализРезультат
                         if (step.result.analyses) {
-                            html += `<p>完成 ${step.result.total_analyzed} 篇论文分析</p>`;
+                            html += `<p>Завершён анализ ${step.result.total_analyzed} статей</p>`;
                             step.result.analyses.forEach((analysis, i) => {
                                 html += `
                                     <div style="margin: 10px 0; padding: 10px; background: #f0f7ff; border-radius: 5px;">
@@ -1511,11 +1511,11 @@
                             });
                         }
 
-                        // 引用结果
+                        // 引用Результат
                         if (step.result.citations) {
-                            html += `<p>生成 ${step.result.total_citations} 条引用</p>`;
+                            html += `<p>Создано ${step.result.total_citations} цитат</p>`;
                             const citationId = 'citations-' + Date.now();
-                            html += `<button class="copy-btn" onclick="copyToClipboard('${citationId}', event)">📋 复制全部引用</button>`;
+                            html += `<button class="copy-btn" onclick="copyToClipboard('${citationId}', event)">📋 Копировать все цитаты</button>`;
                             html += `<div id="${citationId}" style="margin-top: 10px;">`;
                             step.result.citations.forEach((citation, i) => {
                                 html += `<p style="margin: 5px 0;">${i + 1}. ${escapeHtml(citation.formatted_citation)}</p>`;
@@ -1523,16 +1523,16 @@
                             html += '</div>';
                         }
 
-                        // 报告结果
+                        // ОтчётРезультат
                         if (step.result.report) {
                             const reportId = 'report-' + Date.now();
-                            html += `<button class="copy-btn" onclick="copyToClipboard('${reportId}', event)">📋 复制报告</button>`;
+                            html += `<button class="copy-btn" onclick="copyToClipboard('${reportId}', event)">📋 Копировать отчёт</button>`;
                             html += `<div class="markdown-content" id="${reportId}" style="margin-top: 10px;">`;
                             html += renderMarkdown(step.result.report);
                             html += '</div>';
                         }
                     } else if (step.status === 'failed') {
-                        html += `<p style="color: #f44336;">错误: ${step.error}</p>`;
+                        html += `<p style="color: #f44336;">Ошибка: ${step.error}</p>`;
                     }
 
                     html += '</div>';
@@ -1569,7 +1569,7 @@
             });
         }
 
-        // 复制到剪贴板
+        // Копировать到剪贴板
         function copyToClipboard(elementId, event) {
             // 阻止事件冒泡
             if (event) {
@@ -1582,15 +1582,15 @@
                 return;
             }
 
-            // 获取纯文本内容
+            // 获取纯Текст内容
             const text = element.innerText || element.textContent;
 
             navigator.clipboard.writeText(text).then(() => {
-                // 显示复制成功提示
+                // 显示КопироватьУспешноПодсказка
                 const btn = event ? event.target : null;
                 if (btn) {
                     const originalText = btn.textContent;
-                    btn.textContent = '✅ 已复制';
+                    btn.textContent = '✅ Скопировано';
                     btn.style.background = '#4caf50';
                     btn.style.color = 'white';
                     btn.style.borderColor = '#4caf50';
@@ -1602,10 +1602,10 @@
                         btn.style.borderColor = '';
                     }, 2000);
                 }
-                console.log('已复制 ' + text.length + ' 个字符');
+                console.log('Скопировано ' + text.length + ' символов');
             }).catch(err => {
-                console.error('复制失败:', err);
-                alert('复制失败，请手动选择文本复制');
+                console.error('Ошибка копирования:', err);
+                alert('Не удалось скопировать — выделите текст вручную');
             });
         }
 

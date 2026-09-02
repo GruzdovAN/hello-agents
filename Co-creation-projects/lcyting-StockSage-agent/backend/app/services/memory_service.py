@@ -1,9 +1,9 @@
 """
-记忆系统 — 仪表盘快照的每日缓存与过期管理
+Система памяти — ежедневное кэширование и управление сроком действия снимков информационной панели.
 
-记录每天第一次打开后端的时间日期；跨日或自选股数量变化时触发刷新。
+Каждый день записывайте время и дату первого открытия серверной части; запускать обновление через несколько дней или при изменении количества дополнительных акций.
 每天首次启动时三线程并行获取指数、自选、热点资讯，写入 data/memory/dashboard_state.json。
-与 HelloAgents 的 ConversationManager / MemoryManager 无关，本应用对话历史由前端与 SQLite 历史表管理。
+Независимо от ConversationManager/MemoryManager HelloAgents, история разговоров этого приложения управляется интерфейсом и таблицей истории SQLite.
 """
 
 from __future__ import annotations
@@ -26,13 +26,13 @@ _memory_lock = threading.Lock()
 
 class MemoryService:
     """
-    记忆系统核心服务
+Основные службы системы памяти
 
-    职责：
-    - 记录每日首次启动日期
-    - 日切时清空前一日数据并重新获取
-    - 三线程并行获取仪表盘数据（指数、自选、热点资讯）
-    - 检测自选股数量变化触发刷新
+Обязанности:
+- Ежедневно записывайте дату первого запуска
+- Очистить данные предыдущего дня и восстановить их во время дневной резки.
+- Три потока получают данные информационной панели (индекс, самостоятельно выбранный, актуальная информация) параллельно.
+- Обнаружение изменений в количестве самостоятельно выбранных акций для запуска обновления
     """
 
     def __init__(self, storage_dir: Optional[Path] = None):
@@ -47,10 +47,10 @@ class MemoryService:
 
         self._load_state()
 
-    # ---- 持久化 ----
+# ---- Долговечность ----
 
     def _load_state(self) -> None:
-        """从磁盘恢复上次的快照状态"""
+"""Восстановить состояние последнего снимка с диска"""
         try:
             if self._state_file.exists():
                 data = json.loads(self._state_file.read_text(encoding="utf-8"))
@@ -59,12 +59,12 @@ class MemoryService:
                 snap = data.get("snapshot")
                 if snap:
                     self._snapshot = MemorySnapshot.from_dict(snap)
-                logger.info("记忆系统状态已加载: date=%s, watchlist_count=%d", self._today, self._watchlist_count)
+logger.info("Состояние системы памяти загружено: date=%s, watchlist_count=%d", self._today, self._watchlist_count)
         except Exception as exc:
             logger.warning("加载记忆状态失败: %s", exc)
 
     def _save_state(self) -> None:
-        """将当前快照状态持久化到磁盘"""
+"""Сохранение текущего состояния снимка на диск"""
         try:
             data = {
                 "today": self._today,
@@ -75,23 +75,23 @@ class MemoryService:
         except Exception as exc:
             logger.warning("保存记忆状态失败: %s", exc)
 
-    # ---- 日期检测 ----
+# ---- Определение даты ----
 
     def _get_today(self) -> str:
         return date.today().isoformat()
 
     def is_new_day(self) -> bool:
-        """检查是否为新的一天"""
+"""Проверь, новый ли день"""
         return self._today != self._get_today()
 
     def should_refresh(self) -> bool:
         """
-        判断是否需要刷新数据：
-        1. 新的一天
-        2. 自选股数量发生变化
+Определите, нужно ли обновлять данные:
+1. Новый день
+2. Изменение количества дополнительных акций
         """
         if self.is_new_day():
-            logger.info("检测到新的一天，需要刷新仪表盘数据")
+logger.info("Обнаружен новый день, и данные информационной панели необходимо обновить")
             return True
 
         try:
@@ -99,19 +99,19 @@ class MemoryService:
             wl = watchlist_service.get_watchlist()
             current_count = wl.get("total", 0) if wl.get("success") else 0
             if current_count != self._watchlist_count and self._watchlist_count > 0:
-                logger.info("自选股数量变化: %d -> %d，需要刷新", self._watchlist_count, current_count)
+logger.info("Изменение количества самостоятельно выбранных акций: %d -> %d, необходимо обновить", self._watchlist_count, current_count)
                 self._watchlist_count = current_count
                 self._save_state()
                 return True
         except Exception as exc:
-            logger.debug("检查自选股数量时出错: %s", exc)
+logger.debug("Ошибка проверки количества дополнительных акций: %s", exc)
 
         return False
 
-    # ---- 数据获取 ----
+# ---- Сбор данных ----
 
     def _fetch_indices(self) -> list:
-        """获取四大指数数据"""
+"""Получить данные четырех основных индексов"""
         from app.services import market_service
 
         index_names = ("上证指数", "深证成指", "创业板指", "沪深300")
@@ -125,7 +125,7 @@ class MemoryService:
         return results
 
     def _fetch_watchlist(self) -> dict:
-        """获取自选股列表（含行情数据）"""
+"""Получить список выбранных вами акций (включая рыночные данные)"""
         from app.services import watchlist_service
 
         try:
@@ -138,7 +138,7 @@ class MemoryService:
             return {"success": False, "stocks": [], "total": 0}
 
     def _fetch_hot_news(self) -> dict:
-        """获取热点资讯"""
+"""Получите горячую информацию"""
         from app.services import news_service
 
         try:
@@ -149,9 +149,9 @@ class MemoryService:
 
     def parallel_fetch(self) -> MemorySnapshot:
         """
-        三线程并行获取仪表盘数据：指数、自选、热点资讯
+Три потока получают данные информационной панели параллельно: индекс, самостоятельно выбранный и горячую информацию.
         """
-        logger.info("记忆系统: 开始三线程并行获取仪表盘数据...")
+logger.info("Система памяти: запустите три потока для параллельного получения данных информационной панели...")
 
         with ThreadPoolExecutor(max_workers=3) as executor:
             future_indices = executor.submit(self._fetch_indices)
@@ -187,24 +187,24 @@ class MemoryService:
             self._snapshot = snapshot
             self._save_state()
 
-        logger.info("记忆系统: 仪表盘数据获取完成 (date=%s, indices=%d, watchlist=%d)",
+logger.info("Система памяти: сбор данных информационной панели завершен (дата=%s, индексы=%d, список наблюдения=%d)",
                      today, len(snapshot.indices), snapshot.watchlist_count)
         return snapshot
 
     # ---- 公共接口 ----
 
     def get_snapshot(self) -> Optional[MemorySnapshot]:
-        """获取当前缓存的仪表盘快照"""
+"""Получить текущий кэшированный снимок панели мониторинга"""
         with self._lock:
             return self._snapshot
 
     def get_indices(self) -> list:
-        """获取缓存的指数数据"""
+"""Получить данные кэшированного индекса"""
         snap = self.get_snapshot()
         return snap.indices if snap else []
 
     def get_watchlist(self) -> dict:
-        """获取缓存的自选股数据"""
+"""Получить кэшированные данные выбора акций"""
         snap = self.get_snapshot()
         return snap.watchlist if snap else {}
 
@@ -214,7 +214,7 @@ class MemoryService:
         return snap.hot_news if snap else {}
 
     def clear(self) -> None:
-        """清空所有记忆数据"""
+"""Очистить все данные памяти"""
         with self._lock:
             self._today = None
             self._snapshot = None
@@ -226,7 +226,7 @@ class MemoryService:
                 pass
 
     def get_stats(self) -> dict:
-        """获取记忆系统状态"""
+"""Получить состояние системы памяти"""
         with self._lock:
             return {
                 "today": self._today,
@@ -241,7 +241,7 @@ _memory_svc: Optional[MemoryService] = None
 
 
 def get_memory_service() -> MemoryService:
-    """获取 MemoryService 全局单例"""
+"""Получить глобальный синглтон MemoryService"""
     global _memory_svc
     if _memory_svc is None:
         with _memory_lock:

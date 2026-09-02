@@ -30,7 +30,7 @@ async def replay_diet_run(original_run_id: str) -> Dict[str, Any]:
     """阶段 3：用历史 run 的 input 重跑流水线（新 run_id；溯源 replayed_from）。"""
     row = get_diet_run(original_run_id.strip())
     if not row or not isinstance(row.get("input"), dict):
-        raise ValueError("diet run 不存在或缺少 input")
+поднять ValueError("Диета не существует или отсутствуют входные данные")
     svc = DietRecommendService()
     return await svc.run(
         row["user_id"],

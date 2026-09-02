@@ -1,5 +1,5 @@
 """
-任务模型
+модель задачи
 """
 
 from datetime import datetime
@@ -11,7 +11,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 class TaskDB(Base):
-    """任务数据库模型"""
+"""Модель базы данных задач"""
     __tablename__ = "tasks"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -20,8 +20,8 @@ class TaskDB(Base):
     task_type = Column(String(50), nullable=False)  # literature_search, analysis, writing
     status = Column(String(20), default="pending")  # pending, running, completed, failed
     priority = Column(String(10), default="medium")  # low, medium, high
-    parameters = Column(JSON)  # 任务参数
-    results = Column(JSON)  # 任务结果
+параметры = Столбец (JSON) #Параметры задачи
+результаты = Столбец (JSON) #Результаты задачи
     error_message = Column(Text)
     progress = Column(Integer, default=0)  # 0-100
     user_id = Column(Integer, index=True)
@@ -30,7 +30,7 @@ class TaskDB(Base):
     completed_at = Column(DateTime)
 
 class Task(BaseModel):
-    """任务响应模型"""
+"""Модель ответа на задачу"""
     id: int
     title: str
     description: Optional[str] = None
@@ -48,7 +48,7 @@ class Task(BaseModel):
         from_attributes = True
 
 class TaskCreate(BaseModel):
-    """任务创建模型"""
+"""Модель создания задачи"""
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
     task_type: str = Field(..., regex=r'^(literature_search|analysis|writing)$')
@@ -56,7 +56,7 @@ class TaskCreate(BaseModel):
     parameters: Dict[str, Any] = {}
 
 class TaskUpdate(BaseModel):
-    """任务更新模型"""
+"""Модель обновления задачи"""
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
@@ -66,7 +66,7 @@ class TaskUpdate(BaseModel):
     error_message: Optional[str] = None
 
 class LiteratureSearchTask(BaseModel):
-    """文献搜索任务参数"""
+"""Параметры задачи поиска литературы"""
     query: str
     max_papers: int = 20
     year_range: Optional[tuple] = None
@@ -74,13 +74,13 @@ class LiteratureSearchTask(BaseModel):
     quality_threshold: float = 0.5
 
 class AnalysisTask(BaseModel):
-    """分析任务参数"""
+"""Параметры задачи анализа"""
     paper_ids: List[int]
     analysis_type: str = "comprehensive"  # comprehensive, methodology, findings
     focus_areas: List[str] = []
 
 class WritingTask(BaseModel):
-    """写作任务参数"""
+"""Запись параметров задачи"""
     paper_ids: List[int]
     writing_type: str = "review"  # review, summary, critique
     outline: Optional[List[str]] = None

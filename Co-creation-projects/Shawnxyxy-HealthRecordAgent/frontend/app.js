@@ -14,23 +14,23 @@ function getUserIdOrEmpty() {
     return document.getElementById("userId")?.value?.trim() || "";
 }
 
-/** 体检分析进度：默认对用户显示中文步骤名 */
+/** 体检Анализ进度：默认对用户显示中文步骤名 */
 function getHealthProgressAgents() {
     if (isDeveloperMode()) {
         return [
-            { key: "PlannerAgent", label: "PlannerAgent 规划" },
-            { key: "HealthIndicatorAgent", label: "HealthIndicatorAgent 指标" },
-            { key: "RiskAssessmentAgent", label: "RiskAssessmentAgent 风险" },
-            { key: "AdviceAgent", label: "AdviceAgent 建议" },
-            { key: "ReportAgent", label: "ReportAgent 报告" },
+            { key: "PlannerAgent", label: "PlannerAgent Планирование" },
+            { key: "HealthIndicatorAgent", label: "HealthIndicatorAgent Показатель" },
+            { key: "RiskAssessmentAgent", label: "RiskAssessmentAgent — риски" },
+            { key: "AdviceAgent", label: "AdviceAgent Рекомендации" },
+            { key: "ReportAgent", label: "ReportAgent Отчёт" },
         ];
     }
     return [
-        { key: "PlannerAgent", label: "规划" },
-        { key: "HealthIndicatorAgent", label: "指标解读" },
-        { key: "RiskAssessmentAgent", label: "风险评估" },
-        { key: "AdviceAgent", label: "建议" },
-        { key: "ReportAgent", label: "汇总报告" },
+        { key: "PlannerAgent", label: "Планирование" },
+        { key: "HealthIndicatorAgent", label: "Интерпретация показателей" },
+        { key: "RiskAssessmentAgent", label: "Оценка рисков" },
+        { key: "AdviceAgent", label: "Рекомендации" },
+        { key: "ReportAgent", label: "Итоговый отчёт" },
     ];
 }
 
@@ -38,7 +38,7 @@ function getUserId() {
     const el = document.getElementById("userId");
     const raw = el ? el.value.trim() : "";
     if (!raw) {
-        alert("请填写用户 ID");
+        alert("Введите ID пользователя");
         return null;
     }
     try {
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     syncReflectReasonVisibility();
 });
 
-/** 选「否」时展示未执行原因；选「是」时隐藏并清空原因（后端会将 reason 置为 executed_ok）。 */
+/** 选「否」时展示未执行原因；选「是」时隐藏并Очистить原因（后端会将 reason 置为 executed_ok）。 */
 function syncReflectReasonVisibility() {
     const yes = document.getElementById("reflectFollowedYes");
     const no = document.getElementById("reflectFollowedNo");
@@ -141,7 +141,7 @@ function syncReflectReasonVisibility() {
     }
 }
 
-/** 拉取近期饮食推荐，填充「反馈」下拉的选项；preferredRunId 优先选中（如刚生成的一条）。 */
+/** 拉取近期Рекомендации по питанию，填充「反馈」下拉的选项；preferredRunId 优先选中（如刚生成的一条）。 */
 async function refreshReflectRunOptions(preferredRunId) {
     const sel = document.getElementById("reflectRunSelect");
     if (!sel) return;
@@ -159,7 +159,7 @@ async function refreshReflectRunOptions(preferredRunId) {
     };
 
     if (!userId) {
-        addPlaceholder("请先填写用户 ID");
+        addPlaceholder("Сначала введите ID пользователя");
         return;
     }
 
@@ -170,7 +170,7 @@ async function refreshReflectRunOptions(preferredRunId) {
         const data = await res.json().catch(() => ({}));
         const items = data.items || [];
         if (!items.length) {
-            addPlaceholder("暂无推荐记录，请先生成一次饮食推荐");
+            addPlaceholder("Нет рекомендаций — сгенерируйте первую");
             return;
         }
 
@@ -190,8 +190,8 @@ async function refreshReflectRunOptions(preferredRunId) {
                     : "";
                 const tp =
                     row.total_protein != null
-                        ? `约 ${row.total_protein} g 蛋白`
-                        : "饮食推荐";
+                        ? `~${row.total_protein} г белка`
+                        : "Рекомендации по питанию";
                 label = t ? `${t} · ${tp}` : tp;
                 if (dev) label += ` · ${row.run_id}`;
             } catch (_) {
@@ -215,7 +215,7 @@ async function refreshReflectRunOptions(preferredRunId) {
         }
     } catch (e) {
         console.error(e);
-        addPlaceholder("加载推荐列表失败，请稍后重试");
+        addPlaceholder("Не удалось загрузить список — повторите");
     }
 }
 
@@ -238,17 +238,17 @@ function focusFeedbackSection() {
 }
 
 function renderMealPlan(mp) {
-    if (!mp) return "<p>（无 meal_plan）</p>";
+    if (!mp) return "<p>(нет meal_plan)</p>";
     const tips = Array.isArray(mp.tips) ? mp.tips.filter(Boolean).join("；") : "";
-    let h = `<p><strong>估算总蛋白</strong>：${mp.total_est_protein_g ?? "—"} g</p><ul class="meal-plan-list">`;
+    let h = `<p><strong>Оценка общего белка</strong>：${mp.total_est_protein_g ?? "—"} g</p><ul class="meal-plan-list">`;
     (mp.items || []).forEach((it) => {
         h += `<li><strong>${escapeHtml(it.name || "")}</strong> — ${escapeHtml(it.portion || "")}`;
-        if (it.est_protein_g != null) h += `（约 <strong>${it.est_protein_g}</strong> g 蛋白）`;
+        if (it.est_protein_g != null) h += ` (~<strong>${it.est_protein_g}</strong> г белка)`;
         if (it.why) h += `<br><span class="muted-why">${escapeHtml(it.why)}</span>`;
         h += "</li>";
     });
     h += "</ul>";
-    if (tips) h += `<p class="meal-tips"><strong>提示</strong>：${escapeHtml(tips)}</p>`;
+    if (tips) h += `<p class="meal-tips"><strong>Подсказка</strong>：${escapeHtml(tips)}</p>`;
     return h;
 }
 
@@ -268,14 +268,14 @@ async function recommendDiet() {
     if (!statusEl || !outEl) return;
 
     statusEl.textContent = isDeveloperMode()
-        ? "⏳ 正在调用 Planning + ReAct（可能需多次 LLM，请稍候）…"
-        : "⏳ 正在生成推荐，请稍候…";
+        ? "⏳ Planning + ReAct (может занять время)…"
+        : "⏳ Генерация рекомендаций…";
     outEl.classList.add("hidden");
     outEl.innerHTML = "";
 
     const foodLog = document.getElementById("dietFoodLog")?.value?.trim() || "";
     if (!foodLog) {
-        statusEl.textContent = "⚠️ 请先填写今天吃了什么";
+        statusEl.textContent = "⚠️ Сначала укажите, что съели сегодня";
         return;
     }
 
@@ -316,40 +316,40 @@ async function recommendDiet() {
         }
         if (data.degraded) {
             html += tech
-                ? `<p class="banner banner-warning"><strong>降级</strong>：部分阶段使用规则/模板兜底，请查看 <code>errors</code>。</p>`
-                : `<p class="banner banner-warning"><strong>说明</strong>：部分内容由规则自动补齐，请以列表中的可执行项为准。</p>`;
+                ? `<p class="banner banner-warning"><strong>Пониженный режим</strong>：Часть этапов — по шаблону, см. <code>errors</code>。</p>`
+                : `<p class="banner banner-warning"><strong>Примечание</strong>：Часть контента дополнена правилами — ориентируйтесь на список действий.</p>`;
         }
         if (planning.reasoning) {
             html += tech
-                ? `<p><strong>Planning（Nutritionist 摘要）</strong>：${escapeHtml(planning.reasoning)}</p>`
-                : `<p><strong>营养分析摘要</strong>：${escapeHtml(planning.reasoning)}</p>`;
+                ? `<p><strong>Planning (Nutritionist)</strong>: ${escapeHtml(planning.reasoning)}</p>`
+                : `<p><strong>Сводка по питанию</strong>：${escapeHtml(planning.reasoning)}</p>`;
         }
         const ns = data.nutrition_summary || {};
         if (!tech) {
-            html += `<p><strong>今日营养估算</strong>：蛋白 ${escapeHtml(String(ns.protein_g ?? 0))}g，碳水 ${escapeHtml(String(ns.carb_g ?? 0))}g，脂肪 ${escapeHtml(String(ns.fat_g ?? 0))}g，热量 ${escapeHtml(String(ns.calories_kcal ?? 0))} kcal</p>`;
+            html += `<p><strong>Оценка питания за сегодня</strong>：белки ${escapeHtml(String(ns.protein_g ?? 0))} г, углеводы ${escapeHtml(String(ns.carb_g ?? 0))} г, жиры ${escapeHtml(String(ns.fat_g ?? 0))} г, калории ${escapeHtml(String(ns.calories_kcal ?? 0))} kcal</p>`;
         } else {
-            html += `<details class="diet-trace"><summary>食物解析与营养估算</summary><pre style="white-space:pre-wrap;max-height:220px;overflow:auto;">${escapeHtml(JSON.stringify({ food_parse: data.food_parse, nutrition_summary: data.nutrition_summary }, null, 2))}</pre></details>`;
+            html += `<details class="diet-trace"><summary>Разбор продуктов и оценка питания</summary><pre style="white-space:pre-wrap;max-height:220px;overflow:auto;">${escapeHtml(JSON.stringify({ food_parse: data.food_parse, nutrition_summary: data.nutrition_summary }, null, 2))}</pre></details>`;
         }
         const hx = data.habit_extras;
         if (hx && hx.reflect_alignment) {
             html += tech
-                ? `<p><strong>Habit · Reflect 对齐</strong>：${escapeHtml(hx.reflect_alignment)}</p>`
-                : `<p><strong>与历史反馈对齐</strong>：${escapeHtml(hx.reflect_alignment)}</p>`;
+                ? `<p><strong>Habit · Reflect</strong>: ${escapeHtml(hx.reflect_alignment)}</p>`
+                : `<p><strong>Учёт прошлой обратной связи</strong>：${escapeHtml(hx.reflect_alignment)}</p>`;
             if (hx.execution_hints && hx.execution_hints.length) {
-                html += `<p><strong>执行提示</strong>：${escapeHtml(hx.execution_hints.join("；"))}</p>`;
+                html += `<p><strong>Подсказки по выполнению</strong>：${escapeHtml(hx.execution_hints.join("；"))}</p>`;
             }
         }
-        html += `<h4>推荐方案</h4>${renderMealPlan(data.meal_plan)}`;
+        html += `<h4>Рекомендуемый план</h4>${renderMealPlan(data.meal_plan)}`;
 
         if (tech) {
             if (data.errors && data.errors.length) {
                 html += `<details class="diet-trace"><summary>错误记录（${data.errors.length}）</summary><pre style="white-space:pre-wrap;max-height:200px;overflow:auto;">${escapeHtml(JSON.stringify(data.errors, null, 2))}</pre></details>`;
             }
             if (data.reflect_memory_used) {
-                html += `<details class="diet-trace"><summary>已注入的 Reflect 记忆摘要</summary><pre style="white-space:pre-wrap;">${escapeHtml(String(data.reflect_memory_used))}</pre></details>`;
+                html += `<details class="diet-trace"><summary>已注入的 Reflect Память摘要</summary><pre style="white-space:pre-wrap;">${escapeHtml(String(data.reflect_memory_used))}</pre></details>`;
             }
             if (data.react_trace && data.react_trace.length) {
-                html += `<details class="diet-trace"><summary>流水线轨迹（${data.react_trace.length} 段）</summary><pre style="white-space:pre-wrap;max-height:280px;overflow:auto;">${escapeHtml(JSON.stringify(data.react_trace, null, 2))}</pre></details>`;
+                html += `<details class="diet-trace"><summary>流水线轨迹（${data.react_trace.length} сегм.）</summary><pre style="white-space:pre-wrap;max-height:280px;overflow:auto;">${escapeHtml(JSON.stringify(data.react_trace, null, 2))}</pre></details>`;
             }
         }
 
@@ -357,17 +357,17 @@ async function recommendDiet() {
         outEl.classList.remove("hidden");
         statusEl.textContent = data.degraded
             ? tech
-                ? "⚠️ 推荐完成（含降级，已写入 diet_runs）"
-                : "⚠️ 推荐已保存（部分内容已自动处理）"
+                ? "⚠️ Рекомендация готова (с понижением, записано)"
+                : "⚠️ Рекомендация сохранена (частично автоматически)"
             : tech
-              ? "✅ 推荐完成（已写入 diet_runs）"
-              : "✅ 推荐已保存";
+              ? "✅ Рекомендация готова (записано)"
+              : "✅ Рекомендация сохранена";
 
         await refreshReflectRunOptions(runId);
         openReflectPromptDialog();
     } catch (e) {
         console.error(e);
-        statusEl.textContent = "❌ 请求失败";
+        statusEl.textContent = "❌ Ошибка запроса";
         outEl.innerHTML = `<p class="banner-error">${escapeHtml(e.message || String(e))}</p>`;
         outEl.classList.remove("hidden");
     }
@@ -379,14 +379,14 @@ async function submitDietReflect() {
 
     const runId = document.getElementById("reflectRunSelect")?.value?.trim();
     if (!runId) {
-        alert("请先在列表里选择一条要反馈的推荐，或先生成一次饮食推荐");
+        alert("Выберите рекомендацию в списке или сгенерируйте новую");
         return;
     }
 
     const yes = document.getElementById("reflectFollowedYes")?.checked;
     const no = document.getElementById("reflectFollowedNo")?.checked;
     if (!yes && !no) {
-        alert("请先选择「是否按这条推荐执行」");
+        alert("Выберите, выполнили ли рекомендацию");
         return;
     }
     const followed = !!yes;
@@ -398,14 +398,14 @@ async function submitDietReflect() {
     } else {
         reasonCode = document.getElementById("reflectReasonCode")?.value?.trim() || null;
         if (!reasonCode) {
-            alert("请选择未执行的主要原因");
+            alert("Укажите причину невыполнения");
             return;
         }
         detail = document.getElementById("reflectDetail")?.value?.trim() || null;
     }
 
     const statusEl = document.getElementById("dietStatus");
-    if (statusEl) statusEl.textContent = "⏳ 正在保存反馈…";
+    if (statusEl) statusEl.textContent = "⏳ Сохранение отзыва…";
 
     try {
         const res = await fetch(`${API_BASE}/api/diet/reflect`, {
@@ -425,13 +425,13 @@ async function submitDietReflect() {
         }
         if (statusEl) {
             statusEl.textContent = isDeveloperMode()
-                ? `✅ Reflect 已保存（id=${data.reflect_id}），下次推荐会读取`
-                : "✅ 反馈已保存，将在下次推荐时参考";
+                ? `✅ Reflect 已Сохранить（id=${data.reflect_id}），下次推荐会读取`
+                : "✅ Отзыв сохранён — учтётся в следующий раз";
         }
         await loadDietHistory();
     } catch (e) {
         console.error(e);
-        if (statusEl) statusEl.textContent = "❌ 保存失败：" + (e.message || e);
+        if (statusEl) statusEl.textContent = "❌ Не удалось сохранить：" + (e.message || e);
     }
 }
 
@@ -448,7 +448,7 @@ async function loadDietHistory() {
     if (hint) hint.classList.add("hidden");
     if (summaryEl) {
         summaryEl.classList.remove("hidden");
-        summaryEl.textContent = "加载中…";
+        summaryEl.textContent = "Загрузка…";
     }
     if (rawDetails) {
         rawDetails.classList.add("hidden");
@@ -464,7 +464,7 @@ async function loadDietHistory() {
         const n1 = (r1.items || []).length;
         const n2 = (r2.items || []).length;
         if (summaryEl) {
-            summaryEl.textContent = `已加载 ${n1} 条饮食推荐记录、${n2} 条反馈记录。`;
+            summaryEl.textContent = `已加载 ${n1} 条Рекомендации по питанию记录、${n2} 条反馈记录。`;
         }
         pre.textContent = JSON.stringify({ diet_runs: r1, reflect: r2 }, null, 2);
         if (rawDetails) {
@@ -476,13 +476,13 @@ async function loadDietHistory() {
         }
     } catch (e) {
         if (summaryEl) {
-            summaryEl.textContent = "加载失败：" + (e.message || e);
+            summaryEl.textContent = "Ошибка загрузки: " + (e.message || e);
         }
         pre.textContent = "";
     }
 }
 /**
- * 显示 / 更新多 Agent 进度。仅在 agents 数量变化时重建 DOM，轮询时只更新状态文案，避免整表闪烁。
+ * 显示 / 更新多 Agent 进度。仅在 agents Кол-во变化时重建 DOM，轮询时只更新Статус文案，避免整表闪烁。
  */
 function showAgentProgress(agentContainer, agents, statusFunc) {
     const getStatus =
@@ -517,52 +517,52 @@ function showAgentProgress(agentContainer, agents, statusFunc) {
     });
 }
 
-// 公共函数：提交任务并轮询状态
+// 公共函数：Отправить任务并轮询Статус
 async function submitAndPollTask(url, body, agents, resultCard, reportDiv, analysisDiv, progressList, loadingText, doneText, errorText) {
     reportDiv.innerHTML = "";
     analysisDiv.innerText = loadingText;
     progressList.classList.remove("hidden");
-    showAgentProgress(progressList, agents, () => "⏳ 执行中...");
+    showAgentProgress(progressList, agents, () => "⏳ Выполняется...");
     resultCard.classList.add("hidden");
 
     try {
         const response = await fetch(url, body);
-        if (!response.ok) throw new Error(`服务器返回错误状态：${response.status}`);
+        if (!response.ok) throw new Error(`服务器返回错误Статус：${response.status}`);
 
         const data = await response.json();
         const taskId = data.task_id;
 
         let taskStatus = await fetch(`${API_BASE}/api/health/task_status/${taskId}`).then(r => r.json());
         while (taskStatus.state !== "completed") {
-            showAgentProgress(progressList, agents, agentKey => taskStatus.agents?.[agentKey] ?? "⏳ 执行中...");
+            showAgentProgress(progressList, agents, agentKey => taskStatus.agents?.[agentKey] ?? "⏳ Выполняется...");
             await new Promise(res => setTimeout(res, 1000));
             taskStatus = await fetch(`${API_BASE}/api/health/task_status/${taskId}`).then(r => r.json());
         }
-        // 任务完成后刷新一次 agent 状态，保证 ReportAgent 也显示 completed
-        showAgentProgress(progressList, agents, agentKey => taskStatus.agents?.[agentKey] ?? "⏳ 执行中...");
-        // 显示最终报告
-        const summary = taskStatus.report?.report?.summary || "<p>❌ 未返回报告内容</p>";
+        // 任务Готово后Обновить一次 agent Статус，保证 ReportAgent 也显示 completed
+        showAgentProgress(progressList, agents, agentKey => taskStatus.agents?.[agentKey] ?? "⏳ Выполняется...");
+        // 显示最终Отчёт
+        const summary = taskStatus.report?.report?.summary || "<p>❌ Отчёт не получен</p>";
         reportDiv.innerHTML = typeof summary === "string" ? summary : JSON.stringify(summary, null, 2);
         analysisDiv.innerText = doneText;
         resultCard.classList.remove("hidden");
 
     } catch (error) {
         const errorMessage = error?.message || JSON.stringify(error);
-        console.error("任务提交或轮询出错:", errorMessage);
+        console.error("任务Отправить或轮询出错:", errorMessage);
         reportDiv.innerHTML = `<p>❌ ${errorText}: ${errorMessage}</p>`;
         analysisDiv.innerText = `❌ ${errorText}`;
         progressList.innerHTML = "";
     }
 }
 
-// 文本报告分析
+// ТекстОтчётАнализ
 async function analyze() {
     const userId = getUserId();
     if (!userId) return;
 
     const reportText = document.getElementById("reportText").value;
     if (!reportText) {
-        alert("请输入体检报告内容");
+        alert("Введите содержимое медосмотра");
         return;
     }
 
@@ -585,13 +585,13 @@ async function analyze() {
         reportDiv,
         analysisDiv,
         progressList,
-        isDeveloperMode() ? "⏳ 正在分析文本报告，请稍候…" : "⏳ 正在分析，请稍候…",
-        "✅ 分析完成",
-        "报告生成失败"
+        isDeveloperMode() ? "⏳ Анализ текста…" : "⏳ Анализ…",
+        "✅ Анализ завершён",
+        "Не удалось сгенерировать отчёт"
     );
 }
 
-// PDF报告分析
+// PDFОтчётАнализ
 async function uploadPDF() {
     const userId = getUserId();
     if (!userId) return;
@@ -599,7 +599,7 @@ async function uploadPDF() {
     const fileInput = document.getElementById("pdfFile");
     const file = fileInput.files[0];
     if (!file) {
-        alert("请选择PDF文件");
+        alert("Выберите PDF-файл");
         return;
     }
 
@@ -622,8 +622,8 @@ async function uploadPDF() {
         reportDiv,
         analysisDiv,
         progressList,
-        isDeveloperMode() ? "⏳ 正在分析 PDF 报告，请稍候…" : "⏳ 正在分析 PDF，请稍候…",
-        "✅ 分析完成",
-        "上传失败"
+        isDeveloperMode() ? "⏳ Анализ PDF…" : "⏳ Анализ PDF…",
+        "✅ Анализ завершён",
+        "Ошибка загрузки"
     );
 }

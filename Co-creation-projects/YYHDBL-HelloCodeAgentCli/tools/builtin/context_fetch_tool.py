@@ -1,9 +1,9 @@
-"""上下文获取工具 - 让模型按需获取扩展上下文
+"""Инструмент получения контекста — расширенный контекст по запросу модели
 
-设计理念（借鉴 Claude Code）：
-- 保底上下文由 ContextBuilder 自动注入（系统提示、对话历史、上次工具摘要）
-- 扩展上下文通过此工具按需获取（notes、memory、files、tests）
-- 模型自行决定何时需要更多证据，避免盲目全局扫描
+Идея (по аналогии с Claude Code):
+- базовый контекст собирает ContextBuilder (системный промпт, история, сводка инструментов)
+- расширенный — через этот инструмент по запросу (notes, memory, files, tests)
+- модель сама решает, когда нужны дополнительные данные
 """
 
 from typing import Dict, Any, List, Optional
@@ -14,18 +14,18 @@ from ..base import Tool, ToolParameter
 
 
 class ContextFetchTool(Tool):
-    """上下文获取工具
+    """Инструмент получения контекста
     
-    让模型按需获取扩展上下文，支持多种数据源：
-    - notes: 检索笔记（blocker、insight、decision 等）
-    - memory: 检索情景记忆（之前的对话/经验）
-    - files: 搜索代码文件（rg + 上下文行）
-    - tests: 获取最近测试失败信息
+    Источники:
+    - notes: заметки (blocker, insight, decision и т.д.)
+    - memory: эпизодическая память
+    - files: поиск в коде (rg + контекстные строки)
+    - tests: последние ошибки тестов
     
-    使用场景：
-    - 模型发现证据不足时主动调用
-    - 提到类名/函数名/错误栈时获取相关代码
-    - 询问"之前做了什么"时检索记忆
+    Сценарии:
+    - недостаточно данных в базовом контексте
+    - упоминание класса/функции/стека ошибки
+    - вопрос «что делали раньше»
     """
     
     def __init__(
@@ -34,14 +34,14 @@ class ContextFetchTool(Tool):
         note_tool: Optional[Any] = None,
         memory_tool: Optional[Any] = None,
         max_tokens_per_source: int = 800,
-        context_lines: int = 5,  # 命中行前后各取 k 行
+        context_lines: int = 5,
     ):
         super().__init__(
             name="context_fetch",
             description=(
-                "获取扩展上下文。当保底上下文不足以回答问题时调用。"
-                "可指定数据源：notes(笔记)、memory(记忆)、files(代码文件)、tests(测试结果)。"
-                "返回结构化的证据块。"
+                "Получить расширенный контекст, когда базового недостаточно. "
+                "Источники: notes(заметки), memory(память), files(код), tests(тесты). "
+                "Возвращает структурированные блоки доказательств."
             ),
         )
         self.workspace = workspace
@@ -50,53 +50,51 @@ class ContextFetchTool(Tool):
         self.max_tokens_per_source = max_tokens_per_source
         self.context_lines = context_lines
         
-        # 缓存最近的查询结果，避免重复查询
         self._cache: Dict[str, str] = {}
         self._cache_max_size = 20
     
     def get_parameters(self) -> List[ToolParameter]:
-        """遵循基类接口返回参数定义"""
+        """Определения параметров по интерфейсу базового класса"""
         return [
             ToolParameter(
                 name="sources",
                 type="array",
-                description="要查询的数据源列表，可选: notes, memory, files, tests",
+                description="Список источников: notes, memory, files, tests",
                 required=True,
             ),
             ToolParameter(
                 name="query",
                 type="string",
-                description="搜索关键词/符号名/错误栈片段",
+                description="Ключевые слова / имя символа / фрагмент стека ошибки",
                 required=True,
             ),
             ToolParameter(
                 name="paths",
                 type="string",
-                description="限定文件搜索范围的 glob 模式，如 'src/**/*.py'",
+                description="Glob для ограничения поиска по файлам, напр. 'src/**/*.py'",
                 required=False,
             ),
             ToolParameter(
                 name="budget_tokens",
                 type="integer",
-                description="单个数据源的 token 上限，默认 800",
+                description="Лимит токенов на источник, по умолчанию 800",
                 required=False,
             ),
         ]
     
     def run(self, parameters: Dict[str, Any]) -> str:
-        """执行上下文获取"""
+        """Выполняет получение контекста"""
         sources = parameters.get("sources", [])
         query = parameters.get("query", "")
         paths = parameters.get("paths", "")
         budget = parameters.get("budget_tokens", self.max_tokens_per_source)
         
         if not sources or not query:
-            return "错误：必须指定 sources 和 query 参数"
+            return "Ошибка: укажите sources и query"
         
-        # 检查缓存
         cache_key = f"{','.join(sorted(sources))}|{query}|{paths}"
         if cache_key in self._cache:
-            return f"[缓存命中]\n{self._cache[cache_key]}"
+            return f"[из кэша]\n{self._cache[cache_key]}"
         
         results: List[str] = []
         
@@ -110,16 +108,14 @@ class ContextFetchTool(Tool):
             elif source == "tests":
                 result = self._fetch_tests(query, budget)
             else:
-                result = f"[{source}] 未知数据源"
+                result = f"[{source}] неизвестный источник"
             
             if result:
                 results.append(result)
         
-        output = "\n\n".join(results) if results else "未找到相关上下文"
+        output = "\n\n".join(results) if results else "Релевантный контекст не найден"
         
-        # 更新缓存
         if len(self._cache) >= self._cache_max_size:
-            # 简单 LRU：删除最早的
             oldest_key = next(iter(self._cache))
             del self._cache[oldest_key]
         self._cache[cache_key] = output
@@ -127,27 +123,26 @@ class ContextFetchTool(Tool):
         return output
     
     def _fetch_notes(self, query: str, budget: int) -> str:
-        """从笔记中检索"""
+        """Поиск в заметках"""
         if not self.note_tool:
-            return "[notes] 笔记工具未配置"
+            return "[notes] инструмент заметок не настроен"
         
         try:
-            # 搜索相关笔记
             result = self.note_tool.run({
                 "action": "search",
                 "query": query,
                 "limit": 5,
             })
-            if result and "未找到" not in result:
-                return f"[notes] 相关笔记:\n{self._truncate(result, budget)}"
-            return "[notes] 未找到相关笔记"
+            if result and "не найдено" not in result:
+                return f"[notes] релевантные заметки:\n{self._truncate(result, budget)}"
+            return "[notes] релевантные заметки не найдены"
         except Exception as e:
-            return f"[notes] 检索失败: {e}"
+            return f"[notes] ошибка поиска: {e}"
     
     def _fetch_memory(self, query: str, budget: int) -> str:
-        """从记忆中检索"""
+        """Поиск в памяти"""
         if not self.memory_tool:
-            return "[memory] 记忆工具未配置"
+            return "[memory] инструмент памяти не настроен"
         
         try:
             result = self.memory_tool.run({
@@ -157,16 +152,15 @@ class ContextFetchTool(Tool):
                 "limit": 5,
                 "min_importance": 0.0,
             })
-            if result and "未找到" not in result:
-                return f"[memory] 相关记忆:\n{self._truncate(result, budget)}"
-            return "[memory] 未找到相关记忆"
+            if result and "не найдено" not in result:
+                return f"[memory] релевантная память:\n{self._truncate(result, budget)}"
+            return "[memory] релевантная память не найдена"
         except Exception as e:
-            return f"[memory] 检索失败: {e}"
+            return f"[memory] ошибка поиска: {e}"
     
     def _fetch_files(self, query: str, paths: str, budget: int) -> str:
-        """从代码文件中检索"""
+        """Поиск в файлах кода"""
         try:
-            # 使用 ripgrep 搜索
             cmd = ["rg", "--color=never", "-n", "-C", str(self.context_lines)]
             
             if paths:
@@ -185,23 +179,20 @@ class ContextFetchTool(Tool):
             
             output = result.stdout.strip()
             if output:
-                # 结构化输出
                 lines = output.split("\n")
-                # 按文件分组
                 grouped = self._group_by_file(lines)
                 formatted = self._format_file_results(grouped, budget)
-                return f"[files] 代码搜索结果:\n{formatted}"
-            return f"[files] 未找到匹配 '{query}' 的内容"
+                return f"[files] результаты поиска в коде:\n{formatted}"
+            return f"[files] совпадений по '{query}' не найдено"
         except subprocess.TimeoutExpired:
-            return "[files] 搜索超时"
+            return "[files] таймаут поиска"
         except FileNotFoundError:
-            # ripgrep 未安装，降级到 grep
             return self._fetch_files_fallback(query, paths, budget)
         except Exception as e:
-            return f"[files] 搜索失败: {e}"
+            return f"[files] ошибка поиска: {e}"
     
     def _fetch_files_fallback(self, query: str, paths: str, budget: int) -> str:
-        """ripgrep 不可用时的降级方案"""
+        """Запасной вариант без ripgrep"""
         try:
             cmd = f"grep -rn '{query}' {self.workspace}"
             if paths:
@@ -216,14 +207,13 @@ class ContextFetchTool(Tool):
             )
             output = result.stdout.strip()
             if output:
-                return f"[files] grep 结果:\n{self._truncate(output, budget)}"
-            return f"[files] 未找到匹配 '{query}' 的内容"
+                return f"[files] результат grep:\n{self._truncate(output, budget)}"
+            return f"[files] совпадений по '{query}' не найдено"
         except Exception as e:
-            return f"[files] grep 搜索失败: {e}"
+            return f"[files] ошибка grep: {e}"
     
     def _fetch_tests(self, query: str, budget: int) -> str:
-        """获取测试相关信息"""
-        # 查找最近的测试输出/日志
+        """Информация о тестах"""
         test_patterns = [
             ".pytest_cache/v/cache/lastfailed",
             "test-results.xml",
@@ -244,16 +234,15 @@ class ContextFetchTool(Tool):
         
         if results:
             return "\n".join(results)
-        return "[tests] 未找到相关测试信息"
+        return "[tests] релевантная информация о тестах не найдена"
     
     def _group_by_file(self, lines: List[str]) -> Dict[str, List[str]]:
-        """按文件分组 ripgrep 输出"""
+        """Группирует вывод ripgrep по файлам"""
         grouped: Dict[str, List[str]] = {}
         current_file = None
         
         for line in lines:
             if ":" in line:
-                # 格式: file:line:content 或 file-line-content
                 parts = line.split(":", 2) if ":" in line else line.split("-", 2)
                 if len(parts) >= 2:
                     file_path = parts[0]
@@ -267,7 +256,7 @@ class ContextFetchTool(Tool):
         return grouped
     
     def _format_file_results(self, grouped: Dict[str, List[str]], budget: int) -> str:
-        """格式化文件搜索结果"""
+        """Форматирует результаты поиска по файлам"""
         output_parts = []
         tokens_used = 0
         tokens_per_file = budget // max(len(grouped), 1)
@@ -276,25 +265,23 @@ class ContextFetchTool(Tool):
             content = "\n".join(lines)
             truncated = self._truncate(content, tokens_per_file)
             
-            # 相对路径
             rel_path = file_path.replace(self.workspace, "").lstrip("/")
             output_parts.append(f"--- {rel_path} ---\n{truncated}")
             
-            tokens_used += len(truncated) // 4  # 粗略估算
+            tokens_used += len(truncated) // 4
             if tokens_used >= budget:
-                output_parts.append("...(更多结果已截断)...")
+                output_parts.append("...(дальнейшие результаты обрезаны)...")
                 break
         
         return "\n\n".join(output_parts)
     
     def _truncate(self, text: str, max_tokens: int) -> str:
-        """截断文本到指定 token 上限"""
-        # 粗略估算：1 token ≈ 4 字符（英文），2 字符（中文）
+        """Обрезает текст до лимита токенов"""
         max_chars = max_tokens * 3
         if len(text) <= max_chars:
             return text
-        return text[:max_chars] + "\n...(已截断)..."
+        return text[:max_chars] + "\n...(обрезано)..."
     
     def clear_cache(self):
-        """清空缓存"""
+        """Очищает кэш"""
         self._cache.clear()

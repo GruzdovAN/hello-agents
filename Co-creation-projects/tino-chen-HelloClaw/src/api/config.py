@@ -1,4 +1,4 @@
-"""配置 API 路由"""
+"""Настройка маршрутизации API"""
 import json
 import os
 from fastapi import APIRouter, HTTPException, Depends
@@ -11,27 +11,28 @@ router = APIRouter(prefix="/config", tags=["config"])
 
 
 class ConfigUpdateRequest(BaseModel):
-    """配置更新请求"""
+    """Запрос на обновление конфигурации"""
     content: str
 
 
 class AgentInfo(BaseModel):
-    """助手信息"""
+    """Информация о помощнике"""
     name: str
 
 
-# 全局 workspace 实例（由 main.py 在启动时设置）
+# Экземпляр глобальной рабочей области (устанавливается при запуске main.py)
+
 _workspace: Optional[WorkspaceManager] = None
 
 
 def set_workspace(ws: WorkspaceManager):
-    """设置全局 workspace 实例"""
+    """Настройка экземпляра глобальной рабочей области"""
     global _workspace
     _workspace = ws
 
 
 def get_workspace() -> WorkspaceManager:
-    """获取 workspace 实例"""
+    """Получить экземпляр рабочей области"""
     if _workspace is None:
         ws = WorkspaceManager(os.getenv("WORKSPACE_PATH", "~/.helloclaw/workspace"))
         ws.ensure_workspace_exists()
@@ -40,12 +41,12 @@ def get_workspace() -> WorkspaceManager:
 
 
 def get_config_json_path() -> str:
-    """获取全局 config.json 路径"""
+    """Получите глобальный путь config.json"""
     return os.path.expanduser("~/.helloclaw/config.json")
 
 
 def ensure_config_json_exists():
-    """确保 config.json 存在"""
+    """Убедитесь, что config.json существует."""
     config_path = get_config_json_path()
     if not os.path.exists(config_path):
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
@@ -55,18 +56,20 @@ def ensure_config_json_exists():
 
 @router.get("/list")
 async def list_configs(ws: WorkspaceManager = Depends(get_workspace)):
-    """获取配置文件列表"""
+    """Получить Список конфигурационных файлов"""
     configs = ws.list_configs()
 
-    # 添加 config.json 到列表开头
+    # Добавьте config.json в начало списка.
+
     configs.insert(0, "CONFIG")
     return {"configs": configs}
 
 
 @router.get("/{name}")
 async def get_config(name: str, ws: WorkspaceManager = Depends(get_workspace)):
-    """获取指定配置文件内容"""
-    # 特殊处理 CONFIG (config.json)
+    """Получить содержимое указанного файла конфигурации"""
+    # Специальная обработка CONFIG (config.json)
+
     if name == "CONFIG":
         ensure_config_json_exists()
         config_path = get_config_json_path()
@@ -74,53 +77,58 @@ async def get_config(name: str, ws: WorkspaceManager = Depends(get_workspace)):
             content = f.read()
         return {"name": name, "content": content}
 
-    # 处理 .md 配置文件
+    # Обработка файлов конфигурации .md
+
     content = ws.load_config(name)
     if content is None:
-        raise HTTPException(status_code=404, detail=f"配置文件 {name} 不存在")
+        raise HTTPException(status_code=404, detail=f"файл конфигурации {name} не существует")
     return {"name": name, "content": content}
 
 
 @router.put("/{name}")
 async def update_config(name: str, request: ConfigUpdateRequest, ws: WorkspaceManager = Depends(get_workspace)):
-    """更新配置文件"""
-    # 特殊处理 CONFIG (config.json)
+    """Обновить файл конфигурации"""
+    # Специальная обработка CONFIG (config.json)
+
     if name == "CONFIG":
         ensure_config_json_exists()
-        # 严格校验 JSON 格式
+        # Строго проверяйте формат JSON.
+
         try:
             config_data = json.loads(request.content)
         except json.JSONDecodeError as e:
-            raise HTTPException(status_code=400, detail=f"无效的 JSON 格式: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Неверный формат JSON: {str(e)}")
 
-        # 校验必需字段
+        # Проверьте обязательные поля
+
         if not isinstance(config_data, dict):
-            raise HTTPException(status_code=400, detail="配置必须是 JSON 对象")
+            raise HTTPException(status_code=400, detail="Конфигурация должна быть JSON-объектом")
 
         if "llm" not in config_data:
-            raise HTTPException(status_code=400, detail="缺少必需字段: llm")
+            raise HTTPException(status_code=400, detail="Отсутствует обязательное поле: llm")
 
         llm_config = config_data.get("llm", {})
         required_fields = ["model_id", "api_key", "base_url"]
         missing_fields = [f for f in required_fields if f not in llm_config]
         if missing_fields:
-            raise HTTPException(status_code=400, detail=f"llm 配置缺少必需字段: {', '.join(missing_fields)}")
+            raise HTTPException(status_code=400, detail=f"llm В конфигурации нет обязательных полей: {', '.join(missing_fields)}")
 
         config_path = get_config_json_path()
         with open(config_path, "w", encoding="utf-8") as f:
             f.write(request.content)
         return {"name": name, "status": "updated"}
 
-    # 处理 .md 配置文件
+    # Обработка файлов конфигурации .md
+
     if name not in ws.list_configs():
-        raise HTTPException(status_code=404, detail=f"配置文件 {name} 不存在")
+        raise HTTPException(status_code=404, detail=f"файл конфигурации {name} не существует")
 
     ws.save_config(name, request.content)
     return {"name": name, "status": "updated"}
 
 
 def get_agent():
-    """获取全局 Agent 实例"""
+    """Получить глобальный экземпляр агента"""
     from ..main import get_agent as _get_agent
     return _get_agent()
 
@@ -132,14 +140,14 @@ async def reset_workspace(
     reset_global_config: bool = False,
     ws: WorkspaceManager = Depends(get_workspace)
 ):
-    """重置工作空间到初始模板
+    """Сброс к начальным шаблонам
 
     Args:
-        reset_sessions: 是否清除会话
-        reset_memory: 是否清除每日记忆
-        reset_global_config: 是否重置全局配置
+        reset_sessions: Очистить сессии
+        reset_memory: Очистить ежедневную память
+        reset_global_config: Сбросить глобальный конфиг
 
-    警告：这将覆盖所有配置文件！
+    Внимание: перезапись всех конфигов!
     """
     try:
         ws.reset_to_templates(
@@ -148,42 +156,46 @@ async def reset_workspace(
             reset_global_config=reset_global_config
         )
 
-        # 如果清除了会话，也要清除 Agent 内存中的历史记录
+        # Если вы очистите сеанс, также очистите историю в памяти агента.
+
         if reset_sessions:
             agent = get_agent()
             if agent:
                 agent.clear_all_history()
 
-        messages = ["配置文件已重置"]
+        messages = ["Файл конфигурации сброшен"]
         if reset_sessions:
-            messages.append("会话已清除")
+            messages.append("Сессия очищена")
         if reset_memory:
-            messages.append("每日记忆已清除")
+            messages.append("дневнаяпамятьуже清除")
         if reset_global_config:
-            messages.append("全局配置已重置")
+            messages.append("глобальныйконфигурацияужесброс")
 
         return {"status": "success", "message": "，".join(messages)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"重置失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"сбросошибка: {str(e)}")
 
 
 @router.get("/agent/info", response_model=AgentInfo)
 async def get_agent_info(ws: WorkspaceManager = Depends(get_workspace)):
-    """获取助手信息（包括名字）
+    """Получить информацию об помощнике (включая имя)
 
-    每次都重新读取 IDENTITY.md 以获取最新的名字
-    """
-    # 从 IDENTITY.md 读取最新的名字
+    Перечитывайте IDENTITY.md каждый раз, чтобы узнать последнее имя."""
+    # Прочитайте последнее имя на IDENTITY.md
+
     identity = ws.load_config("IDENTITY")
-    name = "HelloClaw"  # 默认名字
+    name = "HelloClaw"  # имя по умолчанию
+
 
     if identity:
         import re
-        # 匹配格式: - **名称：** xxx 或 - **名称:** xxx
-        match = re.search(r'\*\*名称[：:]\*\*\s*(.+?)(?:\n|$)', identity)
+        # Формат соответствия: - **имя:** xxx или - **имя:** xxx
+
+match = re.search(r'\*\*Name[::]\*\*\s*(.+?)(?:\n|$)', тождество)
         if match:
             name = match.group(1).strip()
-            # 检查是否是占位符
+            # Проверьте, является ли это заполнителем
+
             if name.startswith('_') or '选一个' in name or '（' in name:
                 name = "HelloClaw"
 

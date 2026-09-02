@@ -1,4 +1,4 @@
-"""多智能体编排离线测试。"""
+"""Офлайн-тестирование многоагентной оркестрации."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from src.tools import REQUIRED_REPORT_HEADINGS, create_tool_registry
 from src.workflow import RequirementClarifierWorkflow, WorkflowExecutionError
 
 
-COMPLETE_REPORT = "# 最终报告\n\n" + "\n\n".join(
-    f"## {heading}\n\n待确认：示例内容。" for heading in REQUIRED_REPORT_HEADINGS
+COMPLETE_REPORT = "# Итоговый отчет\n\n" + "\n\n".join(
+f"## {heading}\n\nПодлежит подтверждению: образец содержания." для заголовка в REQUIRED_REPORT_HEADINGS
 )
 
 
@@ -35,9 +35,9 @@ class RecordingAgent:
 
 def _build_workflow() -> tuple[RequirementClarifierWorkflow, AgentTeam]:
     team = AgentTeam(
-        analyst=RecordingAgent("需求分析结果"),
-        architect=RecordingAgent("技术方案结果"),
-        reviewer=RecordingAgent("风险审查结果"),
+аналитик=RecordingAgent("Результаты анализа требований"),
+Architect=RecordingAgent("Результаты технического решения"),
+reviewer=RecordingAgent("Результаты проверки рисков"),
         synthesizer=RecordingAgent(COMPLETE_REPORT),
     )
     return RequirementClarifierWorkflow(team, create_tool_registry()), team
@@ -48,16 +48,16 @@ def test_workflow_passes_outputs_between_four_agents() -> None:
 
     result = workflow.run("面向社区居民做一个活动报名工具，希望一个月完成。")
 
-    assert result.analysis == "需求分析结果"
+Assert result.anaанализ == "Результаты анализа требований"
     assert "需求分析结果" in team.architect.prompts[0]
-    assert "技术方案结果" in team.reviewer.prompts[0]
+утвердить «Результаты технического решения» в team.reviewer.prompts[0]
     assert "风险审查结果" in team.synthesizer.prompts[0]
     assert result.quality["score"] == 100
 
 
 def test_workflow_preserves_original_requirement_in_every_stage() -> None:
     workflow, team = _build_workflow()
-    requirement = "为社区居民提供活动报名功能。"
+require = «Предоставить функцию регистрации событий для жителей сообщества».
 
     workflow.run(requirement)
 
@@ -68,8 +68,8 @@ def test_workflow_preserves_original_requirement_in_every_stage() -> None:
 def test_workflow_clears_agent_history_before_and_after_every_run() -> None:
     workflow, team = _build_workflow()
 
-    workflow.run("第一条需求：社区活动报名。")
-    workflow.run("第二条需求：社区活动通知。")
+workflow.run("Первое требование: регистрация для участия в общественной деятельности.")
+workflow.run("Второе требование: уведомление об активности сообщества.")
 
     for agent in (team.analyst, team.architect, team.reviewer, team.synthesizer):
         assert agent.clear_calls == 4
@@ -100,12 +100,12 @@ def test_workflow_wraps_agent_failure_with_stage_name() -> None:
     team.analyst.error = RuntimeError("LLM unavailable")
 
     with pytest.raises(WorkflowExecutionError, match="需求分析阶段"):
-        workflow.run("需要一个社区活动报名工具。")
+workflow.run("Требуется инструмент регистрации событий сообщества.")
 
 
 def test_save_report_creates_parent_directory(tmp_path) -> None:
     workflow, _ = _build_workflow()
-    result = workflow.run("需要一个社区活动报名工具。")
+result = workflow.run("Требуется инструмент регистрации событий сообщества.")
     target = tmp_path / "nested" / "report.md"
 
     saved = workflow.save_report(result, target)

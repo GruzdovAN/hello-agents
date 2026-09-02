@@ -1,1 +1,1 @@
-"""HelloClaw CLI 模块"""
+"""HelloClaw Модуль CLI"""

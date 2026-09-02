@@ -1,7 +1,7 @@
 """
-学术引用生成工具
+Инструмент генерации академических цитат
 
-支持 GB/T 7714、APA 7th、MLA 9th 三种主流学术引用格式。
+Поддерживает три основных формата: GB/T 7714, APA 7th, MLA 9th.
 """
 from typing import Dict, Any, List
 
@@ -9,17 +9,17 @@ from hello_agents.tools import Tool, ToolParameter, ToolResponse, ToolStatus
 
 
 class CitationTool(Tool):
-    """学术引用生成工具
+    """Инструмент генерации академических цитат
 
-    根据论文元数据生成指定格式的学术引用。
+    Формирует библиографическую ссылку по метаданным статьи в заданном формате.
     """
 
     def __init__(self):
         super().__init__(
             name="citation_generator",
-            description="根据论文信息生成指定格式的学术引用。"
-                        "支持 GB/T 7714（中文期刊标准）、APA 第7版、MLA 第9版。"
-                        "当需要生成参考文献引用时使用此工具。"
+            description="Генерирует академическую цитату по информации о статье в указанном формате. "
+                        "Поддерживает GB/T 7714 (китайский стандарт журналов), APA 7-е издание, MLA 9-е издание. "
+                        "Используйте при необходимости оформить библиографическую ссылку."
         )
 
     def _format_authors(self, authors_str: str, format_type: str) -> str:
@@ -55,7 +55,7 @@ class CitationTool(Tool):
         if not title or not authors_str:
             return ToolResponse.error(
                 code="INVALID_PARAM",
-                message="标题和作者为必填项"
+                message="Название и авторы обязательны для заполнения"
             )
 
         formatted_authors = self._format_authors(authors_str, format_type)
@@ -71,7 +71,7 @@ class CitationTool(Tool):
         else:
             return ToolResponse.error(
                 code="INVALID_PARAM",
-                message=f"不支持的引用格式: {format_type}，支持: gbt7714, apa, mla"
+                message=f"Неподдерживаемый формат цитирования: {format_type}. Доступны: gbt7714, apa, mla"
             )
 
         return ToolResponse.success(
@@ -82,21 +82,21 @@ class CitationTool(Tool):
     def get_parameters(self) -> List[ToolParameter]:
         return [
             ToolParameter(name="title", type="string",
-                          description="论文标题", required=True),
+                          description="Название статьи", required=True),
             ToolParameter(name="authors", type="string",
-                          description="作者列表，用逗号分隔",
+                          description="Список авторов через запятую",
                           required=True),
             ToolParameter(name="journal", type="string",
-                          description="期刊/会议名称", required=False),
+                          description="Название журнала или конференции", required=False),
             ToolParameter(name="year", type="string",
-                          description="发表年份", required=False),
+                          description="Год публикации", required=False),
             ToolParameter(name="volume", type="string",
-                          description="卷号", required=False),
+                          description="Номер тома", required=False),
             ToolParameter(name="pages", type="string",
-                          description="页码", required=False),
+                          description="Страницы", required=False),
             ToolParameter(name="doi", type="string",
-                          description="DOI 号", required=False),
+                          description="DOI", required=False),
             ToolParameter(name="format", type="string",
-                          description="引用格式：gbt7714 / apa / mla",
+                          description="Формат цитирования: gbt7714 / apa / mla",
                           required=False),
         ]

@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 from hello_agents import ToolRegistry
 
-# 读取数据集
+# Загрузка набора данных
 work_path = os.path.dirname(os.path.abspath(__file__))
 df = pd.read_csv(f"{work_path}/../data/shopping_behavior_updated.csv")
 
 def get_basic_metadata(input: str) -> dict:
-    """获取基本元数据"""
+    """Получение базовых метаданных"""
     metadata = {
         "shape": df.shape,
         "columns": list(df.columns),
@@ -19,7 +19,7 @@ def get_basic_metadata(input: str) -> dict:
     return metadata
 
 def assess_data_quality(input: str) -> dict:
-    """综合数据质量评估"""
+    """Комплексная оценка качества данных"""
     quality_report = {
         "completeness": {},
         "consistency": {},
@@ -28,22 +28,22 @@ def assess_data_quality(input: str) -> dict:
     }
 
     for col in df.columns:
-        # 完整性
+        # Полнота
         missing_rate = df[col].isna().mean()
         quality_report["completeness"][col] = {
             "missing_rate": missing_rate,
             "level": "high" if missing_rate < 0.05 else "medium" if missing_rate < 0.2 else "low"
         }
 
-        # 有效性（基于数据类型）
+        # Валидность (на основе типа данных)
         if pd.api.types.is_numeric_dtype(df[col]):
-            # 数值型检查
+            # Проверка числовых значений
             quality_report["anomalies"][col] = {
                 "min": float(df[col].min()),
                 "max": float(df[col].max())
             }
         elif pd.api.types.is_datetime64_any_dtype(df[col]):
-            # 时间型检查
+            # Проверка временных значений
             future_dates = df[col] > pd.Timestamp.now()
             quality_report["validity"][col] = {
                 "future_dates_count": future_dates.sum(),
@@ -54,7 +54,7 @@ def assess_data_quality(input: str) -> dict:
     return quality_report
 
 def get_statistical_summary(input: str) -> dict:
-    """核心数据统计摘要"""
+    """Сводка основной статистики по данным"""
     summary = {}
 
     for col in df.select_dtypes(include=[np.number]).columns:
@@ -82,27 +82,27 @@ def get_statistical_summary(input: str) -> dict:
     return summary
 
 def create_data_exploration_registry():
-    """创建包含数据探查工具的注册表"""
+    """Создание реестра инструментов разведки данных"""
     registry = ToolRegistry()
 
-    # 注册获取基本元数据函数
+    # Регистрация функции получения базовых метаданных
     registry.register_function(
         name="get_basic_metadata",
-        description="获取基本元数据，包括形状、列名、数据类型和内存使用情况",
+        description="Получение базовых метаданных: размер, имена столбцов, типы данных и использование памяти",
         func=get_basic_metadata
     )
 
-    # 注册数据质量评估函数
+    # Регистрация функции оценки качества данных
     registry.register_function(
         name="assess_data_quality",
-        description="综合评估数据质量，包括完整性、一致性、有效性和异常检测",
+        description="Комплексная оценка качества данных: полнота, согласованность, валидность и обнаружение аномалий",
         func=assess_data_quality
     )
 
-    # 注册统计摘要函数
+    # Регистрация функции статистической сводки
     registry.register_function(
         name="get_statistical_summary",
-        description="获取数值型列的核心统计摘要，包括基本统计量和高级统计量",
+        description="Получение основной статистической сводки по числовым столбцам, включая базовые и расширенные показатели",
         func=get_statistical_summary
     )
 

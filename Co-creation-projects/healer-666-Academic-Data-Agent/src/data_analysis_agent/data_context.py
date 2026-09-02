@@ -177,8 +177,8 @@ def build_data_context(
     small_sample_warning = shape[0] < 30
     if small_sample_warning:
         sample_size_warning = (
-            "WARNING / 红色警告：当前样本量极小 (N<30)，强烈建议优先考虑非参数检验"
-            "（如 Mann-Whitney U 检验），并对正态分布假设保持高度谨慎。"
+            "WARNING: очень малый размер выборки (N<30); предпочтительны непараметрические тесты"
+            "(например Mann-Whitney U); с осторожностью к предположению нормальности."
         )
 
     literature_context, resolved_parsed_document, parsed_payload = _load_parsed_document_context(
@@ -201,12 +201,12 @@ def build_data_context(
     )
 
     context_lines = [
-        f"数据文件相对路径: {normalized_path.as_posix()}",
-        f"数据文件绝对路径: {absolute_path.as_posix()}",
-        f"输入类型: {input_kind}",
-        f"数据列名: {columns}",
-        f"数据类型:\n{dtypes}",
-        f"数据规模: {shape}",
+        f"Относительный путь к данным: {normalized_path.as_posix()}",
+        f"Абсолютный путь к данным: {absolute_path.as_posix()}",
+        f"Тип входа: {input_kind}",
+        f"Столбцы: {columns}",
+        f"Типы данных:\n{dtypes}",
+        f"Размер данных: {shape}",
     ]
     if sample_size_warning:
         context_lines.append(sample_size_warning)
@@ -234,7 +234,7 @@ def build_data_context(
             "Do not run one-sample tests, do not treat distinct models as repeated observations from one population, and do not run group significance tests without repeated measurements or explicit experimental groups.\n"
             "</PDF_Small_Table_Mode>"
         )
-    context_lines.append(f"前 5 行样本:\n{head_markdown}")
+    context_lines.append(f"Первые 5 строк:\n{head_markdown}")
     context_text = "\n".join(context_lines).strip() + "\n"
 
     return DataContextSummary(

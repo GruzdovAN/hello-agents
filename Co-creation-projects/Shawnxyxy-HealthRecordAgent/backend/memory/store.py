@@ -1,6 +1,6 @@
 """
-SQLite 持久化：用户表 + 体检分析履历（report_runs）。
-同步 API，在 async 路由中通过 asyncio.to_thread 调用。
+Сохранение SQLite: таблица пользователей + резюме анализа медицинского обследования (report_runs).
+Синхронный API, вызываемый через asyncio.to_thread в асинхронных маршрутах.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ def _connect() -> sqlite3.Connection:
 
 
 def _ensure_legacy_columns(conn: sqlite3.Connection) -> None:
-    """旧库补列（阶段 3：体检 trace、饮食 replay 溯源）。"""
+"""Пополнение старой базы данных (Этап 3: отслеживание физического осмотра, отслеживание воспроизведения диеты)."""
     cols = {r[1] for r in conn.execute("PRAGMA table_info(report_runs)").fetchall()}
     if "agent_trace_json" not in cols:
         conn.execute("ALTER TABLE report_runs ADD COLUMN agent_trace_json TEXT")
@@ -48,7 +48,7 @@ def _ensure_legacy_columns(conn: sqlite3.Connection) -> None:
 
 
 def init_db() -> None:
-    """创建表与索引（幂等）。"""
+"""Создание таблиц и индексов (идемпотентных)."""
     with _connect() as conn:
         conn.executescript(
             """
@@ -129,7 +129,7 @@ def save_completed_report_run(
     agent_trace: Optional[Dict[str, Any]] = None,
 ) -> None:
     """
-    分析成功完成后写入一条履历；失败时由调用方捕获日志，不影响主流程。
+После успешного завершения анализа пишется резюме; в случае сбоя вызывающая сторона записывает журнал, что не влияет на основной процесс.
     agent_trace: 各 Agent 的 trace 列表（阶段 3 可观测性）。
     """
     ensure_user(user_id)
@@ -287,15 +287,15 @@ def list_recent_diet_reflect(user_id: str, limit: int = 8) -> List[Dict[str, Any
 def format_reflect_memory_for_prompt(user_id: str, limit: int = 5) -> str:
     rows = list_recent_diet_reflect(user_id, limit=limit)
     if not rows:
-        return "（暂无历史执行反馈）"
+return "(Пока нет отзывов об историческом выполнении)"
     lines = []
     for r in rows:
-        fl = "已执行" if r["followed"] else "未执行"
+fl = "Выполнено" if r["followed"] else "Не выполнено"
         rc = r.get("reason_code") or "-"
         rd = (r.get("reason_detail") or "").strip()
         lines.append(
-            f"- {r['created_at'][:19]} | run={r['diet_run_id'][:8]}… | {fl} | 原因码={rc}"
-            + (f" | 说明={rd}" if rd else "")
+f"- {r['created_at'][:19]} | run={r['diet_run_id'][:8]}… | {fl} | Код причины={rc}"
++ (f" | описание={rd}" if rd else "")
         )
     return "\n".join(lines)
 
@@ -385,7 +385,7 @@ def list_all_user_ids(limit: int = 5000) -> List[str]:
 
 def list_user_memory_chunks_sql(user_id: str, limit: int = 50) -> List[Dict[str, Any]]:
     """
-    SQL 回退检索：按时间抓取用户近期文本记忆。
+Получение отката SQL: захват недавней текстовой памяти пользователя по времени.
     """
     limit = max(1, min(limit, 500))
     out: List[Dict[str, Any]] = []
@@ -464,7 +464,7 @@ def list_user_memory_chunks_sql(user_id: str, limit: int = 50) -> List[Dict[str,
             (user_id, limit),
         ).fetchall()
         for r in r3:
-            txt = f"执行={bool(r['followed'])} 原因={r['reason_code'] or '-'} 说明={r['reason_detail'] or ''}".strip()
+txt = f"Execution={bool(r['followed'])} Reason={r['reason_code'] или '-'} Description={r['reason_detail'] или ''}".strip()
             out.append(
                 {
                     "chunk_id": f"reflect:{r['id']}",

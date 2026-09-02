@@ -1,9 +1,9 @@
 /** TypeScript 契约，对齐 backend/app/models/schemas.py（D4） */
 
-export type Mood = '放松' | '欢乐' | '虐心' | '烧脑' | '紧张刺激' | '温馨'
-export type PartyType = '独自' | '情侣' | '家庭' | '朋友'
-export type RegionPreference = '华语' | '好莱坞' | '日韩' | '欧洲' | '不限'
-export type YearPreference = '不限' | '近5年' | '近10年' | '经典'
+export type Mood = 'Расслабиться' | 'Веселье' | 'Драматичное' | 'Сложное' | 'Напряжённое' | 'Тёплое'
+export type PartyType = 'Один' | 'Пара' | 'Семья' | 'Друзья'
+export type RegionPreference = 'Китайский' | 'Голливуд' | 'Япония/Корея' | 'Европа' | 'Любой'
+export type YearPreference = 'Любой' | 'За 5 лет' | 'За 10 лет' | 'Классика'
 
 export interface RecommendRequest {
   mood: Mood
@@ -16,7 +16,7 @@ export interface RecommendRequest {
   spoilers_ok: boolean
   free_text: string
   exclude_ids: number[]
-  /** 换一批时回传，后端跳过画像 Agent */
+  /** Другие варианты时回传，后端跳过画像 Agent */
   taste_profile?: TasteProfile | null
 }
 
@@ -90,49 +90,49 @@ export interface MovieDetailResponse {
   data: MovieDetail | null
 }
 
-export const MOODS: Mood[] = ['放松', '欢乐', '虐心', '烧脑', '紧张刺激', '温馨']
-export const PARTY_TYPES: PartyType[] = ['独自', '情侣', '家庭', '朋友']
-export const REGIONS: RegionPreference[] = ['不限', '华语', '好莱坞', '日韩', '欧洲']
-export const YEARS: YearPreference[] = ['不限', '近5年', '近10年', '经典']
+export const MOODS: Mood[] = ['Расслабиться', 'Веселье', 'Драматичное', 'Сложное', 'Напряжённое', 'Тёплое']
+export const PARTY_TYPES: PartyType[] = ['Один', 'Пара', 'Семья', 'Друзья']
+export const REGIONS: RegionPreference[] = ['Любой', 'Китайский', 'Голливуд', 'Япония/Корея', 'Европа']
+export const YEARS: YearPreference[] = ['Любой', 'За 5 лет', 'За 10 лет', 'Классика']
 export const GENRE_OPTIONS = [
-  '剧情',
-  '喜剧',
-  '爱情',
-  '科幻',
-  '动画',
-  '悬疑',
-  '纪录',
-  '动作',
-  '冒险',
-  '恐怖',
-  '惊悚',
-  '奇幻',
+  'Драма',
+  'Комедия',
+  'Мелодрама',
+  'Фантастика',
+  'Анимация',
+  'Детектив',
+  'Документальный',
+  'Боевик',
+  'Приключения',
+  'Ужасы',
+  'Триллер',
+  'Фэнтези',
 ] as const
 export const RUNTIME_OPTIONS: { label: string; value: number | null }[] = [
-  { label: '不限', value: null },
-  { label: '90 分钟内', value: 90 },
-  { label: '120 分钟内', value: 120 },
-  { label: '150 分钟内', value: 150 },
+  { label: 'Любой', value: null },
+  { label: '90 мин', value: 90 },
+  { label: '120 мин', value: 120 },
+  { label: '150 мин', value: 150 },
 ]
 
 export const DEMO_REQUEST: RecommendRequest = {
-  mood: '放松',
-  party_type: '独自',
-  genres: ['剧情', '喜剧'],
+  mood: 'Расслабиться',
+  party_type: 'Один',
+  genres: ['Драма', 'Комедия'],
   max_runtime_minutes: 120,
-  region_preference: '不限',
-  year_preference: '近10年',
+  region_preference: 'Любой',
+  year_preference: 'За 10 лет',
   exclude_titles: [],
   spoilers_ok: false,
-  free_text: '不要太沉重',
+  free_text: 'Не слишком тяжёлое',
   exclude_ids: [],
 }
 
 export const PROGRESS_STAGES = [
-  '分析口味',
-  '检索片库',
-  '生成推荐',
-  '校验',
+  'Анализ вкусов',
+  'Поиск в каталоге',
+  'Генерация рекомендаций',
+  'Проверка',
 ] as const
 
 export type ProgressStage = (typeof PROGRESS_STAGES)[number]

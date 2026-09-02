@@ -8,7 +8,7 @@ export async function buildPlan(text, direction = "TD") {
   });
 
   if (!resp.ok) {
-    throw new Error(`计划模式请求失败: ${resp.status}`);
+    throw new Error(`Ошибка режима плана: ${resp.status}`);
   }
 
   return resp.json();
@@ -37,7 +37,7 @@ function parseSSEChunk(buffer, onEvent) {
         const parsed = JSON.parse(dataLine);
         onEvent({ eventType, data: parsed });
       } catch {
-        onEvent({ eventType, data: { type: "error", message: "SSE 解析失败" } });
+        onEvent({ eventType, data: { type: "error", message: "Ошибка разбора SSE" } });
       }
     }
   }
@@ -53,7 +53,7 @@ export async function streamAgentChat(payload, onEvent) {
   });
 
   if (!resp.ok || !resp.body) {
-    throw new Error(`智能体流式请求失败: ${resp.status}`);
+    throw new Error(`Ошибка потокового запроса агента: ${resp.status}`);
   }
 
   const reader = resp.body.getReader();

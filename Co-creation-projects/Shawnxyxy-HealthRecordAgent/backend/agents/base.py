@@ -1,5 +1,5 @@
 """
-HealthRecordAgent 基础智能体类
+Базовый класс агента HealthRecordAgent
 """
 
 import asyncio
@@ -15,7 +15,7 @@ from core.exceptions import AgentException, TimeoutException
 
 from enum import Enum
 
-# 全局任务状态管理
+# Глобальное управление статусом задач
 TASKS = {}
 
 def create_task(task_id: str, user_id: str | None = None):
@@ -29,7 +29,7 @@ def create_task(task_id: str, user_id: str | None = None):
             "RiskAssessmentAgent": "pending",
             "AdviceAgent": "pending",
             "ReportAgent": "pending"},
-        "report": None,  # 最终报告
+"report": Нет, # Итоговый отчет
     }
 
 def update_agent_state(task_id: str, agent_name: str, state: str, partial_report=None):
@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 
 class BaseAgent(ABC):
     """
-    基础智能体抽象类
+Базовый абстрактный класс агента
     """
 
     def __init__(
@@ -82,27 +82,27 @@ class BaseAgent(ABC):
         self.debug = debug
         self.traces: List[Dict[str, Any]] = []
         self.task_id = task_id
-    # ========== 核心接口 ==========
+# ========== Основной интерфейс ==========
     @abstractmethod
     async def run(self, **kwargs) -> Any:
-        """Agent 执行入口"""
+"""Вход для выполнения агента"""
         pass
 
-    # ========== LLM 思考 ==========
+# ========== Мысли LLM ==========
     async def think(self, prompt: str, context: Dict = None) -> str:
-        """调用LLM进行思考"""
+"""Позвоните в LLM, подумаем"""
         try:
-            # 构建完整的提示词
+# Создайте полное слово-подсказку
             full_prompt = prompt
             
-            # 添加上下文信息
+#Добавляем контекстную информацию
             if context:
                 context_str = json.dumps(context, ensure_ascii=False, indent=2)
-                full_prompt = f"上下文信息:\n{context_str}\n\n任务:\n{prompt}"
+full_prompt = f"Контекстная информация:\n{context_str}\n\nЗадача:\n{prompt}"
             
-            # 添加历史记录
+#Добавить историю
             if self.history:
-                history_str = "\n".join(self.history[-10:])  # 只保留最近10条
+History_str = "\n".join(self.history[-10:]) # Сохраняем только последние 10 записей
                 full_prompt += f"\n\n历史记录:\n{history_str}"
             
             self.trace("LLM CALL",
@@ -115,7 +115,7 @@ class BaseAgent(ABC):
 
             start = datetime.now()
             
-            # 调用 HelloAgent LLM
+# Позвоните в HelloAgent LLM
             response = await asyncio.wait_for(
                 self.llm.ainvoke(full_prompt),
                 timeout=self.timeout
@@ -140,21 +140,21 @@ class BaseAgent(ABC):
             return response_text
             
         except asyncio.TimeoutError:
-            raise TimeoutException(f"LLM思考超时")
+поднять TimeoutException(f"Тайм-аут на размышление LLM")
         except Exception as e:
             raise AgentException(f"LLM思考失败: {str(e)}")
-    # ========== Tool 机制 ==========
+# ========== Механизм инструмента ==========
     def add_tool(self, tool_name: str, tool_func: Callable, description: str = ""):
-        """添加工具"""
+"""Добавить инструменты"""
         self.tools[tool_name] = {
             "function": tool_func,
             "description": description
         }
     
     def get_tools_description(self) -> str:
-        """获取工具描述"""
+"""Получить описание инструмента"""
         if not self.tools:
-            return "暂无可用工具"
+вернуть «Инструменты пока недоступны»
         
         descriptions = []
         for name, tool_info in self.tools.items():
@@ -163,7 +163,7 @@ class BaseAgent(ABC):
         return "\n".join(descriptions)
     
     async def call_tool(self, tool_name: str, tool_input: Any) -> Any:
-        """调用工具"""
+"""Вызов инструментов"""
         if tool_name not in self.tools:
             raise AgentException(f"工具 '{tool_name}' 不存在")
         
@@ -188,19 +188,19 @@ class BaseAgent(ABC):
         except asyncio.TimeoutError:
             raise TimeoutException(f"工具 '{tool_name}' 执行超时")
         except Exception as e:
-            raise AgentException(f"工具 '{tool_name}' 执行失败: {str(e)}")
-    # ========== 状态 & 历史 ==========
+поднять AgentException(f "Не удалось выполнить инструмент '{tool_name}': {str(e)}")
+# ========== Статус и история ==========
     def _add_to_history(self, message: str):
         """添加到历史记录"""
         timestamp = datetime.now().isoformat()
         self.history.append(f"[{timestamp}] {message}")
         
-        # 限制历史记录长度
+# Ограничить длину записей истории
         if len(self.history) > 100:
             self.history = self.history[-50:]
     
     def get_history(self, limit: int = 10) -> List[str]:
-        """获取历史记录"""
+"""Получить историю"""
         return self.history[-limit:]
     
     def clear_history(self):
@@ -208,10 +208,10 @@ class BaseAgent(ABC):
         self.history = []
     
     def set_state(self, state: str):
-        """设置智能体状态"""
+"""Установить состояние агента"""
         self.state = state
 
-        # 更新全局任务状态
+# Обновить статус глобальной задачи
         if self.task_id:
             update_agent_state(self.task_id, self.name, state)
 
@@ -223,7 +223,7 @@ class BaseAgent(ABC):
         logger.info(f"Agent {self.name} state changed to: {state}")
     
     def get_status(self) -> Dict[str, Any]:
-        """获取智能体状态"""
+"""Получить статус агента"""
         return {
             "name": self.name,
             "state": self.state,
@@ -235,7 +235,7 @@ class BaseAgent(ABC):
         }
 
     async def validate_input(self, input_data: Dict[str, Any]) -> bool:
-        """验证输入数据"""
+"""Проверка входных данных"""
         required_fields = self.get_required_fields()
         
         for field in required_fields:
@@ -246,11 +246,11 @@ class BaseAgent(ABC):
     
     @abstractmethod
     def get_required_fields(self) -> List[str]:
-        """获取必需的输入字段"""
+"""Получить необходимые поля ввода"""
         pass
 
     def trace(self, title: str, data: Any, level: TraceLevel = TraceLevel.DEBUG):
-        """统一Agent调试输出"""
+"""Вывод отладки унифицированного агента"""
         event = {
         "agent": self.name,
         "title": title,
@@ -291,7 +291,7 @@ class BaseAgent(ABC):
         return self.traces
     
     def _preview(self, data, max_len: int = 300):
-        """日志摘要"""
+"""Сводка журнала"""
         if data is None:
             return ""
 

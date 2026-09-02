@@ -1,4 +1,4 @@
-"""增强版 HelloAgentsLLM - 支持流式工具调用"""
+"""Расширенная версия HelloAgentsLLM — поддерживает вызовы инструментов потоковой передачи."""
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -8,41 +8,52 @@ from hello_agents.core.llm import HelloAgentsLLM
 from hello_agents.core.exceptions import HelloAgentsException
 
 
-# ==================== 流式工具调用数据结构 ====================
+# ==================== Структура данных вызова инструмента потоковой передачи ===================
+
 
 class StreamToolEventType(Enum):
-    """流式工具调用事件类型"""
-    CONTENT = "content"  # 文本内容增量
-    TOOL_CALL_START = "tool_call_start"  # 工具调用开始（收到ID和名称）
-    TOOL_CALL_DELTA = "tool_call_delta"  # 工具调用参数增量
-    FINISH = "finish"  # 流结束
+    """Тип события вызова инструмента потоковой передачи"""
+    CONTENT = "content"  # Приращение текстового контента
+
+    TOOL_CALL_START = "tool_call_start"  # Начинается вызов инструмента (получены идентификатор и имя)
+
+    TOOL_CALL_DELTA = "tool_call_delta"  # Приращение параметра вызова инструмента
+
+    FINISH = "finish"  # конец потока
+
 
 
 @dataclass
 class StreamToolEvent:
-    """流式工具调用事件
+    """Событие вызова инструмента потоковой передачи
 
-    封装流式响应中的不同类型数据，统一处理文本内容和工具调用。
-    """
+    Инкапсулируйте различные типы данных в потоковых ответах и унифицированно обрабатывайте текстовое содержимое и вызовы инструментов."""
     event_type: StreamToolEventType
-    # 文本内容
+    # текстовый контент
+
     content: Optional[str] = None
-    # 工具调用
-    tool_call_index: Optional[int] = None  # 工具调用索引（用于增量累积）
-    tool_call_id: Optional[str] = None  # 工具调用ID
-    tool_name: Optional[str] = None  # 工具名称
-    tool_arguments_delta: Optional[str] = None  # 参数增量
-    # 结束信息
+    # Вызов инструмента
+
+    tool_call_index: Optional[int] = None  # Индекс вызова инструмента (для постепенного накопления)
+
+    tool_call_id: Optional[str] = None  # Идентификатор вызова инструмента
+
+    tool_name: Optional[str] = None  # Название инструмента
+
+    tool_arguments_delta: Optional[str] = None  # Приращение параметра
+
+    # последнее сообщение
+
     finish_reason: Optional[str] = None
 
     @property
     def is_content(self) -> bool:
-        """是否为文本内容事件"""
+        """Является ли это событием текстового контента"""
         return self.event_type == StreamToolEventType.CONTENT
 
     @property
     def is_tool_call(self) -> bool:
-        """是否为工具调用事件"""
+        """Вызывать ли событие для инструмента"""
         return self.event_type in (
             StreamToolEventType.TOOL_CALL_START,
             StreamToolEventType.TOOL_CALL_DELTA
@@ -50,47 +61,47 @@ class StreamToolEvent:
 
     @property
     def is_finish(self) -> bool:
-        """是否为结束事件"""
+        """Это конечное событие?"""
         return self.event_type == StreamToolEventType.FINISH
 
 
 @dataclass
 class StreamToolCallResult:
-    """流式工具调用完成后的结果
+    """Результат после завершения вызова инструмента потоковой передачи
 
-    包含累积的文本内容和工具调用列表。
-    """
+    Содержит совокупное текстовое содержимое и список вызовов инструментов."""
     content: str = ""
     tool_calls: List[Dict[str, Any]] = field(default_factory=list)
     finish_reason: Optional[str] = None
 
     def add_content(self, delta: str):
-        """添加文本内容"""
+        """Добавить текстовый контент"""
         self.content += delta
 
     def add_tool_call_start(self, index: int, tool_id: str, tool_name: str):
-        """添加工具调用开始"""
-        # 确保列表足够长
+        """Добавить начало вызова инструмента"""
+        # Убедитесь, что список достаточно длинный
+
         while len(self.tool_calls) <= index:
             self.tool_calls.append({"id": "", "name": "", "arguments": ""})
         self.tool_calls[index]["id"] = tool_id
         self.tool_calls[index]["name"] = tool_name
 
     def add_tool_call_delta(self, index: int, arguments_delta: str):
-        """添加工具调用参数增量"""
+        """Добавить приращение параметра вызова инструмента"""
         while len(self.tool_calls) <= index:
             self.tool_calls.append({"id": "", "name": "", "arguments": ""})
         self.tool_calls[index]["arguments"] += arguments_delta
 
     def get_complete_tool_calls(self) -> List[Dict[str, Any]]:
-        """获取完整的工具调用列表（过滤不完整的）"""
+        """Получить полный список вызовов инструментов (отфильтровать неполные)"""
         return [
             tc for tc in self.tool_calls
             if tc["id"] and tc["name"]
         ]
 
     def to_assistant_message(self) -> Dict[str, Any]:
-        """转换为助手消息格式（用于追加到消息历史）"""
+        """Преобразование в формат сообщения помощника (для добавления в историю сообщений)"""
         message: Dict[str, Any] = {"role": "assistant", "content": self.content or None}
         if self.tool_calls:
             message["tool_calls"] = [
@@ -107,16 +118,15 @@ class StreamToolCallResult:
         return message
 
 
-# ==================== 增强版 LLM 类 ====================
+# ==================== Расширенный класс LLM ====================
+
 
 class EnhancedHelloAgentsLLM(HelloAgentsLLM):
-    """
-    增强版 HelloAgentsLLM - 添加流式工具调用支持
+    """Расширенная версия HelloAgentsLLM — добавлена поддержка потоковой передачи вызовов инструментов.
 
-    继承自 HelloAgentsLLM，新增以下方法：
-    - astream_invoke_with_tools: 异步流式工具调用
-    - get_last_stream_tool_result: 获取最后一次流式工具调用的累积结果
-    """
+    Унаследованные от HelloAgentsLLM, добавлены следующие новые методы:
+    - astream_invoke_with_tools: вызов инструмента асинхронной потоковой передачи.
+    - get_last_stream_tool_result: получить совокупный результат последнего вызова инструмента потоковой передачи."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -130,39 +140,41 @@ class EnhancedHelloAgentsLLM(HelloAgentsLLM):
         **kwargs
     ) -> AsyncIterator[StreamToolEvent]:
         """
-        异步流式调用 LLM 并支持工具调用（Function Calling）
+        异步потоковый调用 LLM 并поддержкаинструмент调用（Function Calling）
 
-        这是最优雅的流式工具调用方法，封装了所有流式处理的复杂逻辑。
+        这是最优雅的потоковыйинструмент调用方法，封装了所有потоковый处理的复杂逻辑。
 
         Args:
-            messages: 消息列表
-            tools: 工具 schema 列表
-            tool_choice: 工具选择策略
+            messages: сообщениесписок
+            tools: инструмент schema список
+tool_choice: стратегия выбора инструмента
             **kwargs: 其他参数（temperature, max_tokens 等）
 
         Yields:
-            StreamToolEvent: 流式事件，可能是文本内容或工具调用增量
+            StreamToolEvent: потоковый事件，可能是文本содержимое或инструмент调用增量
 
         Example:
             async for event in llm.astream_invoke_with_tools(messages, tools):
                 if event.is_content:
                     print(event.content, end="")
                 elif event.event_type == StreamToolEventType.TOOL_CALL_START:
-                    print(f"\\n调用工具: {event.tool_name}")
+                    print(f"\\nВызов инструмента: {event.tool_name}")
 
             # 获取累积结果
             result = llm.get_last_stream_tool_result()
         """
         from openai import AsyncOpenAI
 
-        # 创建异步客户端
+        # Создайте асинхронный клиент
+
         client = AsyncOpenAI(
             api_key=self.api_key,
             base_url=self.base_url,
             timeout=self.timeout
         )
 
-        # 构建请求参数
+        # Параметры запроса сборки
+
         request_params: Dict[str, Any] = {
             "model": self.model,
             "messages": messages,
@@ -175,7 +187,8 @@ class EnhancedHelloAgentsLLM(HelloAgentsLLM):
         if self.max_tokens:
             request_params["max_tokens"] = self.max_tokens
 
-        # 初始化累积结果
+        # Инициализировать накопленные результаты
+
         result = StreamToolCallResult()
 
         try:
@@ -188,7 +201,8 @@ class EnhancedHelloAgentsLLM(HelloAgentsLLM):
                 choice = chunk.choices[0]
                 delta = choice.delta
 
-                # 处理文本内容
+                # Обрабатывать текстовый контент
+
                 if delta.content:
                     result.add_content(delta.content)
                     yield StreamToolEvent(
@@ -196,12 +210,14 @@ class EnhancedHelloAgentsLLM(HelloAgentsLLM):
                         content=delta.content
                     )
 
-                # 处理工具调用增量
+                # Дельта вызова инструмента обработки
+
                 if delta.tool_calls:
                     for tc_delta in delta.tool_calls:
                         idx = tc_delta.index
 
-                        # 工具调用开始（收到 ID 或名称）
+                        # Начался вызов инструмента (получен идентификатор или имя)
+
                         if tc_delta.id or (tc_delta.function and tc_delta.function.name):
                             tool_id = tc_delta.id or ""
                             tool_name = tc_delta.function.name if tc_delta.function else ""
@@ -214,7 +230,8 @@ class EnhancedHelloAgentsLLM(HelloAgentsLLM):
                                     tool_name=tool_name
                                 )
 
-                        # 工具调用参数增量
+                        # Приращение параметра вызова инструмента
+
                         if tc_delta.function and tc_delta.function.arguments:
                             args_delta = tc_delta.function.arguments
                             result.add_tool_call_delta(idx, args_delta)
@@ -224,7 +241,8 @@ class EnhancedHelloAgentsLLM(HelloAgentsLLM):
                                 tool_arguments_delta=args_delta
                             )
 
-                # 处理结束原因
+                # Причина завершения обработки
+
                 if choice.finish_reason:
                     result.finish_reason = choice.finish_reason
                     yield StreamToolEvent(
@@ -233,16 +251,15 @@ class EnhancedHelloAgentsLLM(HelloAgentsLLM):
                     )
 
         except Exception as e:
-            raise HelloAgentsException(f"流式工具调用失败: {str(e)}")
+raise HelloAgentsException(f"потоковыйинструмент调用ошибка: {str(e)}")
 
-        # 保存累积结果供后续使用
+        # Сохраняйте совокупные результаты для дальнейшего использования.
+
         self._last_stream_tool_result = result
 
     def get_last_stream_tool_result(self) -> Optional[StreamToolCallResult]:
-        """
-        获取最后一次流式工具调用的累积结果
+        """Получите совокупные результаты последнего вызова инструмента потоковой передачи.
 
-        Returns:
-            StreamToolCallResult 或 None
-        """
+        Возврат:
+            StreamToolCallResult или нет"""
         return self._last_stream_tool_result

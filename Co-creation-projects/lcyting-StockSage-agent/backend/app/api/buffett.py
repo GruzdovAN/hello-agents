@@ -1,7 +1,7 @@
 """
-智能股票分析助手 — 巴菲特投资评估API路由
+Интеллектуальный помощник по анализу акций — API-интерфейс Buffett Investment Evaluation
 
-提供巴菲特价值投资框架查询、投资评估接口。
+Предоставляет интерфейсы запроса структуры инвестиций Баффета и оценки инвестиций.
 """
 
 import asyncio
@@ -18,25 +18,25 @@ router = APIRouter(prefix="/buffett", tags=["巴菲特投资评估"])
 
 
 class BuffettEvaluateRequest(BaseModel):
-    """巴菲特投资评估请求"""
-    stock_code: str = Field(..., description="6位股票代码", min_length=4, max_length=10)
+"""Запрос на оценку инвестиций Баффета"""
+stock_code: str = Field(...,description="6-значный код акции", min_length=4, max_length=10)
     stock_name: str = Field(default="", description="股票名称（可选）")
     include_market: bool = Field(default=True, description="是否包含行情数据")
-    include_financial: bool = Field(default=True, description="是否包含财务数据")
+include_financial: bool = Field(default=True,description="Включать ли финансовые данные")
 
 
 @router.get("/framework")
 async def get_buffett_framework():
-    """获取巴菲特投资评估框架
+"""Получите систему оценки инвестиций Баффета.
 
-    返回完整的巴菲特价值投资思维体系，包括：
-    - 8问快速筛选清单
-    - 护城河分析五类型
-    - 管理层评估三维度
-    - 财务指标模板（ROIC、所有者收益、现金转化率）
-    - 估值方法与安全边际
-    - 风险评估分类
-    - 卖出四条标准
+Вернитесь к полной системе мышления Баффета в области стоимостного инвестирования, включая:
+- Контрольный список из 8 вопросов для быстрой проверки
+- Пять типов анализа рва
+- Три измерения управленческой оценки
+- Шаблоны финансовых показателей (ROIC, доходы владельцев, коэффициент конверсии денежных средств)
+- Методы оценки и запас прочности.
+- Классификация оценки риска
+- Четыре критерия продажи
     """
     result = buffett_service.get_buffett_framework()
     return success_response(
@@ -44,20 +44,20 @@ async def get_buffett_framework():
             "framework": result["framework"],
             "description": result["description"],
         },
-        message="巴菲特投资评估框架已就绪",
+message="Система оценки инвестиций Баффета готова",
     )
 
 
 @router.post("/evaluate")
 async def evaluate_stock(body: BuffettEvaluateRequest):
-    """使用巴菲特投资框架评估股票
+«»»Используйте инвестиционную структуру Баффета для оценки акций
 
-    构建巴菲特风格的价值投资评估上下文，返回结构化评估模板和参考框架。
+Создайте контекст оценки стоимостных инвестиций в стиле Баффета, возвращая структурированные шаблоны оценки и системы отсчета.
 
-    - **stock_code**: 6位股票代码，如 600519（贵州茅台）
-    - **stock_name**: 股票名称（可选，用于报告标题）
-    - **include_market**: 是否尝试获取行情数据
-    - **include_financial**: 是否尝试获取财务数据
+- **stock_code**: 6-значный код акции, например 600519 (Квейчоу Мутай).
+- **stock_name**: название акции (необязательно, используется в заголовке отчета).
+- **include_market**: пытаться ли получить рыночные данные.
+- **include_financial**: следует ли пытаться получить финансовые данные.
     """
     if not body.stock_code or len(body.stock_code.strip()) < 4:
         return error_response(code=400, message="请输入有效的股票代码")
@@ -84,7 +84,7 @@ async def evaluate_stock(body: BuffettEvaluateRequest):
         except Exception as e:
             errors.append(f"财务数据获取失败: {e}")
 
-    # 执行巴菲特评估
+# Выполните оценку Баффета
     result = buffett_service.evaluate_with_buffett(
         stock_code=body.stock_code.strip(),
         stock_name=body.stock_name.strip() or "",
@@ -108,13 +108,13 @@ async def evaluate_stock(body: BuffettEvaluateRequest):
             "report_template": result["report_template"],
             "data_warnings": data_warnings or None,
         },
-        message=f"已构建 {result['stock_name'] or result['stock_code']} 的巴菲特评估上下文",
+message=f"Контекст оценки Баффета для {result['stock_name'] или result['stock_code']} создан",
     )
 
 
 @router.post("/report/generate-ai")
 async def generate_ai_buffett_report(body: BuffettEvaluateRequest):
-    """一键生成巴菲特价值投资评估报告（LLM，同步 JSON）"""
+"""Создание отчета об оценке стоимостных инвестиций Баффета (LLM, синхронизированный JSON) одним щелчком мыши"""
     if not body.stock_code or len(body.stock_code.strip()) < 4:
         return error_response(code=400, message="请输入有效的股票代码")
 
@@ -137,7 +137,7 @@ async def generate_ai_buffett_report(body: BuffettEvaluateRequest):
             "stock_name": (body.stock_name or "").strip(),
             "report_markdown": result["report_markdown"],
         },
-        message="巴菲特 AI 评估报告已生成",
+message="Отчет об оценке ИИ Баффета создан",
     )
 
 
@@ -169,7 +169,7 @@ async def stream_ai_buffett_report(body: BuffettEvaluateRequest):
 
 @router.post("/evaluate/stream")
 async def stream_buffett_evaluate(body: BuffettEvaluateRequest):
-    """实现方案约定路径 POST /api/v1/buffett/evaluate/stream，等价于 report/generate-ai/stream"""
+"""План реализации согласовывает путь POST /api/v1/buffett/evaluate/stream, который эквивалентен report/generate-ai/stream"""
     if not body.stock_code or len(body.stock_code.strip()) < 4:
         return error_response(code=400, message="请输入有效的股票代码")
 
@@ -192,17 +192,17 @@ async def get_report_template(
     code: str = Query(..., description="股票代码", min_length=4),
     name: str = Query(default="", description="股票名称"),
 ):
-    """获取巴菲特风格评估报告模板
+"""Получить шаблон отчета об оценке в стиле Баффета
 
-    返回包含所有必填章节的Markdown格式报告模板，可直接用于填写分析结果。
+Возвращает шаблон отчета в формате Markdown, содержащий все необходимые разделы, который можно напрямую использовать для заполнения результатов анализа.
 
-    - **code**: 6位股票代码
-    - **name**: 股票名称（可选）
+- **код**: 6-значный код акций.
+- **name**: название акции (необязательно).
     """
     template = buffett_service._build_buffett_report_template(code, name)
     return success_response(
         data={"template": template, "stock_code": code, "stock_name": name},
-        message="报告模板已生成",
+message="Шаблон отчета создан",
     )
 
 
@@ -212,23 +212,23 @@ async def get_reference_file(
 ):
     """获取巴菲特投资思维参考文件内容
 
-    可获取的参考文件：
-    - 01-thinking-frameworks (思维框架)
-    - 02-investment-philosophy (投资哲学)
-    - 03-business-moat (企业护城河)
-    - 04-management-governance (管理层治理)
-    - 05-financial-metrics (财务指标)
-    - 06-valuation-capital (估值与资本)
-    - 07-risk-behavior (风险与行为)
-    - 08-industry-playbooks (行业手册)
+Доступные справочные документы:
+- 01-thinking-frameworks (рамки мышления)
+- 02-investment-philosophy (философия инвестиций)
+- 03-бизнес-ров (деловой ров)
+- 04-management-governance (управление управлением)
+- 05-financial-metrics (финансовые показатели)
+- 06-valuation-capital (Оценка и капитал)
+- 07-risk-behavior (риск и поведение)
+- 08-отраслевые руководства (отраслевые руководства)
 
-    - **ref_name**: 参考文件名，如 "03-business-moat"
+- **ref_name**: имя справочного файла, например «03-business-moat».
     """
     content = buffett_service.load_buffett_reference(ref_name)
     if content is None:
         return error_response(code=404, message=f"参考文件 '{ref_name}' 不存在或无法读取")
 
-    # 截取前5000字符返回
+#Усекаем первые 5000 символов и возвращаем результат
     preview = content[:5000]
     is_truncated = len(content) > 5000
 
@@ -239,5 +239,5 @@ async def get_reference_file(
             "full_length": len(content),
             "truncated": is_truncated,
         },
-        message=f"参考文件 {ref_name}（{'预览前5000字符' if is_truncated else '完整内容'}）",
+message=f"Справочный файл {ref_name} ({'Предварительный просмотр первых 5000 символов', если is_truncated, иначе 'Полное содержимое'})",
     )

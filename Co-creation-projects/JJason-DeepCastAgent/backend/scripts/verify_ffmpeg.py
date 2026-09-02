@@ -4,12 +4,12 @@ from pydub import AudioSegment
 
 """
 DeepCast 项目使用 pydub 库将多个 TTS 生成的音频片段（MP3）合成为最终的播客文件。
-pydub 底层依赖 ffmpeg 进行音频格式转换和处理（特别是 MP3 导出）。
-因此，必须确保系统已安装 ffmpeg 且 Python 环境能正确找到其路径。
-此脚本用于验证 ffmpeg 是否配置正确且能被 pydub 调用。
+pydub использует ffmpeg для преобразования и обработки аудиоформатов (особенно экспорта MP3).
+Поэтому вы должны убедиться, что ffmpeg установлен в вашей системе и что его путь правильно найден средой Python.
+Этот скрипт используется для проверки правильности настройки ffmpeg и возможности вызова из pydub.
 """
 
-# 设置 ffmpeg 路径
+#Устанавливаем путь к ffmpeg
 ffmpeg_path = r"C:\ffmpeg\bin\ffmpeg.exe"
 AudioSegment.converter = ffmpeg_path
 
@@ -30,13 +30,13 @@ def test_ffmpeg():
         output_file = "test_ffmpeg_output.mp3"
         print(f"Exporting to {output_file}...")
         
-        # 导出需要 ffmpeg
+#Экспорт требует ffmpeg
         silence.export(output_file, format="mp3")
         
         if os.path.exists(output_file):
             print("✅ Success! ffmpeg is working correctly.")
             print(f"Output file size: {os.path.getsize(output_file)} bytes")
-            # 清理文件
+# Очистить файлы
             os.remove(output_file)
         else:
             print("❌ Failed: Output file was not created.")

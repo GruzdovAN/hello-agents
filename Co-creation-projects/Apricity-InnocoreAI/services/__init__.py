@@ -1,6 +1,4 @@
-"""
-服务层
-"""
+"""уровень обслуживания"""
 
 from .paper_service import PaperService
 from .task_service import TaskService

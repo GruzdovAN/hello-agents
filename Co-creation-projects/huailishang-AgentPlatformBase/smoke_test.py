@@ -17,7 +17,7 @@ def main() -> None:
     assert_ok(client.get("/health"))
     frontend = client.get("/app/")
     assert frontend.status_code == 200
-    assert "智能体平台" in frontend.text
+    assert "Платформа агентов" in frontend.text
 
     agents = assert_ok(client.get("/agents"))
     agent_ids = {agent["agent_id"] for agent in agents["agents"]}

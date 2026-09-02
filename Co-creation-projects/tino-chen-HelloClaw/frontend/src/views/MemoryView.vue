@@ -14,7 +14,7 @@ const loadMemories = async () => {
     const res = await memoryApi.list()
     memories.value = res.memories
   } catch (error) {
-    message.error('加载记忆列表失败')
+    message.error('Не удалось загрузить память')
   } finally {
     loading.value = false
   }
@@ -31,9 +31,9 @@ const formatDate = (dateStr: string) => {
   yesterday.setDate(yesterday.getDate() - 1)
 
   if (dateStr === today.toISOString().split('T')[0]) {
-    return '今天'
+    return 'Сегодня'
   } else if (dateStr === yesterday.toISOString().split('T')[0]) {
-    return '昨天'
+    return 'Вчера'
   }
   return dateStr
 }
@@ -59,18 +59,18 @@ onMounted(() => {
 <template>
   <div class="memory-view">
     <div class="memory-header">
-      <h1>工作记忆</h1>
-      <p>查看每日工作记录的记忆</p>
+      <h1>Рабочая память</h1>
+      <p>Просмотр ежедневных записей</p>
     </div>
 
     <div class="memory-content">
-      <!-- 记忆列表 -->
+      <!-- Память列表 -->
       <div class="memory-list">
         <Card :loading="loading" class="list-card">
           <template #title>
-            <FileTextOutlined /> 每日记录
+            <FileTextOutlined /> Ежедневные записи
           </template>
-          <List :data-source="memories" :locale="{ emptyText: '暂无工作记忆' }">
+          <List :data-source="memories" :locale="{ emptyText: 'Нет рабочей памяти' }">
             <template #renderItem="{ item }">
               <List.Item
                 @click="selectMemory(item)"
@@ -80,7 +80,7 @@ onMounted(() => {
                   <div class="memory-date">
                     <CalendarOutlined />
                     <span>{{ formatDate(item.date) }}</span>
-                    <Tag v-if="isToday(item.date)" color="error" size="small">今天</Tag>
+                    <Tag v-if="isToday(item.date)" color="error" size="small">Сегодня</Tag>
                   </div>
                   <div class="memory-preview">{{ item.preview }}</div>
                 </div>
@@ -90,19 +90,19 @@ onMounted(() => {
         </Card>
       </div>
 
-      <!-- 记忆详情 -->
+      <!-- Память详情 -->
       <div class="memory-detail">
         <Card v-if="selectedMemory" class="detail-card">
           <template #title>
             <span>{{ selectedMemory.date }}</span>
-            <Tag v-if="isToday(selectedMemory.date)" color="error" style="margin-left: 8px">今天</Tag>
+            <Tag v-if="isToday(selectedMemory.date)" color="error" style="margin-left: 8px">Сегодня</Tag>
           </template>
           <div class="memory-content-text" v-html="formatMarkdown(selectedMemory.content)"></div>
         </Card>
 
         <Card v-else class="empty-card">
           <Empty
-            description="请从左侧选择一条记忆"
+            description="Выберите запись слева"
             :image-style="{ height: '80px' }"
           />
         </Card>

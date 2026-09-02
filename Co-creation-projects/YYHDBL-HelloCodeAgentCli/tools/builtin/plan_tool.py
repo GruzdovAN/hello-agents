@@ -8,14 +8,15 @@ from tools.base import Tool, ToolParameter
 
 
 class PlanTool(Tool):
-    """规划工具（可选）
+    """Инструмент планирования (опциональный)
 
-    用于在用户强制要求或任务明显需要多步执行时生成计划。
-    建议在 ReAct 中按需调用：plan[{"goal":"..."}] 或 plan[目标文本]
+    Используется, когда пользователь явно просит или задача явно требует
+    многошагового выполнения. В ReAct вызывайте по необходимости:
+    plan[{"goal":"..."}] или plan[текст цели]
     """
 
     def __init__(self, llm: HelloAgentsLLM, prompt_path: Optional[str] = None):
-        super().__init__(name="plan", description="生成可执行计划（仅在需要时调用）")
+        super().__init__(name="plan", description="Генерирует исполнимый план (вызывать только при необходимости)")
         self.llm = llm
         self.prompt_path = Path(prompt_path).resolve() if prompt_path else None
 
@@ -24,19 +25,19 @@ class PlanTool(Tool):
             ToolParameter(
                 name="goal",
                 type="string",
-                description="计划目标（例如：分析项目结构并说明模块职责）",
+                description="Цель плана (например: проанализировать структуру проекта и описать роли модулей)",
                 required=True,
             ),
             ToolParameter(
                 name="constraints",
                 type="string",
-                description="额外约束（可选）",
+                description="Дополнительные ограничения (опционально)",
                 required=False,
             ),
             ToolParameter(
                 name="output",
                 type="string",
-                description="输出格式：markdown|json（默认 markdown）",
+                description="Формат вывода: markdown|json (по умолчанию markdown)",
                 required=False,
                 default="markdown",
             ),
@@ -44,26 +45,27 @@ class PlanTool(Tool):
 
     def run(self, parameters: Dict[str, Any]) -> str:
         if not self.validate_parameters(parameters):
-            return "❌ 参数验证失败：缺少 goal"
+            return "❌ Ошибка проверки параметров: отсутствует goal"
 
         goal = str(parameters.get("goal", "")).strip()
         constraints = parameters.get("constraints")
         output = str(parameters.get("output", "markdown")).strip() or "markdown"
 
         if not goal:
-            return "❌ goal 不能为空"
+            return "❌ goal не может быть пустым"
 
         prompt = ""
         if self.prompt_path and self.prompt_path.exists():
             prompt = self.prompt_path.read_text(encoding="utf-8")
         else:
             prompt = (
-                "你是一个规划助手。请输出一个可执行计划（5~12步），并包含 Risks 与 Validation。"
+                "Вы — помощник по планированию. Выведите исполнимый план (5–12 шагов) "
+                "с разделами Risks и Validation."
             )
 
-        user_msg = f"目标：{goal}\n期望输出：{output}"
+        user_msg = f"Цель: {goal}\nОжидаемый формат вывода: {output}"
         if constraints:
-            user_msg += f"\n约束：{constraints}"
+            user_msg += f"\nОграничения: {constraints}"
 
         resp = self.llm.invoke(
             [
@@ -73,4 +75,3 @@ class PlanTool(Tool):
             max_tokens=800,
         )
         return resp or ""
-

@@ -1,5 +1,5 @@
 """
-工作流API路由 - 协调多个智能体完成复杂任务
+Маршрутизация API рабочего процесса — координируйте работу нескольких агентов для выполнения сложных задач.
 """
 
 from fastapi import APIRouter, HTTPException
@@ -12,13 +12,13 @@ from agents.controller import agent_controller
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Pydantic模型
+# Пидантическая модель
 class WorkflowRequest(BaseModel):
     keywords: str
     analysis_type: str = "summary"  # summary, innovation, comparison, comprehensive
     citation_format: str = "bibtex"  # bibtex, apa, ieee, mla
     writing_task: Optional[str] = None  # improve, polish, translate
-    limit: int = 5  # 搜索论文数量
+limit: int = 5 # Поиск количества статей
 
 class WorkflowStatus(BaseModel):
     workflow_id: str
@@ -29,8 +29,8 @@ class WorkflowStatus(BaseModel):
 @router.post("/complete", response_model=Dict[str, Any])
 async def complete_workflow(request: WorkflowRequest):
     """
-    完整工作流：搜索 -> 分析 -> 校验引用 -> 写作辅助
-    自动协调所有智能体完成任务
+Полный рабочий процесс: Поиск -> Анализ -> Проверка ссылок -> Помощь в написании.
+Автоматически координируйте всех агентов для выполнения задач
     """
     try:
         workflow_id = f"workflow_{asyncio.get_event_loop().time()}"
@@ -40,7 +40,7 @@ async def complete_workflow(request: WorkflowRequest):
             "steps": []
         }
         
-        # 步骤 1: Hunter - 搜索论文
+# Шаг 1: Охотник — Поиск документов
         logger.info(f"[工作流 {workflow_id}] 步骤 1/4: 搜索论文")
         try:
             from api.routes.papers import search_papers, PaperSearchRequest
@@ -54,7 +54,7 @@ async def complete_workflow(request: WorkflowRequest):
             papers = search_result.get("papers", [])
             results["steps"].append({
                 "step": 1,
-                "name": "Hunter - 论文搜索",
+"name": "Охотник — Поиск бумаги",
                 "status": "completed",
                 "result": {
                     "total_found": len(papers),
@@ -66,23 +66,23 @@ async def complete_workflow(request: WorkflowRequest):
                 raise HTTPException(status_code=404, detail="未找到相关论文")
             
         except Exception as e:
-            logger.error(f"论文搜索失败: {str(e)}")
+logger.error(f"Ошибка поиска бумаги: {str(e)}")
             results["steps"].append({
                 "step": 1,
-                "name": "Hunter - 论文搜索",
+"name": "Охотник — Поиск бумаги",
                 "status": "failed",
                 "error": str(e)
             })
             results["status"] = "failed"
             return results
         
-        # 步骤 2: Miner - 分析每篇论文
+# Шаг 2: Майнер — анализируйте каждую бумагу
         logger.info(f"[工作流 {workflow_id}] 步骤 2/4: 分析论文")
         analyses = []
         try:
             from api.routes.analysis import analyze_paper, PaperAnalysisRequest
             
-            # 分析前3篇论文
+# Проанализируйте первые 3 статьи
             for i, paper in enumerate(papers[:3]):
                 try:
                     analysis_result = await analyze_paper(PaperAnalysisRequest(
@@ -100,7 +100,7 @@ async def complete_workflow(request: WorkflowRequest):
             
             results["steps"].append({
                 "step": 2,
-                "name": "Miner - 论文分析",
+"name": "Майнер — анализ бумаги",
                 "status": "completed",
                 "result": {
                     "total_analyzed": len(analyses),
@@ -109,24 +109,24 @@ async def complete_workflow(request: WorkflowRequest):
             })
             
         except Exception as e:
-            logger.error(f"论文分析失败: {str(e)}")
+logger.error(f"Анализ бумаги не удался: {str(e)}")
             results["steps"].append({
                 "step": 2,
-                "name": "Miner - 论文分析",
+"name": "Майнер — анализ бумаги",
                 "status": "failed",
                 "error": str(e)
             })
         
-        # 步骤 3: Validator - 生成和校验引用
+# Шаг 3: Валидатор — создание и проверка ссылок
         logger.info(f"[工作流 {workflow_id}] 步骤 3/4: 生成引用")
         citations = []
         try:
             from api.routes.citations import validate_citation, CitationValidationRequest
             
-            # 为每篇论文生成引用
+# Генерация цитат для каждой статьи
             for paper in papers[:3]:
                 try:
-                    # 构建引用文本
+# Создаём цитируемый текст
                     authors_str = ", ".join(paper["authors"][:3])
                     if len(paper["authors"]) > 3:
                         authors_str += " et al."
@@ -149,7 +149,7 @@ async def complete_workflow(request: WorkflowRequest):
             
             results["steps"].append({
                 "step": 3,
-                "name": "Validator - 引用生成",
+"name": "Валидатор — генерация ссылок",
                 "status": "completed",
                 "result": {
                     "total_citations": len(citations),
@@ -158,36 +158,36 @@ async def complete_workflow(request: WorkflowRequest):
             })
             
         except Exception as e:
-            logger.error(f"引用生成失败: {str(e)}")
+logger.error(f «Не удалось создать ссылку: {str(e)}»)
             results["steps"].append({
                 "step": 3,
-                "name": "Validator - 引用生成",
+"name": "Валидатор — генерация ссылок",
                 "status": "failed",
                 "error": str(e)
             })
         
-        # 步骤 4: Coach - 生成综合报告（可选）
+# Шаг 4: Тренер — создание подробного отчета (необязательно)
         if request.writing_task:
             logger.info(f"[工作流 {workflow_id}] 步骤 4/4: 生成报告")
             try:
                 from api.routes.writing import writing_coach, WritingCoachRequest
                 
-                # 构建综合报告文本
+# Создайте подробный текст отчета
                 report_text = f"# 关于 '{request.keywords}' 的研究综述\n\n"
                 report_text += f"## 搜索结果\n找到 {len(papers)} 篇相关论文\n\n"
                 
                 if analyses:
-                    report_text += "## 论文分析\n"
+report_text += "## Анализ статьи\n"
                     for i, analysis in enumerate(analyses[:3], 1):
                         report_text += f"\n### {i}. {analysis['title']}\n"
                         report_text += f"{analysis['analysis'][:500]}...\n"
                 
                 if citations:
-                    report_text += "\n## 参考文献\n"
+report_text += "\n## Ссылки\n"
                     for i, citation in enumerate(citations, 1):
                         report_text += f"{i}. {citation['formatted_citation']}\n"
                 
-                # 使用 Coach 改进报告
+# Улучшайте отчеты с помощью Coach
                 writing_result = await writing_coach(WritingCoachRequest(
                     text=report_text,
                     style="academic",
@@ -196,7 +196,7 @@ async def complete_workflow(request: WorkflowRequest):
                 
                 results["steps"].append({
                     "step": 4,
-                    "name": "Coach - 报告生成",
+"name": "Coach — Генерация отчетов",
                     "status": "completed",
                     "result": {
                         "report": writing_result.get("result", "")
@@ -204,15 +204,15 @@ async def complete_workflow(request: WorkflowRequest):
                 })
                 
             except Exception as e:
-                logger.error(f"报告生成失败: {str(e)}")
+logger.error(f"Ошибка создания отчета: {str(e)}")
                 results["steps"].append({
                     "step": 4,
-                    "name": "Coach - 报告生成",
+"name": "Coach — Генерация отчетов",
                     "status": "failed",
                     "error": str(e)
                 })
         
-        # 完成工作流
+#Завершить рабочий процесс
         results["status"] = "completed"
         results["summary"] = {
             "total_papers": len(papers),
@@ -221,20 +221,20 @@ async def complete_workflow(request: WorkflowRequest):
             "keywords": request.keywords
         }
         
-        logger.info(f"[工作流 {workflow_id}] 完成")
+logger.info(f"[рабочий процесс {workflow_id}] завершен")
         return results
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"工作流执行失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"工作流执行失败: {str(e)}")
+logger.error(f"Ошибка выполнения рабочего процесса: {str(e)}")
+поднять HTTPException(status_code=500, Detail=f"Ошибка выполнения рабочего процесса: {str(e)}")
 
 @router.post("/search-and-analyze", response_model=Dict[str, Any])
 async def search_and_analyze(request: WorkflowRequest):
     """
-    简化工作流：搜索 + 分析
-    只执行搜索和分析步骤
+Упрощенный рабочий процесс: поиск + анализ
+Выполняйте только шаги поиска и анализа
     """
     try:
         results = {
@@ -242,7 +242,7 @@ async def search_and_analyze(request: WorkflowRequest):
             "steps": []
         }
         
-        # 步骤 1: 搜索论文
+# Шаг 1: Поиск документов
         from api.routes.papers import search_papers, PaperSearchRequest
         
         search_result = await search_papers(PaperSearchRequest(
@@ -254,7 +254,7 @@ async def search_and_analyze(request: WorkflowRequest):
         papers = search_result.get("papers", [])
         results["steps"].append({
             "step": 1,
-            "name": "搜索论文",
+"name": "Поиск документов",
             "status": "completed",
             "papers": papers
         })
@@ -262,7 +262,7 @@ async def search_and_analyze(request: WorkflowRequest):
         if not papers:
             raise HTTPException(status_code=404, detail="未找到相关论文")
         
-        # 步骤 2: 分析第一篇论文
+# Шаг 2: Проанализируйте первую статью
         from api.routes.analysis import analyze_paper, PaperAnalysisRequest
         
         first_paper = papers[0]
@@ -273,7 +273,7 @@ async def search_and_analyze(request: WorkflowRequest):
         
         results["steps"].append({
             "step": 2,
-            "name": "分析论文",
+"name": "Аналитический документ",
             "status": "completed",
             "analysis": analysis_result
         })
@@ -284,21 +284,21 @@ async def search_and_analyze(request: WorkflowRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"搜索和分析失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"执行失败: {str(e)}")
+logger.error(f"Ошибка поиска и анализа: {str(e)}")
+поднять HTTPException(status_code=500, Detail=f"Ошибка выполнения: {str(e)}")
 
 @router.get("/status/{workflow_id}")
 async def get_workflow_status(workflow_id: str):
-    """获取工作流状态"""
+"""Получить статус рабочего процесса"""
     try:
-        # 这里可以实现工作流状态跟踪
-        # 暂时返回模拟状态
+# Здесь можно реализовать отслеживание статуса рабочего процесса
+# Временно вернуться в состояние симуляции
         return {
             "workflow_id": workflow_id,
             "status": "completed",
             "progress": 100,
-            "message": "工作流已完成"
+"message": "Рабочий процесс завершен"
         }
     except Exception as e:
-        logger.error(f"获取工作流状态失败: {str(e)}")
+logger.error(f «Не удалось получить статус рабочего процесса: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))

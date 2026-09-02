@@ -1,4 +1,4 @@
-"""启动脚本: python run.py"""
+"""Сценарий запуска: python run.py"""
 
 import uvicorn
 

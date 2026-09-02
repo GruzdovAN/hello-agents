@@ -9,13 +9,13 @@ from pydantic import BaseModel, Field, field_validator
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
 
 class SearchAPI(Enum):
-    """搜索 API 提供商的枚举。
+"""Выполните поиск по списку поставщиков API.
 
-    兼容旧测试和示例：
-    - TAVILY: 使用 Tavily 搜索后端
-    - SERPAPI: 使用 SerpApi
-    - DDG: DuckDuckGo (内置 ddgs)
-    - HYBRID: 混合策略（Tavily + SerpApi），为默认值
+Совместимо со старыми тестами и примерами:
+- TAVILY: используйте поисковую систему Tavily.
+- SERPAPI: используйте SerpApi.
+- DDG: DuckDuckGo (内置 ddgs)
+- ГИБРИД: гибридная стратегия (Tavily + SerpApi), значение по умолчанию.
     """
     TAVILY = "tavily"
     SERPAPI = "serpapi"
@@ -33,53 +33,53 @@ class Configuration(BaseModel):
     )
     llm_provider: str = Field(
         default="custom",
-        title="LLM 提供商",
-        description="提供商标识符 (custom)",
+title="Поставщик LLM",
+описание="идентификатор провайдера (настраиваемый)",
     )
     search_api: SearchAPI = Field(
         default=SearchAPI.HYBRID,
-        title="搜索 API",
-        description="使用混合搜索引擎 (Tavily + SerpApi)",
+title="Поиск API",
+описание="Использовать гибридную поисковую систему (Tavily + SerpApi)",
     )
     enable_notes: bool = Field(
         default=True,
-        title="启用笔记",
-        description="是否在 NoteTool 中存储任务进度",
+title="Включить заметки",
+описание="Сохранять ли прогресс выполнения задачи в NoteTool",
     )
     notes_workspace: str = Field(
         default=str(BACKEND_ROOT / "output" / "notes"),
-        title="笔记工作区",
-        description="NoteTool 持久化任务笔记的目录",
+title="Рабочая область "Заметки",
+описание="Каталог NoteTool для сохранения заметок о задачах",
     )
     fetch_full_page: bool = Field(
         default=True,
-        title="获取完整页面",
-        description="在搜索结果中包含完整页面内容",
+title="Получить полную страницу",
+описание="Включить полное содержимое страницы в результаты поиска",
     )
     strip_thinking_tokens: bool = Field(
         default=False,
-        title="移除思考 Token",
-        description="是否从模型响应中移除 <think> token",
+title="Удалить жетон мышления",
+описание="Удалять ли токен <think> из ответа модели",
     )
     use_tool_calling: bool = Field(
         default=False,
-        title="使用工具调用",
-        description="使用工具调用而非 JSON 模式进行结构化输出",
+title="Использовать вызов инструмента",
+описание="Используйте вызовы инструментов вместо схемы JSON для структурированного вывода",
     )
     llm_api_key: str | None = Field(
         default=None,
-        title="LLM API 密钥",
+title="Ключ API LLM",
         description="使用自定义 OpenAI 兼容服务时的可选 API 密钥",
     )
     llm_base_url: str | None = Field(
         default=None,
-        title="LLM 基础 URL",
-        description="使用自定义 OpenAI 兼容服务时的可选基础 URL",
+title="Базовый URL LLM",
+описание="Необязательный базовый URL-адрес при использовании пользовательского сервиса, совместимого с OpenAI",
     )
     llm_model_id: str | None = Field(
         default=None,
-        title="LLM 模型 ID",
-        description="自定义 OpenAI 兼容服务的可选模型标识符",
+title="Идентификатор модели LLM",
+описание="Необязательный идентификатор модели для пользовательских сервисов, совместимых с OpenAI",
     )
     smart_llm_model: str | None = Field(
         default="ecnu-reasoner",
@@ -89,78 +89,78 @@ class Configuration(BaseModel):
     fast_llm_model: str | None = Field(
         default="ecnu-max",
         title="Fast LLM Model",
-        description="快速响应任务使用的模型 ID (e.g. Web Research, Script Generation)",
+описание="Идентификатор модели, используемый задачами быстрого реагирования (например, веб-исследования, создание сценариев)",
     )
     tts_api_key: str | None = Field(
         default=None,
-        title="TTS API 密钥",
-        description="TTS 服务的 API 密钥",
+title="Ключ API TTS",
+описание="Ключ API для сервиса TTS",
     )
     tts_base_url: str = Field(
         default="https://chat.ecnu.edu.cn/open/api/v1/audio/speech",
-        title="TTS 基础 URL",
-        description="TTS API 的基础 URL",
+title="Базовый URL-адрес TTS",
+описание="Базовый URL-адрес TTS API",
     )
     tts_model: str = Field(
         default="ecnu-tts",
-        title="TTS 模型",
-        description="TTS 服务的模型标识符",
+title="Модель TTS",
+описание="Идентификатор модели сервиса TTS",
     )
     audio_output_dir: str = Field(
         default=str(BACKEND_ROOT / "output" / "audio"),
         title="音频输出目录",
-        description="保存生成的音频文件的目录",
+описание="Каталог, в котором сохраняются сгенерированные аудиофайлы",
     )
     ffmpeg_path: str | None = Field(
         default=None,
-        title="FFmpeg 路径",
-        description="ffmpeg 可执行文件的路径",
+title="Путь к FFmpeg",
+описание="путь к исполняемому файлу ffmpeg",
     )
     tavily_api_key: str | None = Field(
         default=None,
-        title="Tavily API 密钥",
-        description="Tavily 搜索的 API 密钥",
+title="Ключ API Тавили",
+описание="Ключ API для поиска Тавили",
     )
     serpapi_api_key: str | None = Field(
         default=None,
-        title="SerpApi 密钥",
-        description="SerpApi 的 API 密钥",
+title="Ключ SerpApi",
+описание="Ключ API для SerpApi",
     )
     cors_origins: str = Field(
         default="http://localhost:5173,http://localhost:5174,http://localhost:3000",
-        title="CORS 允许的源",
-        description="逗号分隔的允许跨域请求的源列表",
+title="Разрешенные источники CORS",
+описание="Список источников, разделенных запятыми, которые разрешают междоменные запросы",
     )
     host: str = Field(
         default="0.0.0.0",
-        title="服务器主机",
-        description="FastAPI 服务器监听的主机地址",
+title="Хост сервера",
+описание="Адрес хоста, который прослушивает сервер FastAPI",
     )
     port: int = Field(
         default=8000,
-        title="服务器端口",
-        description="FastAPI 服务器监听的端口",
+title="Порт сервера",
+описание="Порт прослушивания сервера FastAPI",
     )
     log_level: str = Field(
         default="INFO",
-        title="日志级别",
+title="Уровень журнала",
         description="日志记录级别 (DEBUG, INFO, WARNING, ERROR)",
     )
     llm_timeout: int = Field(
         default=60,
-        title="LLM 超时",
-        description="LLM 请求超时时间（秒）",
+title="Тайм-аут LLM",
+описание="Тайм-аут запроса LLM (секунды)",
     )
     tts_timeout: int = Field(
         default=300,
-        title="TTS 超时",
-        description="TTS 请求超时时间（秒）",
+title="Тайм-аут TTS",
+описание="Тайм-аут запроса TTS (секунды)",
     )
 
     @field_validator("notes_workspace", "audio_output_dir")
     @classmethod
     def resolve_path(cls, v: str) -> str:
-        """确保路径是绝对路径，如果是相对路径则基于 BACKEND_ROOT 解析。"""
+"""Убедитесь, что путь является абсолютным, если это относительный путь, он будет разрешен на основе BACKEND_ROOT."""
         if v is None:
             return v
         path = Path(v)
@@ -171,17 +171,17 @@ class Configuration(BaseModel):
     @classmethod
     def from_env(cls, overrides: dict[str, Any] | None = None) -> "Configuration":
         """
-        使用环境变量和覆盖项创建配置对象。
+Создайте объекты конфигурации, используя переменные среды и переопределения.
         
         Args:
-            overrides: 可选的配置覆盖字典。
+переопределения: дополнительный словарь переопределений конфигурации.
             
         Returns:
-            初始化的配置对象。
+Инициализированный объект конфигурации.
         """
         raw_values: dict[str, Any] = {}
 
-        # 基于字段名从环境变量加载值
+# Загрузка значений из переменных среды на основе имен полей
         for field_name in cls.model_fields.keys():
             env_key = field_name.upper()
             if env_key in os.environ:
@@ -191,7 +191,7 @@ class Configuration(BaseModel):
         no_proxy = os.getenv("NO_PROXY")
         if no_proxy:
             os.environ["NO_PROXY"] = no_proxy
-            # 同时设置为小写以兼容
+# Также установлен нижний регистр для совместимости
             os.environ["no_proxy"] = no_proxy
 
         if overrides:
@@ -202,5 +202,5 @@ class Configuration(BaseModel):
         return cls(**raw_values)
 
     def resolved_model(self) -> str | None:
-        """尽力解析要使用的模型标识符。"""
+"""Прилагается все усилия, чтобы разрешить идентификатор модели, который будет использоваться."""
         return self.llm_model_id

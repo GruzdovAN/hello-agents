@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-智能邮件助手 - Python脚本版本
+Умный почтовый ассистент — версия Python-скрипта
 EmailSmartAssistant - Python Script Version
 
-这是Jupyter Notebook的简化Python脚本版本，可以直接运行。
+Упрощённая Python-версия Jupyter Notebook, которую можно запустить напрямую.
 """
 
 import json
@@ -16,50 +16,50 @@ from rich.panel import Panel
 console = Console()
 
 def main():
-    """主函数"""
+    """Главная функция"""
     console.print(Panel.fit(
-        "🤖 智能邮件助手 (EmailSmartAssistant)\n"
-        "Python脚本版本\n\n"
-        "功能包括：\n"
-        "• 邮件自动分类\n"
-        "• 智能回复草稿生成\n"
-        "• 重要事项智能提醒\n"
-        "• 邮件关键信息提取\n"
-        "• 邮件归档整理",
-        title="欢迎使用",
+        "🤖 Умный почтовый ассистент (EmailSmartAssistant)\n"
+        "Версия Python-скрипта\n\n"
+        "Функции:\n"
+        "• Автоматическая классификация писем\n"
+        "• Генерация черновиков умных ответов\n"
+        "• Умные напоминания о важных событиях\n"
+        "• Извлечение ключевой информации из писем\n"
+        "• Архивирование и сортировка писем",
+        title="Добро пожаловать",
         style="blue"
     ))
     
-    # 检查配置文件
+    # Проверка файла конфигурации
     try:
         with open('config/email_config.json', 'r', encoding='utf-8') as f:
             config = json.load(f)
-        console.print("✅ 配置文件加载成功", style="green")
+        console.print("✅ Файл конфигурации загружен успешно", style="green")
     except FileNotFoundError:
-        console.print("❌ 配置文件未找到", style="red")
-        console.print("请先配置 config/email_config.json 文件", style="yellow")
+        console.print("❌ Файл конфигурации не найден", style="red")
+        console.print("Сначала настройте файл config/email_config.json", style="yellow")
         return
     
-    # 检查模板文件
+    # Проверка файла шаблонов
     try:
         with open('templates/reply_templates.json', 'r', encoding='utf-8') as f:
             templates = json.load(f)
-        console.print("✅ 模板文件加载成功", style="green")
+        console.print("✅ Файл шаблонов загружен успешно", style="green")
     except FileNotFoundError:
-        console.print("❌ 模板文件未找到", style="red")
+        console.print("❌ Файл шаблонов не найден", style="red")
         return
     
-    console.print("\n📋 使用说明:", style="bold yellow")
-    console.print("1. 完整功能请使用 EmailSmartAssistant.ipynb")
-    console.print("2. 该脚本仅用于快速验证配置和依赖")
-    console.print("3. 修改配置文件后可运行此脚本检查")
+    console.print("\n📋 Инструкция:", style="bold yellow")
+    console.print("1. Для полного функционала используйте EmailSmartAssistant.ipynb")
+    console.print("2. Этот скрипт предназначен для быстрой проверки конфигурации и зависимостей")
+    console.print("3. После изменения конфигурации запустите этот скрипт для проверки")
     
-    # 显示配置摘要
-    console.print(f"\n📧 邮箱账户数量: {len(config['email_accounts'])}", style="cyan")
-    console.print(f"🏷️  分类规则: {len(config['classification_rules'])} 类", style="cyan")
-    console.print(f"📝 回复模板: {len(templates)} 个", style="cyan")
+    # Сводка конфигурации
+    console.print(f"\n📧 Количество почтовых аккаунтов: {len(config['email_accounts'])}", style="cyan")
+    console.print(f"🏷️  Правила классификации: {len(config['classification_rules'])} категорий", style="cyan")
+    console.print(f"📝 Шаблоны ответов: {len(templates)} шт.", style="cyan")
     
-    console.print("\n🚀 准备就绪！请使用 Jupyter Notebook 运行完整功能。", style="bold green")
+    console.print("\n🚀 Всё готово! Используйте Jupyter Notebook для полного функционала.", style="bold green")
 
 if __name__ == "__main__":
     main()

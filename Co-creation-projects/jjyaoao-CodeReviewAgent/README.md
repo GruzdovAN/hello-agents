@@ -1,49 +1,49 @@
-# CodeReviewAgent - 智能代码审查助手
+# CodeReviewAgent — умный помощник по ревью кода
 
-> 基于HelloAgents框架的智能代码审查工具
+> Инструмент ревью кода на базе фреймворка HelloAgents
 
-## 📝 项目简介
+## 📝 О проекте
 
-CodeReviewAgent是一个智能代码审查助手,能够自动分析Python代码的质量、发现潜在问题并提供优化建议。
+CodeReviewAgent — агент (Agent) для автоматического анализа качества Python-кода, поиска проблем и рекомендаций по улучшению.
 
-### 核心功能
+### Основные возможности
 
-- ✅ 代码结构分析：统计函数、类、代码行数等
-- ✅ 风格检查：检查是否符合PEP 8规范
-- ✅ 智能建议：基于LLM提供深度分析和优化建议
-- ✅ 报告生成：生成Markdown格式的审查报告
+- ✅ Анализ структуры: функции, классы, строки кода
+- ✅ Проверка стиля: соответствие PEP 8
+- ✅ Умные советы: глубокий анализ и оптимизация через LLM
+- ✅ Отчёты в Markdown
 
-## 🛠️ 技术栈
+## 🛠️ Стек технологий
 
-- HelloAgents框架（SimpleAgent）
-- Python AST模块（代码解析）
-- OpenAI API（智能分析）
+- Фреймворк HelloAgents (SimpleAgent)
+- Модуль AST Python (разбор кода)
+- OpenAI API (интеллектуальный анализ)
 
-## 🚀 快速开始
+## 🚀 Быстрый старт
 
-### 安装依赖
+### Установка зависимостей
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 配置LLM参数
+### Настройка LLM
 
-**方式1: 使用.env文件(推荐)**
+**Способ 1: файл `.env` (рекомендуется)**
 
 ```bash
-# 复制示例文件
+# Скопировать пример
 cp .env.example .env
 
-# 编辑.env文件,填入你的配置
+# Отредактировать .env и указать параметры
 # LLM_MODEL_ID=Qwen/Qwen2.5-72B-Instruct
 # LLM_API_KEY=your_api_key_here
 # LLM_BASE_URL=https://api-inference.modelscope.cn/v1/
 ```
 
-**方式2: 直接在Notebook中设置(已配置)**
+**Способ 2: прямо в Notebook (уже настроено)**
 
-项目已在`main.ipynb`中预配置了ModelScope的API,可以直接使用。如需修改,编辑第1部分的配置代码:
+В `main.ipynb` преднастроен API ModelScope — можно сразу запускать. Для смены параметров отредактируйте конфигурацию в части 1:
 
 ```python
 os.environ["LLM_MODEL_ID"] = "your_model"
@@ -51,95 +51,94 @@ os.environ["LLM_API_KEY"] = "your_key"
 os.environ["LLM_BASE_URL"] = "your_api_url"
 ```
 
-### 运行项目
+### Запуск
 
 ```bash
 jupyter lab
-# 打开main.ipynb并运行所有单元格
+# Открыть main.ipynb и выполнить все ячейки
 ```
 
-## 📖 使用示例
+## 📖 Примеры использования
 
-### 快速体验
+### Быстрая демонстрация
 
-打开`main.ipynb`,运行「第0部分：快速演示」,即可快速了解项目功能。
+Откройте `main.ipynb`, выполните «Часть 0: быстрая демонстрация».
 
-### 完整功能
+### Полный режим
 
-1. 将待审查的代码放入`data/sample_code.py`
-2. 依次运行`main.ipynb`的第1-7部分
-3. 查看生成的审查报告`outputs/review_report.md`
+1. Поместите код для проверки в `data/sample_code.py`
+2. По порядку выполните части 1–7 в `main.ipynb`
+3. Отчёт: `outputs/review_report.md`
 
-## 🎯 项目亮点
+## 🎯 Сильные стороны
 
-- **自动化**：无需人工逐行检查,自动发现问题
-- **智能化**：利用LLM理解代码语义,提供深度建议
-- **可扩展**：易于添加新的检查规则和工具
+- **Автоматизация**: без ручного построчного просмотра
+- **Интеллект**: LLM понимает семантику кода
+- **Расширяемость**: легко добавлять правила и инструменты
 
-## 📂 项目结构
+## 📂 Структура проекта
 
 ```
 jjyaoao-CodeReviewAgent/
-├── README.md              # 项目说明文档
-├── requirements.txt       # 依赖列表
-├── .gitignore            # Git忽略文件
-├── .env.example          # 环境变量示例
-├── main.ipynb            # 主程序(包含快速演示和完整功能)
+├── README.md              # Документация проекта
+├── requirements.txt       # Зависимости
+├── .gitignore            # Игнорируемые файлы Git
+├── .env.example          # Пример переменных окружения
+├── main.ipynb            # Основная программа (демо и полный режим)
 ├── data/
-│   └── sample_code.py    # 示例代码
+│   └── sample_code.py    # Пример кода
 └── outputs/
-    └── review_report.md  # 审查报告
+    └── review_report.md  # Отчёт ревью
 ```
 
-## 🔧 技术实现
+## 🔧 Реализация
 
-### 工具系统
+### Система инструментов
 
-1. **CodeAnalysisTool**: 使用Python AST模块解析代码结构
-2. **StyleCheckTool**: 检查PEP 8代码风格规范
+1. **CodeAnalysisTool**: разбор структуры через AST Python
+2. **StyleCheckTool**: проверка PEP 8
 
-### 智能体设计
+### Дизайн агента
 
-使用HelloAgents的SimpleAgent,配合自定义工具实现智能代码审查。
+SimpleAgent HelloAgents с пользовательскими инструментами для умного ревью.
 
-## 📊 示例输出
+## 📊 Пример вывода
 
 ```markdown
-# 代码审查报告
+# Отчёт ревью кода
 
-## 代码结构分析
-- 函数数量: 3
-- 类数量: 1
-- 代码行数: 45
+## Анализ структуры
+- Функций: 3
+- Классов: 1
+- Строк кода: 45
 
-## 风格问题
-- 第12行：超过79个字符
-- 第25行：缩进不规范
+## Проблемы стиля
+- Строка 12: больше 79 символов
+- Строка 25: некорректный отступ
 
-## 优化建议
-1. 建议将长函数拆分为多个小函数
-2. 添加类型注解提高代码可读性
-3. 补充文档字符串
+## Рекомендации
+1. Разбить длинную функцию на несколько коротких
+2. Добавить аннотации типов для читаемости
+3. Дополнить docstring
 ```
 
-## 🚧 未来改进
+## 🚧 Планы развития
 
-- [ ] 支持更多编程语言（JavaScript、Java等）
-- [ ] 添加安全漏洞检测
-- [ ] 集成更多静态分析工具
-- [ ] 支持批量文件审查
-- [ ] 生成HTML格式报告
+- [ ] Больше языков (JavaScript, Java и др.)
+- [ ] Поиск уязвимостей безопасности
+- [ ] Интеграция статических анализаторов
+- [ ] Пакетная проверка файлов
+- [ ] Отчёты в HTML
 
-## 👤 作者
+## 👤 Автор
 
 - GitHub: [@jjyaoao](https://github.com/jjyaoao)
-- 项目链接：[CodeReviewAgent](https://github.com/datawhalechina/Hello-Agents/tree/main/Co-creation-projects/jjyaoao-CodeReviewAgent)
+- Репозиторий: [CodeReviewAgent](https://github.com/datawhalechina/Hello-Agents/tree/main/Co-creation-projects/jjyaoao-CodeReviewAgent)
 
-## 🙏 致谢
+## 🙏 Благодарности
 
-感谢Datawhale社区和Hello-Agents项目！
+Сообществу Datawhale и проекту Hello-Agents!
 
-## 📄 许可证
+## 📄 Лицензия
 
-本项目采用MIT许可证。
-
+MIT License.

@@ -1,5 +1,5 @@
 """
-用户相关API路由
+Маршрутизация API, связанная с пользователем
 """
 
 from fastapi import APIRouter, HTTPException
@@ -9,13 +9,13 @@ import logging
 import uuid
 
 # from ...core.database import db_manager
-# 临时注释，避免相对导入错误
+# Временные комментарии, чтобы избежать относительных ошибок импорта.
 db_manager = None
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Pydantic模型
+# Пидантическая модель
 class UserCreateRequest(BaseModel):
     email: str
     profile: Optional[Dict[str, Any]] = {}
@@ -31,7 +31,7 @@ class UserResponse(BaseModel):
 
 @router.post("/", response_model=UserResponse)
 async def create_user(request: UserCreateRequest):
-    """创建用户"""
+"""Создать пользователя"""
     try:
         user_id = await db_manager.create_user(
             email=request.email,
@@ -48,12 +48,12 @@ async def create_user(request: UserCreateRequest):
         )
         
     except Exception as e:
-        logger.error(f"创建用户失败: {str(e)}")
+logger.error(f «Не удалось создать пользователя: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(user_id: str):
-    """获取用户信息"""
+"""Получить информацию о пользователе"""
     try:
         user = await db_manager.get_user(user_id)
         if not user:
@@ -69,12 +69,12 @@ async def get_user(user_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"获取用户信息失败: {str(e)}")
+logger.error(f «Не удалось получить информацию о пользователе: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/{user_id}", response_model=Dict[str, Any])
 async def update_user(user_id: str, request: UserUpdateRequest):
-    """更新用户信息"""
+"""Обновить информацию о пользователе"""
     try:
         success = await db_manager.update_user_profile(
             user_id=user_id,
@@ -89,12 +89,12 @@ async def update_user(user_id: str, request: UserUpdateRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"更新用户信息失败: {str(e)}")
+logger.error(f «Не удалось обновить информацию о пользователе: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{user_id}/profile")
 async def get_user_profile(user_id: str):
-    """获取用户配置"""
+"""Получить конфигурацию пользователя"""
     try:
         user = await db_manager.get_user(user_id)
         if not user:
@@ -108,12 +108,12 @@ async def get_user_profile(user_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"获取用户配置失败: {str(e)}")
+logger.error(f «Не удалось получить пользовательскую конфигурацию: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{user_id}/profile")
 async def update_user_profile(user_id: str, profile: Dict[str, Any]):
-    """更新用户配置"""
+"""Обновить конфигурацию пользователя"""
     try:
         success = await db_manager.update_user_profile(
             user_id=user_id,
@@ -128,5 +128,5 @@ async def update_user_profile(user_id: str, profile: Dict[str, Any]):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"更新用户配置失败: {str(e)}")
+logger.error(f «Не удалось обновить конфигурацию пользователя: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))

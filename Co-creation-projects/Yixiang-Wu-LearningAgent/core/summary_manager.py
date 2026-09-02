@@ -1,5 +1,5 @@
 # core/summary_manager.py
-"""摘要更新管理器 - 混合策略：<5个文件完全重写，≥5个增量更新"""
+"""Диспетчер обновлений дайджеста — смешанная стратегия: полная перезапись <5 файлов, ≥5 дополнительных обновлений"""
 
 from pathlib import Path
 from typing import List
@@ -9,40 +9,40 @@ from config import Config
 
 class SummaryManager:
     """
-    管理知识摘要和会话摘要的更新
+Управляйте обновлениями сводок знаний и сводок бесед.
 
-    使用混合策略：
-    - 文件数 < 5：完全重写摘要
-    - 文件数 ≥ 5：增量更新摘要
+Используйте смешанную стратегию:
+- Количество файлов < 5: полностью переписать сводку.
+- Количество файлов ≥ 5: сводка дополнительных обновлений.
 
     Attributes:
-        fm: FileManager 实例
-        llm: HelloAgentsLLM 实例
+fm: экземпляр FileManager
+llm: экземпляр HelloAgentsLLM
     """
 
     def __init__(self, file_manager):
         """
-        初始化摘要管理器
+Инициализировать менеджер сводок
 
         Args:
-            file_manager: FileManager 实例
+file_manager: экземпляр FileManager
         """
         self.fm = file_manager
         self.llm = HelloAgentsLLM()
 
     def update_knowledge_summary(self, domain: str, new_file: str) -> None:
         """
-        更新 knowledge_summary.md
+Обновить Knowledge_summary.md
 
         Args:
-            domain: 领域名称
-            new_file: 新添加的文件名
+домен: доменное имя
+new_file: новое добавленное имя файла.
         """
         domain_path = self.fm.BASE_DIR / domain
         knowledge_dir = domain_path / "knowledge"
         summary_path = knowledge_dir / "knowledge_summary.md"
 
-        # 统计文件数（排除 summary.md）
+# Подсчитаем количество файлов (исключая summary.md)
         existing_files: List[Path] = list(knowledge_dir.glob("*.md"))
         file_count = len(
             [f for f in existing_files if f.name != "knowledge_summary.md"]
@@ -57,14 +57,14 @@ class SummaryManager:
         self, domain: str, knowledge_dir: Path, summary_path: Path
     ) -> None:
         """
-        完全重写知识摘要
+Полностью переписать сводку знаний
 
         Args:
-            domain: 领域名称
-            knowledge_dir: 知识目录
-            summary_path: 摘要文件路径
+домен: доменное имя
+Knowledge_dir: каталог знаний
+summary_path: путь к файлу сводки
         """
-        # 读取所有知识文件
+# Прочитать все файлы знаний
         all_files: List[Path] = [
             f for f in knowledge_dir.glob("*.md") if f.name != "knowledge_summary.md"
         ]
@@ -78,11 +78,11 @@ class SummaryManager:
 
 {''.join(all_content)}
 
-要求：
-1. 按主题分类组织
-2. 提取核心概念和关键知识点
-3. 保持结构化（markdown格式）
-4. 控制在原来内容的20%长度
+Требовать:
+1. Организовано по темам
+2. Извлеките основные понятия и ключевые моменты знаний.
+3. Сохраняйте структуру (формат уценки)
+4. Контролируйте длину до 20 % от исходного контента.
 """
 
         messages = [
@@ -97,35 +97,35 @@ class SummaryManager:
             summary = self.llm.invoke(messages)
             summary_path.write_text(summary, encoding="utf-8")
         except Exception:
-            # 如果 LLM 调用失败，使用简单的合并
-            fallback_summary = f"# {domain} 知识总结\n\n" + "\n".join(all_content)
+# Если вызов LLM не удался, используйте простое слияние
+Fallback_summary = f"# {domain} Сводка знаний\n\n" + "\n".join(all_content)
             summary_path.write_text(fallback_summary, encoding="utf-8")
 
     def _incremental_update_knowledge_summary(
         self, domain: str, new_file: str, summary_path: Path
     ) -> None:
         """
-        增量更新知识摘要
+Постепенно обновляйте сводки знаний
 
         Args:
-            domain: 领域名称
-            new_file: 新文件名
-            summary_path: 摘要文件路径
+домен: доменное имя
+новый_файл: новое имя файла
+summary_path: путь к файлу сводки
         """
-        # 读取当前摘要和新文件
+# Прочитать текущую сводку и новые файлы
         current_summary = summary_path.read_text(encoding="utf-8")
         new_content = (self.fm.BASE_DIR / domain / "knowledge" / new_file).read_text(
             encoding="utf-8"
         )
 
-        # 让 LLM 合并
-        user_prompt = f"""当前摘要：
+# Позвольте LLM объединиться
+user_prompt = f"""Текущая сводка:
 {current_summary}
 
-新增内容：
+Новый контент:
 {new_content}
 
-请将新增内容整合到摘要中，保持结构化和简洁性。
+Пожалуйста, интегрируйте новый контент в аннотацию и сохраняйте ее структурированность и краткость.
 """
 
         messages = [
@@ -140,7 +140,7 @@ class SummaryManager:
             updated_summary = self.llm.invoke(messages)
             summary_path.write_text(updated_summary, encoding="utf-8")
         except Exception:
-            # 如果 LLM 调用失败，使用简单追加
+# Если вызов LLM не удался, используйте простое добавление
             updated_summary = (
                 current_summary + f"\n\n## {Path(new_file).stem}\n{new_content}"
             )
@@ -148,17 +148,17 @@ class SummaryManager:
 
     def update_session_summary(self, domain: str, new_session_content: str) -> None:
         """
-        更新 session_summary.md
+Обновить session_summary.md
 
         Args:
-            domain: 领域名称
-            new_session_content: 新会话内容
+домен: доменное имя
+new_session_content: новый контент сеанса
         """
         domain_path = self.fm.BASE_DIR / domain
         sessions_dir = domain_path / "sessions"
         summary_path = sessions_dir / "session_summary.md"
 
-        # 统计文件数
+# Подсчитаем количество файлов
         existing_files: List[Path] = list(sessions_dir.glob("session_*.md"))
         file_count = len(
             [f for f in existing_files if not f.name.startswith("session_summary")]
@@ -173,7 +173,7 @@ class SummaryManager:
         self, domain: str, sessions_dir: Path, summary_path: Path
     ) -> None:
         """
-        完全重写会话摘要
+Полностью переписано резюме сеанса.
         """
         all_sessions: List[Path] = [
             f
@@ -189,11 +189,11 @@ class SummaryManager:
 
 {''.join(all_content)}
 
-要求：
-1. 提取关键学习点
-2. 记录进步轨迹
-3. 识别需要复习的内容
-4. 控制在原来内容的30%长度
+Требовать:
+1. Извлеките ключевые моменты обучения
+2. Запишите прогресс
+3. Определите контент, требующий проверки.
+4. Контролируйте длину до 30 % от исходного контента.
 """
 
         messages = [
@@ -208,24 +208,24 @@ class SummaryManager:
             summary = self.llm.invoke(messages)
             summary_path.write_text(summary, encoding="utf-8")
         except Exception:
-            fallback_summary = f"# {domain} 学习历程\n\n" + "\n".join(all_content)
+Fallback_summary = f"# {domain} Процесс обучения\n\n" + "\n".join(all_content)
             summary_path.write_text(fallback_summary, encoding="utf-8")
 
     def _incremental_update_session_summary(
         self, new_session_content: str, summary_path: Path
     ) -> None:
         """
-        增量更新会话摘要
+Сводка сеанса добавочного обновления
         """
         current_summary = summary_path.read_text(encoding="utf-8")
 
-        user_prompt = f"""当前总结：
+user_prompt = f"""Текущая сводка:
 {current_summary}
 
-新会话记录：
+Новая запись сессии:
 {new_session_content}
 
-请将新会话整合到总结中。
+Пожалуйста, включите новые разговоры в сводку.
 """
 
         messages = [

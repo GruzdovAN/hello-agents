@@ -1,168 +1,168 @@
 <!-- 仪表板模板 -->
 <div class="dashboard fade-in">
     <div class="dashboard-header">
-        <h1>研创·智核仪表板</h1>
-        <p>欢迎使用智能科研助手平台</p>
+        <h1>InnoCore AI — панель</h1>
+        <p>Добро пожаловать на платформу ИИ для науки</p>
     </div>
 
     <!-- 统计卡片 -->
     <div class="stats-section">
-        <h2>数据概览</h2>
+        <h2>Обзор данных</h2>
         <div id="stats-container" class="stats-grid">
             <!-- 统计数据将通过JavaScript动态加载 -->
         </div>
     </div>
 
-    <!-- 快速操作 -->
+    <!-- 快速Действие -->
     <div class="quick-actions">
-        <h2>快速操作</h2>
+        <h2>Быстрые действия</h2>
         <div class="action-grid">
             <div class="action-card" data-action="show-modal" data-target="literature-search-modal">
                 <div class="action-icon">🔍</div>
-                <h3>文献搜索</h3>
-                <p>智能搜索相关文献</p>
+                <h3>Поиск литературы</h3>
+                <p>Умный поиск релевантных публикаций</p>
             </div>
             <div class="action-card" data-action="show-modal" data-target="paper-analysis-modal">
                 <div class="action-icon">📊</div>
-                <h3>论文分析</h3>
-                <p>深度分析论文内容</p>
+                <h3>Анализ статей</h3>
+                <p>Глубокий анализ содержания</p>
             </div>
             <div class="action-card" data-action="show-modal" data-target="academic-writing-modal">
                 <div class="action-icon">✍️</div>
-                <h3>学术写作</h3>
-                <p>辅助生成学术文档</p>
+                <h3>Академическое письмо</h3>
+                <p>Помощь в создании научных документов</p>
             </div>
             <div class="action-card" data-action="navigate" data-target="/papers/new">
                 <div class="action-icon">📄</div>
-                <h3>添加论文</h3>
-                <p>手动添加论文信息</p>
+                <h3>Добавить статью</h3>
+                <p>Ручное добавление информации о статье</p>
             </div>
         </div>
     </div>
 
     <!-- 最近任务 -->
     <div class="recent-tasks">
-        <h2>最近任务</h2>
+        <h2>Последние задачи</h2>
         <div id="recent-tasks-container">
             <!-- 最近任务将通过JavaScript动态加载 -->
         </div>
         <div class="view-all">
-            <a href="/tasks" class="btn btn-outline">查看所有任务</a>
+            <a href="/tasks" class="btn btn-outline">Все задачи</a>
         </div>
     </div>
 
-    <!-- 系统状态 -->
+    <!-- СистемаСтатус -->
     <div class="system-status">
-        <h2>系统状态</h2>
+        <h2>Состояние системы</h2>
         <div class="status-grid">
             <div class="status-item">
                 <div class="status-indicator status-online"></div>
-                <span>API服务</span>
-                <span class="status-text">在线</span>
+                <span>API-сервис</span>
+                <span class="status-text">Онлайн</span>
             </div>
             <div class="status-item">
                 <div class="status-indicator status-online"></div>
-                <span>向量数据库</span>
-                <span class="status-text">正常</span>
+                <span>Векторная БД</span>
+                <span class="status-text">Норма</span>
             </div>
             <div class="status-item">
                 <div class="status-indicator status-online"></div>
-                <span>智能体服务</span>
-                <span class="status-text">运行中</span>
+                <span>Сервис агентов</span>
+                <span class="status-text">Работает</span>
             </div>
             <div class="status-item">
                 <div class="status-indicator status-warning"></div>
-                <span>存储空间</span>
+                <span>Хранилище</span>
                 <span class="status-text">75%</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 文献搜索模态框 -->
+<!-- 文献Поиск模态框 -->
 <div id="literature-search-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">智能文献搜索</h3>
+            <h3 class="modal-title">Умный поиск литературы</h3>
             <button class="modal-close" data-action="close-modal">&times;</button>
         </div>
         <div class="modal-body">
             <form class="ajax-form" data-endpoint="/tasks" data-method="POST" data-redirect="/tasks/{id}">
                 <div class="form-group">
-                    <label class="form-label">搜索关键词</label>
-                    <input type="text" name="query" class="form-control" placeholder="输入搜索关键词..." required>
+                    <label class="form-label">Ключевые слова</label>
+                    <input type="text" name="query" class="form-control" placeholder="Введите ключевые слова..." required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">最大论文数量</label>
+                    <label class="form-label">Макс. число статей</label>
                     <select name="max_papers" class="form-select">
-                        <option value="10">10篇</option>
-                        <option value="20" selected>20篇</option>
-                        <option value="50">50篇</option>
-                        <option value="100">100篇</option>
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">发表年份范围</label>
+                    <label class="form-label">Диапазон годов</label>
                     <div class="year-range">
-                        <input type="number" name="year_start" class="form-control" placeholder="起始年份" min="1900" max="2024">
-                        <span>至</span>
-                        <input type="number" name="year_end" class="form-control" placeholder="结束年份" min="1900" max="2024">
+                        <input type="number" name="year_start" class="form-control" placeholder="Год от" min="1900" max="2024">
+                        <span>—</span>
+                        <input type="number" name="year_end" class="form-control" placeholder="Год до" min="1900" max="2024">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">期刊/会议</label>
-                    <input type="text" name="venues" class="form-control" placeholder="输入期刊或会议名称，多个用逗号分隔">
+                    <label class="form-label">Журнал / конференция</label>
+                    <input type="text" name="venues" class="form-control" placeholder="Названия через запятую">
                 </div>
-                <input type="hidden" name="title" value="文献搜索任务">
+                <input type="hidden" name="title" value="Задача поиска литературы">
                 <input type="hidden" name="task_type" value="literature_search">
                 <input type="hidden" name="priority" value="medium">
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline" data-action="close-modal">取消</button>
-            <button type="submit" form="ajax-form" class="btn btn-primary">开始搜索</button>
+            <button type="button" class="btn btn-outline" data-action="close-modal">Отмена</button>
+            <button type="submit" form="ajax-form" class="btn btn-primary">Начать поиск</button>
         </div>
     </div>
 </div>
 
-<!-- 论文分析模态框 -->
+<!-- 论文Анализ模态框 -->
 <div id="paper-analysis-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">论文分析</h3>
+            <h3 class="modal-title">Анализ статьи</h3>
             <button class="modal-close" data-action="close-modal">&times;</button>
         </div>
         <div class="modal-body">
             <form class="ajax-form" data-endpoint="/tasks" data-method="POST" data-redirect="/tasks/{id}">
                 <div class="form-group">
-                    <label class="form-label">选择论文</label>
+                    <label class="form-label">Выберите статью</label>
                     <div class="paper-selector">
                         <!-- 论文选择器将通过JavaScript动态加载 -->
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">分析类型</label>
+                    <label class="form-label">Тип анализа</label>
                     <select name="analysis_type" class="form-select" required>
-                        <option value="">请选择分析类型</option>
-                        <option value="comprehensive">综合分析</option>
-                        <option value="methodology">方法论分析</option>
-                        <option value="findings">研究发现分析</option>
-                        <option value="gap">研究缺口分析</option>
-                        <option value="trend">趋势分析</option>
+                        <option value="">Выберите тип анализа</option>
+                        <option value="comprehensive">Комплексный</option>
+                        <option value="methodology">Методология</option>
+                        <option value="findings">Результаты</option>
+                        <option value="gap">Исследовательские пробелы</option>
+                        <option value="trend">Тренды</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">重点关注领域</label>
-                    <input type="text" name="focus_areas" class="form-control" placeholder="输入重点关注领域，多个用逗号分隔">
+                    <label class="form-label">Фокусные области</label>
+                    <input type="text" name="focus_areas" class="form-control" placeholder="Через запятую">
                 </div>
-                <input type="hidden" name="title" value="论文分析任务">
+                <input type="hidden" name="title" value="Задача анализа статьи">
                 <input type="hidden" name="task_type" value="analysis">
                 <input type="hidden" name="priority" value="medium">
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline" data-action="close-modal">取消</button>
-            <button type="submit" form="ajax-form" class="btn btn-primary">开始分析</button>
+            <button type="button" class="btn btn-outline" data-action="close-modal">Отмена</button>
+            <button type="submit" form="ajax-form" class="btn btn-primary">Анализировать</button>
         </div>
     </div>
 </div>
@@ -171,51 +171,51 @@
 <div id="academic-writing-modal" class="modal">
     <div class="modal-content modal-large">
         <div class="modal-header">
-            <h3 class="modal-title">学术写作助手</h3>
+            <h3 class="modal-title">Помощник по академическому письму</h3>
             <button class="modal-close" data-action="close-modal">&times;</button>
         </div>
         <div class="modal-body">
             <form class="ajax-form" data-endpoint="/tasks" data-method="POST" data-redirect="/tasks/{id}">
                 <div class="form-group">
-                    <label class="form-label">写作类型</label>
+                    <label class="form-label">Тип текста</label>
                     <select name="writing_type" class="form-select" required>
-                        <option value="">请选择写作类型</option>
-                        <option value="review">文献综述</option>
-                        <option value="summary">论文总结</option>
-                        <option value="critique">论文评述</option>
-                        <option value="proposal">研究提案</option>
+                        <option value="">Выберите тип</option>
+                        <option value="review">Обзор литературы</option>
+                        <option value="summary">Резюме статьи</option>
+                        <option value="critique">Рецензия</option>
+                        <option value="proposal">Исследовательское предложение</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">参考论文</label>
+                    <label class="form-label">Референсные статьи</label>
                     <div class="paper-selector">
                         <!-- 论文选择器将通过JavaScript动态加载 -->
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">写作大纲</label>
-                    <textarea name="outline" class="form-control form-textarea" rows="6" placeholder="输入写作大纲，每行一个章节..."></textarea>
+                    <label class="form-label">План текста</label>
+                    <textarea name="outline" class="form-control form-textarea" rows="6" placeholder="По одному разделу на строку..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">目标字数</label>
-                    <input type="number" name="length" class="form-control" placeholder="预计字数" min="100" max="10000" value="1000">
+                    <label class="form-label">Целевой объём (слов)</label>
+                    <input type="number" name="length" class="form-control" placeholder="Планируемый объём" min="100" max="10000" value="1000">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">写作风格</label>
+                    <label class="form-label">Стиль</label>
                     <select name="style" class="form-select">
-                        <option value="academic">学术风格</option>
-                        <option value="formal">正式风格</option>
-                        <option value="concise">简洁风格</option>
+                        <option value="academic">Академический</option>
+                        <option value="formal">Формальный</option>
+                        <option value="concise">Лаконичный</option>
                     </select>
                 </div>
-                <input type="hidden" name="title" value="学术写作任务">
+                <input type="hidden" name="title" value="Задача академического письма">
                 <input type="hidden" name="task_type" value="writing">
                 <input type="hidden" name="priority" value="medium">
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline" data-action="close-modal">取消</button>
-            <button type="submit" form="ajax-form" class="btn btn-primary">开始写作</button>
+            <button type="button" class="btn btn-outline" data-action="close-modal">Отмена</button>
+            <button type="submit" form="ajax-form" class="btn btn-primary">Начать писать</button>
         </div>
     </div>
 </div>

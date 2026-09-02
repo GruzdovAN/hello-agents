@@ -1,4 +1,4 @@
-"""消息系统"""
+"""Система сообщений"""
 
 from typing import Optional, Dict, Any, Literal
 from datetime import datetime
@@ -7,7 +7,7 @@ from pydantic import BaseModel
 MessageRole = Literal["user", "assistant", "system", "tool"]
 
 class Message(BaseModel):
-    """消息类"""
+    """Класс сообщения"""
     
     content: str
     role: MessageRole
@@ -23,7 +23,7 @@ class Message(BaseModel):
         )
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典格式（OpenAI API格式）"""
+        """Преобразует в словарь (формат OpenAI API)"""
         return {
             "role": self.role,
             "content": self.content

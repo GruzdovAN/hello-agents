@@ -7,7 +7,7 @@ from html import escape
 
 def _render_list(items: list[str]) -> str:
     if not items:
-        return "<p class='muted'>暂无</p>"
+        return "<p class='muted'>Нет данных</p>"
     lis = "".join(f"<li>{escape(item)}</li>" for item in items)
     return f"<ul>{lis}</ul>"
 
@@ -19,10 +19,10 @@ def render_html(articles: list[dict[str, str]], output_path: Path) -> None:
     for article in articles:
         summary_data = article.get("summary_data") or {}
         score = article.get("article_score") or summary_data.get("score") or 0
-        worth = article.get("worth_reading") or summary_data.get("worth_reading") or "未评级"
-        one_line = article.get("one_line") or summary_data.get("one_line") or "暂无一句话结论"
-        article_type = article.get("article_type") or summary_data.get("article_type") or "未分类"
-        summary = summary_data.get("summary") or article.get("summary_cn") or "暂无中文摘要"
+        worth = article.get("worth_reading") or summary_data.get("worth_reading") or "Без оценки"
+        one_line = article.get("one_line") or summary_data.get("one_line") or "Краткий вывод отсутствует"
+        article_type = article.get("article_type") or summary_data.get("article_type") or "Без категории"
+        summary = summary_data.get("summary") or article.get("summary_cn") or "Сводка отсутствует"
         key_points = summary_data.get("key_points") or []
         keywords = summary_data.get("keywords") or []
         why_it_matters = summary_data.get("why_it_matters") or ""
@@ -52,36 +52,36 @@ def render_html(articles: list[dict[str, str]], output_path: Path) -> None:
               </div>
               <p class="one-line">{escape(one_line)}</p>
               <div class="summary-block">
-                <h3>摘要</h3>
+                <h3>Сводка</h3>
                 <p>{escape(summary)}</p>
               </div>
               <div class="grid">
                 <div class="panel">
-                  <h3>关键点</h3>
+                  <h3>Ключевые пункты</h3>
                   {_render_list(key_points)}
                 </div>
                 <div class="panel">
-                  <h3>为什么值得关注</h3>
-                  <p>{escape(why_it_matters or '暂无')}</p>
+                  <h3>Почему это важно</h3>
+                  <p>{escape(why_it_matters or 'Нет данных')}</p>
                 </div>
                 <div class="panel">
-                  <h3>工程 / 决策启发</h3>
-                  <p>{escape(engineering_takeaway or '暂无')}</p>
+                  <h3>Инженерные / управленческие выводы</h3>
+                  <p>{escape(engineering_takeaway or 'Нет данных')}</p>
                 </div>
                 <div class="panel">
-                  <h3>商业信号</h3>
-                  <p>{escape(business_signal or '暂无')}</p>
+                  <h3>Бизнес-сигнал</h3>
+                  <p>{escape(business_signal or 'Нет данных')}</p>
                 </div>
                 <div class="panel">
-                  <h3>局限与边界</h3>
-                  <p>{escape(limitations or '暂无')}</p>
+                  <h3>Ограничения и границы</h3>
+                  <p>{escape(limitations or 'Нет данных')}</p>
                 </div>
                 <div class="panel">
-                  <h3>下一步动作</h3>
-                  <p>{escape(recommended_action or '暂无')}</p>
+                  <h3>Следующие шаги</h3>
+                  <p>{escape(recommended_action or 'Нет данных')}</p>
                 </div>
               </div>
-              <div class="keywords">{keyword_html or "<span class='muted'>暂无关键词</span>"}</div>
+              <div class="keywords">{keyword_html or "<span class='muted'>Нет ключевых слов</span>"}</div>
             </section>
             """
         )
@@ -296,10 +296,10 @@ def render_html(articles: list[dict[str, str]], output_path: Path) -> None:
   <main class="page">
     <section class="hero">
       <h1>AI RSS Daily Digest</h1>
-      <p>生成时间：{escape(generated_at)}。这不是逐篇翻译，而是按信息密度、可读价值和工程/产业启发整理出的中文阅读卡片。</p>
+      <p>Время генерации: {escape(generated_at)}. Это не дословный перевод, а карточки для чтения, отобранные по плотности информации, ценности и практическим выводам.</p>
     </section>
     <section class="list">
-      {''.join(cards) if cards else '<p class="muted">今天还没有可展示的文章。</p>'}
+      {''.join(cards) if cards else '<p class="muted">Сегодня пока нет статей для отображения.</p>'}
     </section>
   </main>
 </body>

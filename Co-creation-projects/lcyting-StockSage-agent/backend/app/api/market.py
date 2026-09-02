@@ -1,5 +1,5 @@
 """
-智能股票分析助手 — 行情数据API路由
+Интеллектуальный помощник по анализу акций — маршрутизация API рыночных данных
 
 提供个股行情、指数行情、板块行情查询接口。
 """
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/market", tags=["行情数据"])
 
 @router.get("/quote/{code}")
 async def get_stock_quote(code: str):
-    """获取个股实时行情
+"""Получайте котировки отдельных акций в реальном времени.
 
     - **code**: 6位股票代码，如 600519（贵州茅台）、000001（平安银行）
     """
@@ -26,10 +26,10 @@ async def get_stock_quote(code: str):
 
 
 @router.get("/index")
-async def get_index_quote(name: str = Query(default="沪深300", description="指数名称")):
-    """获取指数行情
+async def get_index_quote(name: str = Query(default="CSI 300",description="Имя индекса")):
+"""Получить котировки индексов
 
-    - **name**: 指数名称，如 沪深300、上证指数、创业板指
+- **name**: название индекса, например CSI 300, Shanghai Composite Index, GEM Index.
     """
     result = market_service.get_index_quote(name)
     return mx_result_to_http(result)
@@ -37,9 +37,9 @@ async def get_index_quote(name: str = Query(default="沪深300", description="�
 
 @router.get("/sector/{name}")
 async def get_sector_quote(name: str):
-    """获取板块行情
+"""Получить котировки секторов
 
-    - **name**: 板块名称，如 白酒、新能源、半导体
+- **name**: название сектора, например спиртные напитки, новая энергетика, полупроводники.
     """
     if not name:
         return error_response(code=400, message="请输入板块名称")

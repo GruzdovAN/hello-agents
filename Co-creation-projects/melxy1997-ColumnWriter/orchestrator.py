@@ -1,4 +1,4 @@
-"""使用多 Agent 模式的主系统编排逻辑"""
+"""Оркестрация системы в мультиагентном режиме"""
 
 from datetime import datetime
 from typing import Dict, Any, List, Optional
@@ -15,55 +15,55 @@ from config import get_settings, get_word_count
 
 class ColumnWriterOrchestrator:
     """
-    提供多 Agent 模式的专栏写作系统
-    
-    架构设计：
-    1. PlannerAgent → PlanAndSolveAgent（任务分解和规划）
-    2. WriterAgent → ReActAgent（推理和工具调用）
-    3. 评审+修改 → ReflectionAgent（自我反思优化）
+    Система написания колонок в мультиагентном режиме
+
+    Архитектура:
+    1. PlannerAgent → PlanAndSolveAgent (планирование)
+    2. WriterAgent → ReActAgent (рассуждение и инструменты)
+    3. ревью+правки → ReflectionAgent (саморефлексия)
     """
     
     def __init__(self, use_reflection_mode: bool = False):
         """
-        初始化编排器
-        
+        Инициализация оркестратора
+
         Args:
-            use_reflection_mode: 是否使用 ReflectionAgent 模式
-                - True: 使用 ReflectionAgent（自动评审和优化）
-                - False: 使用 ReActAgent + 独立评审流程
+            use_reflection_mode: режим ReflectionAgent
+                - True: ReflectionAgent (авторевью)
+                - False: ReActAgent + отдельный ревью
         """
         self.settings = get_settings()
         self.use_reflection_mode = use_reflection_mode
         
-        # 创建各个 Agent
-        print("\n 初始化专栏写作系统...")
-        print(f"   模式选择: {'ReflectionAgent（自我反思）' if use_reflection_mode else 'ReActAgent（推理行动）+ 评审'}")
+#Создаем каждого агента
+        print("\n▸ Инициализация системы написания колонок...")
+        print(f"   Режим: {'ReflectionAgent' if use_reflection_mode else 'ReActAgent + ревью'}")
         
-        # 规划 Agent - 使用 PlanAndSolveAgent
+        # Planner — PlanAndSolveAgent
         self.planner = PlannerAgent()
         
-        # 写作 Agent - 根据模式选择
+        # Writer — по режиму
         if use_reflection_mode:
             self.writer = ReflectionWriterAgent()
-            print("   WriterAgent: ReflectionAgent（内置评审优化）")
+            print("   WriterAgent: ReflectionAgent (встроенный ревью)")
             self.reviewer = None
             self.revision_agent = None
         else:
             self.writer = WriterAgent(enable_search=self.settings.enable_search)
-            print("   WriterAgent: ReActAgent（推理-行动-搜索）")
+            print("   WriterAgent: ReActAgent (рассуждение-действие-поиск)")
             
-            # 评审和修改 Agent（仅 ReAct 模式下可用）
+            # Reviewer/Revision (только ReAct)
             if self.settings.enable_review:
                 self.reviewer = ReviewerAgent()
                 self.revision_agent = RevisionAgent()
-                print(f"   ReviewerAgent: 已启用（通过阈值: {self.settings.approval_threshold}）")
-                print(f"   RevisionAgent: 已启用（最大修改次数: {self.settings.max_revisions}）")
+                print(f"   ReviewerAgent: включён (порог: {self.settings.approval_threshold})")
+                print(f"   RevisionAgent: включён (макс. правок: {self.settings.max_revisions})")
             else:
                 self.reviewer = None
                 self.revision_agent = None
-                print("   ReviewerAgent: 已禁用")
+                print("   ReviewerAgent: отключён")
         
-        # 统计信息
+# Статистика
         self.stats = {
             'total_generations': 0,
             'total_reviews': 0,
@@ -74,41 +74,41 @@ class ColumnWriterOrchestrator:
             'end_time': None
         }
         
-        print("▸ 系统初始化完成\n")
+        print("▸ Инициализация завершена\n")
     
     def create_column(self, main_topic: str) -> Dict[str, Any]:
         """
-        创建完整专栏
-        
+        Создать полную колонку
+
         Args:
-            main_topic: 专栏主题
-            
+            main_topic: тема колонки
+
         Returns:
-            包含专栏完整信息的字典
+            dict с полной информацией о колонке
         """
         self.stats['start_time'] = datetime.now()
         
         print(f"\n{'='*70}")
-        print(f"▸ 开始创建专栏：{main_topic}")
+        print(f"▸ Создание колонки: {main_topic}")
         print(f"{'='*70}\n")
         
-        # Step 1: 规划专栏结构（使用 PlanAndSolveAgent）
-        print("▸ 第一步：规划专栏结构（PlanAndSolveAgent）")
+        # Шаг 1: планирование структуры (PlanAndSolveAgent)
+        print("▸ Шаг 1: планирование структуры (PlanAndSolveAgent)")
         print("-" * 70)
         column_plan = self.planner.plan_column(main_topic)
-        print(f"   标题：{column_plan.column_title}")
-        print(f"   话题数：{column_plan.get_topic_count()} 个")
-        print(f"   目标读者：{column_plan.target_audience}\n")
+        print(f"   Заголовок: {column_plan.column_title}")
+        print(f"   Подтем: {column_plan.get_topic_count()}")
+        print(f"   Аудитория: {column_plan.target_audience}\n")
         
-        # Step 2: 为每个子话题创建内容树
+        # Шаг 2: дерево контента для подтем
         mode_name = "ReflectionAgent" if self.use_reflection_mode else "ReActAgent"
-        print(f"▸️  第二步：撰写专栏文章（{mode_name}）")
+        print(f"▸️  Шаг 2: написание статей ({mode_name})")
         print("-" * 70)
         
         content_trees = self._write_topics_sequential(column_plan)
         
-        # Step 3: 组装完整专栏
-        print("\n▸ 第三步：组装专栏内容")
+        # Шаг 3: сборка колонки
+        print("\n▸ Шаг 3: сборка колонки")
         print("-" * 70)
         full_column = self._assemble_column(column_plan, content_trees)
         
@@ -116,10 +116,10 @@ class ColumnWriterOrchestrator:
         duration = (self.stats['end_time'] - self.stats['start_time']).total_seconds()
         
         print(f"\n{'='*70}")
-        print(f"▸ 专栏创建完成！耗时 {duration:.1f} 秒")
+        print(f"▸ Колонка создана! {duration:.1f} сек")
         print(f"{'='*70}\n")
         
-        # 添加统计信息
+#Добавить статистику
         full_column['creation_stats'] = self.stats
         full_column['agent_modes'] = {
             'planner': 'PlanAndSolveAgent',
@@ -131,21 +131,21 @@ class ColumnWriterOrchestrator:
         return full_column
     
     def _write_topics_sequential(self, column_plan: ColumnPlan) -> List[ContentNode]:
-        """顺序写作各个话题"""
+        """Последовательное написание подтем"""
         content_trees = []
         
         for idx, topic in enumerate(column_plan.topics, 1):
             print(f"\n{'─'*70}")
-            print(f"▸ 正在写作第 {idx}/{column_plan.get_topic_count()} 个话题")
-            print(f"   话题：{topic['title']}")
+            print(f"▸ Написание {idx}/{column_plan.get_topic_count()}")
+            print(f"   Тема: {topic['title']}")
             print(f"{'─'*70}")
             
             tree = self._write_topic_tree(topic, column_plan)
             content_trees.append(tree)
             
-            # 显示进度
+# Показать прогресс
             progress = idx / column_plan.get_topic_count() * 100
-            print(f"\n▸ 总体进度：{progress:.0f}% ({idx}/{column_plan.get_topic_count()})")
+            print(f"\n▸ Прогресс: {progress:.0f}% ({idx}/{column_plan.get_topic_count()})")
         
         return content_trees
     
@@ -154,7 +154,7 @@ class ColumnWriterOrchestrator:
         topic: Dict[str, Any],
         column_context: ColumnPlan
     ) -> ContentNode:
-        """递归写作话题树"""
+        """Рекурсивное написание дерева подтем"""
         root = ContentNode(
             id=topic['id'],
             title=topic['title'],
@@ -178,10 +178,10 @@ class ColumnWriterOrchestrator:
         context: Dict[str, Any],
         level: int
     ):
-        """递归写作核心逻辑"""
+        """Рекурсивное написание"""
         if level > self.settings.max_depth:
             indent = "  " * level
-            print(f"{indent}▸️  达到最大深度 {self.settings.max_depth}，停止展开")
+            print(f"{indent}▸️  Достигнута макс. глубина {self.settings.max_depth}")
             return
         
         indent = "  " * level
@@ -190,10 +190,10 @@ class ColumnWriterOrchestrator:
         print(f"{indent}{'┈'*40}")
         
         if self.use_reflection_mode:
-            # 模式1: 使用 ReflectionAgent（内置评审优化）
+            # Режим 1: ReflectionAgent
             self._write_with_reflection(node, context, level, indent)
         else:
-            # 模式2: 使用 ReActAgent（推理-行动）
+            # Режим 2: ReActAgent
             self._write_with_react(node, context, level, indent)
     
     def _write_with_reflection(
@@ -203,23 +203,23 @@ class ColumnWriterOrchestrator:
         level: int,
         indent: str
     ):
-        """使用 ReflectionAgent 模式写作"""
-        print(f"{indent}▸️  使用 ReflectionAgent 生成并优化内容...")
+        """Написание через ReflectionAgent"""
+        print(f"{indent}▸️  ReflectionAgent: генерация и оптимизация...")
         
         content_data = self.writer.generate_and_refine_content(node, context, level)
         self.stats['total_generations'] += 1
         
-        # ReflectionAgent 已经完成了自我评审和优化
+        # ReflectionAgent завершил саморевью
         node.content = content_data['content']
         node.metadata = content_data.get('metadata', {})
         node.metadata['agent_mode'] = 'ReflectionAgent'
         node.metadata['auto_refined'] = True
         
         word_count = content_data.get('word_count', len(content_data['content']))
-        print(f"{indent}   字数：{word_count}")
-        print(f"{indent}▸ 内容已通过自我反思优化")
+        print(f"{indent}   Слов: {word_count}")
+        print(f"{indent}▸ Контент оптимизирован рефлексией")
         
-        # 处理子节点
+# Обработка дочерних узлов
         self._process_children(node, content_data, context, level, indent)
     
     def _write_with_react(
@@ -229,18 +229,18 @@ class ColumnWriterOrchestrator:
         level: int,
         indent: str
     ):
-        """使用 ReActAgent 模式写作（可选评审）"""
-        print(f"{indent}▸️  使用 ReActAgent 生成内容（推理-行动）...")
+        """Написание через ReActAgent (опциональный ревью)"""
+        print(f"{indent}▸️  ReActAgent: генерация...")
         
         content_data = self.writer.generate_content(node, context, level)
         self.stats['total_generations'] += 1
         
         current_content = content_data['content']
         word_count = content_data.get('word_count', len(current_content))
-        print(f"{indent}   字数：{word_count}")
-        print(f"{indent}▸ ReActAgent 完成推理和行动")
+        print(f"{indent}   Слов: {word_count}")
+        print(f"{indent}▸ ReActAgent завершил рассуждение и действия")
         
-        # 如果启用评审，进行评审和可能的修改
+        # Ревью и правки при включённом ревью
         if self.reviewer and self.settings.enable_review:
             current_content, review_metadata = self._review_and_revise(
                 node, current_content, content_data, level, indent
@@ -252,7 +252,7 @@ class ColumnWriterOrchestrator:
         node.metadata = content_data.get('metadata', {})
         node.metadata['agent_mode'] = 'ReActAgent'
         
-        # 处理子节点
+# Обработка дочерних узлов
         self._process_children(node, content_data, context, level, indent)
     
     def _review_and_revise(
@@ -264,17 +264,10 @@ class ColumnWriterOrchestrator:
         indent: str
     ) -> tuple:
         """
-        评审并根据需要修改内容
-        
-        Args:
-            node: 当前节点
-            content: 当前内容
-            content_data: 完整的内容数据
-            level: 层级
-            indent: 缩进
-            
+        Ревью и правка контента при необходимости
+
         Returns:
-            (最终内容, 评审元数据)
+            (финальный контент, метаданные ревью)
         """
         target_word_count = get_word_count(level)
         key_points = content_data.get('metadata', {}).get('keywords', [])
@@ -286,8 +279,8 @@ class ColumnWriterOrchestrator:
         review_history = []
         
         while revision_count <= self.settings.max_revisions:
-            # 评审
-            print(f"{indent}▸ 开始评审（第 {revision_count + 1} 轮）...")
+# обзор
+            print(f"{indent}▸ Ревью (раунд {revision_count + 1})...")
             review_result = self.reviewer.review_content(
                 content=final_content,
                 level=level,
@@ -303,36 +296,36 @@ class ColumnWriterOrchestrator:
                 'needs_revision': review_result.needs_revision
             })
             
-            print(f"{indent}   评审结果: {review_result.score}/100 ({review_result.grade})")
+            print(f"{indent}   Результат: {review_result.score}/100 ({review_result.grade})")
             
-            # 检查是否通过评审
+            # Проверка прохождения ревью
             if review_result.score >= self.settings.approval_threshold:
-                print(f"{indent}▸ 内容通过评审！")
+                print(f"{indent}▸ Контент прошёл ревью!")
                 if revision_count == 0:
                     self.stats['approved_first_try'] += 1
                 break
             
-            # 检查是否还能修改
+            # Проверка лимита правок
             if revision_count >= self.settings.max_revisions:
-                print(f"{indent}▸️  达到最大修改次数 ({self.settings.max_revisions})，使用当前版本")
+                print(f"{indent}▸️  Лимит правок ({self.settings.max_revisions}), текущая версия")
                 break
             
-            # 检查是否需要重写（分数太低）
+            # Низкий балл — переписать
             if review_result.score < self.settings.revision_threshold:
-                print(f"{indent}▸️  分数过低 ({review_result.score} < {self.settings.revision_threshold})，需要重写")
+                print(f"{indent}▸️  Низкий балл ({review_result.score} < {self.settings.revision_threshold}), переписать")
                 self.stats['total_rewrites'] += 1
-                # 重新生成内容
+                # Регенерация
                 new_content_data = self.writer.generate_content(
                     node, 
                     {'review_feedback': review_result.reviewer_notes}, 
                     level,
-                    additional_requirements=f"请注意避免以下问题: {review_result.reviewer_notes}"
+                    additional_requirements=f"Избегайте проблем: {review_result.reviewer_notes}"
                 )
                 self.stats['total_generations'] += 1
                 final_content = new_content_data['content']
             else:
-                # 修改内容
-                print(f"{indent}▸ 根据评审意见修改内容...")
+                # Правка
+                print(f"{indent}▸ Правка по замечаниям...")
                 revised_data = self.revision_agent.revise_content(
                     original_content=final_content,
                     review_result=review_result,
@@ -343,7 +336,7 @@ class ColumnWriterOrchestrator:
             
             revision_count += 1
         
-        # 构建评审元数据
+# Создайте метаданные обзора
         final_review = review_history[-1] if review_history else {}
         review_metadata = {
             'review_score': final_review.get('score'),
@@ -363,11 +356,11 @@ class ColumnWriterOrchestrator:
         level: int,
         indent: str
     ):
-        """处理子节点"""
+        """Обработка дочерних узлов"""
         if content_data.get('needs_expansion') and level < self.settings.max_depth:
             subsections = content_data.get('subsections', [])
             if subsections:
-                print(f"{indent}▸ 需要展开 {len(subsections)} 个子节点")
+                print(f"{indent}▸ Раскрыть {len(subsections)} подузлов")
                 
                 for subsection in subsections:
                     child = ContentNode(
@@ -378,7 +371,7 @@ class ColumnWriterOrchestrator:
                     )
                     node.add_child(child)
                     
-                    # 递归写作子节点
+                    # Рекурсивно дочерние узлы
                     self._recursive_write(child, context, level + 1)
     
     def _assemble_column(
@@ -386,7 +379,7 @@ class ColumnWriterOrchestrator:
         plan: ColumnPlan,
         trees: List[ContentNode]
     ) -> Dict[str, Any]:
-        """组装完整专栏"""
+        """Сборка полной колонки"""
         articles = []
         
         for tree in trees:
@@ -412,7 +405,7 @@ class ColumnWriterOrchestrator:
         }
     
     def _tree_to_markdown(self, node: ContentNode, depth: int = 0) -> str:
-        """将内容树转换为markdown"""
+        """Дерево контента → markdown"""
         markdown = []
         
         heading_level = "#" * (depth + 1)
@@ -429,7 +422,7 @@ class ColumnWriterOrchestrator:
         return "\n".join(markdown)
     
     def _calculate_statistics(self, trees: List[ContentNode]) -> Dict[str, Any]:
-        """计算统计信息"""
+        """Вычисление статистики"""
         total_words = 0
         total_nodes = 0
         

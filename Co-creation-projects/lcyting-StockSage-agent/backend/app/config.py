@@ -54,10 +54,10 @@ class Settings:
     # =========================================================================
     MX_APIKEY: str = (os.getenv("MX_APIKEY") or "").strip()
     MX_API_URL: str = os.getenv("MX_API_URL", "https://mkapi2.dfcfs.com/finskillshub")
-    # 妙想查询缓存 TTL（秒）：行情/指数/资讯/自选股列表等在 TTL 内不走远端妙想；≤0 表示不读缓存但仍写入供额度用尽降级
-    # 前端仪表盘 localStorage 默认按 600s（10 分钟）对齐；若改大 TTL，宜同步设置 VITE_DASHBOARD_CACHE_MS（毫秒）
+# TTL кэша запросов Wonderful (секунды): котировки/индексы/информация/дополнительные списки акций и т. д. не будут передаваться в удаленные Wonderful Ideas в пределах TTL; ≤0 означает, что кеш не читается, но все равно записывает его для перехода на более раннюю версию, когда квота исчерпана.
+# Панель управления localStorage по умолчанию выравнивается по 600 с (10 минутам); если TTL изменен на большее значение, одновременно следует установить VITE_DASHBOARD_CACHE_MS (миллисекунды)
     MX_CACHE_TTL_SECONDS: float = float(os.getenv("MX_CACHE_TTL_SECONDS", "600"))
-    # 为 True 时：若 backend/fixtures/mx_raw 下存在对应 query 的原始 JSON，则不调妙想 HTTP（省额度，便于本地修 bug）
+# Когда это правда: если исходный JSON, соответствующий запросу, существует в backend/fixtures/mx_raw, Miaoxiang HTTP не будет корректироваться (сохранение квоты и облегчение локального исправления ошибок)
     MX_REPLAY_FIXTURES: bool = os.getenv("MX_REPLAY_FIXTURES", "").lower() in ("1", "true", "yes")
     _mx_fix = os.getenv("MX_FIXTURE_DIR")
     MX_FIXTURE_DIR: Path = (
@@ -80,7 +80,7 @@ class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./data/stock_analyzer.db")
     @property
     def DATA_DIR(self) -> Path:
-        """数据目录（exe 模式下在 exe 旁边）"""
+"""Каталог данных (рядом с exe в режиме exe)"""
         _dd = os.getenv("DATA_DIR")
         if _dd:
             return Path(_dd)
@@ -102,7 +102,7 @@ class Settings:
     JWT_EXPIRE_MINUTES: int = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
 
     # =========================================================================
-    # 项目路径（自动计算）
+# Путь проекта (рассчитывается автоматически)
     # =========================================================================
     @property
     def PROJECT_ROOT(self) -> Path:
@@ -115,20 +115,20 @@ class Settings:
 
     @property
     def BUNDLE_DIR(self) -> Path:
-        """打包内部资源目录（exe 内嵌文件所在）"""
+"""Каталог внутренних ресурсов упаковки (где расположены встроенные exe-файлы)"""
         return _BUNDLE_DIR
 
     @property
     def FRONTEND_DIR(self) -> Path:
-        """前端静态文件目录"""
-        # 优先从环境变量指定（开发模式 vite proxy 之外的其他场景）
+"""Каталог статических файлов внешнего интерфейса"""
+# Приоритизация указания переменных среды (другие сценарии, кроме прокси-сервера vite в режиме разработки)
         _fd = os.getenv("FRONTEND_DIR")
         if _fd:
             return Path(_fd)
-        # exe 模式：前端 dist 内嵌在 bundle 中
+# режим exe: интерфейсный дистрибутив встроен в комплект
         if IS_FROZEN:
             return _BUNDLE_DIR / "frontend" / "dist"
-        # 开发模式：从项目根找 frontend/dist
+# Режим разработки: найти интерфейс/расстояние от корня проекта
         dist = _PROJECT_ROOT / "frontend" / "dist"
         if dist.exists():
             return dist
@@ -151,7 +151,7 @@ class Settings:
         return _PROJECT_ROOT / "HelloAgents Optimized"
 
     # =========================================================================
-    # 验证方法
+# Метод проверки
     # =========================================================================
     def validate(self) -> list[str]:
         """验证关键配置项，返回缺失配置列表"""
@@ -163,11 +163,11 @@ class Settings:
         return warnings
 
     def is_agent_ready(self) -> bool:
-        """检查智能体层是否就绪"""
+"""Проверьте, готов ли слой агента"""
         return bool(self.LLM_API_KEY and self.LLM_API_KEY != "your-api-key-here")
 
     def is_skills_ready(self) -> bool:
-        """检查外部服务层是否就绪"""
+"""Проверьте, готов ли внешний уровень обслуживания"""
         return bool(self.MX_APIKEY and self.MX_APIKEY != "your-mx-apikey-here")
 
 

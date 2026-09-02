@@ -1,5 +1,5 @@
 # utils/streaming.py
-"""流式输出工具函数"""
+"""Функция инструмента потокового вывода"""
 
 import sys
 from typing import List
@@ -8,54 +8,54 @@ from hello_agents import HelloAgentsLLM
 
 def should_stream(streaming: bool = None) -> bool:
     """
-    判断是否应该使用流式输出
+Определите, следует ли использовать потоковый вывод
 
     Args:
-        streaming: 手动指定的流式输出设置（None = 自动检测）
+потоковая передача: заданные вручную настройки потокового вывода (Нет = определяется автоматически)
 
     Returns:
-        是否使用流式输出
+Использовать ли потоковый вывод
     """
     if streaming is None:
-        # 自动检测：交互式终端使用流式输出
+#Автоматическое обнаружение: интерактивный терминал использует потоковый вывод
         return sys.stdout.isatty()
     return streaming
 
 
 def stream_response(llm: HelloAgentsLLM, messages: List[dict], silent: bool = False) -> str:
     """
-    执行流式 LLM 调用并打印结果
+Выполните потоковый вызов LLM и распечатайте результаты
 
     Args:
-        llm: HelloAgentsLLM 实例
-        messages: LLM 消息列表
-        silent: 是否静默模式（不打印输出）
+llm: экземпляр HelloAgentsLLM
+сообщения: список сообщений LLM
+бесшумный: использовать ли беззвучный режим (без вывода на печать)
 
     Returns:
-        完整的响应文本
+полный текст ответа
     """
     full_response = ""
     previous_length = 0
 
     try:
         for chunk in llm.stream_invoke(messages):
-            # chunk 是累积式的，只打印新增部分
+# чанк является накопительным, печатается только новая часть
             if len(chunk) > previous_length:
                 new_content = chunk[previous_length:]
                 if not silent:
                     print(new_content, end='', flush=True)
                 previous_length = len(chunk)
 
-            # 保存完整响应
+# Сохраняем полный ответ
             full_response = chunk
 
         if not silent:
-            print()  # 换行
+print() # новая строка
 
         return full_response
 
     except Exception as e:
-        # 如果流式输出失败，降级到普通输出
+# Если потоковый вывод не удался, вернитесь к нормальному выводу
         if not silent:
-            print(f"\n[流式输出失败，使用普通输出: {e}]")
+print(f"\n[Ошибка потокового вывода, используйте обычный вывод: {e}]")
         return llm.invoke(messages)

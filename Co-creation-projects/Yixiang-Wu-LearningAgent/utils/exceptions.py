@@ -1,43 +1,43 @@
-"""LearningAgent 自定义异常类"""
+"""Пользовательский класс исключений LearningAgent"""
 
 
 class LearningAgentError(Exception):
-    """基础异常类"""
+"""Базовые классы исключений"""
 
     pass
 
 
 class DomainNotFoundError(LearningAgentError):
-    """领域不存在"""
+"""Поле не существует"""
 
     def __init__(self, domain: str):
         self.domain = domain
-        super().__init__(f"领域 '{domain}' 不存在。请先使用 /create 创建学习计划。")
+super().__init__(f"Домен '{domain}' не существует. Сначала используйте /create, чтобы создать план обучения.")
 
 
 class FileReadError(LearningAgentError):
-    """文件读取失败"""
+"""Не удалось прочитать файл"""
 
     def __init__(self, message: str):
-        super().__init__(f"文件读取失败：{message}")
+super().__init__(f"Ошибка чтения файла: {сообщение}")
 
 
 class FileWriteError(LearningAgentError):
-    """文件写入失败"""
+"""Ошибка записи файла"""
 
     def __init__(self, message: str):
-        super().__init__(f"文件写入失败：{message}")
+super().__init__(f"Ошибка записи файла: {сообщение}")
 
 
 class LLMError(LearningAgentError):
-    """LLM 调用失败"""
+"""Вызов LLM не удался"""
 
     def __init__(self, message: str):
-        super().__init__(f"AI服务错误：{message}")
+super().__init__(f"Ошибка службы AI: {сообщение}")
 
 
 class InvalidInputError(LearningAgentError):
-    """无效输入"""
+"""Неверный ввод"""
 
     def __init__(self, message: str):
-        super().__init__(f"无效输入：{message}")
+super().__init__(f"Неверный ввод: {сообщение}")

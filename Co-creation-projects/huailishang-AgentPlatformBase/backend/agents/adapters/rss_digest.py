@@ -25,7 +25,7 @@ class RSSDigestAdapter(BaseAgent):
         try:
             output, artifacts = self._run_with_artifacts(request)
         except Exception as exc:
-            output = f"资讯员运行失败：{type(exc).__name__}: {exc}"
+            output = f"Новостник завершился с ошибкой: {type(exc).__name__}: {exc}"
             artifacts = {"error": str(exc), "error_type": type(exc).__name__}
             print(f"[rss_digest][error] {output}")
 
@@ -57,7 +57,7 @@ class RSSDigestAdapter(BaseAgent):
         print(f"[rss_digest] start {datetime.now().isoformat(timespec='seconds')} input={request.input[:80]}")
 
         if not root_dir.exists():
-            message = f"rss_digest 项目路径不存在，无法运行资讯员：{root_dir}"
+            message = f"Путь проекта rss_digest не существует, новостник не может быть запущен: {root_dir}"
             print(f"[rss_digest][error] {message}")
             return message, {
                 "ready": False,
@@ -71,7 +71,7 @@ class RSSDigestAdapter(BaseAgent):
             print("[rss_digest] skipped: group_chat guard")
             if digest_path:
                 return (
-                    f"资讯员已就绪。最新 RSS 简报：{digest_path}",
+                    f"Новостник готов. Последняя RSS-сводка: {digest_path}",
                     {
                         "skipped": True,
                         "reason": "batch_guard",
@@ -81,14 +81,14 @@ class RSSDigestAdapter(BaseAgent):
                     },
                 )
             return (
-                "资讯员是较长耗时流程。请单独使用 @rss_digest 生成或更新 RSS 中文简报。",
+                "Новостник — длительный процесс. Используйте @rss_digest отдельно для создания или обновления RSS-сводки.",
                 {"skipped": True, "reason": "batch_guard", "cleanup": cleanup_stats},
             )
 
         if request.context.get("dry_run"):
             print("[rss_digest] dry_run ok")
             return (
-                "资讯员已接入 rss_digest，真实运行会拉取 RSS、生成中文摘要并输出 HTML 简报。",
+                "Новостник подключён к rss_digest; при реальном запуске загружает RSS, формирует сводки и выводит HTML-дайджест.",
                 {
                     "ready": True,
                     "rss_digest_root": str(root_dir),
@@ -181,7 +181,7 @@ class RSSDigestAdapter(BaseAgent):
     @staticmethod
     def _is_force_refresh(text: str) -> bool:
         normalized = text.lower()
-        return any(token in normalized for token in ("强制", "重新生成", "刷新", "force", "refresh"))
+return any(token in normalized for token in ("принудительно", "пересоздать", "обновить", "强制", "重新生成", "刷新", "force", "refresh"))
 
     @staticmethod
     def _digest_url(digest_path: Path | None) -> str | None:
@@ -216,34 +216,34 @@ class RSSDigestAdapter(BaseAgent):
         articles: list[dict[str, Any]],
         run_stats: dict[str, Any] | None,
     ) -> str:
-        lines = ["资讯员已完成 RSS 更新和中文摘要生成。"]
+        lines = ["Новостник завершил обновление RSS и генерацию сводок."]
         if run_stats:
             lines.append(
-                "本轮统计："
-                f"RSS新增 {run_stats.get('discovered', 0)}，"
-                f"正文抽取 {run_stats.get('extracted', 0)}，"
-                f"LLM摘要 {run_stats.get('summarized', 0)}，"
-                f"本次简报文章 {run_stats.get('digest_article_count', 0)}，"
-                f"LLM启用 {run_stats.get('llm_enabled', False)}。"
+                "Статистика раунда: "
+                f"новых RSS {run_stats.get('discovered', 0)}, "
+                f"извлечено текстов {run_stats.get('extracted', 0)}, "
+                f"сводок LLM {run_stats.get('summarized', 0)}, "
+                f"статей в дайджесте {run_stats.get('digest_article_count', 0)}, "
+                f"LLM включён {run_stats.get('llm_enabled', False)}."
             )
             if run_stats.get("no_new_articles"):
-                lines.append("提示：本次没有新的未读文章进入简报，已避免重复展示今天看过的内容。")
+                lines.append("Подсказка: новых непрочитанных статей нет — повторно не показываем уже просмотренное сегодня.")
             if run_stats.get("llm_enabled") and run_stats.get("summarized", 0) == 0:
-                lines.append("提示：LLM 已配置，但本轮没有成功摘要新文章，可查看任务 artifacts 中的 stdout 和 run_stats。")
+                lines.append("Подсказка: LLM настроен, но сводки новых статей не созданы; см. stdout и run_stats в artifacts задачи.")
             if not run_stats.get("llm_enabled"):
-                lines.append("提示：LLM 未启用，请检查 .env 中的 LLM_MODEL_ID、LLM_API_KEY、LLM_BASE_URL。")
+                lines.append("Подсказка: LLM не включён. Проверьте LLM_MODEL_ID, LLM_API_KEY, LLM_BASE_URL в .env.")
         if digest_path:
-            lines.append(f"最新 HTML 简报：{digest_path}")
+            lines.append(f"Последний HTML-дайджест: {digest_path}")
         if digest_url:
-            lines.append(f"点击打开：{digest_url}")
+            lines.append(f"Открыть: {digest_url}")
         if articles:
             lines.append("")
-            lines.append("最新文章：")
+            lines.append("Последние статьи:")
             for index, article in enumerate(articles[:5], start=1):
-                title = article.get("title") or "未命名文章"
-                source = article.get("source_name") or "未知来源"
+                title = article.get("title") or "Без названия"
+                source = article.get("source_name") or "Неизвестный источник"
                 score = article.get("article_score")
-                score_text = f"，评分 {score}" if score is not None else ""
+                score_text = f", оценка {score}" if score is not None else ""
                 lines.append(f"{index}. {title}，{source}{score_text}")
                 one_line = article.get("one_line")
                 if one_line:

@@ -16,9 +16,9 @@ OUTPUT_DIR = PROJECT_ROOT / "outputs"
 class SiteQAAgent(BaseNetworkAgent):
     def __init__(self) -> None:
         prompt = (
-            "你是企业网络运维全局问答助手。请优先根据给定的全局上下文回答。"
-            "如果可以使用network_data工具，请调用工具核对数据后再回答。"
-            "回答要简洁、专业、可执行。"
+            "Ты глобальный ассистент по эксплуатации корпоративной сети. Отвечай по переданному контексту. "
+            "При возможности вызови network_data для сверки данных. "
+            "Ответы краткие, профессиональные, с практическими шагами."
         )
         super().__init__(name="SiteQAAgent", system_prompt=prompt)
 
@@ -28,17 +28,17 @@ class SiteQAAgent(BaseNetworkAgent):
         context: Dict,
     ) -> str:
         return (
-            "请回答用户关于企业网络健康的提问。"
-            "\n\n[用户问题]\n"
+            "Ответь на вопрос пользователя о здоровье корпоративной сети."
+            "\n\n[Вопрос]\n"
             f"{question}"
-            "\n\n[上下文JSON]\n"
+            "\n\n[Контекст JSON]\n"
             f"{json.dumps(context, ensure_ascii=False)}"
-            "\n\n请用中文回答，输出结构：1)结论 2)关键证据 3)建议动作。"
+            "\n\nОтвет на русском, структура: 1) вывод 2) ключевые факты 3) рекомендуемые действия."
         )
 
     def _looks_like_report_request(self, question: str) -> bool:
         q = question.lower()
-        return any(keyword in q for keyword in ["生成", "导出", "下载", "报告", "周报", "一周", "近一周"])
+        return any(keyword in q for keyword in ["сгенерир", "экспорт", "скач", "отчёт", "отчет", "недел", "за неделю"])
 
     def _find_target_site(
         self,
@@ -84,16 +84,16 @@ class SiteQAAgent(BaseNetworkAgent):
         site_reports: List[Dict],
     ) -> str:
         q = question.strip().lower()
-        if "几个site" in q or "多少site" in q or "多少个站点" in q:
-            names = "、".join([s["site_name"] for s in sites])
-            return f"当前共有 {len(sites)} 个 site，分别是：{names}。"
+        if "сколько site" in q or "сколько площад" in q or "сколько сайт" in q:
+            names = ", ".join([s["site_name"] for s in sites])
+            return f"Сейчас {len(sites)} площадок (site): {names}."
 
-        if "上海" in question and ("site" in q or "站点" in question):
-            sh_sites = [s for s in sites if s.get("city") == "上海" or s.get("province") == "上海市"]
+        if "шанхай" in q.lower() or "shanghai" in q:
+sh_sites = [s вместо s на сайтах, если s.get("city") == "Shanghai" или s.get("province") == "Shanghai City"]
             if not sh_sites:
-                return "当前没有位于上海的 site。"
-            details = "；".join([f"{s['site_name']}({s['site_id']})" for s in sh_sites])
-            return f"上海相关 site 有 {len(sh_sites)} 个：{details}。"
+                return "Площадок в Шанхае нет."
+            details = "; ".join([f"{s['site_name']}({s['site_id']})" for s in sh_sites])
+            return f"Площадки, связанные с Шанхаем: {len(sh_sites)} — {details}."
 
         target = None
         for s in sites:
@@ -106,11 +106,11 @@ class SiteQAAgent(BaseNetworkAgent):
             if target_report:
                 device = target_report.get("sections", {}).get("device_status", {})
                 return (
-                    f"{target['site_name']} 详细信息：城市{target.get('city')}，类型{target.get('site_type')}，"
-                    f"关键等级{target.get('criticality')}。"
-                    f"设备在线率{device.get('online_rate', 0) * 100:.2f}%，"
-                    f"平均时延{device.get('avg_latency_ms', 0)}ms，"
-                    f"平均丢包{device.get('avg_packet_loss', 0) * 100:.2f}%。"
+                    f"{target['site_name']}: город {target.get('city')}, тип {target.get('site_type')}, "
+                    f"критичность {target.get('criticality')}. "
+                    f"Доступность устройств {device.get('online_rate', 0) * 100:.2f}%, "
+                    f"средняя задержка {device.get('avg_latency_ms', 0)} мс, "
+                    f"средние потери {device.get('avg_packet_loss', 0) * 100:.2f}%."
                 )
 
         levels = [r.get("health_level", "unknown") for r in site_reports]
@@ -118,19 +118,19 @@ class SiteQAAgent(BaseNetworkAgent):
         warning = len([x for x in levels if x == "warning"])
         critical = len([x for x in levels if x == "critical"])
         return (
-            f"全局概览：共{len(sites)}个site，healthy={healthy}，warning={warning}，critical={critical}。"
-            "你可以继续问：上海有哪些site、某个site的详细信息、某个site的网络设备情况如何。"
+            f"Общий обзор: {len(sites)} площадок, healthy={healthy}, warning={warning}, critical={critical}. "
+            "Можно спросить: площадки в Шанхае, детали по site, состояние оборудования на площадке."
         )
 
     def _summarize_report(self, report: Dict, question: str) -> Optional[str]:
         llm_prompt = (
-            "你是企业网络健康报告的摘要撰写助手。"
-            "请基于输入 JSON 生成一段中文摘要，适合直接放在报告首页。"
-            "要求：简洁、专业、可执行，覆盖总体结论、主要风险、优先动作。"
-            "如果用户问题里有明确的关注点，也要顺带回应。"
-            "\n\n[用户问题]\n"
+            "Ты помощник по краткому резюме отчёта о здоровье корпоративной сети. "
+            "По входному JSON сформируй русский абзац для первой страницы отчёта: "
+            "общий вывод, главные риски, приоритетные действия. "
+            "Если в вопросе пользователя есть фокус — учти его."
+            "\n\n[Вопрос]\n"
             f"{question}"
-            "\n\n[报告JSON]\n"
+            "\n\n[JSON отчёта]\n"
             f"{json.dumps(report, ensure_ascii=False)}"
         )
         return self.run_llm(llm_prompt)
@@ -150,52 +150,52 @@ class SiteQAAgent(BaseNetworkAgent):
         recommendations = report.get("recommendations", [])
 
         lines = [
-            f"# {site.get('site_name', site.get('site_id', 'site'))} 近一周网络健康报告",
+            f"# Недельный отчёт о здоровье сети: {site.get('site_name', site.get('site_id', 'site'))}",
             "",
-            f"- 生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-            f"- 统计窗口：{window.get('start_date', '')} 至 {window.get('end_date', '')}",
-            f"- 站点编号：{site.get('site_id', '')}",
-            f"- 站点城市：{site.get('city', '')}",
-            f"- 健康评分：{report.get('health_score', 'N/A')}",
-            f"- 健康等级：{report.get('health_level', 'N/A')}",
+            f"- Время генерации: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"- Окно статистики: {window.get('start_date', '')} — {window.get('end_date', '')}",
+            f"- ID площадки: {site.get('site_id', '')}",
+            f"- Город: {site.get('city', '')}",
+            f"- Оценка здоровья: {report.get('health_score', 'N/A')}",
+            f"- Уровень: {report.get('health_level', 'N/A')}",
             "",
         ]
 
         if summary:
             lines.extend([
-                "## 大模型摘要",
+                "## Резюме LLM",
                 summary.strip(),
                 "",
             ])
 
         lines.extend([
-            "## 核心指标",
-            f"- 设备在线率：{device.get('online_rate', 0) * 100:.2f}%",
-            f"- 平均时延：{device.get('avg_latency_ms', 0)} ms",
-            f"- 平均丢包率：{device.get('avg_packet_loss', 0) * 100:.2f}%",
-            f"- 终端合规率：{user_status.get('compliant_rate', 0) * 100:.2f}%",
-            f"- 高风险终端数：{user_status.get('high_risk_terminals', 0)}",
+            "## Ключевые метрики",
+            f"- Доступность устройств: {device.get('online_rate', 0) * 100:.2f}%",
+            f"- Средняя задержка: {device.get('avg_latency_ms', 0)} мс",
+            f"- Средние потери пакетов: {device.get('avg_packet_loss', 0) * 100:.2f}%",
+            f"- Доля compliant-терминалов: {user_status.get('compliant_rate', 0) * 100:.2f}%",
+            f"- Терминалы высокого риска: {user_status.get('high_risk_terminals', 0)}",
             "",
-            "## 日志分析",
-            log_analysis.get("summary", "暂无日志摘要。"),
+            "## Анализ логов",
+            log_analysis.get("summary", "Нет резюме по логам."),
             "",
-            "## 设备状态",
-            device.get("summary", "暂无设备状态摘要。"),
+            "## Состояние устройств",
+            device.get("summary", "Нет резюме по устройствам."),
             "",
-            "## 用户状态",
-            user_status.get("summary", "暂无用户状态摘要。"),
+            "## Состояние пользователей",
+            user_status.get("summary", "Нет резюме по пользователям."),
             "",
-            "## 推荐动作",
+            "## Рекомендации",
         ])
 
         if recommendations:
             lines.extend([f"{idx + 1}. {item}" for idx, item in enumerate(recommendations)])
         else:
-            lines.append("1. 继续观察站点运行状态，暂未发现明显风险。")
+            lines.append("1. Продолжать наблюдение; явных рисков пока не выявлено.")
 
         lines.extend([
             "",
-            "## 用户提问",
+            "## Вопрос пользователя",
             question,
         ])
         return "\n".join(lines).strip() + "\n"
@@ -240,8 +240,8 @@ class SiteQAAgent(BaseNetworkAgent):
             if not self.llm_enabled:
                 return {
                     "answer": (
-                        "检测到你在请求生成站点周报，但当前 LLM 未启用，无法按要求生成大模型报告。"
-                        "请先在 .env 配置 LLM_API_KEY（或 OPENAI_API_KEY）后重试。"
+                        "Запрос на недельный отчёт площадки распознан, но LLM не включён — отчёт с моделью не сгенерировать. "
+                        "Настройте LLM_API_KEY (или OPENAI_API_KEY) в .env и повторите."
                     ),
                     "artifact": None,
                     "debug": {
@@ -257,8 +257,8 @@ class SiteQAAgent(BaseNetworkAgent):
                 if not report_summary:
                     return {
                         "answer": (
-                            "已识别到报告生成请求，但本次大模型调用失败，未生成周报文件。"
-                            "请检查 LLM 配置和网络连通性后重试。"
+                            "Запрос на отчёт распознан, но вызов LLM не удался — файл недельного отчёта не создан. "
+                            "Проверьте настройки LLM и сеть."
                         ),
                         "artifact": None,
                         "debug": {

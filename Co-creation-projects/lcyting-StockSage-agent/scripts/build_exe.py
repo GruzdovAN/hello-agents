@@ -1,20 +1,20 @@
 """
 智能股票分析助手 — exe 打包脚本
 
-用法：
-    # 一键打包（从项目根目录执行）
+использование:
+# Упаковка в один клик (выполняется из корневого каталога проекта)
     python scripts/build_exe.py
 
-    # 仅检查环境不打包
+# Проверяйте окружающую среду только без упаковки
     python scripts/build_exe.py --check
 
-    # 强制重新 npm build（frontend/dist 已存在时默认跳过，可加速打包）
+#Принудительно перезапустить сборку npm (по умолчанию пропускается, если интерфейс/dist уже существует, что может ускорить упаковку)
     python scripts/build_exe.py --rebuild-frontend
-    # 或环境变量（PowerShell: $env:BUILD_EXE='1'; python scripts/build_exe.py）
-    # 离线打包若不想拉取 tensorboard：BUILD_EXE_SKIP_TENSORBOARD=1（可能出现 torch 相关 WARNING，可忽略）
+# Или переменные среды (PowerShell: $env:BUILD_EXE='1'; python scripts/build_exe.py)
+# Если вы не хотите извлекать тензорную плату для автономной упаковки: BUILD_EXE_SKIP_TENSORBOARD=1 (может возникнуть ПРЕДУПРЕЖДЕНИЕ, связанное с факелом, которое можно игнорировать)
 
-打包结果：
-    dist_exe/stock_analyzer.exe       # 主程序
+Результаты упаковки:
+dist_exe/stock_analyzer.exe # Основная программа
     dist_exe/.env.example             # 配置模板（需重命名为 .env 并填入 API Key）
     dist_exe/data/                   # 数据目录（自动创建）
 """
@@ -39,15 +39,15 @@ FRONTEND_DIR = PROJECT_ROOT / "frontend"
 DIST_DIR = PROJECT_ROOT / "dist_exe"
 BACKEND_DIR = PROJECT_ROOT / "backend"
 
-# Windows 下 npm 实际是 npm.cmd
+# npm в Windows на самом деле — это npm.cmd
 _NPM_CMD = "npm.cmd" if platform.system() == "Windows" else "npm"
 
 
 def ensure_tensorboard_for_pyinstaller_scan() -> None:
-    """PyInstaller 分析 PyTorch 时会执行 import torch.utils.tensorboard，依赖可选包 tensorboard。
+"""PyInstaller выполнит импорт torch.utils.tensorboard при анализе PyTorch, полагаясь на дополнительный пакет tensorboard.
 
     未安装时仅打印 WARNING，不影响生成的 exe（本应用运行时不需要 TensorBoard）。
-    默认尝试 pip install tensorboard 以消除告警；离线打包可设环境变量 BUILD_EXE_SKIP_TENSORBOARD=1 跳过。
+По умолчанию pip install tensorboard пытается устранить предупреждение; автономную упаковку можно пропустить, установив переменную среды BUILD_EXE_SKIP_TENSORBOARD=1.
     """
     if os.getenv("BUILD_EXE_SKIP_TENSORBOARD", "").lower() in ("1", "true", "yes"):
         print(
@@ -60,7 +60,7 @@ def ensure_tensorboard_for_pyinstaller_scan() -> None:
         return
     except ImportError:
         pass
-    print("[*] 正在安装 tensorboard（供 PyInstaller 分析 torch 时使用，消除可选模块告警）...")
+print("[*] Установка тензорной платы (используется PyInstaller при анализе torch для устранения предупреждений дополнительных модулей)...")
     r = subprocess.run(
         [sys.executable, "-m", "pip", "install", "tensorboard"],
         cwd=str(PROJECT_ROOT),
@@ -69,11 +69,11 @@ def ensure_tensorboard_for_pyinstaller_scan() -> None:
     )
     if r.returncode != 0:
         print(
-            "[!] tensorboard 安装失败，打包仍会继续；"
-            "可能出现 ModuleNotFoundError: tensorboard 类 WARNING，不影响本程序运行"
+"[!] Установка Tensorboard не удалась, упаковка продолжится;"
+«ModuleNotFoundError: может возникнуть ПРЕДУПРЕЖДЕНИЕ класса тензорной доски, которое не влияет на работу этой программы»
         )
     else:
-        print("[OK] tensorboard 已就绪")
+print("[ОК] тензорная доска готова")
 
 
 def _force_rebuild_frontend() -> bool:
@@ -88,10 +88,10 @@ def check_env():
     """检查打包所需的工具是否可用"""
     issues = []
 
-    # 检查 npm
+#Проверяем НПМ
     try:
         subprocess.run([_NPM_CMD, "--version"], capture_output=True, check=True)
-        print("[OK] npm 可用")
+print("[ОК] npm доступен")
     except (subprocess.CalledProcessError, FileNotFoundError):
         issues.append("npm 未安装或不在 PATH 中（需 Node.js）")
 
@@ -99,20 +99,20 @@ def check_env():
     try:
         subprocess.run([sys.executable, "-m", "PyInstaller", "--version"],
                        capture_output=True, check=True)
-        print("[OK] PyInstaller 可用")
+print("[OK] PyInstaller доступен")
     except (subprocess.CalledProcessError, FileNotFoundError):
         issues.append("PyInstaller 未安装，请执行: pip install pyinstaller")
 
-    # 检查前端是否已构建
+# Проверяем, построен ли интерфейс
     if not (FRONTEND_DIR / "dist" / "index.html").exists():
-        issues.append("前端未构建，将自动构建")
+Issues.append("Внешний интерфейс не создан, он будет построен автоматически")
 
     return issues
 
 
 def build_frontend():
-    """构建 Vue3 前端为静态文件"""
-    print("\n[1/3] 构建前端...")
+"""Создайте интерфейс Vue3 в виде статических файлов"""
+print("\n[1/3] Создание интерфейса...")
     env = os.environ.copy()
     result = subprocess.run(
         [_NPM_CMD, "run", "build"],
@@ -122,18 +122,18 @@ def build_frontend():
         text=True,
     )
     if result.returncode != 0:
-        print(f"[ERR] 前端构建失败:\n{result.stderr}")
+print(f"[ERR] Ошибка сборки внешнего интерфейса:\n{result.stderr}")
         return False
     print(f"[OK] 前端构建完成 -> {FRONTEND_DIR / 'dist'}")
     return True
 
 
 def build_exe():
-    """使用 PyInstaller 打包为 exe"""
-    print("\n[2/3] PyInstaller 打包...")
+"""Используйте PyInstaller для упаковки в формате exe"""
+print("\n[2/3] Упаковка PyInstaller...")
     ensure_tensorboard_for_pyinstaller_scan()
 
-    # 清理旧的构建产物
+# Очистка старых продуктов сборки
     for _d in [DIST_DIR, PROJECT_ROOT / "build"]:
         if _d.exists():
             shutil.rmtree(_d)
@@ -149,17 +149,17 @@ def build_exe():
         f"--distpath={DIST_DIR}",
         f"--workpath={PROJECT_ROOT / 'build' / 'pyinstaller'}",
         f"--specpath={PROJECT_ROOT / 'build'}",
-        # 使 PyInstaller 分析阶段能解析 backend 下的 app.* 包（否则 hidden-import 报 not found）
+# Включите этап анализа PyInstaller для анализа пакета app.* в бэкэнде (в противном случае скрытый импорт сообщит, что он не найден)
         f"--paths={BACKEND_DIR}",
-        # 入口
+# Вход
         str(PROJECT_ROOT / "run_exe.py"),
-        # 添加数据目录
+#Добавляем каталог данных
         "--add-data", f"{FRONTEND_DIR / 'dist'}{os.pathsep}frontend/dist",
         "--add-data", f"{PROJECT_ROOT / 'skills'}{os.pathsep}skills",
         "--add-data", f"{PROJECT_ROOT / 'agents'}{os.pathsep}agents",
         "--add-data", f"{PROJECT_ROOT / 'HelloAgents Optimized' / 'hello_agents'}{os.pathsep}hello_agents",
         "--add-data", f"{BACKEND_DIR}{os.pathsep}backend",
-        # 隐藏导入（动态导入的模块）
+# Скрытый импорт (динамически импортируемые модули)
         "--hidden-import", "app.api.market",
         "--hidden-import", "app.api.financial",
         "--hidden-import", "app.api.news",
@@ -195,7 +195,7 @@ def build_exe():
         "--hidden-import", "agents.general_advisor_agent",
         "--hidden-import", "agents.tools.mx_data_tool",
         "--hidden-import", "agents.tools.mx_search_tool",
-        # 常用依赖
+# Общие зависимости
         "--hidden-import", "fastapi",
         "--hidden-import", "uvicorn",
         "--hidden-import", "uvicorn.loops.auto",
@@ -211,23 +211,23 @@ def build_exe():
 
     result = subprocess.run(pyi_args, cwd=str(PROJECT_ROOT))
     if result.returncode != 0:
-        print("[ERR] PyInstaller 打包失败")
+print("[ERR] Упаковка PyInstaller не удалась")
         return False
     print(f"[OK] 打包完成 -> {DIST_DIR / 'stock_analyzer.exe'}")
     return True
 
 
 def copy_assets():
-    """复制配置模板到输出目录"""
-    print("\n[3/3] 复制配置文件...")
+"""Скопируйте шаблон конфигурации в выходной каталог"""
+print("\n[3/3] Копировать файл конфигурации...")
 
-    # 复制 .env 模板
+# Копируем шаблон .env
     env_template = PROJECT_ROOT / ".env"
     if env_template.exists():
-        # 清理敏感信息
+# Очистка конфиденциальной информации
         import re
         content = env_template.read_text(encoding="utf-8")
-        # 清除真实 API Key
+# Очистите настоящий ключ API
         content = re.sub(r'(LLM_API_KEY=).+', r'\1your-deepseek-api-key-here', content)
         content = re.sub(r'(MX_APIKEY=).+', r'\1your-mx-apikey-here', content)
         content = re.sub(r'(JWT_SECRET_KEY=).+', r'\1change-this-to-a-random-secret-key', content)
@@ -236,20 +236,20 @@ def copy_assets():
         (DIST_DIR / ".env.example").write_text(content, encoding="utf-8")
         print("[OK] .env.example 已生成（请重命名为 .env 并填入 API Key）")
 
-    # 创建 data 目录
+#Создаем каталог данных
     (DIST_DIR / "data").mkdir(exist_ok=True)
-    print("[OK] data/ 目录已创建")
+print("[OK] каталог данных/ создан")
 
 
 def main():
     print("=" * 50)
-    print("  智能股票分析助手 — exe 打包工具")
+print("Интеллектуальный помощник по анализу запасов — инструмент для упаковки exe")
     print("=" * 50)
 
-    # 切换到项目根目录
+# Переходим в корневой каталог проекта
     os.chdir(str(PROJECT_ROOT))
 
-    # 环境检查
+# Проверка среды
     issues = check_env()
     if "--check" in sys.argv:
         if issues:
@@ -257,13 +257,13 @@ def main():
             for i in issues:
                 print(f"  - {i}")
         else:
-            print("\n[OK] 打包环境就绪")
+print("\n[OK] Среда упаковки готова")
         return
 
-    # 自动安装 PyInstaller
+# Автоматически установить PyInstaller
     for i in issues:
         if "PyInstaller" in i:
-            print("[*] 正在安装 PyInstaller...")
+print("[*] Установка PyInstaller...")
             subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller"],
                            check=True)
             issues.remove(i)
@@ -272,12 +272,12 @@ def main():
     if issues:
         non_critical = [i for i in issues if "未构建" not in i]
         if non_critical:
-            print(f"\n[ERR] 请先解决以下问题:")
+print(f"\n[ERR] Сначала решите следующие проблемы:")
             for i in non_critical:
                 print(f"  - {i}")
             return
 
-    # 构建前端
+# Создаем интерфейс
     if not (FRONTEND_DIR / "dist" / "index.html").exists():
         if not build_frontend():
             return
@@ -287,32 +287,32 @@ def main():
                 return
         else:
             print("\n[1/3] 前端已有构建产物，跳过 npm build（加快打包）")
-            print("      若要强制重建前端：")
+print("Чтобы принудительно перестроить интерфейс:")
             print("        python scripts/build_exe.py --rebuild-frontend")
             if platform.system() == "Windows":
-                print("      或 PowerShell：$env:BUILD_EXE='1'; python scripts/build_exe.py")
-                print("      或 CMD：        set BUILD_EXE=1 && python scripts/build_exe.py")
+print(" 或 PowerShell:$env:BUILD_EXE='1'; скрипты Python/build_exe.py")
+print(" 或 CMD: set BUILD_EXE=1 && скрипты Python/build_exe.py")
             else:
-                print("      或：BUILD_EXE=1 python scripts/build_exe.py")
+print(" 或：BUILD_EXE=1 скрипты Python/build_exe.py")
 
-    # PyInstaller 打包
+# Упаковка PyInstaller
     if not build_exe():
         return
 
-    # 复制配置
+#Копировать конфигурацию
     copy_assets()
 
     print("\n" + "=" * 50)
-    print("  [OK] 打包完成！")
-    print(f"  输出目录: {DIST_DIR}")
+print("[ОК] Упаковка завершена!")
+print(f"Выходной каталог: {DIST_DIR}")
     print(f"  主程序:   {DIST_DIR / 'stock_analyzer.exe'}")
     print(f"")
-    print(f"  使用步骤:")
-    print(f"  1. 将 {DIST_DIR.name}/ 目录拷贝到目标机器")
-    print(f"  2. 将 .env.example 重命名为 .env")
-    print(f"  3. 编辑 .env，填入 API Key")
-    print(f"  4. 双击 stock_analyzer.exe 启动")
-    print(f"  5. 浏览器将打开 http://127.0.0.1:5174/dashboard（未配置 BACKEND_PORT 时）")
+print(f" Шаги использования:")
+print(f" 1. Скопируйте каталог {DIST_DIR.name}/ на целевой компьютер")
+print(f" 2. Переименуйте .env.example в .env")
+print(f" 3. Отредактируйте .env и заполните ключ API")
+print(f" 4. Дважды щелкните stock_analyzer.exe, чтобы запустить")
+print(f" 5. В браузере откроется http://127.0.0.1:5174/dashboard (если BACKEND_PORT не настроен)")
     print("=" * 50)
 
 

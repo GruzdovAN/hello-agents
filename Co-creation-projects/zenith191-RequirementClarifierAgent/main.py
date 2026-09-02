@@ -1,4 +1,4 @@
-"""RequirementClarifierAgent 命令行入口。"""
+"""Запись командной строки RequirementClarifierAgent."""
 
 from __future__ import annotations
 
@@ -28,23 +28,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--input",
         type=Path,
         default=DEFAULT_INPUT,
-        help="UTF-8 需求文本路径",
+help="Требуемый текстовый путь в формате UTF-8",
     )
     parser.add_argument(
         "--output",
         type=Path,
         default=DEFAULT_OUTPUT,
-        help="最终 Markdown 报告路径",
+help="Окончательный путь отчета Markdown",
     )
     parser.add_argument(
         "--audit-only",
         action="store_true",
-        help="只运行确定性需求完整度检查，不调用 LLM",
+help="Выполнять только проверки целостности детерминированных требований, не вызывать LLM",
     )
     parser.add_argument(
         "--show-intermediate",
         action="store_true",
-        help="在控制台显示三个专家的中间结果",
+help="Отображать промежуточные результаты трех экспертов в консоли",
     )
     return parser
 
@@ -82,7 +82,7 @@ def main(argv: list[str] | None = None) -> int:
         result = workflow.run(requirement)
         output_path = workflow.save_report(result, args.output)
     except (ConfigurationError, WorkflowExecutionError, OSError) as exc:
-        print(f"错误：{exc}", file=sys.stderr)
+print(f"Ошибка: {exc}", file=sys.stderr)
         return 2
 
     if args.show_intermediate:
@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
         print("\n=== 方案架构师 ===\n" + result.architecture)
         print("\n=== 风险审查员 ===\n" + result.risk_review)
     print(
-        f"完成：报告已保存到 {output_path}；"
+f"Завершено: отчет сохранен в {output_path};"
         f"结构评分 {result.quality.get('score', 0)}/100。"
     )
     return 0

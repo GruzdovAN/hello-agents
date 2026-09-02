@@ -1,4 +1,4 @@
-"""利用 HelloAgents SearchTool 的搜索分发助手。"""
+"""Используйте помощник по поиску HelloAgents SearchTool."""
 
 from __future__ import annotations
 
@@ -23,11 +23,11 @@ _SEARCH_TOOL_LOCK = threading.Lock()
 
 
 def get_global_search_tool(config: Configuration) -> SearchTool:
-    """使用 API 密钥延迟初始化全局搜索工具（线程安全）。"""
+"""Ленивая инициализация инструмента глобального поиска с использованием ключа API (потокобезопасная)."""
     global _GLOBAL_SEARCH_TOOL
     if _GLOBAL_SEARCH_TOOL is None:
         with _SEARCH_TOOL_LOCK:
-            # 双重检查锁定，避免多线程重复创建
+# Двойная проверка блокировки, чтобы избежать повторного создания несколькими потоками
             if _GLOBAL_SEARCH_TOOL is None:
                 _GLOBAL_SEARCH_TOOL = SearchTool(
                     backend="hybrid",
@@ -46,12 +46,12 @@ def dispatch_search(
     执行配置的搜索后端并标准化响应负载。
     
     Args:
-        query: 搜索查询字符串。
-        config: 包含搜索 API 配置的对象。
-        loop_count: 当前研究循环计数（用于分页或深度控制）。
+запрос: строка поискового запроса.
+config: объект, содержащий конфигурацию API поиска.
+Loop_count: Текущее количество циклов исследования (для пейджинга или контроля глубины).
         
     Returns:
-        元组 (原始负载, 通知列表, 答案文本, 后端标签)。
+Кортеж (исходные полезные данные, список уведомлений, текст ответа, метка серверной части).
     """
     search_api = get_config_value(config.search_api)
     search_tool = get_global_search_tool(config)
@@ -110,15 +110,15 @@ def prepare_research_context(
     config: Configuration,
 ) -> tuple[str, str]:
     """
-    为下游代理构建结构化上下文和来源摘要。
+Создавайте структурированный контекст и сводки источников для нижестоящих агентов.
     
     Args:
-        search_result: 搜索后端返回的原始结果字典。
-        answer_text: 搜索后端直接生成的答案（如果有）。
-        config: 配置对象。
+search_result: словарь необработанных результатов, возвращаемых серверной частью поиска.
+ответ_текст: ответ, сгенерированный непосредственно серверной частью поиска (если есть).
+config: объект конфигурации.
         
     Returns:
-        元组 (来源摘要列表, 详细上下文文本)。
+Кортеж (сводный список источников, подробный контекстный текст).
     """
     sources_summary = format_sources(search_result)
     context = deduplicate_and_format_sources(

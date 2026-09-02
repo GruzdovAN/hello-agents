@@ -25,8 +25,8 @@ class MermaidPipeline:
                 "role": "system",
                 "content": (
                     STANDARD_PROMPT
-                    + "\n补充要求：你现在只执行【第一步：文本优化】。"
-                      "只输出优化后的完整文本，不要输出标题，不要输出Mermaid代码，不要代码块。"
+                    + "\nДополнительное требование: сейчас выполняется только [Шаг 1: оптимизация текста]. "
+                    "Выводите только полный оптимизированный текст, без заголовков, без кода Mermaid и без блоков кода."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -47,12 +47,12 @@ class MermaidPipeline:
 
     def repair_once(self, bad_code: str, reason: str) -> str:
         messages = [
-            {"role": "system", "content": "你是 Mermaid 修复器，只输出修复后的 Mermaid 代码。"},
+            {"role": "system", "content": "Вы — исправитель Mermaid; выводите только исправленный код Mermaid."},
             {
                 "role": "user",
                 "content": (
-                    "请修复以下 Mermaid 代码并确保可渲染。"
-                    f"\n错误信息: {reason}\n\n代码:\n{bad_code}"
+                    "Исправьте следующий код Mermaid, чтобы его можно было отрендерить."
+                    f"\nСообщение об ошибке: {reason}\n\nКод:\n{bad_code}"
                 ),
             },
         ]

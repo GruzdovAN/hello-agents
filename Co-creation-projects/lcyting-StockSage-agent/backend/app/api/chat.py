@@ -1,5 +1,5 @@
 """
-AI对话助手 API — 协调者Agent流式对话接口
+AI Dialogue Assistant API — интерфейс потокового диалога агента-координатора
 """
 
 import json
@@ -21,7 +21,7 @@ class ChatRequest(BaseModel):
 
 
 def _make_chat_stream(message: str, stock_code: str, stock_name: str, history: list):
-    """生成NDJSON流式响应"""
+"""Сгенерировать потоковый ответ NDJSON"""
     try:
         for event in chat_service.iter_chat_stream_events(
             message, stock_code, stock_name, history
@@ -34,10 +34,10 @@ def _make_chat_stream(message: str, stock_code: str, stock_name: str, history: l
 
 @router.post("/stream")
 async def chat_stream(body: ChatRequest):
-    """AI对话助手流式接口
+"""Интерфейс потокового ассистента разговора с искусственным интеллектом
 
-    用户通过对话形式提供需求，协调者Agent解析需求，
-    自主调用子Agent并流式输出分析结果。
+Пользователи предоставляют требования посредством диалога, а агент-координатор анализирует требования.
+Автоматически вызывайте субагентов и транслируйте результаты анализа.
     """
     return StreamingResponse(
         _make_chat_stream(body.message, body.stock_code, body.stock_name, body.history),

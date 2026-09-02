@@ -1,10 +1,10 @@
-"""TodoTool - 轻量级待办板
+"""TodoTool — лёгкая доска задач
 
-MVP 目标：
-- 仅支持 add / list / update
-- 状态枚举：pending | in_progress | completed（强约束：同时最多 1 个 in_progress）
-- 存储：.helloagents/todos/todos.json，原子写入 + 简单备份
-- 输出：按状态分组的要点列表，便于 LLM 消化
+Цели MVP:
+- только add / list / update
+- статусы: pending | in_progress | completed (строго: не более 1 in_progress одновременно)
+- хранение: .helloagents/todos/todos.json, атомарная запись + простой бэкап
+- вывод: сгруппированный список по статусам для удобства LLM
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ class TodoTool(Tool):
     def __init__(self, workspace: str):
         super().__init__(
             name="todo",
-            description="待办工具：add/list/update；状态 pending|in_progress|completed（同时仅允许1个in_progress）",
+            description="Инструмент задач: add/list/update; статусы pending|in_progress|completed (одновременно только 1 in_progress)",
         )
         self.workspace = Path(workspace)
         self.workspace.mkdir(parents=True, exist_ok=True)
@@ -58,16 +58,16 @@ class TodoTool(Tool):
     def get_parameters(self) -> List[ToolParameter]:
         return [
             ToolParameter(name="action", type="string", description="add | list | update", required=True),
-            ToolParameter(name="title", type="string", description="待办标题（add必填，update可选）", required=False),
-            ToolParameter(name="desc", type="string", description="待办描述（可选）", required=False),
-            ToolParameter(name="status", type="string", description="pending|in_progress|completed（update可选）", required=False),
-            ToolParameter(name="id", type="integer", description="要更新的待办ID（update必填）", required=False),
+            ToolParameter(name="title", type="string", description="Заголовок задачи (обязателен для add, опционален для update)", required=False),
+            ToolParameter(name="desc", type="string", description="Описание задачи (опционально)", required=False),
+            ToolParameter(name="status", type="string", description="pending|in_progress|completed (опционально для update)", required=False),
+            ToolParameter(name="id", type="integer", description="ID задачи для обновления (обязателен для update)", required=False),
         ]
 
     # ---------------- core ops ----------------
     def run(self, parameters: Dict[str, Any]) -> str:
         if not self.validate_parameters(parameters):
-            return "参数缺失，需包含 action（add/list/update）。"
+            return "Отсутствуют параметры: требуется action (add/list/update)."
         action = str(parameters.get("action", "")).strip().lower().rstrip("]")
         if action == "add":
             return self._add(title=parameters.get("title", ""), desc=parameters.get("desc", ""), status=parameters.get("status", "pending"))
@@ -80,7 +80,7 @@ class TodoTool(Tool):
                 desc=parameters.get("desc"),
                 status=parameters.get("status"),
             )
-        return "不支持的 action，应为 add/list/update。"
+        return "Неподдерживаемый action, ожидается add/list/update."
 
     # ---------------- storage ----------------
     def _load(self) -> Dict[str, Any]:
@@ -109,43 +109,43 @@ class TodoTool(Tool):
             return None
         for it in items:
             if it.status == "in_progress" and (incoming_id is None or it.id != incoming_id):
-                return f"已有进行中的任务 #{it.id}《{it.title}》。先完成/更新它后再切换。"
+                return f"Уже есть задача в работе #{it.id} «{it.title}». Сначала завершите или обновите её."
         return None
 
     # ---------------- actions ----------------
     def _add(self, title: str, desc: str, status: str) -> str:
         title = (title or "").strip()
         if not title:
-            return "❌ add 失败：title 不能为空。"
+            return "❌ add не выполнен: title не может быть пустым."
         status = status if status in STATUSES else "pending"
         data = self._load()
         items = [TodoItem.from_dict(i) for i in data.get("items", [])]
         conflict = self._enforce_single_in_progress(items, status, None)
         if conflict:
-            return f"❌ add 失败：{conflict}"
+            return f"❌ add не выполнен: {conflict}"
         now = self._now()
         new_item = TodoItem(id=self._next_id(items), title=title, desc=desc or "", status=status, created_at=now, updated_at=now)
         items.append(new_item)
         self._save({"items": [asdict(i) for i in items]})
-        return f"✅ 已添加 #{new_item.id} [{new_item.status}] {new_item.title}"
+        return f"✅ Добавлено #{new_item.id} [{new_item.status}] {new_item.title}"
 
     def _update(self, todo_id: Any, title: Optional[str], desc: Optional[str], status: Optional[str]) -> str:
         try:
             tid = int(todo_id)
         except Exception:
-            return "❌ update 失败：缺少有效的 id。"
+            return "❌ update не выполнен: требуется корректный id."
         if status and status not in STATUSES:
-            return "❌ update 失败：status 必须是 pending|in_progress|completed。"
+            return "❌ update не выполнен: status должен быть pending|in_progress|completed."
 
         data = self._load()
         items = [TodoItem.from_dict(i) for i in data.get("items", [])]
         target = next((i for i in items if i.id == tid), None)
         if not target:
-            return f"❌ update 失败：未找到 id={tid} 的任务。"
+            return f"❌ update не выполнен: задача с id={tid} не найдена."
 
         conflict = self._enforce_single_in_progress(items, status or target.status, tid)
         if conflict:
-            return f"❌ update 失败：{conflict}"
+            return f"❌ update не выполнен: {conflict}"
 
         changed = []
         if title is not None:
@@ -161,8 +161,8 @@ class TodoTool(Tool):
 
         self._save({"items": [asdict(i) for i in items]})
         if not changed:
-            return f"⚠️ 未修改任何字段 #{tid}"
-        return f"✅ 已更新 #{tid} ({', '.join(changed)}) -> [{target.status}] {target.title}"
+            return f"⚠️ Поля не изменены #{tid}"
+        return f"✅ Обновлено #{tid} ({', '.join(changed)}) -> [{target.status}] {target.title}"
 
     def _list(self, status_filter: Optional[str]) -> str:
         data = self._load()
@@ -210,4 +210,4 @@ class TodoTool(Tool):
 
         parts = [fmt("in_progress", groups["in_progress"]), fmt("pending", groups["pending"]), fmt("completed", groups["completed"])]
         out = "\n\n".join([p for p in parts if p])
-        return out or "暂无待办。"
+        return out or "Нет задач."

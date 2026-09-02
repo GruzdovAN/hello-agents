@@ -121,7 +121,7 @@ def prepare_month_index(values: Sequence[object]):
     normalized_values = []
     for value in values:
         text = str(value).strip()
-        normalized_text = text.replace("年", "-").replace("月", "").replace("/", "-")
+        normalized_text = text.replace("г.", "-").replace("мес.", "").replace("/", "-")
         match = re.fullmatch(r"(\d{4})-(\d{1,2})", normalized_text)
         if match:
             year = int(match.group(1))

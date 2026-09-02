@@ -1,5 +1,5 @@
 """
-将 SQLite 中的历史记录写入 Milvus 向量索引。
+Запись истории из SQLite в векторный индекс Milvus.
 """
 
 from __future__ import annotations
@@ -98,7 +98,7 @@ def index_reflect_event(reflect_id: int | str) -> int:
     row = get_diet_reflect(int(reflect_id))
     if not row:
         return 0
-    txt = f"执行={row['followed']} 原因={row.get('reason_code') or '-'} 说明={row.get('reason_detail') or ''}"
+txt = f"Execution={row['followed']} Reason={row.get('reason_code') или '-'} Description={row.get('reason_detail') или ''}"
     chunk = _to_chunk(
         user_id=row["user_id"],
         source_type="diet_reflect",

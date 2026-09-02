@@ -1,6 +1,6 @@
 """
-维度分析主脚本 - 从报告中提取维度并修正themes
-整合报告加载、维度提取、分析和themes修正建议
+Главный скрипт анализа измерений — извлечение измерений из отчётов и корректировка themes
+Объединяет загрузку отчётов, извлечение измерений, анализ и рекомендации по themes
 """
 
 import sys
@@ -11,7 +11,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
 
-# 设置控制台编码为UTF-8（Windows）
+# Кодировка консоли UTF-8 (Windows)
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -23,47 +23,47 @@ import manage_themes as mt
 
 
 def load_themes(themes_file: Path) -> List[str]:
-    """加载themes"""
+    """Загрузка themes"""
     return mt.load_themes(themes_file)
 
 
 def save_themes(themes_file: Path, themes: List[str]):
-    """保存themes"""
+    """Сохранение themes"""
     return mt.save_themes(themes_file, themes)
 
 
 def apply_theme_suggestions(suggestions: Dict[str, List[Dict]], themes: List[str], themes_file: Path, selected_indices: Dict[str, List[int]]) -> List[str]:
-    """应用用户选择的themes建议
+    """Применение выбранных пользователем рекомендаций по themes
     
     Args:
-        suggestions: 建议字典
-        themes: 当前themes列表
-        themes_file: themes文件路径
-        selected_indices: 用户选择的序号字典，格式：{'add': [1, 3], 'remove': [2]}
+        suggestions: Словарь рекомендаций
+        themes: Текущий список themes
+        themes_file: Путь к файлу themes
+        selected_indices: Выбранные пользователем номера: {'add': [1, 3], 'remove': [2]}
     """
     updated_themes = themes.copy()
     
-    # 处理添加建议（序号从1开始）
+    # Добавление (нумерация с 1)
     add_suggestions = suggestions.get('add', [])
     for idx in selected_indices.get('add', []):
         if 1 <= idx <= len(add_suggestions):
-            sug = add_suggestions[idx - 1]  # 转换为0-based索引
+            sug = add_suggestions[idx - 1]  # Преобразование в 0-based индекс
             theme = sug.get('theme')
             if theme and theme not in updated_themes:
                 updated_themes.append(theme)
-                print(f"✅ 已添加theme: {theme}")
+                print(f"✅ Добавлен theme: {theme}")
     
-    # 处理删除建议（序号从1开始）
+    # Удаление (нумерация с 1)
     remove_suggestions = suggestions.get('remove', [])
     for idx in selected_indices.get('remove', []):
         if 1 <= idx <= len(remove_suggestions):
-            sug = remove_suggestions[idx - 1]  # 转换为0-based索引
+            sug = remove_suggestions[idx - 1]  # Преобразование в 0-based индекс
             theme = sug.get('theme')
             if theme and theme in updated_themes:
                 updated_themes.remove(theme)
-                print(f"✅ 已删除theme: {theme}")
+                print(f"✅ Удалён theme: {theme}")
     
-    # 保存
+    # Сохранение
     if updated_themes != themes:
         save_themes(themes_file, updated_themes)
         return updated_themes
@@ -72,207 +72,207 @@ def apply_theme_suggestions(suggestions: Dict[str, List[Dict]], themes: List[str
 
 
 def present_theme_suggestions(suggestions: Dict[str, List[Dict]]):
-    """展示themes建议"""
+    """Вывод рекомендаций по themes"""
     print("\n" + "=" * 70)
-    print("📋 Themes修正建议")
+    print("📋 Рекомендации по корректировке themes")
     print("=" * 70)
     
     all_count = sum(len(v) for k, v in suggestions.items() if k != 'theme_match_analysis')
     if all_count == 0:
-        print("✅ 暂无themes修正建议")
+        print("✅ Рекомендаций по themes нет")
         return
     
-    # 展示添加建议
+    # Вывод рекомендаций на добавление
     if suggestions.get('add'):
-        print("\n【添加Theme建议】")
+        print("\n【Рекомендации: добавить theme】")
         for i, sug in enumerate(suggestions['add'], 1):
             print(f"  {i}. {sug['theme']}")
-            print(f"     原因: {sug['reason']}")
-            print(f"     频率: {sug.get('frequency', 0)*100:.1f}%")
+            print(f"     Причина: {sug['reason']}")
+            print(f"     Частота: {sug.get('frequency', 0)*100:.1f}%")
     
-    # 展示删除建议
+    # Вывод рекомендаций на удаление
     if suggestions.get('remove'):
-        print("\n【删除Theme建议】")
+        print("\n【Рекомендации: удалить theme】")
         for i, sug in enumerate(suggestions['remove'], 1):
             print(f"  {i}. {sug['theme']}")
-            print(f"     原因: {sug['reason']}")
-            print(f"     匹配率: {sug.get('match_rate', 0)*100:.1f}%")
+            print(f"     Причина: {sug['reason']}")
+            print(f"     Доля совпадений: {sug.get('match_rate', 0)*100:.1f}%")
     
     print("\n" + "=" * 70)
 
 
 def get_batch_user_confirmation(add_suggestions: List[Dict], remove_suggestions: List[Dict]) -> Dict[str, List[int]]:
-    """批量获取用户确认
+    """Пакетный запрос подтверждения у пользователя
     
     Args:
-        add_suggestions: 添加建议列表
-        remove_suggestions: 删除建议列表
+        add_suggestions: Список рекомендаций на добавление
+        remove_suggestions: Список рекомендаций на удаление
     
     Returns:
-        Dict包含 'add' 和 'remove' 两个列表，列表中是用户选择的序号（从1开始）
+        Dict с ключами 'add' и 'remove' — номера, выбранные пользователем (с 1)
     """
     selected = {'add': [], 'remove': []}
     
-    # 获取添加建议的确认
+    # Подтверждение добавления
     if add_suggestions:
         print("\n" + "=" * 70)
-        print("📥 添加Theme确认")
+        print("📥 Подтверждение добавления theme")
         print("=" * 70)
-        print("请输入要添加的Theme序号（多个序号用逗号或空格分隔，如：1,3,5 或 1 3 5）")
-        print("直接回车表示不添加任何Theme")
+        print("Введите номера theme для добавления (через запятую или пробел: 1,3,5 или 1 3 5)")
+        print("Пустой ввод — ничего не добавлять")
         
         while True:
-            user_input = input("添加序号: ").strip()
+            user_input = input("Номера для добавления: ").strip()
             if not user_input:
                 break
             
-            # 解析输入（支持逗号或空格分隔）
+            # Разбор ввода (запятая или пробел)
             try:
-                # 尝试用逗号分隔
+                # Разделение по запятой
                 if ',' in user_input:
                     numbers = [int(x.strip()) for x in user_input.split(',') if x.strip()]
                 else:
-                    # 用空格分隔
+                    # Разделение по пробелу
                     numbers = [int(x.strip()) for x in user_input.split() if x.strip()]
                 
-                # 验证序号范围
+                # Проверка диапазона номеров
                 valid_numbers = [n for n in numbers if 1 <= n <= len(add_suggestions)]
                 if len(valid_numbers) != len(numbers):
                     invalid = [n for n in numbers if n < 1 or n > len(add_suggestions)]
-                    print(f"⚠️  序号 {invalid} 超出范围（1-{len(add_suggestions)}），已忽略")
+                    print(f"⚠️  Номер {invalid} вне диапазона (1-{len(add_suggestions)}), пропущено")
                 
                 selected['add'] = valid_numbers
                 break
             except ValueError:
-                print("⚠️  输入格式错误，请输入数字序号（用逗号或空格分隔）")
+                print("⚠️  Неверный формат, введите номера (через запятую или пробел)")
     
-    # 获取删除建议的确认
+    # Подтверждение удаления
     if remove_suggestions:
         print("\n" + "=" * 70)
-        print("📤 删除Theme确认")
+        print("📤 Подтверждение удаления theme")
         print("=" * 70)
-        print("请输入要删除的Theme序号（多个序号用逗号或空格分隔，如：1,2 或 1 2）")
-        print("直接回车表示不删除任何Theme")
+        print("Введите номера theme для удаления (через запятую или пробел: 1,2 или 1 2)")
+        print("Пустой ввод — ничего не удалять")
         
         while True:
-            user_input = input("删除序号: ").strip()
+            user_input = input("Номера для удаления: ").strip()
             if not user_input:
                 break
             
-            # 解析输入（支持逗号或空格分隔）
+            # Разбор ввода (запятая или пробел)
             try:
-                # 尝试用逗号分隔
+                # Разделение по запятой
                 if ',' in user_input:
                     numbers = [int(x.strip()) for x in user_input.split(',') if x.strip()]
                 else:
-                    # 用空格分隔
+                    # Разделение по пробелу
                     numbers = [int(x.strip()) for x in user_input.split() if x.strip()]
                 
-                # 验证序号范围
+                # Проверка диапазона номеров
                 valid_numbers = [n for n in numbers if 1 <= n <= len(remove_suggestions)]
                 if len(valid_numbers) != len(numbers):
                     invalid = [n for n in numbers if n < 1 or n > len(remove_suggestions)]
-                    print(f"⚠️  序号 {invalid} 超出范围（1-{len(remove_suggestions)}），已忽略")
+                    print(f"⚠️  Номер {invalid} вне диапазона (1-{len(remove_suggestions)}), пропущено")
                 
                 selected['remove'] = valid_numbers
                 break
             except ValueError:
-                print("⚠️  输入格式错误，请输入数字序号（用逗号或空格分隔）")
+                print("⚠️  Неверный формат, введите номера (через запятую или пробел)")
     
     return selected
 
 
 def main():
-    """主函数"""
-    parser = argparse.ArgumentParser(description="维度分析工具 - 从报告中提取维度并修正themes")
+    """Главная функция"""
+    parser = argparse.ArgumentParser(description="Инструмент анализа измерений — извлечение из отчётов и корректировка themes")
     parser.add_argument(
         "--extract",
         action="store_true",
-        help="重新提取维度（从报告文件中）"
+        help="Повторное извлечение измерений из отчётов"
     )
     parser.add_argument(
         "--interactive",
         action="store_true",
-        help="交互模式：展示建议并获取用户确认"
+        help="Интерактивный режим: показ рекомендаций и запрос подтверждения"
     )
     parser.add_argument(
         "--base-dir",
         type=str,
         default=None,
-        help="基础目录路径（默认为脚本所在目录）"
+        help="Корневой каталог (по умолчанию — каталог скрипта)"
     )
     args = parser.parse_args()
     
-    # 确定基础目录
+    # Определение корневого каталога
     if args.base_dir:
         base_dir = Path(args.base_dir)
     else:
         base_dir = Path(__file__).parent
     
     print("=" * 70)
-    print("维度分析工具 - 从报告中提取维度并修正themes")
+    print("Инструмент анализа измерений — извлечение из отчётов и корректировка themes")
     print("=" * 70)
     
-    # 1. 加载或提取维度
-    print("\n📊 正在处理维度提取结果...")
+    # 1. Загрузка или извлечение измерений
+    print("\n📊 Обработка результатов извлечения измерений...")
     
     extraction_results = []
     
     if args.extract:
-        # 重新提取维度
-        print("🔄 从报告文件中提取维度...")
+        # Повторное извлечение измерений
+        print("🔄 Извлечение измерений из файлов отчётов...")
         llm = ed.init_llm()
         if not llm:
-            print("❌ LLM未初始化，无法提取维度")
+            print("❌ LLM не инициализирован, извлечение невозможно")
             return
         
-        # 加载themes作为参考
+        # Загрузка themes как ориентира
         themes_file = base_dir / "themes.yaml"
         existing_themes = mt.load_themes(themes_file)
         
         extraction_results = ed.batch_extract_dimensions(base_dir, report_type=None, llm=llm, existing_themes=existing_themes)
-        print(f"✅ 从报告中提取了 {len(extraction_results)} 个维度的提取结果")
+        print(f"✅ Из отчётов извлечено {len(extraction_results)} результатов извлечения измерений")
     else:
-        # 加载已有的提取结果
+        # Загрузка сохранённых результатов
         extraction_results = ed.load_extraction_results(base_dir)
-        print(f"✅ 加载了 {len(extraction_results)} 个提取结果")
+        print(f"✅ Загружено {len(extraction_results)} результатов извлечения")
         
         if len(extraction_results) == 0:
-            print("⚠️  未找到提取结果，使用 --extract 参数可以重新提取")
-            print("💡 提示: 运行 'python extract_dimensions.py' 来提取维度")
+            print("⚠️  Результаты не найдены, используйте --extract для повторного извлечения")
+            print("💡 Подсказка: python extract_dimensions.py — извлечение измерений")
     
     if len(extraction_results) == 0:
-        print("❌ 没有维度提取结果，无法进行分析")
+        print("❌ Нет результатов извлечения, анализ невозможен")
         return
     
-    # 2. 加载themes
+    # 2. Загрузка themes
     themes_file = base_dir / "themes.yaml"
     themes = load_themes(themes_file)
     
     if not themes:
-        print("⚠️  当前没有themes，请先设置themes")
-        print("💡 提示: 运行 'python manage_themes.py' 来管理themes")
-        # 使用空列表继续，以便生成添加建议
+        print("⚠️  Themes не заданы, сначала настройте themes")
+        print("💡 Подсказка: python manage_themes.py — управление themes")
+        # Продолжаем с пустым списком для генерации рекомендаций на добавление
     
-    print(f"📋 当前themes: {themes}")
+    print(f"📋 Текущие themes: {themes}")
     
-    # 3. 统计维度
+    # 3. Статистика измерений
     dim_stats = da.count_dimension_frequency_from_extractions(extraction_results)
-    print(f"\n📈 维度统计: 发现 {len(dim_stats)} 个不同维度")
+    print(f"\n📈 Статистика измерений: найдено {len(dim_stats)} уникальных измерений")
     if dim_stats:
-        print("   维度频率（Top 5）:")
+        print("   Частота измерений (Top 5):")
         sorted_dims = sorted(dim_stats.items(), key=lambda x: x[1]['frequency'], reverse=True)[:5]
         for dim, stats in sorted_dims:
-            print(f"   - {dim}: {stats['frequency']}次 ({stats['frequency_rate']*100:.1f}%)")
+            print(f"   - {dim}: {stats['frequency']}раз ({stats['frequency_rate']*100:.1f}%)")
     
-    # 4. 生成themes修正建议
-    print("\n💡 正在生成themes修正建议...")
+    # 4. Генерация рекомендаций по themes
+    print("\n💡 Генерация рекомендаций по themes...")
     suggestions = da.generate_theme_suggestions(extraction_results, themes)
     
     total_suggestions = len(suggestions.get('add', [])) + len(suggestions.get('remove', []))
-    print(f"✅ 生成 {total_suggestions} 条themes修正建议")
+    print(f"✅ Сгенерировано {total_suggestions} рекомендаций по themes")
     
-    # 5. 生成分析报告
+    # 5. Формирование отчёта анализа
     today = datetime.now().strftime("%Y-%m-%d")
     
     analysis_report = {
@@ -287,7 +287,7 @@ def main():
         "theme_match_analysis": suggestions.get('theme_match_analysis', {})
     }
     
-    # 6. 保存分析报告
+    # 6. Сохранение отчёта анализа
     analysis_dir = base_dir / "archive" / "dimension_analysis"
     analysis_dir.mkdir(parents=True, exist_ok=True)
     analysis_file = analysis_dir / f"{today}_analysis.json"
@@ -295,32 +295,32 @@ def main():
     try:
         with open(analysis_file, 'w', encoding='utf-8') as f:
             json.dump(analysis_report, f, indent=2, ensure_ascii=False)
-        print(f"\n💾 分析报告已保存到: {analysis_file}")
+        print(f"\n💾 Отчёт анализа сохранён в: {analysis_file}")
     except Exception as e:
-        print(f"❌ 保存分析报告失败: {e}")
+        print(f"❌ Ошибка сохранения отчёта анализа: {e}")
     
-    # 7. 交互模式：展示建议并获取用户确认
+    # 7. Интерактивный режим: показ рекомендаций и запрос подтверждения
     if args.interactive and total_suggestions > 0:
         present_theme_suggestions(suggestions)
         
-        # 批量获取用户确认
+        # Пакетный запрос подтверждения у пользователя
         add_suggestions = suggestions.get('add', [])
         remove_suggestions = suggestions.get('remove', [])
         selected_indices = get_batch_user_confirmation(add_suggestions, remove_suggestions)
         
-        # 应用用户选择的建议
+        # Применение выбранных рекомендаций
         updated_themes = apply_theme_suggestions(suggestions, themes, themes_file, selected_indices)
         
         if updated_themes != themes:
-            print(f"\n✅ Themes已更新: {updated_themes}")
+            print(f"\n✅ Themes обновлены: {updated_themes}")
         else:
-            print("\n✅ 未应用任何更改")
+            print("\n✅ Изменения не применены")
     elif total_suggestions > 0:
-        # 非交互模式，只展示建议
+        # Неинтерактивный режим — только вывод рекомендаций
         present_theme_suggestions(suggestions)
-        print("\n💡 提示: 使用 --interactive 参数可以查看并处理建议")
+        print("\n💡 Подсказка: --interactive — просмотр и обработка рекомендаций")
     
-    print("\n✅ 分析完成！")
+    print("\n✅ Анализ завершён！")
 
 
 if __name__ == "__main__":

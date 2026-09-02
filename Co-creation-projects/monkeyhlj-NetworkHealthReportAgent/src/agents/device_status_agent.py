@@ -9,8 +9,8 @@ from src.agents.base import BaseNetworkAgent
 class DeviceStatusAgent(BaseNetworkAgent):
     def __init__(self) -> None:
         prompt = (
-            "你是网络设备状态Agent。请调用network_data工具读取设备和状态，"
-            "评估在线率、性能瓶颈和告警趋势。"
+            "Ты агент состояния сетевого оборудования. Вызови network_data для устройств и метрик; "
+            "оцени доступность, узкие места по производительности и тренды алертов."
         )
         super().__init__(name="DeviceStatusAgent", system_prompt=prompt)
 
@@ -24,7 +24,7 @@ class DeviceStatusAgent(BaseNetworkAgent):
                 "avg_cpu": 0.0,
                 "avg_mem": 0.0,
                 "status": "unknown",
-                "summary": "无状态数据，无法评估设备健康。",
+                "summary": "Нет данных о состоянии — оценка здоровья устройств невозможна.",
             }
 
         online_rates = [
@@ -54,7 +54,7 @@ class DeviceStatusAgent(BaseNetworkAgent):
             "critical_alarm_total": critical_alarms,
             "status": status,
             "summary": (
-                f"设备总数{len(inventory)}，平均在线率{avg_online_rate:.2%}，"
-                f"平均时延{avg_latency:.1f}ms。"
+                f"Устройств: {len(inventory)}, средняя доступность {avg_online_rate:.2%}, "
+                f"средняя задержка {avg_latency:.1f} мс."
             ),
         }

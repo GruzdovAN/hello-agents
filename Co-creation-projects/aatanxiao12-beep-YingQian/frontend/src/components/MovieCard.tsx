@@ -32,7 +32,7 @@ export function MovieCardView({ movie, index = 0 }: MovieCardProps) {
         if (res.data.overview) setOverview(res.data.overview)
       }
     } catch (err) {
-      setDetailError(err instanceof Error ? err.message : '详情加载失败')
+      setDetailError(err instanceof Error ? err.message : 'Не удалось загрузить детали')
     } finally {
       setLoadingDetail(false)
     }
@@ -64,7 +64,7 @@ export function MovieCardView({ movie, index = 0 }: MovieCardProps) {
             <h3>{movie.title}</h3>
             <div className="movie-card__meta">
               {movie.year != null && <span>{movie.year}</span>}
-              {rating && <span>评分 {rating}</span>}
+              {rating && <span>Рейтинг {rating}</span>}
               {runtimeLabel && <span>{runtimeLabel}</span>}
               {movie.genres.slice(0, 3).map((g) => (
                 <span key={g}>{g}</span>
@@ -80,17 +80,17 @@ export function MovieCardView({ movie, index = 0 }: MovieCardProps) {
             </ul>
           )}
           {movie.caution && (
-            <p className="movie-card__caution">适看提示：{movie.caution}</p>
+            <p className="movie-card__caution">Предупреждение: {movie.caution}</p>
           )}
           <p className="movie-card__more muted">
-            {expanded ? '收起详情' : '展开详情'}
+            {expanded ? 'Свернуть' : 'Подробнее'}
           </p>
         </div>
       </button>
 
       {expanded && (
         <div className="movie-card__detail">
-          {loadingDetail && <p className="muted">正在加载详情…</p>}
+          {loadingDetail && <p className="muted">Загрузка деталей…</p>}
           {detailError && <p className="error-text">{detailError}</p>}
           {!loadingDetail && detail?.tagline && (
             <p className="detail-tagline">{detail.tagline}</p>
@@ -100,12 +100,12 @@ export function MovieCardView({ movie, index = 0 }: MovieCardProps) {
           )}
           {!loadingDetail && detail && <DetailFacts detail={detail} />}
           {!loadingDetail && !overview && !detailError && (
-            <p className="muted">暂无简介</p>
+            <p className="muted">Описание отсутствует</p>
           )}
           {!loadingDetail && detail?.tmdb_url && (
             <p className="detail-link">
               <a href={detail.tmdb_url} target="_blank" rel="noreferrer">
-                在 TMDB 查看
+                Открыть в TMDB
               </a>
             </p>
           )}

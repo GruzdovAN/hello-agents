@@ -1,5 +1,5 @@
 """
-分析相关API路由
+Анализируйте связанные маршруты API
 """
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
@@ -15,15 +15,15 @@ from utils.pdf_parser import pdf_parser
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# 初始化 LLM 适配器（基于 HelloAgent）
+# Инициализируем адаптер LLM (на основе HelloAgent)
 config = get_config()
 try:
     llm = get_llm_adapter() if config.llm.api_key else None
 except Exception as e:
-    logger.warning(f"LLM 初始化失败: {str(e)}")
+logger.warning(f"Ошибка инициализации LLM: {str(e)}")
     llm = None
 
-# Pydantic模型
+# Пидантическая модель
 class AnalysisRequest(BaseModel):
     paper_id: str
     user_id: Optional[str] = None
@@ -46,124 +46,124 @@ class PaperAnalysisRequest(BaseModel):
 
 @router.post("/analyze", response_model=Dict[str, Any])
 async def analyze_paper(request: PaperAnalysisRequest):
-    """分析论文 - 支持 ArXiv URL 和本地 PDF 文件"""
+"""Анализ документов — поддержка URL-адресов ArXiv и локальных PDF-файлов"""
     try:
         if not llm:
-            raise HTTPException(status_code=503, detail="AI 服务未配置，请设置 OPENAI_API_KEY")
+поднять HTTPException (status_code=503, Detail="Служба AI не настроена, установите OPENAI_API_KEY")
         
         import re
         paper_url = request.paper_url.strip()
         
-        # 检查是否是本地上传的 PDF 文件
+# Проверьте, является ли это локально загруженным PDF-файлом
         if paper_url.startswith('/uploads/') or paper_url.endswith('.pdf'):
             logger.info(f"检测到本地 PDF 文件: {paper_url}")
             
-            # 构建完整的文件路径
+# Создаём полный путь к файлу
             if paper_url.startswith('/uploads/'):
-                # 假设上传的文件在 downloads 目录
+# Предположим, что загруженный файл находится в каталоге загрузок
                 file_path = os.path.join('downloads', paper_url.replace('/uploads/', ''))
             else:
                 file_path = paper_url
             
-            # 检查文件是否存在
+#Проверяем, существует ли файл
             if not os.path.exists(file_path):
                 logger.warning(f"PDF 文件不存在: {file_path}")
-                raise HTTPException(status_code=404, detail=f"PDF 文件不存在: {paper_url}")
+поднять HTTPException (status_code=404, Detail=f «PDF-файл не существует: {paper_url}»)
             
-            # 解析 PDF 文件
+# Разбор PDF-файлов
             logger.info(f"开始解析 PDF 文件: {file_path}")
             pdf_result = await pdf_parser.parse_pdf(file_path)
             
             if not pdf_result.get("success"):
-                raise HTTPException(status_code=500, detail=pdf_result.get("error", "PDF 解析失败"))
+поднять HTTPException(status_code=500, Detail=pdf_result.get("ошибка", "Ошибка анализа PDF"))
             
-            # 使用解析出的内容进行 AI 分析
+#Используйте проанализированный контент для анализа ИИ
             title = pdf_result.get("title", "未知标题")
             authors = pdf_result.get("authors", ["未知作者"])
             abstract = pdf_result.get("abstract", "")
             full_text = pdf_result.get("full_text", "")
             
-            # 限制文本长度以避免超出 token 限制
+# Ограничьте длину текста, чтобы не превысить лимит токенов
             text_for_analysis = full_text[:8000] if len(full_text) > 8000 else full_text
             
-            # 根据分析类型生成提示词
+# Генерация слов-подсказок в зависимости от типа анализа
             prompts = {
-                "summary": f"""请对以下论文进行摘要分析：
+"резюме": f"""Просьба представить краткий анализ следующих документов:
 
-标题：{title}
-作者：{', '.join(authors)}
-摘要：{abstract}
+Название: {title}
+Автор: {', '.join(авторы)}
+Аннотация:{аннотация}
 
-论文内容（前8000字符）：
+Содержание статьи (первые 8000 символов):
 {text_for_analysis}
 
-请提供：
-1. 研究背景和动机
-2. 主要方法
-3. 核心贡献
-4. 实验结果
-5. 研究意义
+Пожалуйста, предоставьте:
+1. Предыстория и мотивация исследования
+2. Основные методы
+3. Основной вклад
+4. Результаты экспериментов
+5. Значение исследования
 
-请用中文回答，保持专业和简洁。""",
+Пожалуйста, отвечайте на китайском языке и будьте профессиональными и краткими. """,
                 
-                "innovation": f"""请分析以下论文的创新点：
+«инновация»: f»»»Проанализируйте инновационные моменты следующих статей:
 
-标题：{title}
-摘要：{abstract}
+Название: {title}
+Аннотация:{аннотация}
 
-论文内容：
+Содержание бумаги:
 {text_for_analysis}
 
-请详细分析：
-1. 技术创新点
-2. 方法论创新
-3. 理论贡献
-4. 与现有工作的区别
-5. 潜在应用价值
+Пожалуйста, проанализируйте подробно:
+1. Точки технологических инноваций
+2. Методологическая инновация
+3. Теоретический вклад
+4. Отличия от существующих работ
+5. Потенциальная ценность приложения
 
-请用中文回答。""",
+Пожалуйста, ответьте на китайском языке. """,
                 
-                "comparison": f"""请对以下论文进行对比分析：
+"сравнение": f"""Проведите сравнительный анализ следующих статей:
 
-标题：{title}
-摘要：{abstract}
+Название: {title}
+Аннотация:{аннотация}
 
-论文内容：
+Содержание бумаги:
 {text_for_analysis}
 
-请分析：
-1. 与传统方法的对比
-2. 优势和劣势
-3. 适用场景
-4. 性能提升
-5. 局限性
+Пожалуйста, проанализируйте:
+1. Сравнение с традиционными методами
+2. Преимущества и недостатки
+3. Применимые сценарии
+4. Улучшение производительности
+5. Ограничения
 
-请用中文回答。""",
+Пожалуйста, ответьте на китайском языке. """,
                 
                 "comprehensive": f"""请对以下论文进行全面综合分析：
 
-标题：{title}
-作者：{', '.join(authors)}
-摘要：{abstract}
+Название: {title}
+Автор: {', '.join(авторы)}
+Аннотация:{аннотация}
 
-论文内容：
+Содержание бумаги:
 {text_for_analysis}
 
-请提供全面的分析，包括：
-1. 研究背景和意义
-2. 技术方法详解
-3. 创新点分析
-4. 实验验证
-5. 优缺点评价
-6. 未来研究方向
-7. 实际应用价值
+Пожалуйста, предоставьте комплексный анализ, включающий:
+1. Предыстория и значимость исследования
+2. Подробное объяснение технических методов.
+3. Анализ инновационных точек
+4. Экспериментальная проверка
+5. Оценка преимуществ и недостатков
+6. Будущие направления исследований
+7. Практическая ценность применения
 
-请用中文回答，保持专业和深度。"""
+Пожалуйста, отвечайте на китайском языке и оставайтесь профессиональными и содержательными. """
             }
             
             prompt = prompts.get(request.analysis_type, prompts["summary"])
             
-            # 调用 LLM 进行分析
+# Позвоните в LLM для анализа
             logger.info(f"开始 AI 分析，类型: {request.analysis_type}")
             response = await llm.ainvoke(prompt)
             analysis_content = response.content if hasattr(response, 'content') else str(response)
@@ -176,7 +176,7 @@ async def analyze_paper(request: PaperAnalysisRequest):
                     "authors": authors,
                     "published_date": "N/A",
                     "url": paper_url,
-                    "categories": ["本地文件"],
+"categories": ["локальные файлы"],
                     "page_count": pdf_result.get("page_count", 0),
                     "word_count": pdf_result.get("word_count", 0)
                 },
@@ -185,7 +185,7 @@ async def analyze_paper(request: PaperAnalysisRequest):
                 "abstract": abstract
             }
         
-        # ArXiv 论文处理
+# Обработка бумаги ArXiv
         arxiv_patterns = [
             r'arxiv\.org/abs/(\d+\.\d+)',
             r'arxiv\.org/pdf/(\d+\.\d+)',
@@ -204,88 +204,88 @@ async def analyze_paper(request: PaperAnalysisRequest):
         if not paper_id:
             raise HTTPException(
                 status_code=400, 
-                detail=f"无效的输入。支持的格式：\n" +
+Detail=f"Неверный ввод. Поддерживаемые форматы:\n" +
                        "- ArXiv URL: https://arxiv.org/abs/2511.16672\n" +
                        "- ArXiv ID: 2511.16672\n" +
-                       "- 本地 PDF: 上传后自动填充"
+«-Локальный PDF: автозаполнение после загрузки»
             )
         
         logger.info(f"正在分析 ArXiv 论文: {paper_id}")
         
-        # 获取论文信息
+# Получить информацию о бумаге
         search = arxiv.Search(id_list=[paper_id])
         paper = next(search.results(), None)
         
         if not paper:
-            raise HTTPException(status_code=404, detail=f"未找到 ArXiv 论文: {paper_id}")
+поднять HTTPException(status_code=404, Detail=f"Бумага ArXiv не найдена: {paper_id}")
         
-        # 根据分析类型生成提示词
+# Генерация слов-подсказок в зависимости от типа анализа
         prompts = {
-            "summary": f"""请对以下论文进行摘要分析：
+"резюме": f"""Просьба представить краткий анализ следующих документов:
 
-标题：{paper.title}
-作者：{', '.join([a.name for a in paper.authors])}
-摘要：{paper.summary}
+Название: {paper.title}
+作者：{', '.join([имя в документе.авторы])}
+Резюме: {paper.summary}
 
-请提供：
-1. 研究背景和动机
-2. 主要方法
-3. 核心贡献
-4. 实验结果
-5. 研究意义
+Пожалуйста, предоставьте:
+1. Предыстория и мотивация исследования
+2. Основные методы
+3. Основной вклад
+4. Результаты экспериментов
+5. Значение исследования
 
-请用中文回答，保持专业和简洁。""",
+Пожалуйста, отвечайте на китайском языке и будьте профессиональными и краткими. """,
             
-            "innovation": f"""请分析以下论文的创新点：
+«инновация»: f»»»Проанализируйте инновационные моменты следующих статей:
 
-标题：{paper.title}
-摘要：{paper.summary}
+Название: {paper.title}
+Резюме: {paper.summary}
 
-请详细分析：
-1. 技术创新点
-2. 方法论创新
-3. 理论贡献
-4. 与现有工作的区别
-5. 潜在应用价值
+Пожалуйста, проанализируйте подробно:
+1. Точки технологических инноваций
+2. Методологическая инновация
+3. Теоретический вклад
+4. Отличия от существующих работ
+5. Потенциальная ценность приложения
 
-请用中文回答。""",
+Пожалуйста, ответьте на китайском языке. """,
             
-            "comparison": f"""请对以下论文进行对比分析：
+"сравнение": f"""Проведите сравнительный анализ следующих статей:
 
-标题：{paper.title}
-摘要：{paper.summary}
+Название: {paper.title}
+Резюме: {paper.summary}
 
-请分析：
-1. 与传统方法的对比
-2. 优势和劣势
-3. 适用场景
-4. 性能提升
-5. 局限性
+Пожалуйста, проанализируйте:
+1. Сравнение с традиционными методами
+2. Преимущества и недостатки
+3. Применимые сценарии
+4. Улучшение производительности
+5. Ограничения
 
-请用中文回答。""",
+Пожалуйста, ответьте на китайском языке. """,
             
-            "comprehensive": f"""请对以下论文进行全面综合分析：
+«комплексный»: f»»»Пожалуйста, проведите всесторонний и всесторонний анализ следующих документов:
 
-标题：{paper.title}
-作者：{', '.join([a.name for a in paper.authors])}
-摘要：{paper.summary}
-分类：{', '.join(paper.categories)}
+Название: {paper.title}
+作者：{', '.join([имя в документе.авторы])}
+Резюме: {paper.summary}
+Категории: {', '.join(paper.categories)}
 
-请提供全面的分析，包括：
-1. 研究背景和意义
-2. 技术方法详解
-3. 创新点分析
-4. 实验验证
-5. 优缺点评价
-6. 未来研究方向
-7. 实际应用价值
+Пожалуйста, предоставьте комплексный анализ, включающий:
+1. Предыстория и значимость исследования
+2. Подробное объяснение технических методов.
+3. Анализ инновационных точек
+4. Экспериментальная проверка
+5. Оценка преимуществ и недостатков
+6. Будущие направления исследований
+7. Практическая ценность применения
 
-请用中文回答，保持专业和深度。"""
+Пожалуйста, отвечайте на китайском языке и оставайтесь профессиональными и содержательными. """
         }
         
         prompt = prompts.get(request.analysis_type, prompts["summary"])
         
-        # 调用 LLM 进行分析
+# Позвоните в LLM для анализа
         response = await llm.ainvoke(prompt)
         analysis_content = response.content if hasattr(response, 'content') else str(response)
         
@@ -307,23 +307,23 @@ async def analyze_paper(request: PaperAnalysisRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"论文分析失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"分析失败: {str(e)}")
+logger.error(f"Анализ бумаги не удался: {str(e)}")
+поднять HTTPException (status_code=500, Detail=f «Анализ не выполнен: {str(e)}»)
 
 @router.post("/compare", response_model=Dict[str, Any])
 async def compare_papers(request: ComparisonRequest):
-    """对比多篇论文"""
+"""Сравнить несколько статей"""
     try:
-        # 这里需要实现论文对比逻辑
-        # 暂时返回模拟结果
+# Здесь нужно реализовать логику сравнения бумаг
+# Временно возвращаем результаты моделирования
         
         comparison_result = {
             "paper_ids": request.paper_ids,
             "comparison_aspects": request.comparison_aspects,
-            "similarities": ["相似点1", "相似点2"],
-            "differences": ["差异点1", "差异点2"],
+"сходства": ["сходство1", "сходство2"],
+"differences": ["разница 1", "разница 2"],
             "innovation_gaps": ["创新空白1", "创新空白2"],
-            "recommendations": ["建议1", "建议2"]
+"рекомендации": ["рекомендации 1", "рекомендации 2"]
         }
         
         return {
@@ -332,27 +332,27 @@ async def compare_papers(request: ComparisonRequest):
         }
         
     except Exception as e:
-        logger.error(f"论文对比失败: {str(e)}")
+logger.error(f"Сравнение бумаги не удалось: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/innovation/search", response_model=Dict[str, Any])
 async def search_innovation_opportunities(request: InnovationSearchRequest):
-    """搜索创新机会"""
+"""Поиск инновационных возможностей"""
     try:
-        # 这里需要实现创新机会搜索逻辑
-        # 暂时返回模拟结果
+#Здесь нам необходимо реализовать логику поиска инновационных возможностей
+# Временно возвращаем результаты моделирования
         
         innovation_results = {
             "query": request.query,
             "opportunities": [
                 {
-                    "title": "创新机会1",
-                    "description": "基于当前研究的创新方向",
+"title": "Инновационная возможность 1",
+"description": "Инновационные направления на основе текущих исследований",
                     "related_papers": ["paper1", "paper2"],
                     "confidence": 0.85
                 },
                 {
-                    "title": "创新机会2", 
+"title": "Инновационная возможность 2",
                     "description": "另一个潜在的研究方向",
                     "related_papers": ["paper3", "paper4"],
                     "confidence": 0.72
@@ -368,24 +368,24 @@ async def search_innovation_opportunities(request: InnovationSearchRequest):
         }
         
     except Exception as e:
-        logger.error(f"创新机会搜索失败: {str(e)}")
+logger.error(f"Ошибка поиска возможностей для инноваций: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/paper/{paper_id}/summary")
 async def get_paper_summary(paper_id: str, user_id: Optional[str] = None):
-    """获取论文摘要"""
+"""Получить реферат"""
     try:
-        # 这里需要实现论文摘要生成逻辑
-        # 暂时返回模拟结果
+# Здесь нужно реализовать логику генерации бумажных рефератов
+# Временно возвращаем результаты моделирования
         
         summary = {
             "paper_id": paper_id,
             "summary": "这是一篇关于...的论文，主要贡献包括...",
             "key_contributions": ["贡献1", "贡献2", "贡献3"],
-            "methodology": "论文采用的方法是...",
-            "results": "实验结果表明...",
-            "limitations": "研究的局限性包括...",
-            "future_work": "未来工作方向..."
+"methodology": "В статье использован метод...",
+"results": "Результаты эксперимента показывают...",
+"limitations": "Ограничения исследования включают...",
+"future_work": "Будущее направление работы..."
         }
         
         return {
@@ -394,27 +394,27 @@ async def get_paper_summary(paper_id: str, user_id: Optional[str] = None):
         }
         
     except Exception as e:
-        logger.error(f"获取论文摘要失败: {str(e)}")
+logger.error(f"Не удалось получить реферат статьи: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/paper/{paper_id}/innovations")
 async def get_paper_innovations(paper_id: str, user_id: Optional[str] = None):
-    """获取论文创新点"""
+"""Получите инновационные баллы в статье"""
     try:
-        # 这里需要实现创新点提取逻辑
-        # 暂时返回模拟结果
+# Здесь нам нужно реализовать логику извлечения очков инноваций
+# Временно возвращаем результаты моделирования
         
         innovations = {
             "paper_id": paper_id,
             "innovations": [
                 {
-                    "aspect": "方法创新",
+«аспект»: «инновация метода»,
                     "description": "提出了新的方法...",
                     "novelty": "high",
                     "impact": "significant"
                 },
                 {
-                    "aspect": "理论创新", 
+«аспект»: «теоретическая инновация»,
                     "description": "在理论上有所突破...",
                     "novelty": "medium",
                     "impact": "moderate"
@@ -430,29 +430,29 @@ async def get_paper_innovations(paper_id: str, user_id: Optional[str] = None):
         }
         
     except Exception as e:
-        logger.error(f"获取论文创新点失败: {str(e)}")
+logger.error(f"Не удалось получить инновационные баллы статьи: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/user/{user_id}/insights")
 async def get_user_insights(user_id: str):
-    """获取用户研究洞察"""
+"""Получите информацию об исследованиях пользователей"""
     try:
-        # 这里需要实现用户研究洞察分析
-        # 暂时返回模拟结果
+# Здесь нам нужно реализовать анализ пользовательской информации
+# Временно возвращаем результаты моделирования
         
         insights = {
             "user_id": user_id,
-            "research_interests": ["兴趣1", "兴趣2"],
+"research_interests": ["Интерес1", "Интерес2"],
             "reading_patterns": {
                 "papers_read": 50,
-                "favorite_topics": ["主题1", "主题2"],
+"favorite_topics": ["topic1", "topic2"],
                 "reading_frequency": "daily"
             },
             "knowledge_gaps": ["知识空白1", "知识空白2"],
             "research_suggestions": [
                 {
-                    "topic": "建议研究方向1",
-                    "reason": "基于您的阅读历史...",
+"topic": "Предлагаемое направление исследования 1",
+"reason": "Исходя из вашей истории чтения...",
                     "related_papers": ["paper1", "paper2"]
                 }
             ],
@@ -469,18 +469,18 @@ async def get_user_insights(user_id: str):
         }
         
     except Exception as e:
-        logger.error(f"获取用户研究洞察失败: {str(e)}")
+logger.error(f"Не удалось получить данные исследования пользователей: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/batch", response_model=Dict[str, Any])
 async def batch_analyze_papers(paper_ids: List[str], user_id: Optional[str] = None):
-    """批量分析论文"""
+"""Документы по анализу партии"""
     try:
         results = []
         
         for paper_id in paper_ids:
             try:
-                # 提交论文分析任务
+# Отправьте задание на анализ бумаги
                 task_id = await agent_controller.submit_task(
                     TaskType.PAPER_ANALYSIS,
                     {
@@ -490,7 +490,7 @@ async def batch_analyze_papers(paper_ids: List[str], user_id: Optional[str] = No
                     }
                 )
                 
-                # 执行任务
+# Выполняем задачи
                 result = await agent_controller.execute_task(task_id)
                 
                 results.append({
@@ -515,38 +515,38 @@ async def batch_analyze_papers(paper_ids: List[str], user_id: Optional[str] = No
         }
         
     except Exception as e:
-        logger.error(f"批量分析论文失败: {str(e)}")
+logger.error(f"Ошибка пакетного анализа документов: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload-pdf", response_model=Dict[str, Any])
 async def upload_pdf_for_analysis(file: UploadFile = File(...)):
     """
-    上传 PDF 文件并解析
-    返回文件信息和解析结果
+Загрузить PDF-файлы и проанализировать
+Возвратить информацию о файле и результаты анализа
     """
     try:
-        # 检查文件类型
+#Проверяем тип файла
         if not file.filename.endswith('.pdf'):
             raise HTTPException(status_code=400, detail="只支持 PDF 文件")
         
-        # 读取文件内容
+# Читаем содержимое файла
         logger.info(f"接收到 PDF 文件: {file.filename}")
         pdf_bytes = await file.read()
         
-        # 解析 PDF
+# Разобрать PDF-файл
         pdf_result = await pdf_parser.parse_pdf_from_bytes(pdf_bytes, file.filename)
         
         if not pdf_result.get("success"):
-            raise HTTPException(status_code=500, detail=pdf_result.get("error", "PDF 解析失败"))
+поднять HTTPException(status_code=500, Detail=pdf_result.get("ошибка", "Ошибка анализа PDF"))
         
-        # 保存文件到 downloads 目录
+# Сохраняем файл в каталог загрузок
         os.makedirs("downloads", exist_ok=True)
         file_path = os.path.join("downloads", file.filename)
         
         with open(file_path, "wb") as f:
             f.write(pdf_bytes)
         
-        logger.info(f"PDF 文件已保存: {file_path}")
+logger.info(f"PDF-файл сохранен: {file_path}")
         
         return {
             "success": True,
@@ -563,5 +563,5 @@ async def upload_pdf_for_analysis(file: UploadFile = File(...)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"PDF 上传失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"上传失败: {str(e)}")
+logger.error(f"Ошибка загрузки PDF: {str(e)}")
+поднять HTTPException(status_code=500, Detail=f"Ошибка загрузки: {str(e)}")

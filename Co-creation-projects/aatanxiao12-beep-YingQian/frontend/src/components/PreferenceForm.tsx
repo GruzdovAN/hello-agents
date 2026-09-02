@@ -23,12 +23,12 @@ interface PreferenceFormProps {
 }
 
 const emptyForm = (): RecommendRequest => ({
-  mood: '放松',
-  party_type: '独自',
+  mood: 'Расслабиться',
+  party_type: 'Один',
   genres: [],
   max_runtime_minutes: null,
-  region_preference: '不限',
-  year_preference: '不限',
+  region_preference: 'Любой',
+  year_preference: 'Любой',
   exclude_titles: [],
   spoilers_ok: false,
   free_text: '',
@@ -75,8 +75,8 @@ export function PreferenceForm({
 
   function validate(): boolean {
     const next: { mood?: string; party_type?: string } = {}
-    if (!form.mood) next.mood = '请选择心情'
-    if (!form.party_type) next.party_type = '请选择观影人群'
+    if (!form.mood) next.mood = 'Выберите настроение'
+    if (!form.party_type) next.party_type = 'Выберите компанию'
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -106,15 +106,15 @@ export function PreferenceForm({
           onClick={fillDemo}
           disabled={disabled}
         >
-          填入示例
+          Заполнить примером
         </button>
       </div>
 
       <fieldset className="field-block" disabled={disabled}>
         <legend>
-          此刻心情 <span className="req">*</span>
+          Настроение сейчас <span className="req">*</span>
         </legend>
-        <div className="choice-row" role="radiogroup" aria-label="心情">
+        <div className="choice-row" role="radiogroup" aria-label="Настроение">
           {MOODS.map((mood) => (
             <label key={mood} className="choice">
               <input
@@ -135,9 +135,9 @@ export function PreferenceForm({
 
       <fieldset className="field-block" disabled={disabled}>
         <legend>
-          观影人群 <span className="req">*</span>
+          Компания <span className="req">*</span>
         </legend>
-        <div className="choice-row" role="radiogroup" aria-label="观影人群">
+        <div className="choice-row" role="radiogroup" aria-label="Компания">
           {PARTY_TYPES.map((party) => (
             <label key={party} className="choice">
               <input
@@ -159,7 +159,7 @@ export function PreferenceForm({
       </fieldset>
 
       <fieldset className="field-block" disabled={disabled}>
-        <legend>偏好类型</legend>
+        <legend>Предпочитаемые жанры</legend>
         <div className="choice-row choice-row--wrap">
           {GENRE_OPTIONS.map((genre) => (
             <label key={genre} className="choice choice--check">
@@ -176,7 +176,7 @@ export function PreferenceForm({
 
       <div className="field-grid">
         <label className="field">
-          <span>最长片长</span>
+          <span>Макс. длительность</span>
           <select
             value={form.max_runtime_minutes ?? ''}
             onChange={(e) => {
@@ -197,7 +197,7 @@ export function PreferenceForm({
         </label>
 
         <label className="field">
-          <span>地区偏好</span>
+          <span>Регион</span>
           <select
             value={form.region_preference}
             onChange={(e) =>
@@ -217,7 +217,7 @@ export function PreferenceForm({
         </label>
 
         <label className="field">
-          <span>年代偏好</span>
+          <span>Период</span>
           <select
             value={form.year_preference}
             onChange={(e) =>
@@ -238,25 +238,25 @@ export function PreferenceForm({
       </div>
 
       <label className="field">
-        <span>已看过（用顿号或逗号分隔）</span>
+        <span>Уже смотрели (через запятую)</span>
         <input
           type="text"
           value={excludeText}
           onChange={(e) => setExcludeText(e.target.value)}
-          placeholder="例如：盗梦空间、星际穿越"
+          placeholder="Например: Inception, Interstellar"
           disabled={disabled}
         />
       </label>
 
       <label className="field">
-        <span>额外要求</span>
+        <span>Дополнительно</span>
         <textarea
           rows={3}
           value={form.free_text}
           onChange={(e) =>
             setForm((p) => ({ ...p, free_text: e.target.value }))
           }
-          placeholder="例如：节奏慢一点，适合睡前"
+          placeholder="Например: спокойный темп, перед сном"
           disabled={disabled}
         />
       </label>
@@ -270,12 +270,12 @@ export function PreferenceForm({
           }
           disabled={disabled}
         />
-        <span>允许简介含剧透</span>
+        <span>Разрешить спойлеры в описании</span>
       </label>
 
       <div className="pref-form__actions">
         <button type="submit" className="btn btn--primary" disabled={disabled}>
-          {disabled ? '生成中…' : '生成片单'}
+          {disabled ? 'Генерация…' : 'Сгенерировать список'}
         </button>
       </div>
     </form>

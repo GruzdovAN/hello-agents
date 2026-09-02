@@ -1,5 +1,5 @@
 """
-健康报告生成 Agent
+Агент создания отчетов о состоянии здоровья
 """
 
 import json
@@ -18,7 +18,7 @@ class ReportAgent(BaseAgent):
         risk_assessment = input_data.get("risk_assessment", {})
         advice = input_data.get("advice") or {}
         confidence = risk_assessment.get("confidence", 0.5)
-        retrieved_memory = str(input_data.get("retrieved_memory") or "（暂无召回记忆）")
+извлекаемая_память = str(input_data.get("полученная_память") или "(Пока нет вызванной памяти)")
 
         advice_list = advice.get("advice", [])
 
@@ -32,13 +32,13 @@ class ReportAgent(BaseAgent):
             summary = result.get("summary", "根据当前分析生成的健康报告摘要。")
         except json.JSONDecodeError:
             result = {
-                "summary": "解析失败，返回原始结果",
+"summary": "Парсинг не удался, верните исходный результат",
                 "raw_response": response
             }
 
-        # 构建最终报告
+# Построить окончательный отчет
         report = {
-            "title": "个人健康评估报告",
+"title": "Отчет об оценке личного здоровья",
             "summary": summary,
             "indicator_section": indicators,
             "risk_section": risk_assessment,
@@ -66,31 +66,31 @@ class ReportAgent(BaseAgent):
 ) -> str:
 
         return f"""
-你是一名健康报告整理助手。
-请根据以下结构化分析结果，生成一份清晰、专业、易读的健康评估报告。
+Вы помощник по организации отчетов о состоянии здоровья.
+Пожалуйста, подготовьте четкий, профессиональный и легкий для чтения отчет об оценке состояния здоровья на основе следующих результатов структурированного анализа.
 
-健康指标分析结果：
+Результаты анализа показателей здоровья:
 {json.dumps(indicators, ensure_ascii=False, indent=2)}
 
-健康风险评估结果：
+Результаты оценки риска для здоровья:
 {json.dumps(risk_assessment, ensure_ascii=False, indent=2)}
 
-健康建议：
+Советы по здоровью:
 {json.dumps(advice_list, ensure_ascii=False, indent=2)}
 
-整体置信度：
+Общая уверенность:
 {confidence}
 
-历史记忆召回（RAG）：
+Восстановление исторической памяти (RAG):
 {retrieved_memory}
 
-要求：
-- 不新增分析结论
-- 不修改已有判断
-- 语言清晰、结构清楚
-- 面向普通用户
+Требовать:
+- Никаких новых выводов анализа добавляться не будет.
+- Не изменять существующие решения
+- Понятный язык и понятная структура.
+- Для обычных пользователей
 
-请返回 JSON 格式：
+Пожалуйста, верните формат JSON:
 {{
   "summary": "..."
 }}

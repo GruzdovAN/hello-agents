@@ -1,5 +1,5 @@
 """
-任务服务
+Служба задач
 """
 
 from typing import Optional, List, Dict, Any
@@ -13,28 +13,28 @@ import json
 import asyncio
 
 class TaskService:
-    """任务服务类"""
+"""Класс обслуживания задач"""
     
     def __init__(self, db: Session):
         self.db = db
         self.agent_controller = AgentController()
     
     def get_task_by_id(self, task_id: int) -> Optional[Task]:
-        """根据ID获取任务"""
+"""Получать задачи по ID"""
         task_db = self.db.query(TaskDB).filter(TaskDB.id == task_id).first()
         if not task_db:
             raise TaskNotFoundError(f"Task with id {task_id} not found")
         return Task.from_orm(task_db)
     
     def get_tasks_by_user(self, user_id: int, skip: int = 0, limit: int = 20) -> List[Task]:
-        """获取用户的任务列表"""
+"""Получить список задач пользователя"""
         tasks_db = self.db.query(TaskDB).filter(
             TaskDB.user_id == user_id
         ).order_by(TaskDB.created_at.desc()).offset(skip).limit(limit).all()
         return [Task.from_orm(task) for task in tasks_db]
     
     def create_task(self, task_create: TaskCreate, user_id: int) -> Task:
-        """创建任务"""
+"""Создать задачу"""
         task_db = TaskDB(
             title=task_create.title,
             description=task_create.description,
@@ -48,18 +48,18 @@ class TaskService:
         self.db.commit()
         self.db.refresh(task_db)
         
-        # 异步执行任务
+# Выполнять задачи асинхронно
         self._execute_task_async(task_db.id)
         
         return Task.from_orm(task_db)
     
     def update_task(self, task_id: int, task_update: TaskUpdate) -> Task:
-        """更新任务"""
+"""Задание обновления"""
         task_db = self.db.query(TaskDB).filter(TaskDB.id == task_id).first()
         if not task_db:
             raise TaskNotFoundError(f"Task with id {task_id} not found")
         
-        # 更新字段
+#Обновить поля
         update_data = task_update.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(task_db, field, value)
@@ -74,7 +74,7 @@ class TaskService:
         return Task.from_orm(task_db)
     
     def delete_task(self, task_id: int) -> bool:
-        """删除任务"""
+"""Удалить задачу"""
         task_db = self.db.query(TaskDB).filter(TaskDB.id == task_id).first()
         if not task_db:
             raise TaskNotFoundError(f"Task with id {task_id} not found")
@@ -85,40 +85,40 @@ class TaskService:
         return True
     
     def cancel_task(self, task_id: int) -> Task:
-        """取消任务"""
+"""Отменить задачу"""
         return self.update_task(task_id, TaskUpdate(status="failed", error_message="Task cancelled by user"))
     
     def retry_task(self, task_id: int) -> Task:
-        """重试任务"""
-        # 重置任务状态
+"""Повторить задачу"""
+#Сбросить статус задачи
         task = self.update_task(task_id, TaskUpdate(
             status="pending",
             progress=0,
             error_message=None
         ))
         
-        # 重新执行任务
+# Повторно выполняем задачу
         self._execute_task_async(task_id)
         
         return task
     
     def get_task_statistics(self, user_id: int) -> Dict[str, Any]:
-        """获取任务统计信息"""
+"""Получить статистику задач"""
         total_tasks = self.db.query(TaskDB).filter(TaskDB.user_id == user_id).count()
         
-        # 按状态统计
+# Статистика по статусам
         status_stats = self.db.query(
             TaskDB.status,
             self.db.func.count(TaskDB.id)
         ).filter(TaskDB.user_id == user_id).group_by(TaskDB.status).all()
         
-        # 按类型统计
+# Статистика по типам
         type_stats = self.db.query(
             TaskDB.task_type,
             self.db.func.count(TaskDB.id)
         ).filter(TaskDB.user_id == user_id).group_by(TaskDB.task_type).all()
         
-        # 成功率
+# Уровень успеха
         completed_tasks = self.db.query(TaskDB).filter(
             and_(TaskDB.user_id == user_id, TaskDB.status == "completed")
         ).count()
@@ -133,19 +133,19 @@ class TaskService:
         }
     
     def _execute_task_async(self, task_id: int):
-        """异步执行任务"""
+"""Выполнять задачи асинхронно"""
         try:
             # 获取任务信息
             task_db = self.db.query(TaskDB).filter(TaskDB.id == task_id).first()
             if not task_db:
                 return
             
-            # 更新任务状态为运行中
+# Обновить статус задачи на выполнение
             task_db.status = "running"
             task_db.progress = 0
             self.db.commit()
             
-            # 根据任务类型执行相应的智能体
+# Запускаем соответствующий агент согласно типу задачи
             if task_db.task_type == "literature_search":
                 result = asyncio.run(self._execute_literature_search(task_db))
             elif task_db.task_type == "analysis":
@@ -155,7 +155,7 @@ class TaskService:
             else:
                 raise ValueError(f"Unknown task type: {task_db.task_type}")
             
-            # 更新任务结果
+# Обновить результаты задачи
             task_db.status = "completed"
             task_db.progress = 100
             task_db.results = result
@@ -163,37 +163,37 @@ class TaskService:
             self.db.commit()
             
         except Exception as e:
-            # 更新任务状态为失败
+#Обновить статус задачи на неудачный
             task_db.status = "failed"
             task_db.error_message = str(e)
             self.db.commit()
     
     async def _execute_literature_search(self, task_db: TaskDB) -> Dict[str, Any]:
-        """执行文献搜索任务"""
+"""Выполнение заданий по поиску литературы"""
         parameters = task_db.parameters or {}
         query = parameters.get('query', '')
         max_papers = parameters.get('max_papers', 20)
         
-        # 使用猎手智能体进行文献搜索
+# Используйте агента охотника для поиска литературы
         hunter_agent = self.agent_controller.get_agent('hunter')
         
-        # 更新进度
+# Обновление прогресса
         await self._update_task_progress(task_db.id, 20)
         
-        # 执行搜索
+# Выполнить поиск
         search_results = await hunter_agent.search_papers(query, max_papers)
         
-        # 更新进度
+# Обновление прогресса
         await self._update_task_progress(task_db.id, 60)
         
-        # 使用矿工智能体进行深度挖掘
+# Используйте майнер-агент для глубокого майнинга
         miner_agent = self.agent_controller.get_agent('miner')
         enriched_results = await miner_agent.enrich_papers(search_results)
         
-        # 更新进度
+# Обновление прогресса
         await self._update_task_progress(task_db.id, 90)
         
-        # 保存论文到数据库
+# Сохраняем статью в базу данных
         paper_service = PaperService(self.db)
         saved_papers = []
         for paper_data in enriched_results:
@@ -219,19 +219,19 @@ class TaskService:
         paper_ids = parameters.get('paper_ids', [])
         analysis_type = parameters.get('analysis_type', 'comprehensive')
         
-        # 使用教练智能体进行分析
+# Используйте агент тренера для анализа
         coach_agent = self.agent_controller.get_agent('coach')
         
-        # 更新进度
+# Обновление прогресса
         await self._update_task_progress(task_db.id, 30)
         
-        # 执行分析
+# Выполнить анализ
         analysis_result = await coach_agent.analyze_papers(paper_ids, analysis_type)
         
-        # 更新进度
+# Обновление прогресса
         await self._update_task_progress(task_db.id, 80)
         
-        # 保存分析结果
+# Сохранить результаты анализа
         analysis_service = AnalysisService(self.db)
         analysis = analysis_service.create_analysis(
             {
@@ -259,25 +259,25 @@ class TaskService:
         }
     
     async def _execute_writing(self, task_db: TaskDB) -> Dict[str, Any]:
-        """执行写作任务"""
+"""Выполнение письменных заданий"""
         parameters = task_db.parameters or {}
         paper_ids = parameters.get('paper_ids', [])
         writing_type = parameters.get('writing_type', 'review')
         outline = parameters.get('outline')
         
-        # 使用教练智能体进行写作
+# Используйте тренерский агент для записи
         coach_agent = self.agent_controller.get_agent('coach')
         
-        # 更新进度
+# Обновление прогресса
         await self._update_task_progress(task_db.id, 25)
         
-        # 生成内容
+# Генерация контента
         writing_result = await coach_agent.generate_writing(paper_ids, writing_type, outline)
         
-        # 更新进度
+# Обновление прогресса
         await self._update_task_progress(task_db.id, 75)
         
-        # 保存写作结果
+# Сохранить результаты записи
         writing_service = WritingService(self.db)
         writing = writing_service.create_writing(
             {
@@ -302,7 +302,7 @@ class TaskService:
         }
     
     async def _update_task_progress(self, task_id: int, progress: int):
-        """更新任务进度"""
+"""Обновить ход выполнения задачи"""
         task_db = self.db.query(TaskDB).filter(TaskDB.id == task_id).first()
         if task_db:
             task_db.progress = progress

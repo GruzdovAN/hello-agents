@@ -1,24 +1,24 @@
-<!-- 登录模板 -->
+<!-- Шаблон входа -->
 <div class="login-container">
     <div class="login-card">
         <div class="login-header">
             <div class="logo">
-                <h1>研创·智核</h1>
-                <p>InnoCore AI</p>
+                <h1>InnoCore AI</h1>
+                <p>Исследования · Интеллект</p>
             </div>
-            <h2>用户登录</h2>
-            <p>登录您的智能科研助手账户</p>
+            <h2>Вход</h2>
+            <p>Войдите в аккаунт научного ассистента</p>
         </div>
 
         <form class="login-form ajax-form" data-endpoint="/auth/login" data-method="POST" data-redirect="/">
             <div class="form-group">
-                <label class="form-label" for="email">邮箱地址</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="请输入邮箱地址" required>
+                <label class="form-label" for="email">Электронная почта</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Введите email" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password">密码</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="请输入密码" required>
+                <label class="form-label" for="password">Пароль</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Введите пароль" required>
                 <div class="password-toggle" data-action="toggle-password">
                     <span class="eye-icon">👁️</span>
                 </div>
@@ -28,33 +28,33 @@
                 <label class="checkbox-label">
                     <input type="checkbox" name="remember">
                     <span class="checkmark"></span>
-                    记住我
+                    Запомнить меня
                 </label>
-                <a href="#" class="forgot-password">忘记密码？</a>
+                <a href="#" class="forgot-password">Забыли пароль?</a>
             </div>
 
             <button type="submit" class="btn btn-primary btn-full">
-                <span class="btn-text">登录</span>
+                <span class="btn-text">Войти</span>
                 <span class="btn-loading" style="display: none;">
                     <span class="spinner"></span>
-                    登录中...
+                    Вход...
                 </span>
             </button>
         </form>
 
         <div class="login-footer">
-            <p>还没有账户？ <a href="#" data-action="show-register">立即注册</a></p>
+            <p>Нет аккаунта? <a href="#" data-action="show-register">Зарегистрироваться</a></p>
         </div>
 
         <div class="demo-info">
-            <h3>演示账户</h3>
+            <h3>Демо-аккаунты</h3>
             <div class="demo-accounts">
                 <div class="demo-account">
-                    <strong>普通用户：</strong>
+                    <strong>Обычный пользователь:</strong>
                     <span>demo@example.com / demo123</span>
                 </div>
                 <div class="demo-account">
-                    <strong>高级用户：</strong>
+                    <strong>Премиум:</strong>
                     <span>premium@example.com / premium123</span>
                 </div>
             </div>
@@ -62,94 +62,94 @@
     </div>
 
     <div class="login-features">
-        <h3>平台特色</h3>
+        <h3>Возможности платформы</h3>
         <div class="feature-list">
             <div class="feature-item">
                 <div class="feature-icon">🤖</div>
                 <div class="feature-content">
-                    <h4>智能多智能体</h4>
-                    <p>猎手、矿工、教练、验证器四大智能体协同工作</p>
+                    <h4>Мультиагентная система</h4>
+                    <p>Hunter, Miner, Coach и Validator работают вместе</p>
                 </div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">🔍</div>
                 <div class="feature-content">
-                    <h4>智能文献搜索</h4>
-                    <p>基于语义理解的精准文献检索</p>
+                    <h4>Умный поиск литературы</h4>
+                    <p>Семантический поиск релевантных публикаций</p>
                 </div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">📊</div>
                 <div class="feature-content">
-                    <h4>深度论文分析</h4>
-                    <p>多维度分析论文内容，提取关键信息</p>
+                    <h4>Глубокий анализ статей</h4>
+                    <p>Многомерный разбор и извлечение ключевых идей</p>
                 </div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">✍️</div>
                 <div class="feature-content">
-                    <h4>学术写作助手</h4>
-                    <p>AI辅助生成高质量的学术文档</p>
+                    <h4>Помощник по академическому письму</h4>
+                    <p>ИИ помогает создавать качественные научные тексты</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 注册模态框 -->
+<!-- Модальное окно регистрации -->
 <div id="register-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="modal-title">用户注册</h3>
+            <h3 class="modal-title">Регистрация</h3>
             <button class="modal-close" data-action="close-modal">&times;</button>
         </div>
         <div class="modal-body">
             <form class="register-form ajax-form" data-endpoint="/auth/register" data-method="POST" data-redirect="/">
                 <div class="form-group">
-                    <label class="form-label" for="reg-username">用户名</label>
-                    <input type="text" id="reg-username" name="username" class="form-control" placeholder="请输入用户名" required>
+                    <label class="form-label" for="reg-username">Имя пользователя</label>
+                    <input type="text" id="reg-username" name="username" class="form-control" placeholder="Введите имя пользователя" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="reg-email">邮箱地址</label>
-                    <input type="email" id="reg-email" name="email" class="form-control" placeholder="请输入邮箱地址" required>
+                    <label class="form-label" for="reg-email">Электронная почта</label>
+                    <input type="email" id="reg-email" name="email" class="form-control" placeholder="Введите email" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="reg-password">密码</label>
-                    <input type="password" id="reg-password" name="password" class="form-control" placeholder="请输入密码（至少6位）" required>
+                    <label class="form-label" for="reg-password">Пароль</label>
+                    <input type="password" id="reg-password" name="password" class="form-control" placeholder="Минимум 6 символов" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="reg-confirm-password">确认密码</label>
-                    <input type="password" id="reg-confirm-password" name="confirm_password" class="form-control" placeholder="请再次输入密码" required>
+                    <label class="form-label" for="reg-confirm-password">Подтвердите пароль</label>
+                    <input type="password" id="reg-confirm-password" name="confirm_password" class="form-control" placeholder="Повторите пароль" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="reg-fullname">姓名（可选）</label>
-                    <input type="text" id="reg-fullname" name="full_name" class="form-control" placeholder="请输入您的姓名">
+                    <label class="form-label" for="reg-fullname">Полное имя (необязательно)</label>
+                    <input type="text" id="reg-fullname" name="full_name" class="form-control" placeholder="Ваше имя">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="reg-institution">机构（可选）</label>
-                    <input type="text" id="reg-institution" name="institution" class="form-control" placeholder="请输入您的机构名称">
+                    <label class="form-label" for="reg-institution">Организация (необязательно)</label>
+                    <input type="text" id="reg-institution" name="institution" class="form-control" placeholder="Название организации">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="reg-field">研究领域（可选）</label>
+                    <label class="form-label" for="reg-field">Область исследований (необязательно)</label>
                     <select id="reg-field" name="research_field" class="form-select">
-                        <option value="">请选择研究领域</option>
-                        <option value="computer-science">计算机科学</option>
-                        <option value="artificial-intelligence">人工智能</option>
-                        <option value="machine-learning">机器学习</option>
-                        <option value="data-science">数据科学</option>
-                        <option value="biology">生物学</option>
-                        <option value="medicine">医学</option>
-                        <option value="physics">物理学</option>
-                        <option value="chemistry">化学</option>
-                        <option value="mathematics">数学</option>
-                        <option value="engineering">工程学</option>
-                        <option value="other">其他</option>
+                        <option value="">Выберите область</option>
+                        <option value="computer-science">Информатика</option>
+                        <option value="artificial-intelligence">Искусственный интеллект</option>
+                        <option value="machine-learning">Машинное обучение</option>
+                        <option value="data-science">Наука о данных</option>
+                        <option value="biology">Биология</option>
+                        <option value="medicine">Медицина</option>
+                        <option value="physics">Физика</option>
+                        <option value="chemistry">Химия</option>
+                        <option value="mathematics">Математика</option>
+                        <option value="engineering">Инженерия</option>
+                        <option value="other">Другое</option>
                     </select>
                 </div>
 
@@ -157,14 +157,14 @@
                     <label class="checkbox-label">
                         <input type="checkbox" name="agree_terms" required>
                         <span class="checkmark"></span>
-                        我同意 <a href="#" class="terms-link">服务条款</a> 和 <a href="#" class="privacy-link">隐私政策</a>
+                        Я принимаю <a href="#" class="terms-link">условия использования</a> и <a href="#" class="privacy-link">политику конфиденциальности</a>
                     </label>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline" data-action="close-modal">取消</button>
-            <button type="submit" form="register-form" class="btn btn-primary">注册</button>
+            <button type="button" class="btn btn-outline" data-action="close-modal">Отмена</button>
+            <button type="submit" form="register-form" class="btn btn-primary">Зарегистрироваться</button>
         </div>
     </div>
 </div>

@@ -10,7 +10,7 @@ from tools.data_analysis import create_data_analysis_registry
 
 
 if __name__ == "__main__":
-    # 清空 out 目录
+    # Очистка каталога out
     if os.path.exists("out"):
         shutil.rmtree("out")
     os.makedirs("out", exist_ok=True)
@@ -26,16 +26,16 @@ if __name__ == "__main__":
         max_steps=5
     )
 
-    question = "请开始分析"
+    question = "Начните анализ"
     try:
         plan_result = planning_agent.run(question)
-        print(f"任务规划: {plan_result}")
+        print(f"Планирование задач: {plan_result}")
     except Exception as e:
-        print(f"执行过程中出现错误: {e}")
+        print(f"Ошибка при выполнении: {e}")
 
-    # 检查 plan_result 是否符合 python 列表格式
+    # Проверка, что plan_result — список Python
     if not isinstance(plan_result, list):
-        print("错误：任务规划结果格式不正确，预期为Python列表。")
+        print("Ошибка: результат планирования имеет неверный формат, ожидается список Python.")
         exit(1)
 
     registry = create_data_analysis_registry()
@@ -50,15 +50,15 @@ if __name__ == "__main__":
     task_result = []
 
     for task in plan_result:
-        print(f"执行任务: {task}")
+        print(f"Выполнение задачи: {task}")
         try:
             answer = analysis_agent.run(task)
             task_result.append({ "task": task, "result": answer })
-            print(f"任务结果: {answer}")
+            print(f"Результат задачи: {answer}")
         except Exception as e:
-            print(f"执行过程中出现错误: {e}")
+            print(f"Ошибка при выполнении: {e}")
 
-    print(f"\n所有任务结果: {task_result}")
+    print(f"\nРезультаты всех задач: {task_result}")
 
     report_agent = SimpleAgent(
         name="ReportAgent",
@@ -69,14 +69,14 @@ if __name__ == "__main__":
 
     final_result = report_agent.run(json.dumps(task_result, ensure_ascii=False))
 
-    # 清理报告内容，确保以"# 执行摘要"开头
-    if "# 执行摘要" in final_result:
-        start_idx = final_result.find("# 执行摘要")
+    # Очистка отчёта: начинать с "# Резюме"
+    if "# Резюме" in final_result:
+        start_idx = final_result.find("# Резюме")
         final_result = final_result[start_idx:]
 
-    print(f"\n最终分析报告: \n{final_result}")
+    print(f"\nИтоговый аналитический отчёт: \n{final_result}")
 
-    # 保存报告到文件
+    # Сохранение отчёта в файл
     os.makedirs("out", exist_ok=True)
     with open("out/analysis_report.md", "w", encoding="utf-8") as f:
         f.write(final_result)

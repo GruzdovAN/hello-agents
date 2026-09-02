@@ -1,4 +1,4 @@
-"""数据模型定义"""
+"""Определения моделей данных"""
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
@@ -6,37 +6,37 @@ from enum import Enum
 
 
 class ContentLevel(Enum):
-    """内容层级"""
-    TOPIC = 1      # 子话题层级
-    SECTION = 2    # 小节层级
-    DETAIL = 3     # 细节层级
+    """Уровень контента"""
+    TOPIC = 1      # уровень подтемы
+    SECTION = 2    # уровень секции
+    DETAIL = 3     # уровень деталей
 
 
 @dataclass
 class ContentNode:
-    """内容树节点"""
-    id: str                                    # 节点唯一标识
-    title: str                                 # 节点标题
-    level: ContentLevel                        # 内容层级
-    description: str                           # 节点描述
-    content: Optional[str] = None              # 实际内容（markdown）
-    children: List['ContentNode'] = field(default_factory=list)  # 子节点列表
-    metadata: Dict[str, Any] = field(default_factory=dict)       # 元数据
-    revision_history: List[Dict[str, Any]] = field(default_factory=list)  # 修改历史
+    """Узел дерева контента"""
+    id: str                                    # уникальный ID узла
+    title: str                                 # заголовок узла
+    level: ContentLevel                        # уровень контента
+    description: str                           # описание узла
+    content: Optional[str] = None              # контент (markdown)
+    children: List['ContentNode'] = field(default_factory=list)  # дочерние узлы
+    metadata: Dict[str, Any] = field(default_factory=dict)       # метаданные
+    revision_history: List[Dict[str, Any]] = field(default_factory=list)  # история правок
     
     def add_child(self, child: 'ContentNode'):
-        """添加子节点"""
+        """Добавить дочерний узел"""
         self.children.append(child)
     
     def get_all_nodes(self) -> List['ContentNode']:
-        """获取所有节点（深度优先）"""
+        """Все узлы (DFS)"""
         nodes = [self]
         for child in self.children:
             nodes.extend(child.get_all_nodes())
         return nodes
     
     def count_words(self) -> int:
-        """统计节点及其子节点的总字数"""
+        """Сумма слов узла и детей"""
         total = len(self.content) if self.content else 0
         for child in self.children:
             total += child.count_words()
@@ -45,22 +45,22 @@ class ContentNode:
 
 @dataclass  
 class ReviewResult:
-    """评审结果"""
-    score: int                                 # 总分 (0-100)
-    grade: str                                 # 评级（优秀/良好/需改进/不合格）
-    dimension_scores: Dict[str, int]           # 各维度得分
-    detailed_feedback: Dict[str, Any]          # 详细反馈
-    revision_plan: Dict[str, Any]              # 修改计划
-    needs_revision: bool                       # 是否需要修改
-    estimated_effort: str = ""                 # 预估修改工作量
-    reviewer_notes: str = ""                   # 评审者备注
+    """Результат ревью"""
+    score: int                                 # сумма (0-100)
+    grade: str                                 # оценка
+    dimension_scores: Dict[str, int]           # баллы по измерениям
+    detailed_feedback: Dict[str, Any]          # детальная обратная связь
+    revision_plan: Dict[str, Any]              # план правок
+    needs_revision: bool                       # нужна ли правка
+    estimated_effort: str = ""                 # оценка трудозатрат
+    reviewer_notes: str = ""                   # заметки ревьюера
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ReviewResult':
-        """从字典创建评审结果"""
+        """Создать ReviewResult из dict"""
         return cls(
             score=data.get('score', 0),
-            grade=data.get('grade', '未知'),
+            grade=data.get('grade', 'неизвестно'),
             dimension_scores=data.get('dimension_scores', {}),
             detailed_feedback=data.get('detailed_feedback', {}),
             revision_plan=data.get('revision_plan', {}),
@@ -72,15 +72,15 @@ class ReviewResult:
 
 @dataclass
 class ColumnPlan:
-    """专栏规划"""
-    column_title: str                          # 专栏标题
-    column_description: str                    # 专栏描述
-    target_audience: str                       # 目标读者
-    topics: List[Dict[str, Any]]               # 子话题列表
+    """План колонки"""
+    column_title: str                          # заголовок колонки
+    column_description: str                    # описание колонки
+    target_audience: str                       # целевая аудитория
+    topics: List[Dict[str, Any]]               # список подтем
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ColumnPlan':
-        """从字典创建专栏规划"""
+        """Создать ColumnPlan из dict"""
         return cls(
             column_title=data.get('column_title', ''),
             column_description=data.get('column_description', ''),
@@ -89,15 +89,14 @@ class ColumnPlan:
         )
     
     def get_topic_count(self) -> int:
-        """获取话题数量"""
+        """Число подтем"""
         return len(self.topics)
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典（用于缓存）"""
+        """Преобразовать в dict (кэш)"""
         return {
             'column_title': self.column_title,
             'column_description': self.column_description,
             'target_audience': self.target_audience,
             'topics': self.topics
         }
-

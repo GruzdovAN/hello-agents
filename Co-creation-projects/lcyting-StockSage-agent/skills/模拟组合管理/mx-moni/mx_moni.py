@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# mx_moni - 妙想模拟组合管理技能
+# mx_moni — Замечательные навыки управления комбинациями симуляций.
 
 import os
 import sys
@@ -8,7 +8,7 @@ import re
 import requests
 from typing import Dict, Any, Optional, Tuple
 
-# 加载环境变量
+#Загрузить переменные среды
 MX_APIKEY = os.environ.get('MX_APIKEY')
 MX_API_URL = os.environ.get('MX_API_URL', 'https://mkapi2.dfcfs.com/finskillshub')
 OUTPUT_DIR = '/root/.openclaw/workspace/mx_data/output'
@@ -18,12 +18,12 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 def check_apikey() -> None:
     """检查API密钥是否配置"""
     if not MX_APIKEY:
-        print("错误: 未配置MX_APIKEY环境变量，请先配置API密钥")
+print("Ошибка: переменная среды MX_APIKEY не настроена, сначала настройте ключ API")
         print("示例: export MX_APIKEY=your_api_key_here")
         sys.exit(1)
 
 def make_request(endpoint: str, body: Dict[str, Any], output_prefix: str) -> None:
-    """发送POST请求并保存结果"""
+"""Отправьте POST-запрос и сохраните результат"""
     check_apikey()
     full_url = f"{MX_API_URL}{endpoint}"
     headers = {
@@ -40,52 +40,52 @@ def make_request(endpoint: str, body: Dict[str, Any], output_prefix: str) -> Non
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         
-        print(f"请求完成，结果保存在 {output_path}")
+print(f"Запрос выполнен, результат сохранен в {output_path}")
         
-        # 打印结果摘要
+#Распечатать сводку результатов
         if result.get('success') or str(result.get('code')) == '200':
-            print("\n操作结果: 成功")
+print("\nРезультат операции: Успех")
             if 'message' in result:
                 print(f"提示信息: {result['message']}")
             if 'data' in result and isinstance(result['data'], dict):
                 data = result['data']
                 if 'totalAssets' in data:
-                    print(f"\n账户资金:")
+print(f"\nСредства на счете:")
                     print(f"  总资产: {data['totalAssets']:.2f} 元")
                     print(f"  可用资金: {data['availBalance']:.2f} 元")
                 if 'orderId' in data:
-                    print(f"\n委托成功:")
+print(f"\nДелегирование успешно:")
                     print(f"  委托编号: {data['orderId']}")
         else:
-            print(f"\n操作结果: 失败")
-            print(f"错误码: {result.get('code')}")
+print(f"\nРезультат операции: не удалось")
+print(f"Код ошибки: {result.get('code')}")
             print(f"错误信息: {result.get('message')}")
     except Exception as e:
-        print(f"网络请求失败: {str(e)}")
+print(f"Ошибка сетевого запроса: {str(e)}")
         sys.exit(1)
 
 def parse_buy_sell(query: str) -> Tuple[Optional[str], Optional[float], Optional[int], bool]:
-    """解析买入卖出命令，返回(股票代码, 价格, 数量, 是否市价)"""
-    # 提取6位股票代码
+"""Разбор ордеров на покупку и продажу и возврат (код акции, цена, количество, рыночная цена или нет)"""
+# Извлечь 6-значный биржевой код
     code_match = re.search(r'(\d{6})', query)
     if not code_match:
         return None, None, None, False
     stock_code = code_match.group(1)
     
-    # 提取数量（单位：股，必须是100倍数）
+# Сумма вывода (единица измерения: доля, должна быть кратна 100)
     quantity_match = re.search(r'(\d+)\s*(股|手)', query)
     quantity = None
     if quantity_match:
         qty = int(quantity_match.group(1))
-        if quantity_match.group(2) == '手':
+if Quantity_match.group(2) == '手':
             qty = qty * 100
         quantity = qty
     
-    # 检查是否市价委托
-    is_market = any(word in query for word in ['市价', '市价买入', '市价卖出', '现价买入', '现价卖出'])
+# Проверяем, сделан ли рыночный ордер
+is_market = Any(слово в запросе для слова в ['рыночная цена', 'покупка по рыночной цене', 'продажа по рыночной цене', 'покупка по текущей цене', 'продажа по текущей цене'])
     
-    # 提取价格
-    price_match = re.search(r'(\d+\.?\d*)\s*元', query) if not is_market else None
+#Извлечь цену
+Price_match = re.search(r'(\d+\.?\d*)\s*元', query), если не is_market, иначе Нет
     price = None
     if price_match and not is_market:
         price = float(price_match.group(1))
@@ -93,22 +93,22 @@ def parse_buy_sell(query: str) -> Tuple[Optional[str], Optional[float], Optional
         # 尝试找任意数字作为价格
         price_candidates = re.findall(r'\d+\.?\d*', query)
         for candidate in price_candidates:
-            if len(candidate) != 6:  # 排除股票代码
+if len(candidate) != 6: # Исключить коды акций
                 price = float(candidate)
                 break
     
     return stock_code, price, quantity, is_market
 
 def parse_cancel(query: str) -> Tuple[Optional[str], Optional[str], bool]:
-    """解析撤单命令，返回(委托编号, 股票代码, 是否全部撤单)"""
+"""Разобрать команду отмены заказа и вернуть (номер заказа, код акции, отменить ли все заказы)"""
     if any(word in query for word in ['全部', '所有', '一键撤单']):
         return None, None, True
     
-    # 提取委托编号
+#Извлекаем номер заказа
     order_id_match = re.search(r'(\d{16,20})', query)
     order_id = order_id_match.group(1) if order_id_match else None
     
-    # 提取股票代码
+#Извлекаем биржевой код
     code_match = re.search(r'(\d{6})', query)
     stock_code = code_match.group(1) if code_match else None
     
@@ -116,7 +116,7 @@ def parse_cancel(query: str) -> Tuple[Optional[str], Optional[str], bool]:
 
 def main():
     if len(sys.argv) < 2:
-        print("请提供操作指令，例如：")
+print("Пожалуйста, предоставьте инструкции по эксплуатации, например:")
         print("  python mx_moni.py 我的持仓      # 查询持仓")
         print("  python mx_moni.py 我的资金      # 查询资金")
         print("  python mx_moni.py 我的委托      # 查询委托订单")
@@ -124,13 +124,13 @@ def main():
         print("  python mx_moni.py 市价买入 600519 100 股")
         print("  python mx_moni.py 卖出 600519 价格 1750 数量 100 股")
         print("  python mx_moni.py 撤单 123456789012345678")
-        print("  python mx_moni.py 一键撤单")
+print("python mx_moni.py отмена заказа в один клик")
         sys.exit(1)
     
     query = ' '.join(sys.argv[1:])
     output_prefix = f"mx_moni_{query.replace(' ', '_')}"
     
-    # 根据意图识别调用不同接口
+# Вызов различных интерфейсов на основе идентификации намерения
     if any(word in query for word in ['持仓', '我的持仓', '持仓情况']):
         make_request('/api/claw/mockTrading/positions', {'moneyUnit': 1}, output_prefix)
     elif any(word in query for word in ['资金', '我的资金', '账户余额', '资金情况']):
@@ -145,10 +145,10 @@ def main():
             print("示例: python mx_moni.py 市价买入 600519 100 股")
             sys.exit(1)
         if not is_market and price is None:
-            print("错误: 限价买入需要提供价格，或使用市价买入")
+print("Ошибка: для лимитной покупки требуется цена или используйте рыночную покупку")
             sys.exit(1)
         if quantity % 100 != 0:
-            print("错误: 委托数量必须为100的整数倍")
+print("Ошибка: количество заказов должно быть целым кратным 100")
             sys.exit(1)
         
         body = {
@@ -165,14 +165,14 @@ def main():
         stock_code, price, quantity, is_market = parse_buy_sell(query)
         if not stock_code or not quantity:
             print("错误: 无法解析卖出指令，请确保包含股票代码(6位)和数量(100的整数倍)")
-            print("示例: python mx_moni.py 卖出 600519 价格 1750 数量 100 股")
+print("Пример: python mx_moni.py продать 600519 цена 1750 количество 100 акций")
             print("示例: python mx_moni.py 市价卖出 600519 100 股")
             sys.exit(1)
         if not is_market and price is None:
-            print("错误: 限价卖出需要提供价格，或使用市价卖出")
+print("Ошибка: вам необходимо указать цену для продажи по лимитной цене или использовать рыночную цену для продажи")
             sys.exit(1)
         if quantity % 100 != 0:
-            print("错误: 委托数量必须为100的整数倍")
+print("Ошибка: количество заказов должно быть целым кратным 100")
             sys.exit(1)
         
         body = {
@@ -204,13 +204,13 @@ def main():
                 body['stockCode'] = stock_code
             make_request('/api/claw/mockTrading/cancel', body, output_prefix)
     else:
-        print("无法识别意图，请使用以下操作之一：")
-        print("  持仓查询: 我的持仓 / 查询持仓")
-        print("  资金查询: 我的资金 / 查询资金")
-        print("  委托查询: 我的委托 / 查询委托")
+print("Невозможно распознать намерение, используйте одно из следующих действий:")
+print("Запрос позиции: Моя позиция/Позиция запроса")
+print("Запрос фонда: Мои средства / Запрос средств")
+print("Запрос делегирования: мое делегирование/запрос делегирования")
         print("  买入操作: 买入 [股票代码] [价格] [数量] 股 / 市价买入 [股票代码] [数量] 股")
         print("  卖出操作: 卖出 [股票代码] [价格] [数量] 股 / 市价卖出 [股票代码] [数量] 股")
-        print("  撤单操作: 撤单 [委托编号] / 一键撤单")
+print("Операция отмены: Отменить [номер заказа] / Отменить заказ одним щелчком мыши")
         sys.exit(1)
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""AI 数据分析流式 API — 实现方案约定路径"""
+"""API потокового анализа данных AI — согласованный путь решения"""
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse

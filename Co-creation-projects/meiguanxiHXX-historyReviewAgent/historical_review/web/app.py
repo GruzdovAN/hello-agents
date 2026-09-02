@@ -1,4 +1,4 @@
-"""史观交锋 Web：提供静态页与辩论 API。"""
+"""Веб «Столкновение исторических взглядов»: статика и API дебатов."""
 
 from __future__ import annotations
 
@@ -37,11 +37,11 @@ if _STATIC.is_dir():
 
 class DebateRequest(BaseModel):
     topic: str = Field(..., min_length=1, max_length=8000)
-    api_key: str | None = Field(None, description="OpenRouter 等 API Key，可空则用服务端环境变量")
-    base_url: str | None = Field(None, description="OpenAI 兼容 Base URL")
-    model: str | None = Field(None, description="模型 ID，如 openai/gpt-4o-mini")
+api_key: ул | Нет = Поле(Нет, описание="Ключ API, например OpenRouter, если пусто, используйте переменные среды сервера")
+base_url: ул | Нет = Поле (Нет, описание = «Базовый URL-адрес OpenAI 兼容»)
+модель: ул | Нет = Поле(Нет, описание="Идентификатор модели, например openai/gpt-4o-mini")
     max_tokens: int | None = Field(4096, ge=256, le=128000)
-    timeout: int | None = Field(180, ge=30, le=600, description="单次 HTTP 请求超时秒数")
+тайм-аут: int | Нет = Поле(180, ge=30, le=600, описание="Тайм-аут одного HTTP-запроса, секунды")
     debate_temperature: float = Field(0.72, ge=0.0, le=2.0)
     synthesizer_temperature: float = Field(0.22, ge=0.0, le=2.0)
     use_evidence_bundle: bool = True
@@ -56,7 +56,7 @@ class DebateResponse(BaseModel):
 def _api_key_error(req: DebateRequest) -> str | None:
     has_key = bool(req.api_key and req.api_key.strip())
     if not has_key and not (os.getenv("OPENROUTER_API_KEY") or os.getenv("LLM_API_KEY")):
-        return "未配置 API Key：请在左侧填写 OpenRouter Key，或在服务器 .env 中设置 OPENROUTER_API_KEY。"
+return «Не использовать ключ API: введите ключ OpenRouter слева или установите OPENROUTER_API_KEY в файле .env сервера».
     return None
 
 
@@ -64,7 +64,7 @@ def _api_key_error(req: DebateRequest) -> str | None:
 async def index_page() -> FileResponse:
     html = _STATIC / "index.html"
     if not html.is_file():
-        raise HTTPException(status_code=500, detail="前端文件缺失，请检查 historical_review/web/static/")
+поднять HTTPException(status_code=500, Detail="Файл внешнего интерфейса отсутствует, проверьте исторический_ревю/веб/статический/")
     return FileResponse(html)
 
 
@@ -77,7 +77,7 @@ async def health() -> dict[str, str]:
 async def run_debate(req: DebateRequest) -> DebateResponse:
     topic = req.topic.strip()
     if not topic:
-        raise HTTPException(status_code=400, detail="议题不能为空")
+raise HTTPException(status_code=400, detail="议题не может быть пустым")
 
     key_err = _api_key_error(req)
     if key_err:
@@ -104,7 +104,7 @@ async def run_debate(req: DebateRequest) -> DebateResponse:
                 timeout=900.0,
             )
     except asyncio.TimeoutError:
-        return DebateResponse(ok=False, error="任务超时（>15 分钟），请换小议题或提高超时/换更快模型。")
+return DebateResponse(ok=False, error="Таймаут задачи (>15 минут), пожалуйста, измените тему на меньшую или увеличьте таймаут/перейдите на более быструю модель.")
     except Exception as e:  # pragma: no cover
         return DebateResponse(ok=False, error=f"{type(e).__name__}: {e}")
 
@@ -120,7 +120,7 @@ def debate_stream(req: DebateRequest) -> StreamingResponse:
         def err_only():
             import json
 
-            yield f"data: {json.dumps({'event': 'error', 'message': '议题不能为空'}, ensure_ascii=False)}\n\n".encode(
+yield f"data: {json.dumps({'event': 'error', 'message': '议题не может быть пустым'}, ensure_ascii=False)}\n\n".encode(
                 "utf-8"
             )
 

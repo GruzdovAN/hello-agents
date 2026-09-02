@@ -7,25 +7,25 @@ class TextComfortTool(BaseTool):
     def __init__(self):
         super().__init__(
             name="text_comfort_tool",
-            description="提供安抚要点，LLM 负责生成自然语言"
+            description="Предоставляет ключевые пункты успокоения; LLM формирует естественный текст"
         )
         self.name = "text_comfort_tool"
-        self.description = "提供安抚要点，LLM 负责生成自然语言"
+        self.description = "Предоставляет ключевые пункты успокоения; LLM формирует естественный текст"
 
     def get_parameters(self):
         return {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "用户输入"}
+                "query": {"type": "string", "description": "Ввод пользователя"}
             },
             "required": ["query"]
         }
 
     def run(self, query: str) -> str:
         return (
-            "安抚要点：\n"
-            "1. 共情：承认情绪存在\n"
-            "2. 允许停顿：不用强迫自己立刻变好\n"
-            "3. 小动作：深呼吸、短暂休息、听轻音乐\n"
-            "4. 若持续困扰，建议升级到 SleepAgent"
+            "Ключевые пункты успокоения:\n"
+            "1. Эмпатия: признать, что эмоции существуют\n"
+            "2. Разрешить паузу: не нужно сразу чувствовать себя лучше\n"
+            "3. Маленькие действия: глубокое дыхание, короткий отдых, лёгкая музыка\n"
+            "4. При продолжающихся трудностях — эскалация к SleepAgent"
         )

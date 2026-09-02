@@ -1,5 +1,5 @@
 # specialist/quiz_generator.py
-"""测验生成器 - 根据学习计划生成测验题"""
+"""Генератор викторин - создание вопросов викторины на основе учебного плана"""
 
 import json
 from typing import List, Union
@@ -8,20 +8,20 @@ from hello_agents import HelloAgentsLLM
 
 class QuizGeneratorAgent:
     """
-    测验生成 Agent
+Агент генерации тестов
 
-    功能：
-    - 基于学习计划生成问题
-    - 支持不同难度级别（easy/medium/hard 或 0.0-1.0）
-    - 生成单个或多个问题
+Функция:
+- Генерировать вопросы на основе плана исследования
+- Поддерживает различные уровни сложности (легкий/средний/сложный или 0,0–1,0).
+- Генерация одного или нескольких вопросов
     """
 
     def __init__(self, llm: HelloAgentsLLM):
         """
-        初始化 QuizGeneratorAgent
+Инициализация QuizGeneratorAgent
 
         Args:
-            llm: HelloAgentsLLM 实例
+llm: экземпляр HelloAgentsLLM
         """
         self.llm = llm
 
@@ -29,30 +29,30 @@ class QuizGeneratorAgent:
         self, plan: str, difficulty: Union[str, float] = "medium"
     ) -> str:
         """
-        生成单个问题
+Создать один вопрос
 
         Args:
-            plan: 学习计划内容
-            difficulty: 难度级别
+план: содержание плана обучения
+сложность: уровень сложности
                 - str: "easy", "medium", "hard"
                 - float: 0.0-1.0（0.0=最简单，1.0=最难）
 
         Returns:
-            生成的问题文本
+Сгенерированный текст вопроса
         """
-        # 转换难度级别
+# Конвертируем уровень сложности
         difficulty_level = self._normalize_difficulty(difficulty)
 
-        # 构建提示词
+# Составьте слова-подсказки
         user_prompt = f"""请基于以下学习计划，生成一个{difficulty_level}难度的问题：
 
-【学习计划】
+【План обучения】
 {plan[:2000]}
 
-要求：
-1. 问题应该清晰、具体
-2. 难度符合 {difficulty_level} 级别
-3. 直接返回问题，不需要额外说明
+Требовать:
+1. Вопросы должны быть ясными и конкретными.
+2. Сложность соответствует {difficulty_level}.
+3. Возврат к вопросу напрямую без дополнительных пояснений.
 """
 
         messages = [
@@ -67,7 +67,7 @@ class QuizGeneratorAgent:
             response = self.llm.invoke(messages)
             return response.strip()
         except Exception as e:
-            # 降级：返回默认问题
+# Понижение версии: возврат к вопросу по умолчанию
             return f"请简要描述你从学习计划中学到的核心内容（难度：{difficulty_level}）"
 
     def generate_questions(
@@ -77,22 +77,22 @@ class QuizGeneratorAgent:
         difficulty: Union[str, float] = "medium",
     ) -> List[str]:
         """
-        生成多个问题
+Создать несколько вопросов
 
         Args:
-            plan: 学习计划内容
-            count: 问题数量
-            difficulty: 难度级别
+план: содержание плана обучения
+count: количество вопросов
+сложность: уровень сложности
 
         Returns:
-            问题列表
+Список вопросов
         """
         questions = []
 
         for i in range(count):
-            # 稍微调整每个问题的难度，增加多样性
+# Немного отрегулируйте сложность каждого вопроса, чтобы увеличить разнообразие
             if isinstance(difficulty, float):
-                # 在基础难度上浮动 ±0.1
+# Плавающее ±0,1 от базовой сложности.
                 adjusted_difficulty = max(0.0, min(1.0, difficulty + (i - 1) * 0.1))
             else:
                 adjusted_difficulty = difficulty
@@ -104,26 +104,26 @@ class QuizGeneratorAgent:
 
     def _normalize_difficulty(self, difficulty: Union[str, float]) -> str:
         """
-        标准化难度级别
+Стандартизированный уровень сложности
 
         Args:
-            difficulty: 难度（str 或 float）
+сложность: сложность (str или float)
 
         Returns:
-            标准化的难度描述
+Стандартизированное описание сложности
         """
         if isinstance(difficulty, float):
             if difficulty < 0.3:
-                return "简单"
+вернуть «простой»
             elif difficulty < 0.7:
-                return "中等"
+вернуть «средний»
             else:
-                return "困难"
+вернуть «сложность»
         else:
-            # 映射字符串到中文
+#Сопоставить строку с китайским языком
             mapping = {
-                "easy": "简单",
-                "medium": "中等",
-                "hard": "困难",
+"легко": "легко",
+«средний»: «средний»,
+«сложный»: «сложность»,
             }
             return mapping.get(difficulty.lower(), "中等")

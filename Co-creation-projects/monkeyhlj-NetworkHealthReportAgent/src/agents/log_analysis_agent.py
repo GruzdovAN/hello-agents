@@ -9,8 +9,8 @@ from src.agents.base import BaseNetworkAgent
 class LogAnalysisAgent(BaseNetworkAgent):
     def __init__(self) -> None:
         prompt = (
-            "你是网络日志分析Agent。请调用network_data工具读取日志，"
-            "输出关键告警、根因线索和风险等级。"
+            "Ты агент анализа сетевых логов. Вызови network_data для чтения логов; "
+            "выдай ключевые алерты, зацепки для root cause и уровень риска."
         )
         super().__init__(name="LogAnalysisAgent", system_prompt=prompt)
 
@@ -21,7 +21,7 @@ class LogAnalysisAgent(BaseNetworkAgent):
                 "critical_events": 0,
                 "warning_events": 0,
                 "top_event_types": [],
-                "summary": "未发现日志事件，建议确认日志采集链路。",
+                "summary": "Событий в логах не найдено; проверьте цепочку сбора логов.",
             }
 
         severity_counter = Counter(log["severity"] for log in logs)
@@ -41,7 +41,7 @@ class LogAnalysisAgent(BaseNetworkAgent):
             "top_event_types": top_types,
             "risk": risk,
             "summary": (
-                f"最近日志共{len(logs)}条，critical={severity_counter.get('critical', 0)}，"
-                f"warning={severity_counter.get('warning', 0)}。"
+                f"Недавних записей: {len(logs)}, critical={severity_counter.get('critical', 0)}, "
+                f"warning={severity_counter.get('warning', 0)}."
             ),
         }

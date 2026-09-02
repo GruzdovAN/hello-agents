@@ -115,15 +115,15 @@ async function startProduction() {
   taskProgress.completed = 0;
   taskProgress.total = 0;
   progressPercent.value = 2;
-  currentStatusMessage.value = "正在初始化...";
+  currentStatusMessage.value = "Инициализация...";
   reportReady.value = false;
   podcastReady.value = false;
 
   abortController = new AbortController();
   startWaitingAnimation();
 
-  addLog("🚀 启动 DeepCast 制作流程...");
-  addLog(`📌 主题: ${form.topic}`);
+  addLog("🚀 Запуск DeepCast...");
+  addLog(`📌 Тема: ${form.topic}`);
 
   try {
     await runResearchStream(
@@ -133,9 +133,9 @@ async function startProduction() {
     );
   } catch (err: any) {
     if (err.name === "AbortError" || err.message?.includes("aborted")) {
-      addLog("🛑 制作已取消。");
+      addLog("🛑 Создание отменено.");
     } else {
-      addLog(`❌ 错误: ${err.message || err}`);
+      addLog(`❌ Ошибка: ${err.message || err}`);
       console.error(err);
     }
   } finally {
@@ -155,7 +155,7 @@ function handleStreamEvent(event: ResearchStreamEvent) {
     if (ttsMatch) {
       audioProgress.current = parseInt(ttsMatch[1], 10);
       audioProgress.total = parseInt(ttsMatch[2], 10);
-      currentStatusMessage.value = `音频生成: ${audioProgress.current}/${audioProgress.total}`;
+      currentStatusMessage.value = `Генерация аудио: ${audioProgress.current}/${audioProgress.total}`;
     }
     return;
   }
@@ -215,25 +215,25 @@ function handleStreamEvent(event: ResearchStreamEvent) {
   if (event.type === "final_report") {
     reportMarkdown.value = String((event as any).report);
     reportReady.value = true;
-    addLog("📄 [REPORT] 报告已生成");
+    addLog("📄 [REPORT] Отчёт сгенерирован");
   }
 
   if (event.type === "podcast_script") {
     productionStage.value = "audio";
-    addLog("🎙️ [SCRIPT] 剧本已生成");
+    addLog("🎙️ [SCRIPT] Сценарий готов");
   }
 
   if (event.type === "audio_start") {
     const p = event as any;
     audioProgress.total = p.total || 0;
-    addLog(`🎵 [AUDIO] 开始生成音频, 共 ${audioProgress.total} 段`);
+    addLog(`🎵 [AUDIO] Начало генерации аудио, всего ${audioProgress.total} сегм.`);
   }
 
   if (event.type === "audio_progress") {
     const p = event as any;
     audioProgress.current = p.current;
     audioProgress.total = p.total;
-    currentStatusMessage.value = `生成音频: ${p.role} (${p.current}/${p.total})`;
+    currentStatusMessage.value = `Генерация аудио: ${p.role} (${p.current}/${p.total})`;
     if (p.total > 0) {
       progressPercent.value = 70 + Math.round((p.current / p.total) * 25);
     }
@@ -248,23 +248,23 @@ function handleStreamEvent(event: ResearchStreamEvent) {
       podcastReady.value = true;
       productionStage.value = "done";
       progressPercent.value = 100;
-      currentStatusMessage.value = "🎉 播客制作完成！";
+      currentStatusMessage.value = "🎉 Подкаст готов!";
       stopWaitingAnimation();
-      addLog(`🎉 [PODCAST] 制作完成: ${filename}`);
+      addLog(`🎉 [PODCAST] Готово: ${filename}`);
     }
   }
 
   if (event.type === "cancelled") {
-    const msg = (event as any).message || "研究任务已取消";
+    const msg = (event as any).message || "Исследование отменено";
     addLog(`🛑 [CANCELLED] ${msg}`);
     stopWaitingAnimation();
     productionStage.value = "cancelled";
-    currentStatusMessage.value = "任务已取消";
+    currentStatusMessage.value = "Задача отменена";
     return;
   }
 
   if (event.type === "done") {
-    addLog("✅ [DONE] 所有任务结束");
+    addLog("✅ [DONE] Все задачи завершены");
     stopWaitingAnimation();
     productionStage.value = "done";
     progressPercent.value = 100;
@@ -277,28 +277,28 @@ function handleStreamEvent(event: ResearchStreamEvent) {
           if (data.file) {
             audioUrl.value = `${baseUrl}${data.url}`;
             podcastReady.value = true;
-            currentStatusMessage.value = "🎉 播客制作完成！";
-            addLog(`🎉 [PODCAST] 找到音频文件: ${data.file}`);
+            currentStatusMessage.value = "🎉 Подкаст готов!";
+            addLog(`🎉 [PODCAST] Найден аудиофайл: ${data.file}`);
           } else {
-            currentStatusMessage.value = "任务完成（音频未生成）";
-            addLog(`⚠️ 未找到音频文件: ${data.error || "未知错误"}`);
+            currentStatusMessage.value = "Задача завершена (аудио не создано)";
+            addLog(`⚠️ Аудиофайл не найден: ${data.error || "неизвестная ошибка"}`);
           }
         })
         .catch(err => {
-          currentStatusMessage.value = "任务完成（无法获取音频）";
-          addLog(`⚠️ 获取音频文件失败: ${err.message}`);
+          currentStatusMessage.value = "Задача завершена (аудио недоступно)";
+          addLog(`⚠️ Не удалось получить аудио: ${err.message}`);
         });
     } else if (podcastReady.value) {
-      currentStatusMessage.value = "🎉 播客制作完成！";
+      currentStatusMessage.value = "🎉 Подкаст готов!";
     } else {
-      currentStatusMessage.value = "任务完成（音频可能未生成）";
+      currentStatusMessage.value = "Задача завершена (аудио могло не создаться)";
     }
   }
 }
 
 function cancelProduction() {
-  if (confirm("确定要取消制作吗？")) {
-    addLog("🛑 用户请求取消制作...");
+  if (confirm("Отменить создание?")) {
+    addLog("🛑 Запрос на отмену...");
 
     // 1. 立即中断 SSE 连接 — 后端 monitor_disconnect 会自动检测并设置 cancel_event
     if (abortController) {
@@ -311,7 +311,7 @@ function cancelProduction() {
 
     stopWaitingAnimation();
     productionStage.value = "cancelled";
-    addLog("🛑 已取消制作");
+    addLog("🛑 Создание отменено");
 
     setTimeout(() => {
       currentView.value = "setup";
@@ -336,7 +336,7 @@ function downloadReport() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "DeepCast深度研究报告.md";
+  a.download = "DeepCast-research-report.md";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

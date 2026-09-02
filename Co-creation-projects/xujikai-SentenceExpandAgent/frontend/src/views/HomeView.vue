@@ -7,12 +7,12 @@
     <!-- 种子句输入区 -->
     <SeedInput v-if="!sessionStore.session" @start="handleStart" />
 
-    <!-- 手动模式 -->
+    <!-- Ручной режим -->
     <div v-else-if="sessionStore.mode === 'manual'" class="manual-mode">
       <div class="session-header">
-        <h2>手动模式</h2>
-        <p class="seed-display">原始句子：{{ sessionStore.seedSentence }}</p>
-        <button class="reset-btn" @click="handleReset">重新开始</button>
+        <h2>Ручной режим</h2>
+        <p class="seed-display">Исходное предложение: {{ sessionStore.seedSentence }}</p>
+        <button class="reset-btn" @click="handleReset">Начать заново</button>
       </div>
 
       <!-- 消息列表区域 -->
@@ -27,7 +27,7 @@
           :expanded-sentence="msg.expandedSentence"
         />
 
-        <!-- 最终结果 -->
+        <!-- 最终Результат -->
         <FinalResult
           v-if="sessionStore.isDone && sessionStore.finalPolished"
           :seed-sentence="sessionStore.seedSentence"
@@ -44,12 +44,12 @@
       </div>
     </div>
 
-    <!-- 自动模式 -->
+    <!-- Автоматический режим -->
     <div v-else-if="sessionStore.mode === 'auto'" class="auto-mode">
       <div class="session-header">
-        <h2>自动模式</h2>
-        <p class="seed-display">原始句子：{{ sessionStore.seedSentence }}</p>
-        <button class="reset-btn" @click="handleReset">重新开始</button>
+        <h2>Автоматический режим</h2>
+        <p class="seed-display">Исходное предложение: {{ sessionStore.seedSentence }}</p>
+        <button class="reset-btn" @click="handleReset">Начать заново</button>
       </div>
 
       <!-- 消息列表区域 -->
@@ -70,7 +70,7 @@
           <p>{{ loadingText }}</p>
         </div>
 
-        <!-- 最终结果 -->
+        <!-- 最终Результат -->
         <FinalResult
           v-if="sessionStore.isDone && sessionStore.finalPolished"
           :seed-sentence="sessionStore.seedSentence"
@@ -95,16 +95,16 @@ import MessageItem from '../components/MessageItem.vue';
 
 const sessionStore = useSessionStore();
 
-// 手动模式状态
+// Ручной режимСтатус
 const currentUserMessage = ref<string | null>(null);
 const isThinking = ref(false);
 const messageListContainer = ref<HTMLElement | null>(null);
 
-// 自动模式状态
+// Автоматический режимСтатус
 const autoLoading = ref(false);
-const loadingText = ref('正在思考...');
+const loadingText = ref('Думаю...');
 const autoMessageListContainer = ref<HTMLElement | null>(null);
-// 用于存储当前正在显示的临时消息（还未保存到 rounds 的）
+// 用于存储当前正在显示的临时消息（还未Сохранить到 rounds 的）
 const autoTempMessages = ref<Array<{
   type: 'question' | 'user' | 'evaluation' | 'system' | 'thinking';
   message: string;
@@ -114,7 +114,7 @@ const autoTempMessages = ref<Array<{
 const currentRoundData = ref<Partial<RoundRecord>>({});
 let cleanupSSE: (() => void) | null = null;
 
-// 计算属性：手动模式统一的消息列表
+// 计算属性：Ручной режим统一的消息列表
 const manualModeMessages = computed(() => {
   const messages: Array<{
     type: 'question' | 'user' | 'evaluation' | 'system' | 'thinking';
@@ -128,10 +128,10 @@ const manualModeMessages = computed(() => {
     message: sessionStore.seedSentence
   });
 
-  // 添加已完成的轮次消息
+  // 添加已Готово的轮次消息
   const roundsArray = sessionStore.rounds;
   roundsArray.forEach((round) => {
-    // 记者提问
+    // Журналист提问
     if (round.question) {
       messages.push({
         type: 'question',
@@ -146,7 +146,7 @@ const manualModeMessages = computed(() => {
       message: round.user_answer
     });
 
-    // 语法点评
+    // Грамматический комментарий
     messages.push({
       type: 'evaluation',
       message: round.evaluation,
@@ -154,7 +154,7 @@ const manualModeMessages = computed(() => {
     });
   });
 
-  // 添加当前记者提问（如果有）
+  // 添加当前Журналист提问（如果有）
   if (sessionStore.currentQuestion && !sessionStore.isDone) {
     messages.push({
       type: 'question',
@@ -171,18 +171,18 @@ const manualModeMessages = computed(() => {
     });
   }
 
-  // 添加思考提示（如果有）
+  // 添加РазмышлениеПодсказка（如果有）
   if (isThinking.value) {
     messages.push({
       type: 'thinking',
-      message: '正在思考...'
+      message: 'Думаю...'
     });
   }
 
   return messages;
 });
 
-// 计算属性：自动模式统一的消息列表
+// 计算属性：Автоматический режим统一的消息列表
 const autoModeMessages = computed(() => {
   const messages: Array<{
     type: 'question' | 'user' | 'evaluation' | 'system' | 'thinking';
@@ -197,10 +197,10 @@ const autoModeMessages = computed(() => {
     message: sessionStore.seedSentence
   });
 
-  // 添加已完成的轮次消息
+  // 添加已Готово的轮次消息
   const roundsArray = sessionStore.rounds;
   roundsArray.forEach((round) => {
-    // 记者提问
+    // Журналист提问
     if (round.question) {
       messages.push({
         type: 'question',
@@ -215,7 +215,7 @@ const autoModeMessages = computed(() => {
       message: round.user_answer
     });
 
-    // 语法点评
+    // Грамматический комментарий
     messages.push({
       type: 'evaluation',
       message: round.evaluation,
@@ -230,20 +230,20 @@ const autoModeMessages = computed(() => {
 });
 
 /**
- * 开始新会话
+ * 开始新Сессии
  */
 async function handleStart(sentence: string, mode: Mode) {
   try {
     if (mode == 'auto') {
       autoLoading.value = true;
-      loadingText.value = '正在启动自动模式...';
+      loadingText.value = 'Запуск автоматического режима...';
     } else {
       isThinking.value = true;
     }
 
     await sessionStore.startNewSession(sentence, mode);
 
-    // 如果是自动模式，启动自动流程
+    // 如果是Автоматический режим，启动自动流程
     if (mode === 'auto') {
       startAutoMode();
     } else {
@@ -253,7 +253,7 @@ async function handleStart(sentence: string, mode: Mode) {
     console.error('Failed to start session:', error);
     if (mode === 'auto') {
       autoLoading.value = false;
-      loadingText.value = '连接失败，请重试';
+      loadingText.value = 'Ошибка подключения — повторите';
     } else {
       isThinking.value = false;
     }
@@ -261,7 +261,7 @@ async function handleStart(sentence: string, mode: Mode) {
 }
 
 /**
- * 手动模式提交
+ * Ручной режимОтправить
  */
 async function handleSubmit(sentence: string) {
   // 立即显示用户消息
@@ -273,10 +273,10 @@ async function handleSubmit(sentence: string) {
   scrollToBottom();
 
   try {
-    // 提交到后端（submitUserSentence 内部已经会刷新会话状态）
+    // Отправить到后端（submitUserSentence 内部已经会ОбновитьСессииСтатус）
     await sessionStore.submitUserSentence(sentence);
 
-    // 清除当前用户消息（因为它已经在 rounds 中了）
+    // Очистить当前用户消息（因为它已经在 rounds 中了）
     currentUserMessage.value = null;
     isThinking.value = false;
 
@@ -299,7 +299,7 @@ function scrollToBottom(containerRef: HTMLElement | null = messageListContainer.
 }
 
 /**
- * 重置会话
+ * 重置Сессии
  */
 function handleReset() {
   if (cleanupSSE) {
@@ -313,10 +313,10 @@ function handleReset() {
 }
 
 /**
- * 启动自动模式
+ * 启动Автоматический режим
  */
 function startAutoMode() {
-  loadingText.value = '正在思考...';
+  loadingText.value = 'Думаю...';
   // 订阅 SSE 流
   cleanupSSE = subscribeAutoMode(
     sessionStore.sessionId,
@@ -354,9 +354,9 @@ function handleSSEMessage(event: SSEEvent) {
             stage: stage
           }
         ];
-        // 保存到当前轮次数据
+        // Сохранить到当前轮次数据
         currentRoundData.value.question = eventData.question;
-        loadingText.value = `阶段 ${eventType.slice(-1)}：记者正在提问...`;
+        loadingText.value = `Этап ${eventType.slice(-1)}: журналист задаёт вопрос...`;
         
         // 滚动到底部
         nextTick(() => {
@@ -365,11 +365,11 @@ function handleSSEMessage(event: SSEEvent) {
       }
 
       if (eventData.expanded) {
-        // 扩写完成，先添加临时消息显示AI回答和点评
+        // 扩写Готово，先添加临时消息显示AI回答和点评
         autoTempMessages.value = [
           {
             type: 'question',
-            message: currentRoundData.value.question || `请为这个句子增加细节`,
+            message: currentRoundData.value.question || `Добавьте детали к этому предложению`,
             stage: stage
           },
           {
@@ -378,17 +378,17 @@ function handleSSEMessage(event: SSEEvent) {
           },
           {
             type: 'evaluation',
-            message: '自动模式生成，语法正确',
+            message: 'Сгенерировано автоматически, грамматика верна',
             expandedSentence: eventData.expanded
           }
         ];
 
-        // 保存轮次数据
+        // Сохранить轮次数据
         if (!currentRoundData.value.question) {
           const defaultQuestions = {
-            stage1: '请为这个句子增加一些细节',
-            stage2: '请为这个句子增加时间或地点信息',
-            stage3: '请为这个句子增加定语从句或状语从句',
+            stage1: 'Добавьте детали к предложению',
+            stage2: 'Добавьте время или место',
+            stage3: 'Добавьте придаточное предложение',
             done: '',
           };
           currentRoundData.value.question = defaultQuestions[stage];
@@ -396,10 +396,10 @@ function handleSSEMessage(event: SSEEvent) {
 
         currentRoundData.value.stage = stage;
         currentRoundData.value.user_answer = eventData.expanded;
-        currentRoundData.value.evaluation = '自动模式生成，语法正确';
+        currentRoundData.value.evaluation = 'Сгенерировано автоматически, грамматика верна';
         currentRoundData.value.expanded_sentence = eventData.expanded;
 
-        // 保存轮次到 sessionStore
+        // Сохранить轮次到 sessionStore
         const round: RoundRecord = {
           stage,
           question: currentRoundData.value.question,
@@ -409,11 +409,11 @@ function handleSSEMessage(event: SSEEvent) {
         };
         sessionStore.addRound(round);
 
-        // 清空临时消息和当前轮次数据，准备下一阶段
+        // Очистить临时消息和当前轮次数据，准备下一阶段
         autoTempMessages.value = [];
         currentRoundData.value = {};
         
-        loadingText.value = `阶段 ${eventType.slice(-1)}：扩写完成`;
+        loadingText.value = `Этап ${eventType.slice(-1)}: расширение завершено`;
         
         // 滚动到底部
         nextTick(() => {
@@ -423,19 +423,19 @@ function handleSSEMessage(event: SSEEvent) {
       break;
 
     case 'polished':
-      // 处理润色版本
+      // 处理润色Версия
       if (eventData.sentence) {
         sessionStore.setFinalPolished(eventData.sentence);
-        loadingText.value = '正在生成最终润色版本...';
-        // 更新阶段为完成
+        loadingText.value = 'Генерация финальной версии...';
+        // 更新阶段为Готово
         sessionStore.updateStage('done');
       }
       break;
 
     case 'analysis':
-      // 处理结构分析
+      // 处理结构Анализ
       console.log('Structure analysis:', eventData.items);
-      loadingText.value = '正在分析句子结构...';
+      loadingText.value = 'Анализ структуры предложения...';
       break;
 
     case 'progress':
@@ -446,36 +446,36 @@ function handleSSEMessage(event: SSEEvent) {
       break;
 
     case 'done':
-      // 完成事件
+      // Готово事件
       console.log('Auto mode completed with data:', eventData);
-      loadingText.value = '完成！';
+      loadingText.value = 'Готово!';
 
       // 如果 done 事件包含完整数据，可以更新 sessionStore
       if (eventData.stage1 || eventData.stage2 || eventData.stage3) {
-        // 确保所有轮次都已保存
+        // 确保所有轮次都已Сохранить
         ['stage1', 'stage2', 'stage3'].forEach((stageName, index) => {
           const stageData = eventData[stageName as keyof typeof eventData];
           if (stageData && sessionStore.rounds.length <= index) {
             const round: RoundRecord = {
               stage: stageName as Stage,
-              question: stageData.question || '请扩写这个句子',
+              question: stageData.question || 'Расширьте это предложение',
               'user_answer': stageData.expanded || sessionStore.seedSentence,
-              evaluation: '自动模式生成，语法正确',
+              evaluation: 'Сгенерировано автоматически, грамматика верна',
               'expanded_sentence': stageData.expanded || sessionStore.seedSentence
             };
             sessionStore.addRound(round);
           }
         });
 
-        // 设置最终润色版本
+        // 设置最终润色Версия
         if (eventData.polished) {
           sessionStore.setFinalPolished(eventData.polished);
         }
       }
 
-      // 标记会话完成
+      // 标记СессииГотово
       sessionStore.updateStage('done');
-      // 清空临时消息
+      // Очистить临时消息
       autoTempMessages.value = [];
       break;
 
@@ -490,19 +490,19 @@ function handleSSEMessage(event: SSEEvent) {
 function handleSSEError(error: Error) {
   console.error('SSE Error:', error);
   autoLoading.value = false;
-  loadingText.value = '连接失败，请重试';
+  loadingText.value = 'Ошибка подключения — повторите';
 }
 
 /**
- * 处理 SSE 完成
+ * 处理 SSE Готово
  */
 async function handleSSEComplete() {
   console.log('SSE Stream completed');
   autoLoading.value = false;
-  loadingText.value = '完成！';
+  loadingText.value = 'Готово!';
 
-  // 注意：不调用 refreshSession()，避免覆盖前端维护的状态
-  // 自动模式的数据已经通过 SSE 事件在前端维护好了
+  // 注意：不调用 refreshSession()，避免覆盖前端维护的Статус
+  // Автоматический режим的数据已经通过 SSE 事件在前端维护好了
   // currentStreamQuestion 和 currentStreamEvaluation 保持原样
   // sessionStore.rounds 中的所有轮次数据都会保留
 }

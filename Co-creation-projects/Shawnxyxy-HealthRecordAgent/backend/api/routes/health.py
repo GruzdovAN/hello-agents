@@ -22,7 +22,7 @@ class HealthRequest(BaseModel):
     def normalize_user_id(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("user_id 不能为空")
+поднять ValueError("user_id не может быть пустым")
         return v
 
 
@@ -43,7 +43,7 @@ async def analysis_health_pdf(
 ):
     uid = user_id.strip()
     if not uid:
-        return {"error": "user_id 不能为空"}
+return {"ошибка": "user_id не может быть пустым"}
 
     contents = await file.read()
 
@@ -56,7 +56,7 @@ async def analysis_health_pdf(
                 text += page_text + "\n"
 
     if not text.strip():
-        return {"error": "无法从PDF中提取文本"}
+return {"ошибка": "Невозможно извлечь текст из PDF"}
 
     task_id = str(uuid4())
     service = HealthAnalysisService(task_id=task_id, user_id=uid)
@@ -80,7 +80,7 @@ async def task_status(task_id: str):
 async def report_history(user_id: str, limit: int = 50):
     uid = user_id.strip()
     if not uid:
-        return {"error": "user_id 无效", "items": []}
+return {"error": "user_id 无效", "items": []}
     items = list_report_runs_for_user(uid, limit=limit)
     return {"user_id": uid, "items": items}
 

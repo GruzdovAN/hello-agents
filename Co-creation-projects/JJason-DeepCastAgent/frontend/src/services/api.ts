@@ -15,7 +15,7 @@ export interface StreamOptions {
 }
 
 /**
- * 主动取消后端正在执行的研究任务。
+ * Активная отмена исследования на бэкенде.
  */
 export async function cancelResearch(): Promise<void> {
   try {
@@ -43,13 +43,13 @@ export async function runResearchStream(
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
     throw new Error(
-      errorText || `研究请求失败，状态码：${response.status}`
+      errorText || `Ошибка исследования, код: ${response.status}`
     );
   }
 
   const body = response.body;
   if (!body) {
-    throw new Error("浏览器不支持流式响应，无法获取研究进度");
+    throw new Error("Браузер не поддерживает поток — прогресс недоступен");
   }
 
   const reader = body.getReader();
@@ -76,7 +76,7 @@ export async function runResearchStream(
               return;
             }
           } catch (error) {
-            console.error("解析流式事件失败：", error, dataPayload);
+            console.error("Ошибка разбора потокового события: ", error, dataPayload);
           }
         }
       }
@@ -95,7 +95,7 @@ export async function runResearchStream(
               const event = JSON.parse(dataPayload) as ResearchStreamEvent;
               onEvent(event);
             } catch (error) {
-              console.error("解析流式事件失败：", error, dataPayload);
+              console.error("Ошибка разбора потокового события: ", error, dataPayload);
             }
           }
         }

@@ -1,8 +1,8 @@
 """
-智能股票分析助手 — 智能体系统（统一Agent管理与流式调度）
+Интеллектуальный помощник по анализу запасов — агентская система (унифицированное управление агентами и планирование потоковой передачи)
 
-基于 HelloAgents Optimized 框架，管理所有专业Agent的生命周期，
-提供统一的流式分析接口供后端API调用。
+На основе оптимизированной платформы HelloAgents управляйте жизненным циклом всех профессиональных агентов,
+Предоставляет унифицированный интерфейс анализа потоковой передачи для вызовов API серверной части.
 """
 
 import sys
@@ -15,7 +15,7 @@ from typing import AsyncIterator, Optional
 def _coord_answer_cap_hint(max_chars: int) -> str:
     return (
         f"\n\n【硬性要求】最终答案全文不得超过约 {max_chars} 个汉字（含标点），"
-        "分条简练，禁止复述工具返回的全文或大段粘贴。"
+«Будьте лаконичны и лаконичны. Запрещено вставлять полный текст или большие разделы, возвращаемые инструментом перефразирования».
     )
 
 
@@ -27,7 +27,7 @@ def _apply_answer_cap(text: str, max_chars: Optional[int]) -> str:
     t = (text or "").strip()
     if len(t) <= max_chars:
         return t
-    return truncate_at_natural_boundary(t, max_chars, "\n\n…（已达字数上限）")
+return truncate_at_natural_boundary(t, max_chars, "\n\n…(достигнуто максимальное количество символов)")
 
 _HELLO_AGENTS_PATH = Path(__file__).parent.parent / "HelloAgents Optimized"
 if str(_HELLO_AGENTS_PATH) not in sys.path:
@@ -49,7 +49,7 @@ _agent_system_instance: Optional["AgentSystem"] = None
 
 
 class AgentSystem:
-    """智能体系统 — 统一管理所有Agent并提供流式分析接口"""
+"""Агентная система — унифицированно управляет всеми агентами и предоставляет интерфейс потокового анализа"""
 
     def __init__(self):
         self._llm: Optional[HelloAgentsLLM] = None
@@ -74,17 +74,17 @@ class AgentSystem:
         except Exception:
             return None
 
-    # ---- 巴菲特评估 Agent ----
+# ---- Баффет оценивает агента ----
 
     def get_advisor_agent(self):
-        """获取巴菲特评估 Agent（仅限巴菲特评估界面调用）"""
+"""Получить агента оценки Баффета (можно вызвать только из интерфейса оценки Баффета)"""
         if self._advisor is None:
             from agents.advisor_agent import create_advisor_agent
             self._advisor = create_advisor_agent(llm=self._ensure_llm())
         return self._advisor
 
     def evaluate_buffett_stream(self, stock_code: str, stock_name: str = ""):
-        """流式巴菲特评估 - 通过 advisor_agent 生成评估报告"""
+"""Потоковая оценка Баффета — создание отчета об оценке через Advisor_agent"""
         from agents.advisor_agent import evaluate_buffett_stream
         yield from evaluate_buffett_stream(
             llm=self._ensure_llm(),
@@ -92,10 +92,10 @@ class AgentSystem:
             stock_name=stock_name,
         )
 
-    # ---- 舆情分析 Agent ----
+# ---- Агент анализа общественного мнения ----
 
     def get_sentiment_agent(self):
-        """获取舆情分析 Agent"""
+"""Получить агент по анализу общественного мнения"""
         if self._sentiment is None:
             from agents.sentiment_agent import create_sentiment_agent
             self._sentiment = create_sentiment_agent(
@@ -111,7 +111,7 @@ class AgentSystem:
         *,
         max_answer_chars: Optional[int] = None,
     ) -> str:
-        """非流式舆情分析 — 返回完整文本，供协调者Agent内部调用"""
+"""Непотоковый анализ общественного мнения — возвращает полный текст для внутренних звонков Агента-координатора"""
         agent = self.get_sentiment_agent()
         stock_label = f"{stock_name}({stock_code})" if stock_name else stock_code
         task = f"请搜索并分析股票 {stock_label} 的最新金融资讯、研究报告和公告，判断市场舆情趋势。"
@@ -122,14 +122,14 @@ class AgentSystem:
             if not out:
                 return (
                     "[舆情分析未生成有效正文：可能因网络/超时或模型提前结束。"
-                    "建议在个股页使用「AI舆情分析」流式重试，或在 .env 将 LLM_TIMEOUT 调至 300 后重启后端。]"
+«Рекомендуется использовать потоковую передачу «Анализ общественного мнения AI» на отдельных страницах акций, чтобы повторить попытку, или сбросить серверную часть после настройки LLM_TIMEOUT на 300 в .env.]»
                 )
             return _apply_answer_cap(out, max_answer_chars)
         except Exception as e:
-            return f"[舆情分析失败: {e}]"
+return f"[Анализ общественного мнения не удался: {e}]"
 
     def analyze_sentiment_stream(self, stock_code: str, stock_name: str = ""):
-        """流式舆情分析"""
+"""Потоковое анализ общественного мнения"""
         from agents.sentiment_agent import analyze_sentiment_stream
         yield from analyze_sentiment_stream(
             agent=self.get_sentiment_agent(),
@@ -137,10 +137,10 @@ class AgentSystem:
             stock_name=stock_name,
         )
 
-    # ---- 数据分析 Agent ----
+# ---- Агент анализа данных ----
 
     def get_data_analysis_agent(self):
-        """获取数据分析 Agent"""
+"""Получить агент анализа данных"""
         if self._data_analysis is None:
             from agents.data_analysis_agent import create_data_analysis_agent
             self._data_analysis = create_data_analysis_agent(
@@ -156,16 +156,16 @@ class AgentSystem:
         *,
         max_answer_chars: Optional[int] = None,
     ) -> str:
-        """非流式数据分析 — 返回完整文本，供协调者Agent内部调用"""
+"""Непотоковый анализ данных — возвращает полный текст внутренних звонков Агента-координатора"""
         agent = self.get_data_analysis_agent()
         stock_label = f"{stock_name}({stock_code})" if stock_name else stock_code
         task = f"""请查询股票 {stock_label} 的以下数据并进行综合分析：
-1. 实时行情（价格、涨跌幅、成交量、换手率等）
-2. 核心财务指标（ROE、净利润、营收增长率、毛利率等）
-3. 估值水平（市盈率、市净率、股息率等）
-4. 公司基本概况
+1. Рыночные условия в режиме реального времени (цена, увеличение или уменьшение, объем торгов, скорость оборота и т. д.)
+2. Основные финансовые показатели (ROE, чистая прибыль, темпы роста выручки, валовая прибыль и т. д.)
+3. Уровень оценки (отношение цены к прибыли, соотношение цены к балансовой стоимости, дивидендная доходность и т. д.)
+4. Базовый обзор компании
 
-请给出专业的数据分析报告。"""
+Пожалуйста, предоставьте профессиональный отчет по анализу данных. """
         if max_answer_chars:
             task += _coord_answer_cap_hint(max_answer_chars)
         try:
@@ -173,14 +173,14 @@ class AgentSystem:
             if not out:
                 return (
                     "[数据分析未生成有效正文：可能因网络/超时或模型提前结束。"
-                    "建议使用个股页「AI数据分析」流式重试，或在 .env 将 LLM_TIMEOUT 调至 300 后重启后端。]"
+«Рекомендуется использовать потоковую передачу «Анализ данных AI» на отдельной странице или настроить LLM_TIMEOUT на 300 в .env, а затем перезапустить серверную часть.]»
                 )
             return _apply_answer_cap(out, max_answer_chars)
         except Exception as e:
-            return f"[数据分析失败: {e}]"
+return f"[Ошибка анализа данных: {e}]"
 
     def analyze_data_stream(self, stock_code: str, stock_name: str = ""):
-        """流式数据分析"""
+"""Потоковый анализ данных"""
         from agents.data_analysis_agent import analyze_data_stream
         yield from analyze_data_stream(
             agent=self.get_data_analysis_agent(),
@@ -188,10 +188,10 @@ class AgentSystem:
             stock_name=stock_name,
         )
 
-    # ---- 普通投资顾问 Agent ----
+# ---- Обычный инвестиционный консультант-агент ----
 
     def get_general_advisor_agent(self):
-        """获取普通投资顾问 Agent"""
+"""Найдите генерального инвестиционного консультанта"""
         if self._general_advisor is None:
             from agents.general_advisor_agent import create_general_advisor_agent
             self._general_advisor = create_general_advisor_agent(
@@ -205,7 +205,7 @@ class AgentSystem:
         *,
         max_answer_chars: Optional[int] = None,
     ) -> str:
-        """非流式投资建议 — 返回完整文本，供协调者Agent内部调用"""
+"""Непотоковая инвестиционная консультация — возвращает полный текст для внутренних звонков агента-координатора"""
         agent = self.get_general_advisor_agent()
         if max_answer_chars:
             task = task + _coord_answer_cap_hint(max_answer_chars)
@@ -213,12 +213,12 @@ class AgentSystem:
             out = (agent.run(task) or "").strip()
             return _apply_answer_cap(out, max_answer_chars)
         except Exception as e:
-            return f"[投资分析失败: {e}]"
+return f"[Инвестиционный анализ не удался: {e}]"
 
-    # ---- AI 对话助手（协调者）----
+# ---- AI-помощник по диалогу (координатор) ----
 
     def chat_stream(self, user_message: str, history: list = None):
-        """AI对话助手流式接口 - 协调者Agent解析用户需求并调度子Agent"""
+"""Интерфейс потоковой передачи AI Dialogue Assistant — агент-координатор анализирует потребности пользователей и планирует работу субагентов"""
         from agents.coordinator_agent import coordinator_chat_stream
         yield from coordinator_chat_stream(
             llm=self._ensure_llm(),
@@ -227,7 +227,7 @@ class AgentSystem:
             agent_system=self,
         )
 
-    # ---- 健康检查 ----
+# ---- Проверка работоспособности ----
 
     def is_ready(self) -> bool:
         try:
@@ -252,7 +252,7 @@ def _create_default_llm() -> HelloAgentsLLM:
         raw_timeout = int(settings.LLM_TIMEOUT)
     except Exception:
         raw_timeout = int(os.getenv("LLM_TIMEOUT", "60"))
-    # ReAct 多轮 + 工具调用 + 协调者多 Agent 串联，默认 60s 极易中途超时
+# Многораундовая серия ReAct + вызов инструмента + серия координаторов с несколькими агентами, значение по умолчанию — 60 с, и время ожидания легко прерваться на полпути.
     timeout = max(raw_timeout, 180)
 
     return HelloAgentsLLM(
@@ -267,7 +267,7 @@ def _create_default_llm() -> HelloAgentsLLM:
 
 
 def get_agent_system() -> AgentSystem:
-    """获取 AgentSystem 全局单例"""
+"""Получить глобальный синглтон AgentSystem"""
     global _agent_system_instance
     if _agent_system_instance is None:
         with _agent_lock:

@@ -1,4 +1,4 @@
-"""HelloClaw Agent 模块"""
+"""HelloClaw Модуль Agent"""
 
 from .helloclaw_agent import HelloClawAgent
 

@@ -16,7 +16,7 @@ const loadSessions = async () => {
     const res = await sessionApi.list()
     sessions.value = res.sessions
   } catch (error) {
-    message.error('加载会话列表失败')
+    message.error('Не удалось загрузить список сессий')
   } finally {
     listLoading.value = false
   }
@@ -26,11 +26,11 @@ const createSession = async () => {
   createLoading.value = true
   try {
     const res = await sessionApi.create()
-    message.success('创建会话成功')
+    message.success('Сессия создана')
     await loadSessions()
     router.push({ name: 'chat', query: { session: res.session_id } })
   } catch (error) {
-    message.error('创建会话失败')
+    message.error('Не удалось создать сессию')
   } finally {
     createLoading.value = false
   }
@@ -39,10 +39,10 @@ const createSession = async () => {
 const deleteSession = async (id: string) => {
   try {
     await sessionApi.delete(id)
-    message.success('删除成功')
+    message.success('Удалено')
     await loadSessions()
   } catch (error) {
-    message.error('删除失败')
+    message.error('Не удалось удалить')
   }
 }
 
@@ -59,11 +59,11 @@ onMounted(() => {
   <div class="sessions-view">
     <div class="sessions-header">
       <div>
-        <h1>会话管理</h1>
-        <p>查看和管理你的对话历史</p>
+        <h1>Управление сессиями</h1>
+        <p>Просмотр и управление историей диалогов</p>
       </div>
       <Button type="primary" :loading="createLoading" @click="createSession">
-        <PlusOutlined /> 新建会话
+        <PlusOutlined /> Новая сессия
       </Button>
     </div>
 
@@ -87,12 +87,12 @@ onMounted(() => {
                   class="open-btn"
                   @click="router.push({ name: 'chat', query: { session: item.id } })"
                 >
-                  打开
+                  Открыть
                 </button>
                 <button
                   class="delete-btn"
                   @click="deleteSession(item.id)"
-                  title="删除"
+                  title="Удалить"
                 >
                   <DeleteOutlined />
                 </button>
@@ -103,9 +103,9 @@ onMounted(() => {
       </Card>
 
       <Card v-else class="empty-card">
-        <Empty description="暂无会话记录">
+        <Empty description="Нет сессий">
           <Button type="primary" @click="createSession">
-            <PlusOutlined /> 创建第一个会话
+            <PlusOutlined /> Создать первую сессию
           </Button>
         </Empty>
       </Card>
@@ -164,7 +164,7 @@ onMounted(() => {
   font-size: 13px;
 }
 
-/* 打开按钮 - 黑色字体，hover 红色 */
+/* Открыть按钮 - 黑色字体，hover 红色 */
 .open-btn {
   padding: 0 8px;
   height: 22px;
@@ -181,7 +181,7 @@ onMounted(() => {
   color: #ff4d4f;
 }
 
-/* 删除按钮 - 黑色图标 */
+/* Удалить按钮 - 黑色图标 */
 .delete-btn {
   padding: 4px 8px;
   border: none;

@@ -1,5 +1,5 @@
 """
-写作辅助API路由
+Написание помощника по маршрутизации API
 """
 
 from fastapi import APIRouter, HTTPException
@@ -12,15 +12,15 @@ from core.llm_adapter import get_llm_adapter
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# 初始化 LLM 适配器（基于 HelloAgent）
+# Инициализируем адаптер LLM (на основе HelloAgent)
 config = get_config()
 try:
     llm = get_llm_adapter() if config.llm.api_key else None
 except Exception as e:
-    logger.warning(f"LLM 初始化失败: {str(e)}")
+logger.warning(f"Ошибка инициализации LLM: {str(e)}")
     llm = None
 
-# Pydantic模型
+# Пидантическая модель
 class WritingAssistanceRequest(BaseModel):
     user_id: str
     task_type: str  # explain, polish, mimic, suggest
@@ -57,69 +57,69 @@ class SuggestRequest(BaseModel):
 
 @router.post("/coach", response_model=Dict[str, Any])
 async def writing_coach(request: WritingCoachRequest):
-    """写作助手 - 使用真实的 AI 处理"""
+"""Писательский помощник — обработка с помощью реального искусственного интеллекта"""
     try:
         if not llm:
-            raise HTTPException(status_code=503, detail="AI 服务未配置，请设置 OPENAI_API_KEY")
+поднять HTTPException (status_code=503, Detail="Служба AI не настроена, установите OPENAI_API_KEY")
         
         logger.info(f"处理写作任务: {request.task}, 风格: {request.style}")
         
-        # 根据任务类型生成提示词
+# Генерация слов-подсказок в зависимости от типа задачи
         prompts = {
-            "polish": f"""作为一位专业的学术写作编辑，请帮我润色以下文本，使其符合{request.style}学术写作标准：
+"polish": f"""Как профессиональный редактор академического письма, помогите мне доработать следующий текст, чтобы он соответствовал стандартам академического письма {request.style}:
 
-原文：
+оригинал:
 {request.text}
 
-请提供：
-1. 润色后的文本（保持原意，提升表达质量）
-2. 具体的改进说明
-3. 写作建议
+Пожалуйста, предоставьте:
+1. Отшлифованный текст (сохраните первоначальный смысл и улучшите качество выражения)
+2. Конкретные инструкции по улучшению
+3. Написание предложений
 
-要求：
-- 保持学术严谨性
-- 提升表达清晰度
-- 使用恰当的学术用语
-- 改善句子结构和逻辑流畅性""",
+Требовать:
+- Поддерживать академическую строгость.
+- Улучшить ясность выражения
+- Используйте соответствующую академическую терминологию.
+- Улучшить структуру предложений и логическую беглость""",
             
             "translate": f"""请将以下中文学术文本翻译成专业的英文学术论文表达：
 
-原文：
+оригинал:
 {request.text}
 
-要求：
-- 保持学术专业性和准确性
-- 使用地道的英文学术表达
-- 符合{request.style}风格的学术写作规范
-- 保持技术术语的准确性""",
+Требовать:
+- Поддерживать академический профессионализм и точность.
+- Используйте аутентичные английские академические выражения.
+- Стандарты академического письма в соответствии со стилем {request.style}
+- Соблюдать точность технической терминологии""",
             
-            "explain": f"""请详细解释以下概念或内容：
+«объясните»: f»»»Пожалуйста, подробно объясните следующие понятия или содержание:
 
 {request.text}
 
-要求：
-- 用通俗易懂的语言解释
-- 保持技术准确性
-- 提供具体例子
-- 说明应用场景和重要性""",
+Требовать:
+- Объяснено доступным языком.
+- Соблюдать техническую точность.
+- Приведите конкретные примеры.
+- Объяснить сценарии применения и важность """,
             
-            "expand": f"""请扩展以下内容，使其更加详细和完整：
+"expand": f"""Пожалуйста, разверните следующее содержимое, чтобы сделать его более подробным и полным:
 
-原文：
+оригинал:
 {request.text}
 
-要求：
-- 添加必要的背景信息
-- 补充相关的理论支持
-- 扩展方法论描述
-- 增加潜在影响和应用
-- 保持逻辑连贯性
-- 符合{request.style}学术写作风格"""
+Требовать:
+- Добавить необходимую справочную информацию
+- Дополнить соответствующую теоретическую поддержку
+- Расширенное описание методологии
+- Увеличение потенциального воздействия и применения
+- Сохранять логическую последовательность
+- В соответствии со стилем академического письма {request.style}"""
         }
         
         prompt = prompts.get(request.task, prompts["polish"])
         
-        # 调用 LLM 处理
+# Обработка вызова LLM
         response = await llm.ainvoke(prompt)
         result_content = response.content if hasattr(response, 'content') else str(response)
         
@@ -134,14 +134,14 @@ async def writing_coach(request: WritingCoachRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"写作助手处理失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"处理失败: {str(e)}")
+logger.error(f"Ошибка обработки Write Assistant: {str(e)}")
+поднять HTTPException(status_code=500, Detail=f"Ошибка обработки: {str(e)}")
 
 @router.post("/explain", response_model=Dict[str, Any])
 async def explain_concept(request: ExplainRequest):
-    """解释复杂概念"""
+"""Объяснять сложные понятия"""
     try:
-        # 模拟概念解释
+#Объяснение концепций моделирования
         return {
             "success": True,
             "concept": request.concept,
@@ -151,14 +151,14 @@ async def explain_concept(request: ExplainRequest):
         }
         
     except Exception as e:
-        logger.error(f"概念解释失败: {str(e)}")
+logger.error(f"Ошибка объяснения концепции: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/polish", response_model=Dict[str, Any])
 async def polish_text(request: PolishRequest):
-    """润色文本"""
+"""Польский текст"""
     try:
-        # 模拟文本润色
+# Имитировать полировку текста
         return {
             "success": True,
             "original": request.text,
@@ -168,14 +168,14 @@ async def polish_text(request: PolishRequest):
         }
         
     except Exception as e:
-        logger.error(f"文本润色失败: {str(e)}")
+logger.error(f"Ошибка полировки текста: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/mimic", response_model=Dict[str, Any])
 async def mimic_style(request: MimicRequest):
-    """模仿写作风格"""
+"""Имитировать стиль письма"""
     try:
-        # 模拟风格模仿
+# Имитация ложного стиля
         return {
             "success": True,
             "original": request.text,
@@ -185,14 +185,14 @@ async def mimic_style(request: MimicRequest):
         }
         
     except Exception as e:
-        logger.error(f"风格模仿失败: {str(e)}")
+logger.error(f"Ошибка имитации стиля: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/suggest", response_model=Dict[str, Any])
 async def suggest_improvements(request: SuggestRequest):
-    """建议改进"""
+"""Предложить улучшения"""
     try:
-        # 模拟改进建议
+#Предложения по улучшению моделирования
         return {
             "success": True,
             "original": request.text,
@@ -207,15 +207,15 @@ async def suggest_improvements(request: SuggestRequest):
         }
         
     except Exception as e:
-        logger.error(f"改进建议失败: {str(e)}")
+logger.error(f"Предложение по улучшению не выполнено: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/user/{user_id}/style")
 async def get_user_writing_style(user_id: str):
-    """获取用户写作风格"""
+"""Получить стиль письма пользователя"""
     try:
-        # 这里需要实现用户写作风格分析
-        # 暂时返回模拟结果
+# Здесь нам нужно реализовать анализ стиля письма пользователя
+# Временно возвращаем результаты моделирования
         
         style_profile = {
             "user_id": user_id,
@@ -227,19 +227,19 @@ async def get_user_writing_style(user_id: str):
                 "clarity": "good"
             },
             "preferred_patterns": [
-                "句式模式1",
-                "句式模式2"
+«Схема предложения 1»,
+«Схема предложения 2»
             ],
             "common_phrases": [
-                "常用短语1",
-                "常用短语2"
+«Общие фразы 1»,
+«Общие фразы 2»
             ],
             "improvement_areas": [
-                "改进领域1",
-                "改进领域2"
+«Зона благоустройства 1»,
+«Зона благоустройства 2»
             ],
             "style_evolution": {
-                "last_month": "上个月的风格变化",
+"last_month": "Стиль изменился в прошлом месяце",
                 "trend": "improving"
             }
         }
@@ -250,51 +250,51 @@ async def get_user_writing_style(user_id: str):
         }
         
     except Exception as e:
-        logger.error(f"获取用户写作风格失败: {str(e)}")
+logger.error(f «Не удалось получить стиль письма пользователя: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/user/{user_id}/templates")
 async def get_writing_templates(user_id: str):
-    """获取写作模板"""
+"""Получить шаблон письма"""
     try:
-        # 这里需要实现写作模板推荐
-        # 暂时返回模拟结果
+# Здесь нам нужно реализовать рекомендацию по написанию шаблона
+# Временно возвращаем результаты моделирования
         
         templates = {
             "user_id": user_id,
             "templates": [
                 {
                     "id": "abstract_template",
-                    "name": "摘要模板",
+"name": "Абстрактный шаблон",
                     "category": "academic",
                     "structure": [
-                        "背景介绍",
-                        "问题陈述", 
-                        "方法概述",
-                        "主要结果",
-                        "结论意义"
+«Предыстория»,
+«постановка проблемы»,
+«Обзор метода»,
+«Основные результаты»,
+«Значение заключения»
                     ],
-                    "example": "摘要示例...",
+"example": "Пример сводки...",
                     "usage_count": 15
                 },
                 {
                     "id": "introduction_template",
-                    "name": "引言模板",
+"name": "Шаблон введения",
                     "category": "academic",
                     "structure": [
-                        "研究背景",
-                        "相关工作",
-                        "研究空白",
-                        "主要贡献",
-                        "论文结构"
+«Исследовательская база»,
+«связанная работа»,
+«пробел в исследованиях»,
+«основной вклад»,
+«Структура диссертации»
                     ],
-                    "example": "引言示例...",
+"example": "Пример введения...",
                     "usage_count": 8
                 }
             ],
             "recommended_templates": [
-                "推荐模板1",
-                "推荐模板2"
+«Рекомендуемый шаблон 1»,
+«Рекомендуемый шаблон 2»
             ]
         }
         
@@ -304,37 +304,37 @@ async def get_writing_templates(user_id: str):
         }
         
     except Exception as e:
-        logger.error(f"获取写作模板失败: {str(e)}")
+logger.error(f «Не удалось получить шаблон записи: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/check/grammar", response_model=Dict[str, Any])
 async def check_grammar(text: str, user_id: Optional[str] = None):
-    """语法检查"""
+"""Проверка грамматики"""
     try:
-        # 这里需要实现语法检查逻辑
-        # 暂时返回模拟结果
+#Здесь вам необходимо реализовать логику проверки синтаксиса
+# Временно возвращаем результаты моделирования
         
         grammar_check = {
             "text": text,
             "errors": [
                 {
                     "type": "grammar",
-                    "message": "语法错误描述",
+"message": "Описание синтаксической ошибки",
                     "position": {"start": 10, "end": 20},
-                    "suggestion": "修改建议",
+"suggestion": "Предложение по модификации",
                     "severity": "medium"
                 }
             ],
             "suggestions": [
                 {
                     "type": "style",
-                    "message": "风格建议",
+"message": "Предложения по стилю",
                     "position": {"start": 30, "end": 40},
-                    "suggestion": "风格改进建议"
+"suggestion": "Предложения по улучшению стиля"
                 }
             ],
             "score": 85,
-            "corrected_text": "修正后的文本..."
+"corrected_text": "Исправленный текст..."
         }
         
         return {
@@ -343,32 +343,32 @@ async def check_grammar(text: str, user_id: Optional[str] = None):
         }
         
     except Exception as e:
-        logger.error(f"语法检查失败: {str(e)}")
+logger.error(f"Ошибка проверки синтаксиса: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/check/plagiarism", response_model=Dict[str, Any])
 async def check_plagiarism(text: str, user_id: Optional[str] = None):
-    """抄袭检查"""
+"""Проверка на плагиат"""
     try:
-        # 这里需要实现抄袭检查逻辑
-        # 暂时返回模拟结果
+Здесь необходимо реализовать #логику проверки на плагиат
+# Временно возвращаем результаты моделирования
         
         plagiarism_check = {
             "text": text,
             "similarity_score": 15.5,
             "sources": [
                 {
-                    "title": "相似文献标题",
-                    "authors": ["作者1", "作者2"],
+"title": "Название подобных документов",
+"авторы": ["автор1", "автор2"],
                     "similarity": 12.3,
                     "matched_text": "匹配的文本片段...",
-                    "url": "文献链接"
+"url": "Ссылка на литературу"
                 }
             ],
             "originality_score": 84.5,
             "risk_level": "low",
             "recommendations": [
-                "建议1",
+«Предложение 1»,
                 "建议2"
             ]
         }
@@ -379,5 +379,5 @@ async def check_plagiarism(text: str, user_id: Optional[str] = None):
         }
         
     except Exception as e:
-        logger.error(f"抄袭检查失败: {str(e)}")
+logger.error(f"Проверка на плагиат не удалась: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

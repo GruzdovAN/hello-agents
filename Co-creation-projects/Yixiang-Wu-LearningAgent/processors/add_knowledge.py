@@ -1,5 +1,5 @@
 # processors/add_knowledge.py
-"""知识添加处理器 - 使用 LLM 分析、分类并保存知识"""
+"""Обработчик добавления знаний — анализ, классификация и сохранение через LLM"""
 
 import json
 import os
@@ -13,25 +13,25 @@ from core.summary_manager import SummaryManager
 
 class AddKnowledgeProcessor:
     """
-    知识添加处理器
+    Обработчик добавления знаний
 
-    功能：
-    - 识别输入类型（文本/文件/URL）
-    - 使用 LLM 分析内容
-    - 智能分类和打标签
-    - 提取关键概念
-    - 生成文件名
-    - 保存到 knowledge 目录
-    - 更新 knowledge_summary.md
+    Возможности:
+    - Определение типа ввода (текст/файл/URL)
+    - Анализ содержания через LLM
+    - Интеллектуальная классификация и теги
+    - Извлечение ключевых концепций
+    - Генерация имени файла
+    - Сохранение в каталог knowledge
+    - Обновление knowledge_summary.md
     """
 
     def __init__(self, llm: HelloAgentsLLM, file_manager: FileManager):
         """
-        初始化 AddKnowledgeProcessor
+        Инициализация AddKnowledgeProcessor
 
         Args:
-            llm: HelloAgentsLLM 实例
-            file_manager: FileManager 实例
+            llm: экземпляр HelloAgentsLLM
+            file_manager: экземпляр FileManager
         """
         self.llm = llm
         self.file_manager = file_manager
@@ -39,19 +39,19 @@ class AddKnowledgeProcessor:
 
     def _identify_input_type(self, input_data: str) -> str:
         """
-        识别输入类型
+        Определить тип ввода
 
         Args:
-            input_data: 用户输入
+            input_data: ввод пользователя
 
         Returns:
-            输入类型（text/file/url）
+            тип ввода (text/file/url)
         """
-        # 检查 URL
+        # Проверка URL
         if input_data.startswith("http://") or input_data.startswith("https://"):
             return "url"
 
-        # 检查文件路径
+        # Проверка пути к файлу
         if (
             input_data.startswith("~")
             or input_data.startswith("/")
@@ -59,20 +59,20 @@ class AddKnowledgeProcessor:
         ):
             return "file"
 
-        # 默认为文本
+        # По умолчанию — текст
         return "text"
 
     def _read_file(self, file_path: str) -> str:
         """
-        读取文件内容
+        Прочитать содержимое файла
 
         Args:
-            file_path: 文件路径
+            file_path: путь к файлу
 
         Returns:
-            文件内容
+            Содержимое файла
         """
-        # 处理 ~ 路径
+        # Обработка пути ~
         if file_path.startswith("~"):
             file_path = os.path.expanduser(file_path)
 
@@ -81,40 +81,40 @@ class AddKnowledgeProcessor:
 
     def _analyze_content(self, content: str, domain: str) -> Dict[str, any]:
         """
-        使用 LLM 分析内容
+        Анализ содержания через LLM
 
         Args:
-            content: 知识内容
-            domain: 领域名称
+            content: содержание знания
+            domain: название области
 
         Returns:
-            分析结果字典，包含：
-            - category: 分类
-            - tags: 标签列表
-            - key_concepts: 关键概念列表
-            - summary: 摘要
+            словарь результатов анализа:
+            - category: категория
+            - tags: список тегов
+            - key_concepts: список ключевых концепций
+            - summary: краткое резюме
         """
-        user_prompt = f"""请分析以下知识内容并提取关键信息：
+        user_prompt = f"""Проанализируйте содержание и извлеките ключевую информацию:
 
-【领域】
+【Область】
 {domain}
 
-【知识内容】
+【Содержание】
 {content[:2000]}
 
-请提供以下信息（JSON格式）：
+Предоставьте информацию (формат JSON):
 {{
-  "category": "分类（如：算法、概念、工具、实践等）",
-  "tags": ["标签1", "标签2", "标签3"],
-  "key_concepts": ["核心概念1", "核心概念2", "核心概念3"],
-  "summary": "一句话摘要（50字以内）"
+  "category": "категория (алгоритмы, концепции, инструменты, практика и т.д.)",
+  "tags": ["тег1", "тег2", "тег3"],
+  "key_concepts": ["концепция1", "концепция2", "концепция3"],
+  "summary": "краткое резюме (до 50 слов)"
 }}
 """
 
         messages = [
             {
                 "role": "system",
-                "content": "你是一个知识管理专家，擅长分析学习内容并提取关键信息、分类和标签。",
+                "content": "Вы — эксперт по управлению знаниями: анализ, извлечение ключевой информации, классификация и теги.",
             },
             {"role": "user", "content": user_prompt},
         ]
@@ -122,93 +122,93 @@ class AddKnowledgeProcessor:
         try:
             response = self.llm.invoke(messages)
 
-            # 尝试解析 JSON（简化实现：使用规则提取）
+            # Попытка разбора JSON (упрощённо — правила)
             return self._extract_metadata_from_text(response)
         except Exception:
-            # 降级：使用规则分析
+            # Fallback: анализ по правилам
             return {
                 "category": self._classify_content(content, domain),
                 "tags": self._extract_tags_from_content(content),
                 "key_concepts": self._extract_concepts_from_content(content),
                 "summary": content[:100] + "..." if len(content) > 100 else content,
-                "domain": domain,  # 添加 domain 字段
+                "domain": domain,  # поле domain
             }
 
     def _extract_metadata_from_text(self, text: str) -> Dict[str, any]:
         """
-        从文本中提取元数据（简化版）
+        Извлечь метаданные из текста (упрощённо)
 
         Args:
-            text: LLM 响应文本
+            text: текст ответа LLM
 
         Returns:
-            元数据字典
+            словарь метаданных
         """
-        # 简化实现：基于规则提取
+        # Упрощённо: извлечение по правилам
         lines = text.strip().split("\n")
 
-        category = "通用"
+        category = "общее"
         tags = []
         key_concepts = []
         summary = ""
 
         for line in lines:
             line = line.strip()
-            if "分类" in line or "category" in line.lower():
+            if "категор" in line.lower() or "category" in line.lower():
                 category = line.split("：")[-1].split(":")[-1].strip()
-            elif "标签" in line or "tags" in line.lower():
+            elif "тег" in line.lower() or "tags" in line.lower():
                 tags = [
                     tag.strip(" \"'[]{}")
                     for tag in line.split("：")[-1].split(":")[-1].split(",")
                 ]
-            elif "概念" in line or "concepts" in line.lower():
+            elif "концепц" in line.lower() or "concepts" in line.lower():
                 key_concepts = [
                     c.strip(" \"'[]{}")
                     for c in line.split("：")[-1].split(":")[-1].split(",")
                 ]
-            elif "摘要" in line or "summary" in line.lower():
+            elif "резюме" in line.lower() or "summary" in line.lower():
                 summary = line.split("：")[-1].split(":")[-1].strip()
 
         return {
-            "category": category if category else "通用",
+            "category": category if category else "общее",
             "tags": [t for t in tags if t],
             "key_concepts": [c for c in key_concepts if c],
-            "summary": summary if summary else "知识笔记",
-            "domain": domain,  # 添加 domain 字段
+            "summary": summary if summary else "заметка",
+            "domain": domain,  # поле domain
         }
 
     def _extract_tags_from_content(self, content: str) -> List[str]:
         """
-        从内容中提取标签（基于关键词）
+        Извлечь теги из содержания (по ключевым словам)
 
         Args:
-            content: 内容文本
+            content: текст содержания
 
         Returns:
-            标签列表
+            список тегов
         """
-        # 常见技术关键词
+        # Распространённые технические ключевые слова
         keywords = [
-            "算法",
-            "数据结构",
-            "机器学习",
-            "深度学习",
+            "алгоритмы",
+            "структуры данных",
+            "машинное обучение",
+            "глубокое обучение",
             "Python",
             "JavaScript",
             "TypeScript",
             "Java",
-            "框架",
-            "库",
-            "工具",
+            "фреймворк",
+            "библиотека",
+            "инструмент",
             "API",
-            "前端",
-            "后端",
-            "全栈",
-            "数据库",
-            "理论",
-            "实践",
-            "教程",
-            "示例",
+            "фронтенд",
+            "бэкенд",
+            "фулстек",
+            "база данных",
+            "теория",
+            "практика",
+            "туториал",
+            "пример",
         ]
 
         found = []
@@ -217,50 +217,50 @@ class AddKnowledgeProcessor:
             if keyword.lower() in content_lower:
                 found.append(keyword)
 
-        return found[:5]  # 最多5个标签
+        return found[:5]  # максимум 5 тегов
 
     def _extract_concepts_from_content(self, content: str) -> List[str]:
         """
-        从内容中提取关键概念
+        Извлечь ключевые концепции из содержания
 
         Args:
-            content: 内容文本
+            content: текст содержания
 
         Returns:
-            关键概念列表
+            список ключевых концепций
         """
-        # 提取以 # 开头的标题作为概念
+        # Заголовки с # как концепции
         concepts = []
         for line in content.split("\n"):
             line = line.strip()
             if line.startswith("#"):
-                # 去掉 # 符号和空格
+                # Убрать # и пробелы
                 concept = line.lstrip("#").strip()
-                if concept and len(concept) < 50:  # 限制长度
+                if concept and len(concept) < 50:  # ограничение длины
                     concepts.append(concept)
 
-        return concepts[:5]  # 最多5个概念
+        return concepts[:5]  # максимум 5 концепций
 
     def _generate_filename(self, title: str, category: str = "") -> str:
         """
-        生成文件名
+        Сгенерировать имя файла
 
         Args:
-            title: 标题
-            category: 分类（可选）
+            title: заголовок
+            category: категория (опционально)
 
         Returns:
-            文件名（带扩展名）
+            имя файла с расширением
         """
-        # 提取第一句话作为文件名
+        # Первая строка как имя файла
         if len(title) > 50:
             title = title[:50]
 
-        # 清理特殊字符
+        # Очистка спецсимволов
         title = title.replace(" ", "-")
         title = "".join(c for c in title if c.isalnum() or c in "-_")
 
-        # 添加时间戳
+        # Добавить метку времени
         timestamp = datetime.now().strftime("%Y%m%d-%H%M")
 
         if category:
@@ -268,135 +268,135 @@ class AddKnowledgeProcessor:
         else:
             base_name = f"{timestamp}-{title}"
 
-        return f"{base_name}.md"  # 添加 .md 扩展名
+        return f"{base_name}.md"
 
     def _save_knowledge(
         self, domain: str, content: str, metadata: Dict[str, any]
     ) -> Path:
         """
-        保存知识笔记
+        Сохранить заметку
 
         Args:
-            domain: 领域名称
-            content: 知识内容
-            metadata: 元数据
+            domain: название области
+            content: содержание знания
+            metadata: метаданные
 
         Returns:
-            保存的文件路径
+            путь сохранённого файла
         """
-        # 生成文件名（_generate_filename 已包含 .md 扩展名）
+        # Имя файла (_generate_filename уже с .md)
         title = content.split("\n")[0].lstrip("#").strip()
         filename = self._generate_filename(title, metadata.get("category", ""))
 
-        # 添加元数据到内容
+        # Добавить метаданные в содержание
         full_content = f"""# {title}
 
-> **分类**: {metadata.get('category', '通用')}
-> **标签**: {', '.join(metadata.get('tags', []))}
-> **添加时间**: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+> **Категория**: {metadata.get('category', 'общее')}
+> **Теги**: {', '.join(metadata.get('tags', []))}
+> **Добавлено**: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
 ---
 
 {content}
 
-## 关键概念
+## Ключевые концепции
 {chr(10).join(f"- {c}" for c in metadata.get('key_concepts', []))}
 
-## 摘要
-{metadata.get('summary', '无')}
+## Резюме
+{metadata.get('summary', 'нет')}
 """
 
-        # 保存文件
+        # Сохранить файл
         self.file_manager.save_knowledge(domain, filename, full_content)
 
-        # 返回完整路径
+        # Вернуть полный путь
         return self.file_manager.BASE_DIR / domain / "knowledge" / filename
 
     def _classify_content(self, content: str, domain: str) -> str:
         """
-        分类内容
+        Классифицировать содержание
 
         Args:
-            content: 内容
-            domain: 领域
+            content: содержание
+            domain: область
 
         Returns:
-            分类名称
+            название категории
         """
-        # 基于规则的简单分类
+        # Простая классификация по правилам
         content_lower = content.lower()
 
         if any(
-            word in content_lower for word in ["算法", "algorithm", "方法", "method"]
+            word in content_lower for word in ["алгоритмы", "algorithm", "метод", "method"]
         ):
-            return "算法"
+            return "алгоритмы"
         elif any(
-            word in content_lower for word in ["概念", "concept", "原理", "principle"]
+            word in content_lower for word in ["концепц", "concept", "принцип", "principle"]
         ):
-            return "概念"
-        elif any(
-            word in content_lower
-            for word in ["工具", "tool", "框架", "framework", "库", "library"]
-        ):
-            return "工具"
+            return "концепции"
         elif any(
             word in content_lower
-            for word in ["实践", "practice", "案例", "case", "项目", "project"]
+            for word in ["инструмент", "tool", "фреймворк", "framework", "библиотека", "library"]
         ):
-            return "实践"
+            return "инструмент"
         elif any(
-            word in content_lower for word in ["教程", "tutorial", "指南", "guide"]
+            word in content_lower
+            for word in ["практика", "practice", "кейс", "case", "проект", "project"]
         ):
-            return "教程"
+            return "практика"
+        elif any(
+            word in content_lower for word in ["туториал", "tutorial", "руководство", "guide"]
+        ):
+            return "туториал"
         else:
-            return "通用"
+            return "общее"
 
     def add(self, domain: str, input_data: str, input_type: str = None) -> str:
         """
-        添加知识
+        Добавить знание
 
         Args:
-            domain: 领域名称
-            input_data: 输入数据（文本/文件路径/URL）
-            input_type: 输入类型（可选，自动识别）
+            domain: название области
+            input_data: входные данные (текст/путь/URL)
+            input_type: тип ввода (опционально, авто)
 
         Returns:
-            执行结果
+            результат выполнения
         """
-        # 识别输入类型
+        # Определить тип ввода
         if not input_type:
             input_type = self._identify_input_type(input_data)
 
-        # 获取内容
+        # Получить содержание
         if input_type == "text":
             content = input_data
         elif input_type == "file":
             try:
                 content = self._read_file(input_data)
             except Exception as e:
-                return f"❌ 读取文件失败：{e}"
+                return f"❌ Ошибка чтения файла: {e}"
         elif input_type == "url":
-            # 简化实现：提示用户复制内容
-            content = f"# URL 知识\n\n来源：{input_data}\n\n请手动添加内容..."
+            # Упрощённо: попросить пользователя вставить содержание
+            content = f"# Знание из URL\n\nИсточник: {input_data}\n\nДобавьте содержание вручную..."
         else:
-            return f"❌ 未知的输入类型：{input_type}"
+            return f"❌ Неизвестный тип ввода: {input_type}"
 
-        # 分析内容
+        # Анализ содержания
         metadata = self._analyze_content(content, domain)
 
-        # 保存知识
+        # Сохранить знание
         try:
             file_path = self._save_knowledge(domain, content, metadata)
 
-            # 更新摘要
+            # Обновить сводку
             self.summary_manager.update_knowledge_summary(domain, file_path.name)
 
-            return f"""✅ 知识已添加
+            return f"""✅ Знание добавлено
 
-📁 保存位置: {domain}/knowledge/{file_path.name}
-📊 分类: {metadata.get('category', '通用')}
-🏷️  标签: {', '.join(metadata.get('tags', []))}
+📁 Путь: {domain}/knowledge/{file_path.name}
+📊 Категория: {metadata.get('category', 'общее')}
+🏷️  Теги: {', '.join(metadata.get('tags', []))}
 """
 
         except Exception as e:
-            return f"❌ 添加知识失败：{e}"
+            return f"❌ Ошибка добавления знания: {e}"

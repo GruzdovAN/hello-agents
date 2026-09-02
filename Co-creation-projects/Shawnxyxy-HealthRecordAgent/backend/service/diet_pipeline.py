@@ -1,6 +1,6 @@
 """
 阶段 2：Nutritionist → Coach → Habit 三 Agent 串行流水线；
-每阶段 LLM 输出经 Pydantic 校验，失败自动重试；统一错误码与降级。
+Выходные данные LLM каждого этапа проверяются Pydantic, и неудачные попытки автоматически повторяются; коды ошибок и понижения версии унифицированы.
 """
 
 from __future__ import annotations
@@ -75,7 +75,7 @@ def _fallback_food_parse(context: Dict[str, Any]) -> FoodParseOutput:
             {
                 "meal_time": "",
                 "food_name": p[:40],
-                "portion_text": "未明确",
+"portion_text": "Непонятно",
                 "confidence": 0.45,
             }
         )
@@ -94,20 +94,20 @@ def _fallback_nutritionist(context: Dict[str, Any], nutrition_summary: Nutrition
         protein_gap_g=gap,
         rationale="（降级）根据目标与日志解析结果估算蛋白缺口；LLM 阶段未通过校验或超时。",
         suggested_lookup_queries=["鸡蛋,希腊酸奶,牛奶,豆浆,即食鸡胸肉"],
-        candidate_focus=["便利店高蛋白", "训练后补充"],
+кандидат_фокус = ["Магазин с высоким содержанием белка", "Посттренировочная добавка"],
     )
 
 
 def _fallback_coach(context: Dict[str, Any]) -> CoachOutput:
     activity_text = str(context.get("activity_context") or "")
-    train = any(k in activity_text for k in ["训练", "力量", "健身", "workout", "training"])
+train = Any(k в Activity_text для k в ["тренировка", "сила", "фитнес", "тренировка", "тренировка"])
     return CoachOutput(
         training_recovery_note="（降级）晚间安排力量训练时需优先补充蛋白与适量碳水；具体强度以当日体感为准。"
         if train
-        else "（降级）非训练日仍以均衡蛋白为主，避免睡前过饱。",
+else "(Понижение) В дни без тренировок по-прежнему сосредотачивайтесь на сбалансированном белке и избегайте переедания перед сном.",
         timing_constraints="训练后 1～2 小时内尽量安排一餐；便利店即食优先选成分表蛋白较高的品类。"
         if train
-        else "晚餐时间尽量规律，避免过晚大量进食。",
+else "Старайтесь ужинать регулярно и не ешьте слишком много слишком поздно.",
         energy_note="",
         coach_constraints_for_menu=["少油炸", "避免单次过量乳糖不耐受品类"],
     )
@@ -121,27 +121,27 @@ def _fallback_habit(
     gap = max(25.0, min(80.0, max(0.0, tgt - cur)))
     return HabitOutput(
         reflect_alignment="（降级）未能生成完整习惯层输出；已忽略部分 Reflect 细节，仅做安全兜底推荐。"
-        + (" 近期有用户反馈记录，建议下次缩短决策链或检查模型输出格式。" if "暂无" not in reflect_mem else ""),
++ («Недавно появились записи отзывов пользователей. Рекомендуется сократить цепочку принятия решений или проверить формат вывода модели в следующий раз». если «Нет», то нет в Reflection_mem else «»),
         execution_hints=["优先买得到、可立即食用的组合", "若仍失败请改选外卖蛋白套餐"],
         meal_plan=MealPlan(
             items=[
                 MealPlanItem(
-                    name="希腊酸奶",
-                    portion="约 150g×1 杯",
+name="Греческий йогурт",
+порция="около 150 г×1 чашка",
                     est_protein_g=min(18.0, gap * 0.35),
-                    why="便利店常见，蛋白密度较高",
+Why="распространено в магазинах повседневного спроса, с более высокой плотностью белка",
                 ),
                 MealPlanItem(
-                    name="水煮蛋",
-                    portion="2 个",
+name="вареное яйцо",
+порция="2 шт.",
                     est_protein_g=12.0,
-                    why="易购买、蛋白稳定",
+Why="Легко купить, стабильный белок",
                 ),
                 MealPlanItem(
-                    name="豆浆",
+name="Соевое молоко",
                     portion="300ml",
                     est_protein_g=min(12.0, gap * 0.2),
-                    why="补充液体蛋白与水分",
+Why="Добавка жидкого белка и влаги",
                 ),
             ],
             total_est_protein_g=round(min(gap, 45.0), 1),
@@ -165,7 +165,7 @@ async def _run_validated_stage(
         if repair_hint:
             full_prompt += (
                 "\n\n【修正要求】上一输出未通过 schema 校验或无法解析：\n"
-                f"{repair_hint}\n请只输出 **一个** JSON 对象，字段齐全、类型正确，不要 Markdown。"
+f"{repair_hint}\nПожалуйста, выведите только **один** объект JSON с полными полями и правильными типами. Markdown не требуется."
             )
         try:
             raw = await asyncio.wait_for(llm.ainvoke(full_prompt), timeout=timeout_sec)
@@ -174,7 +174,7 @@ async def _run_validated_stage(
                 diet_error_record(
                     stage,
                     DietErrorCode.LLM_TIMEOUT,
-                    "LLM 调用超时",
+«Тайм-аут вызова LLM»,
                     attempt=attempt,
                 )
             )
@@ -202,7 +202,7 @@ async def _run_validated_stage(
                     "exception": type(e).__name__,
                 }
             )
-            repair_hint = "上轮调用失败，请仅输出合法 JSON。"
+Repair_hint = "Последний вызов не удался, выводите только действительный JSON."
             continue
 
         obj = _extract_json_object(raw)
@@ -211,7 +211,7 @@ async def _run_validated_stage(
                 diet_error_record(
                     stage,
                     DietErrorCode.LLM_PARSE_ERROR,
-                    "无法从模型输出解析 JSON",
+«Невозможно проанализировать JSON из выходных данных модели»,
                     attempt=attempt,
                     detail=(raw[:1200] if raw else ""),
                 )
@@ -244,7 +244,7 @@ async def _run_validated_stage(
                 diet_error_record(
                     stage,
                     DietErrorCode.VALIDATION_FAILED,
-                    "Pydantic 校验失败",
+«Пидантическая проверка не удалась»,
                     attempt=attempt,
                     detail=err_text,
                 )
@@ -284,7 +284,7 @@ def _prefetch_tools(user_id: str, context: Dict[str, Any]) -> Tuple[Dict[str, An
     else:
         trace_tools.append({"tool": "activity_sleep_summary", "ok": True, "result": activity})
 
-    default_q = "鸡蛋,希腊酸奶,牛奶,豆浆,即食鸡胸肉"
+default_q = "Яйца, греческий йогурт, молоко, соевое молоко, готовая куриная грудка"
     try:
         nutrition = dispatch_tool(
             "nutrition_lookup",
@@ -322,7 +322,7 @@ class DietMultiAgentPipeline:
                 "goal": context.get("goal"),
                 "free_notes": context.get("free_notes", ""),
                 "today_food_log_text": str(context.get("today_food_log_text") or "")[:600],
-                "query": "训练后蛋白补齐与执行阻碍规避",
+"query": "Комплементация белка после тренировки и избежание препятствий при выполнении",
             },
         )
         rag_summary = rag_result.get("summary", "（暂无召回记忆）")
@@ -334,13 +334,13 @@ class DietMultiAgentPipeline:
         degraded = False
 
         # ----- Food Parse (LLM) -----
-        fp_prompt = f"""你是食物日志解析 Agent。请把用户自然语言饮食记录解析为 JSON。只输出一个 JSON 对象，不要 Markdown。
+fp_prompt = f"""Вы являетесь агентом анализа журнала питания. Проанализируйте записи о диете пользователя на естественном языке в JSON. Выводите только объект JSON, без Markdown.
 
-结构：
+структура:
 {{
   "items": [
     {{
-      "meal_time": string,      // breakfast/lunch/dinner/snack 或空字符串
+"meal_time": строка, // завтрак/обед/ужин/перекус или пустая строка
       "food_name": string,
       "portion_text": string,
       "confidence": number      // 0~1
@@ -357,12 +357,12 @@ class DietMultiAgentPipeline:
   "parse_notes": string
 }}
 
-要求：
+Требовать:
 - 从 today_food_log_text 中尽可能提取食物与份量；没有明确份量可写“未明确”。
-- nutrition_summary 给出粗略估计值；无法判断可填 0。
-- 字段齐全且类型正确。
+- Nutrition_summary дает приблизительную оценку; введите 0, если не можете определить.
+- Поля заполнены и имеют правильный тип.
 
-用户场景：
+Пользовательский сценарий:
 {json.dumps(context, ensure_ascii=False, indent=2)}
 """
         fp, fp_attempts = await _run_validated_stage(
@@ -377,7 +377,7 @@ class DietMultiAgentPipeline:
                 diet_error_record(
                     "food_parse",
                     DietErrorCode.DEGRADED_FALLBACK,
-                    "食物解析阶段失败，已使用规则降级输出",
+«Фаза анализа еды не удалась, результат был понижен с помощью правил»,
                 )
             )
         pipeline_trace.append(
@@ -390,9 +390,9 @@ class DietMultiAgentPipeline:
         )
 
         # ----- Nutritionist -----
-        n_prompt = f"""你是 **Nutritionist（营养师）Agent**。只输出 **一个 JSON**，不要其它文字。
+n_prompt = f"""Вы **Агент диетолога**. Выводите только **JSON**, никакой другой текст.
 
-字段与类型必须完全一致：
+Поля и типы должны быть абсолютно одинаковыми:
 {{
   "protein_gap_g": number,
   "rationale": string,
@@ -400,19 +400,19 @@ class DietMultiAgentPipeline:
   "candidate_focus": string[]
 }}
 
-用户场景：
+Пользовательский сценарий:
 {json.dumps(context, ensure_ascii=False, indent=2)}
 
-食物解析结果（LLM）：
+Результаты анализа пищевых продуктов (LLM):
 {json.dumps(fp.model_dump(), ensure_ascii=False, indent=2)}
 
-Reflect 记忆（调整推荐策略）：
+Отразить память (скорректировать рекомендуемую стратегию):
 {reflect_mem}
 
-历史记忆召回（RAG）：
+Восстановление исторической памяти (RAG):
 {rag_summary}
 
-Mock 营养表检索结果（供参考）：
+Результаты поиска ложной таблицы питания (для справки):
 {json.dumps(tool_bundle.get("nutrition", {}), ensure_ascii=False, indent=2)}
 """
         nu, nu_attempts = await _run_validated_stage(
@@ -427,7 +427,7 @@ Mock 营养表检索结果（供参考）：
                 diet_error_record(
                     "nutritionist",
                     DietErrorCode.DEGRADED_FALLBACK,
-                    "营养师阶段失败，已使用规则降级输出",
+«Этап диетолога провалился, и результат был снижен с помощью правил»,
                 )
             )
         pipeline_trace.append(
@@ -439,7 +439,7 @@ Mock 营养表检索结果（供参考）：
             }
         )
 
-        # 按营养师建议追加一次营养查询（可选）
+#Добавьте запрос о питании, рекомендованный диетологом (необязательно).
         extra_nutrition: Dict[str, Any] = {}
         if nu.suggested_lookup_queries:
             q = ",".join(nu.suggested_lookup_queries[:3])
@@ -461,7 +461,7 @@ Mock 营养表检索结果（供参考）：
         # ----- Coach -----
         c_prompt = f"""你是 **Coach（运动恢复）Agent**。只输出 **一个 JSON**。
 
-结构：
+структура:
 {{
   "training_recovery_note": string,
   "timing_constraints": string,
@@ -469,19 +469,19 @@ Mock 营养表检索结果（供参考）：
   "coach_constraints_for_menu": string[]
 }}
 
-用户场景：
+Пользовательский сценарий:
 {json.dumps(context, ensure_ascii=False, indent=2)}
 
-食物解析（营养汇总）：
+Анализ продуктов питания (краткая информация о пищевой ценности):
 {json.dumps(fp.nutrition_summary.model_dump(), ensure_ascii=False, indent=2)}
 
-营养师结论：
+Заключение диетолога:
 {json.dumps(nu.model_dump(), ensure_ascii=False, indent=2)}
 
-活动/睡眠摘要：
+Сводка активности/сна:
 {json.dumps(tool_bundle.get("activity", {}), ensure_ascii=False, indent=2)}
 
-历史记忆召回（RAG）：
+Восстановление исторической памяти (RAG):
 {rag_summary}
 """
         co, co_attempts = await _run_validated_stage(
@@ -496,7 +496,7 @@ Mock 营养表检索结果（供参考）：
                 diet_error_record(
                     "coach",
                     DietErrorCode.DEGRADED_FALLBACK,
-                    "Coach 阶段失败，已使用模板降级输出",
+«Этап тренера не удался, выходные данные шаблона понижены»,
                 )
             )
         pipeline_trace.append(
@@ -511,7 +511,7 @@ Mock 营养表检索结果（供参考）：
         # ----- Habit -----
         h_prompt = f"""你是 **Habit（习惯养成）Agent**。只输出 **一个 JSON**。
 
-结构：
+структура:
 {{
   "reflect_alignment": string,
   "execution_hints": string[],
@@ -522,30 +522,30 @@ Mock 营养表检索结果（供参考）：
   }}
 }}
 
-要求：
-- meal_plan.items 至少 1 条；份量具体、可执行；适合便利店/外卖。
-- 结合 Reflect 记忆，说明本次如何规避上次失败原因。
-- est_protein_g 为粗略估计。
+Требовать:
+- food_plan.items Минимум 1 товар; размер порции конкретен и выполним; подходит для магазинов шаговой доступности/на вынос.
+- В сочетании с «Отражением памяти» объясните, как на этот раз избежать причин последней неудачи.
+- est_protein_g — приблизительная оценка.
 
-用户场景：
+Пользовательский сценарий:
 {json.dumps(context, ensure_ascii=False, indent=2)}
 
-食物解析结果：
+Результаты анализа продуктов питания:
 {json.dumps(fp.model_dump(), ensure_ascii=False, indent=2)}
 
-Reflect 记忆：
+Отразить память:
 {reflect_mem}
 
-历史记忆召回（RAG）：
+Восстановление исторической памяти (RAG):
 {rag_summary}
 
-营养师：
+Диетолог:
 {json.dumps(nu.model_dump(), ensure_ascii=False, indent=2)}
 
 Coach：
 {json.dumps(co.model_dump(), ensure_ascii=False, indent=2)}
 
-营养数据（含追加查询）：
+Данные о пищевой ценности (включая дополнительные запросы):
 {json.dumps(tool_bundle, ensure_ascii=False, indent=2)[:12000]}
 """
         ha, ha_attempts = await _run_validated_stage(
@@ -560,7 +560,7 @@ Coach：
                 diet_error_record(
                     "habit",
                     DietErrorCode.DEGRADED_FALLBACK,
-                    "Habit 阶段失败，已使用安全兜底菜单",
+«Фаза привычки не удалась, использовано меню безопасности»,
                 )
             )
         pipeline_trace.append(
@@ -577,10 +577,10 @@ Coach：
         planning = {
             "reasoning": nu.rationale,
             "plan_steps": [
-                "FoodParse：从饮食日志抽取食物与份量并估算营养",
+«FoodParse: извлечение продуктов и их порций из журналов еды и оценка питания»,
                 f"Nutritionist：缺口约 {nu.protein_gap_g:.1f}g 蛋白",
-                "Coach：训练/进食窗口与恢复约束",
-                "Habit：对齐 Reflect 的可执行菜单",
+«Тренер: обучение/принятие окон и ограничения восстановления»,
+«Привычка: выравнивать исполняемое меню Reflect»,
             ],
             "agent_pipeline": [
                 "FoodParseAgent",
@@ -641,7 +641,7 @@ Coach：
         except Exception as e:
             logger.exception("diet_runs 落库失败: %s", e)
         try:
-            # 最佳努力索引，不影响主流程
+# Индекс наилучших усилий, не влияет на основной процесс
             await asyncio.to_thread(index_diet_run, run_id)
         except Exception as e:
             logger.warning("diet run 向量索引失败（不影响返回）: %s", e)

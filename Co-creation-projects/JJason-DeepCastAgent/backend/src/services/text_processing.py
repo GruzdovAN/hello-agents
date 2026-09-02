@@ -1,18 +1,18 @@
-"""用于标准化代理生成文本的实用助手。"""
+"""Практический помощник для стандартизации текста, генерируемого агентом."""
 
 from __future__ import annotations
 
 
 def strip_tool_calls(text: str) -> str:
-    """移除文本中的工具调用标记。
+"""Удалить маркеры вызова инструментов из текста.
 
-    支持嵌套方括号，例如:
+Поддерживаются вложенные квадратные скобки, например:
     [TOOL_CALL:note:{"tags":["deep_research","task_1"]}]
     """
     if not text:
         return text
 
-    # 找到 [TOOL_CALL: 起始标记，然后手动匹配到对应的闭合 ]
+# Найдите [TOOL_CALL: начальную метку, а затем вручную сопоставьте соответствующее замыкание]
     result: list[str] = []
     i = 0
     marker = "[TOOL_CALL:"
@@ -22,7 +22,7 @@ def strip_tool_calls(text: str) -> str:
             result.append(text[i:])
             break
         result.append(text[i:pos])
-        # 从 marker 起始位置向后扫描，跟踪方括号深度
+# Сканируйте назад от исходного положения маркера, чтобы отслеживать глубину кронштейна.
         depth = 0
         j = pos
         while j < len(text):
@@ -33,6 +33,6 @@ def strip_tool_calls(text: str) -> str:
                 if depth == 0:
                     break
             j += 1
-        i = j + 1  # 跳过闭合的 ]
+i = j + 1 # пропускать закрытые]
     return "".join(result)
 

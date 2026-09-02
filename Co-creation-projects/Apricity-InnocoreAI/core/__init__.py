@@ -1,5 +1,5 @@
 """
-InnoCore AI 核心模块
+Основной модуль InnoCore AI
 """
 
 from .config import InnoCoreConfig, get_config, update_config

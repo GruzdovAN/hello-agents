@@ -1,4 +1,4 @@
-"""会话总结器 - 自动生成会话摘要"""
+"""Средство суммирования сеансов — автоматическое создание сводок сеансов."""
 
 import os
 import re
@@ -7,10 +7,9 @@ from typing import List, Optional, Dict, Any
 
 
 class SessionSummarizer:
-    """会话总结器
+    """Сумматор бесед
 
-    负责在创建新会话时总结旧会话内容，生成结构化摘要保存到 memory 目录。
-    """
+    Отвечает за обобщение содержимого старых сеансов при создании новых сеансов, создание структурированных сводок и сохранение их в каталоге памяти."""
 
     def __init__(
         self,
@@ -20,15 +19,14 @@ class SessionSummarizer:
         api_key: str = None,
         base_url: str = None,
     ):
-        """初始化会话总结器
+        """Инициализировать сумматор сеансов
 
-        Args:
-            workspace_manager: 工作空间管理器
-            llm_client: LLM 客户端（可选，用于生成总结）
-            model_id: 模型 ID
-            api_key: API Key
-            base_url: API Base URL
-        """
+        Аргументы:
+            workspace_manager:Рабочий Менеджер пространств
+            llm_client: клиент LLM (необязательно, используется для создания сводок)
+            model_id: идентификатор модели
+            api_key: Ключ API
+            base_url: Базовый URL-адрес API"""
         self.workspace = workspace_manager
         self._llm_client = llm_client
         self._model_id = model_id
@@ -41,40 +39,42 @@ class SessionSummarizer:
         last_n: int = 10,
         session_id: str = None,
     ) -> Optional[str]:
-        """总结会话内容
+        """Подведите итоги разговора
 
-        Args:
-            messages: 会话消息列表
-            last_n: 只取最后 N 轮对话
-            session_id: 会话 ID（用于日志）
+        Аргументы:
+            сообщения: список сообщений сеанса
+            Last_n: использовать только последние N раундов диалога
+            session_id: идентификатор сеанса (для регистрации)
 
-        Returns:
-            生成的总结文件路径，如果失败返回 None
-        """
+        Возврат:
+            Сгенерированный путь к файлу сводки, в случае ошибки возвращается None."""
         if not messages:
             return None
 
-        # 提取最后 N 轮对话
+        # Извлеките последние N раундов диалога
+
         excerpt = self._extract_excerpt(messages, last_n)
         if not excerpt:
             return None
 
         try:
-            # 生成 slug 和总结
+            # Создание слизней и резюме
+
             slug = await self._generate_slug(excerpt)
             summary = await self._generate_summary(excerpt)
 
             if not slug or not summary:
                 return None
 
-            # 保存到文件
+            # сохранить в файл
+
             filename = self._generate_filename(slug)
             self.workspace.save_session_summary(filename, summary)
 
             return filename
 
         except Exception as e:
-            print(f"⚠️ 会话总结失败: {e}")
+            print(f"⚠️ Ошибка сводки сессии: {e}")
             return None
 
     def _extract_excerpt(
@@ -82,55 +82,58 @@ class SessionSummarizer:
         messages: List[dict],
         last_n: int = 10,
     ) -> str:
-        """提取会话摘要文本
+        """Извлечь текст сводки разговора
 
-        Args:
-            messages: 消息列表
-            last_n: 取最后 N 轮对话
+        Аргументы:
+            сообщения: список сообщений
+            Last_n: Пройти последние N раундов диалога.
 
-        Returns:
-            提取的文本
-        """
-        # 只保留 user 和 assistant 消息
+        Возврат:
+            Извлеченный текст"""
+        # Сохраняйте только сообщения пользователей и помощников
+
         conversation = []
         for msg in messages:
             role = msg.get("role", "")
             content = msg.get("content", "")
             if role in ("user", "assistant") and content:
-                # 截断过长的内容
+                # Обрезать слишком длинный контент
+
                 if len(content) > 500:
                     content = content[:500] + "..."
                 conversation.append(f"[{role.upper()}]: {content}")
 
-        # 只取最后 N 轮
+        # Возьмите только последние N раундов
+
         if len(conversation) > last_n * 2:
             conversation = conversation[-(last_n * 2) :]
 
         return "\n".join(conversation)
 
     async def _generate_slug(self, excerpt: str) -> str:
-        """生成描述性 slug
+        """Создать описательный фрагмент
 
-        Args:
-            excerpt: 会话摘要文本
+        Аргументы:
+            отрывок: текст резюме сеанса
 
-        Returns:
-            3-5 个单词的 slug
-        """
+        Возврат:
+            отрывок из 3-5 слов"""
         if not self._llm_client:
-            # 如果没有 LLM，使用简单方法生成 slug
+            # Если LLM нет, используйте простой метод для создания пули.
+
             return self._generate_simple_slug(excerpt)
 
-        prompt = f"""根据以下对话内容，生成一个简短的英文描述（3-5个单词，用连字符连接）。
-只输出描述本身，不要其他内容。
+подсказка = f"""Сгенерируйте краткое описание на английском языке (3-5 слов, связанных с символами) на основе следующего диалога категории.
+Только вывод описывает себя, больше ничего не критикует.
 
-对话内容:
+对话содержимое:
 {excerpt[:1000]}
 
-描述:"""
+описывать:"""
 
         try:
-            # 调用 LLM
+            # Позвонить в LLM
+
             from openai import AsyncOpenAI
 
             client = AsyncOpenAI(
@@ -146,26 +149,28 @@ class SessionSummarizer:
             )
 
             slug = response.choices[0].message.content.strip()
-            # 清理 slug
+            # Очистите слизней
+
             slug = re.sub(r"[^a-zA-Z0-9\-]", "", slug.replace(" ", "-").lower())
             slug = re.sub(r"-+", "-", slug).strip("-")
 
-            # 限制长度
+            # Ограничить длину
+
             if len(slug) > 50:
                 slug = slug[:50]
 
             return slug or "conversation"
 
         except Exception as e:
-            print(f"⚠️ 生成 slug 失败: {e}")
+print(f"⚠️ 生成 slug ошибка: {e}")
             return self._generate_simple_slug(excerpt)
 
     def _generate_simple_slug(self, excerpt: str) -> str:
-        """使用简单方法生成 slug
+        """Используйте простой метод для создания слизней
 
-        从对话中提取关键词
-        """
-        # 提取一些常见的关键词
+        Извлекайте ключевые слова из разговоров"""
+        # Извлеките некоторые общие ключевые слова
+
         keywords = []
         common_words = {
             "the",
@@ -292,14 +297,16 @@ class SessionSummarizer:
             "themselves",
         }
 
-        # 提取英文单词
+        # Извлечь английские слова
+
         words = re.findall(r"\b[a-zA-Z]{3,}\b", excerpt.lower())
         word_count = {}
         for word in words:
             if word not in common_words:
                 word_count[word] = word_count.get(word, 0) + 1
 
-        # 取频率最高的词
+        # Получите слово с самой высокой частотой
+
         sorted_words = sorted(word_count.items(), key=lambda x: -x[1])
         keywords = [w for w, _ in sorted_words[:3]]
 
@@ -308,32 +315,32 @@ class SessionSummarizer:
         return "conversation"
 
     async def _generate_summary(self, excerpt: str) -> str:
-        """生成结构化总结
+        """Создание структурированных сводок
 
-        Args:
-            excerpt: 会话摘要文本
+        Аргументы:
+            отрывок: текст резюме сеанса
 
-        Returns:
-            Markdown 格式的总结
-        """
+        Возврат:
+            Краткое описание формата Markdown"""
         if not self._llm_client:
-            # 如果没有 LLM，返回简单格式
+            # Если LLM нет, верните простую форму
+
             return self._generate_simple_summary(excerpt)
 
-        prompt = f"""请为以下对话生成一个结构化的会话总结。
+        prompt = f"""Пожалуйста,为以下对话生成一个结构化的сессияитог。
 
-要求：
-1. 使用 Markdown 格式
-2. 包含以下部分：
-   - 主题：一句话概括
-   - 关键点：3-5 个要点
-   - 待办：如果有提到任务或待办事项
-3. 简洁明了，总字数不超过 300 字
+Требовать:
+1. Используйте формат Markdown.
+2. Содержит следующие части:
+- Тема: Краткое изложение одним предложением.
+- Ключевые моменты: 3-5 ключевых моментов.
+- Дела: если упоминается задача или элемент списка дел.
+3. Будьте краткими и ясными, общее количество слов не должно превышать 300.
 
-对话内容:
+对话содержимое:
 {excerpt[:2000]}
 
-总结:"""
+итог:"""
 
         try:
             from openai import AsyncOpenAI
@@ -352,7 +359,8 @@ class SessionSummarizer:
 
             summary = response.choices[0].message.content.strip()
 
-            # 添加元信息头
+            # Добавить заголовок метаинформации
+
             header = f"""---
 date: {datetime.now().strftime("%Y-%m-%d %H:%M")}
 type: session-summary
@@ -362,35 +370,35 @@ type: session-summary
             return header + summary
 
         except Exception as e:
-            print(f"⚠️ 生成总结失败: {e}")
+print(f"⚠️ 生成итогошибка: {e}")
             return self._generate_simple_summary(excerpt)
 
     def _generate_simple_summary(self, excerpt: str) -> str:
-        """生成简单格式的总结"""
+        """Создание сводок в простом формате"""
         header = f"""---
 date: {datetime.now().strftime("%Y-%m-%d %H:%M")}
 type: session-summary
 ---
 
-# 会话摘要
+# сессиясводка
 
-## 对话节选
+## Отрывки из разговора
 
 """
-        # 截取前 500 字符
+        # Обрезать первые 500 символов
+
         content = excerpt[:500]
         if len(excerpt) > 500:
             content += "..."
         return header + content
 
     def _generate_filename(self, slug: str) -> str:
-        """生成文件名
+        """Создать имя файла
 
-        Args:
-            slug: 描述性 slug
+        Аргументы:
+            слизняк: описательный слизень
 
-        Returns:
-            文件名（YYYY-MM-DD-slug.md）
-        """
+        Возврат:
+            Имя файла (ГГГГ-ММ-ДД-slug.md)"""
         date_str = datetime.now().strftime("%Y-%m-%d")
         return f"{date_str}-{slug}.md"

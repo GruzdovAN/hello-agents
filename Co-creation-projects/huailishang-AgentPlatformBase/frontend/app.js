@@ -272,7 +272,7 @@ function renderAgents() {
 
 function renderTask() {
   if (!state.lastTask) {
-    els.taskView.textContent = "暂无任务";
+    els.taskView.textContent = "Нет задач";
     return;
   }
 
@@ -280,9 +280,9 @@ function renderTask() {
   els.taskView.innerHTML = `
     <div class="task-card">
       <strong>${escapeHtml(task.title)}</strong>
-      <div>智能体：${escapeHtml(task.agent_id)}</div>
-      <div>状态：${escapeHtml(task.status)}</div>
-      <div>任务ID：${escapeHtml(task.task_id)}</div>
+      <div>Агент: ${escapeHtml(task.agent_id)}</div>
+      <div>Статус：${escapeHtml(task.status)}</div>
+      <div>ID задачи: ${escapeHtml(task.task_id)}</div>
     </div>
   `;
 }
@@ -311,7 +311,7 @@ async function refreshEvents() {
   els.eventList.innerHTML = "";
 
   if (!data.events.length) {
-    els.eventList.textContent = "暂无事件";
+    els.eventList.textContent = "Нет событий";
     return;
   }
 
@@ -332,7 +332,7 @@ async function loadAgents() {
   state.agents = data.agents;
   renderAgents();
   renderMentionMenu();
-  els.statusText.textContent = `已连接 ${data.total} 个智能体`;
+  els.statusText.textContent = `Подключено ${data.total} агентов`;
 }
 
 function parseTarget(rawText) {
@@ -350,28 +350,28 @@ function parseTarget(rawText) {
 async function sendMessage(rawText) {
   const { agentId, message } = parseTarget(rawText);
   if (!message) {
-    appendMessage("system", "系统", "请输入消息内容。示例：@deep_research 调研一个主题");
+    appendMessage("system", "Система", "Введите сообщение. Пример: @deep_research исследовать тему");
     return;
   }
 
   if (!agentId) {
-    appendMessage("system", "系统", "请先用 @ 选择一个智能体，例如：@deep_research 调研一个主题，或 @rss_digest 今日简报。");
+    appendMessage("system", "Система", "Сначала выберите агента через @, например: @deep_research тема или @rss_digest дайджест.");
     return;
   }
 
   const agent = state.agents.find((item) => item.agent_id === agentId);
   if (!agent) {
-    appendMessage("system", "系统", `未找到智能体 @${agentId}。请点击左侧智能体插入正确的 @ 标记。`);
+    appendMessage("system", "Система", `Агент @${agentId} не найден. Нажмите на агента слева для вставки @.`);
     return;
   }
 
-  appendMessage("user", "你", `@${agentId} ${message}`);
-  appendMessage("system", "系统", `${agent.name} 已开始后台执行，可以继续输入下一条消息。`);
+  appendMessage("user", "Вы", `@${agentId} ${message}`);
+  appendMessage("system", "Система", `${agent.name} запущен в фоне — можно отправить следующее сообщение.`);
 
   const task = await api("/tasks", {
     method: "POST",
     body: JSON.stringify({
-      title: `与 ${agent.name} 对话`,
+      title: `Диалог с ${agent.name}`,
       input: message,
       agent_id: agentId,
       metadata: { group_id: "default", mention: agentId },
@@ -390,9 +390,9 @@ async function sendMessage(rawText) {
   state.activeTaskId = null;
   renderTask();
   if (completed.status === "failed") {
-    appendMessage("system", "系统", `${agent.name} 执行失败：${completed.error || "未知错误"}`);
+    appendMessage("system", "Система", `${agent.name} — ошибка: ${completed.error || "неизвестная ошибка"}`);
   } else {
-    appendMessage("agent", agent.name, completed.output || "（无输出）");
+    appendMessage("agent", agent.name, completed.output || "(нет вывода)");
   }
   await refreshEvents();
 }
@@ -406,7 +406,7 @@ els.chatForm.addEventListener("submit", async (event) => {
   try {
     await sendMessage(text);
   } catch (error) {
-    appendMessage("system", "系统", `请求失败：${error.message}`);
+    appendMessage("system", "Система", `Ошибка запроса：${error.message}`);
   } finally {
     els.messageInput.focus();
   }
@@ -441,9 +441,9 @@ els.refreshButton.addEventListener("click", async () => {
   try {
     await loadAgents();
     await refreshEvents();
-    appendMessage("system", "系统", "已刷新智能体和事件日志。");
+    appendMessage("system", "Система", "Агенты и журнал событий обновлены.");
   } catch (error) {
-    appendMessage("system", "系统", `刷新失败：${error.message}`);
+    appendMessage("system", "Система", `Ошибка обновления: ${error.message}`);
   }
 });
 
@@ -451,10 +451,10 @@ async function boot() {
   try {
     await loadAgents();
     await refreshEvents();
-    appendMessage("system", "系统", "单聊模式已就绪。输入 @ 选择一个智能体后发送。");
+    appendMessage("system", "Система", "Режим чата готов. Введите @ и выберите агента.");
   } catch (error) {
-    els.statusText.textContent = "后端连接失败";
-    appendMessage("system", "系统", `启动失败：${error.message}`);
+    els.statusText.textContent = "Не удалось подключиться к бэкенду";
+    appendMessage("system", "Система", `Не удалось запустить：${error.message}`);
   }
 }
 

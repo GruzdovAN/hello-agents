@@ -1,4 +1,4 @@
-"""StockInsightAgent — Gradio 前端"""
+"""StockInsightAgent — интерфейс Gradio"""
 import threading
 import queue
 import gradio as gr
@@ -55,14 +55,14 @@ def _run_with_capture(q: queue.Queue, agent, mode: str, msg: str):
 
     sys.stdout.is_active = True
     try:
-        if mode == "深度分析 (PlanSolve)":
+if mode == "Углубленный анализ (PlanSolve)":
             result = agent.plan_solve(msg)
-        elif mode == "批判分析 (Reflection)":
+elif mode == "Критический анализ (Размышление)":
             result = agent.reflect(msg)
         else:
             result = agent.react(msg)
     except Exception as e:
-        result = f"分析出错: {e}"
+result = f"Ошибка анализа: {e}"
     finally:
         sys.stdout.is_active = False
     q.put(None)
@@ -80,13 +80,13 @@ def respond_stream(message: str, history: list, mode: str, agent=None):
     msg = message.strip()
     history = history or []
 
-    # ── 快捷命令 ──
+#──Команда быстрого доступа──
     quick = {
-        ("帮助", "help", "?"): lambda: HELP_TEXT,
-        ("列表", "关注列表"): memory_get_watchlist,
-        ("历史",): memory_get_history,
-        ("偏好",): memory_get_preferences,
-        ("知识库",): rag_stats,
+(«помощь», «помощь», «?»): лямбда: HELP_TEXT,
+(«список», «список наблюдения»): Memory_get_watchlist,
+(«история»,): Memory_get_history,
+(«предпочтения»,): Memory_get_preferences,
+(«База знаний»,): rag_stats,
     }
     for keys, handler in quick.items():
         if msg in keys:
@@ -95,7 +95,7 @@ def respond_stream(message: str, history: list, mode: str, agent=None):
             yield history, "", agent
             return
 
-    if msg.startswith("关注 "):
+если msg.startswith("Следовать"):
         parts = msg[3:].strip().split()
         c, n = parts[0], (parts[1] if len(parts) > 1 else "")
         history.append({"role": "user", "content": msg})
@@ -103,25 +103,25 @@ def respond_stream(message: str, history: list, mode: str, agent=None):
         yield history, "", agent
         return
 
-    if msg.startswith("移除 "):
+если msg.startswith("удалить"):
         history.append({"role": "user", "content": msg})
         history.append({"role": "assistant", "content": memory_remove_watchlist(msg[3:].strip())})
         yield history, "", agent
         return
 
-    if msg.startswith("历史 "):
+если msg.startswith("История "):
         history.append({"role": "user", "content": msg})
         history.append({"role": "assistant", "content": memory_get_history(msg[3:].strip())})
         yield history, "", agent
         return
 
-    if msg.startswith("导入 "):
+если msg.startswith("импорт"):
         history.append({"role": "user", "content": msg})
         history.append({"role": "assistant", "content": rag_import(msg[3:].strip()) + "\n" + rag_stats()})
         yield history, "", agent
         return
 
-    # ── 流式分析 ──
+# ── Потоковый анализ ──
     history.append({"role": "user", "content": msg})
     history.append({"role": "assistant", "content": "..."})
 
@@ -149,28 +149,28 @@ def respond_stream(message: str, history: list, mode: str, agent=None):
     yield history, "", agent
 
 
-HELP_TEXT = """## 使用指南
+HELP_TEXT = """## Руководство пользователя
 
-### 股票分析
-直接输入：`分析贵州茅台600519的估值和风险`
+### Анализ акций
+Прямой ввод: «Анализ оценки и риска Kweichow Moutai 600519».
 
-### 关注管理
-| 命令 | 说明 |
+### Следуйте указаниям руководства
+| Команда | Описание |
 |------|------|
-| `列表` | 查看关注列表 |
-| `关注 600519 茅台` | 添加关注 |
-| `移除 600519` | 移除关注 |
+| `список` | Посмотреть список наблюдения |
+| `Следуйте за 600519 Мутай` | Добавить подписку |
+| `Удалить 600519` | Удалить следующее |
 
-### 数据查询
-| 命令 | 说明 |
+### Запрос данных
+| Команда | Описание |
 |------|------|
-| `历史` | 全部分析历史 |
-| `偏好` | 用户偏好设置 |
-| `知识库` | 知识库状态 |"""
+| `История` | Вся история анализа |
+| `Предпочтения` | Настройки пользователя |
+| `База знаний` | Статус базы знаний |"""
 
-# ===== 自定义 CSS =====
+# ===== Пользовательский CSS =====
 CUSTOM_CSS = """
-/* 全局 */
+/* глобальный */
 .gradio-container {
     max-width: 100% !important;
     margin: 0 !important;
@@ -178,7 +178,7 @@ CUSTOM_CSS = """
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important;
 }
 
-/* 隐藏默认 footer */
+/* Скрыть нижний колонтитул по умолчанию */
 footer { display: none !important; }
 
 /* Header */
@@ -223,7 +223,7 @@ footer { display: none !important; }
     color: #60a5fa;
 }
 
-/* 侧边栏卡片 */
+/* Карточка боковой панели */
 .sidebar-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
@@ -240,14 +240,14 @@ footer { display: none !important; }
     margin: 0 0 10px 0;
 }
 
-/* 主对话区域 */
+/* Основная диалоговая область */
 .main-chat {
     border-radius: 12px !important;
     border: 1px solid rgba(255,255,255,0.1) !important;
     background: rgba(255,255,255,0.02) !important;
 }
 
-/* 输入框 */
+/* Поле ввода */
 .input-box textarea {
     border-radius: 10px !important;
     border: 1px solid rgba(255,255,255,0.12) !important;
@@ -260,7 +260,7 @@ footer { display: none !important; }
     color: rgba(255,255,255,0.3) !important;
 }
 
-/* 按钮 */
+/* кнопка */
 button.primary {
     background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
     border: none !important;
@@ -293,7 +293,7 @@ button.secondary:hover {
     border-color: rgba(255,255,255,0.18) !important;
 }
 
-/* Radio 模式选择 */
+/* Выбор режима радио */
 .mode-radio-wrap {
     background: rgba(255,255,255,0.04);
     border-radius: 10px;
@@ -301,27 +301,27 @@ button.secondary:hover {
     border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* --- 高对比度修复 --- */
+/* --- Восстановление высокой контрастности --- */
 
-/* Radio / Checkbox 标签 — 亮蓝色 */
+/* Метка радио/флажка — ярко-синяя */
 .radio-option label, .radio-option span,
 label:has(input[type="radio"]), .radio-label,
 fieldset label, .radio-wrap label {
     color: #6aaff7 !important;
 }
-/* Radio hover — 亮灰色 */
+/* Наведение радио — ярко-серый */
 .radio-option:hover label, .radio-option:hover span,
 fieldset label:hover, .radio-wrap:hover label {
     color: #c8d6e5 !important;
 }
-/* Radio 选中 — 加粗变白 */
+/* Выбрано радио — жирный и белый */
 input[type="radio"]:checked + label,
 input[type="radio"]:checked ~ span {
     color: #ffffff !important;
     font-weight: 700 !important;
 }
 
-/* 输入框 */
+/* Поле ввода */
 input[type="text"], textarea, .input-box textarea {
     background: #1a2236 !important;
     border: 1px solid #3a5078 !important;
@@ -339,14 +339,14 @@ input[type="text"]::placeholder, textarea::placeholder {
     color: #5a7099 !important;
 }
 
-/* select 下拉 */
+/* выбор раскрывающегося списка */
 select, .dropdown {
     background: #1a2236 !important;
     color: #d0d8e8 !important;
     border: 1px solid #3a5078 !important;
 }
 
-/* 链接 */
+/* Связь */
 a, .examples a {
     color: #7aabf7 !important;
 }
@@ -354,66 +354,66 @@ a:hover {
     color: #a0c4ff !important;
 }
 
-/* 聊天气泡内容 */
+/* Содержимое всплывающей подсказки чата */
 .message-row .message {
     color: #e4eaf5 !important;
 }
 
-/* 聊天气泡 */
+/* Облако чата */
 .bubble-wrap { border-radius: 12px !important; }
 
-/* 快捷图标 */
+/* Значок ярлыка */
 .quick-icon {
     font-size: 16px;
     margin-right: 6px;
 }
 
-/* 滚动条 */
+/* полоса прокрутки */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 """
 
-# ===== 界面 =====
+# ===== Интерфейс =====
 with gr.Blocks(title="StockInsightAgent") as app:
 
     # ── Header ──
     gr.HTML("""
     <div class="header-wrap">
         <h1>StockInsightAgent</h1>
-        <div class="subtitle">智能股票分析助手</div>
+<div class="subtitle">Интеллектуальный помощник по анализу акций</div>
         <div class="status-row">
             <span class="status-badge online">&#9679; 系统就绪</span>
-            <span class="status-badge data">&#9679; 数据源: 东方财富 / Sina / 腾讯</span>
+<span class="status-badge data">&#9679; Источник данных: Oriental Fortune/Sina/Tencent</span>
         </div>
     </div>
     """)
 
     with gr.Row(equal_height=True):
-        # ── 左侧栏 ──
+# ── Левый столбец ──
         with gr.Column(scale=1, min_width=200):
             gr.HTML('<div class="sidebar-card"><h4>分析模式</h4></div>')
             mode_radio = gr.Radio(
-                choices=["快速分析 (ReAct)", "深度分析 (PlanSolve)", "批判分析 (Reflection)"],
-                value="快速分析 (ReAct)",
+choice=["Быстрый анализ (ReAct)", "Углубленный анализ (PlanSolve)", "Критический анализ (Размышление)"],
+value="Быстрый анализ (ReAct)",
                 label="",
                 interactive=True,
             )
 
             gr.HTML('<div class="sidebar-card"><h4>快捷操作</h4></div>')
-            btn_watchlist = gr.Button("关注列表", elem_classes="secondary")
+btn_watchlist = gr.Button("Список наблюдения", elem_classes="вторичный")
             btn_history = gr.Button("分析历史", elem_classes="secondary")
             btn_kb = gr.Button("知识库状态", elem_classes="secondary")
             btn_prefs = gr.Button("用户偏好", elem_classes="secondary")
 
             gr.HTML("""
             <div style="margin-top:16px; font-size:11px; color:#5a7a9a; line-height:1.6;">
-            输入 <b>帮助</b> 查看更多命令<br>
+Введите <b>help</b>, чтобы увидеть больше команд<br>
             </div>
             """)
 
-        # ── 主区域 ──
+# ── Основная область ──
         with gr.Column(scale=4):
             agent_state = gr.State(None)
 
@@ -423,21 +423,21 @@ with gr.Blocks(title="StockInsightAgent") as app:
                 elem_classes="main-chat",
                 placeholder="<div style='text-align:center; color:#6a8aaa; padding-top:80px;'>"
                              "<div style='font-size:48px; margin-bottom:16px;'>📊</div>"
-                             "<div style='font-size:16px; font-weight:600;'>开始分析你的投资组合</div>"
-                             "<div style='font-size:13px; margin-top:8px;'>输入股票代码或名称，获取全方位分析报告</div>"
+"<div style='font-size:16px; font-weight:600;'>Начните анализировать свое портфолио</div>"
+"<div style='font-size:13px;margin-top:8px;'>Введите код или название акции, чтобы получить подробный аналитический отчет</div>"
                              "</div>",
             )
 
             with gr.Row(equal_height=True):
                 msg_input = gr.Textbox(
-                    placeholder="输入分析问题...",
+Placeholder="Введите вопрос для анализа...",
                     label="",
                     scale=6,
                     elem_classes="input-box",
                 )
-                submit_btn = gr.Button("开始分析", variant="primary", elem_classes="primary", scale=1)
+submit_btn = gr.Button("Начать анализ", вариант="первичный", elem_classes="первичный", масштаб=1)
 
-    # ── 事件绑定 ──
+#──Привязка событий──
     msg_input.submit(
         fn=respond_stream,
         inputs=[msg_input, chatbot, mode_radio, agent_state],
@@ -454,10 +454,10 @@ with gr.Blocks(title="StockInsightAgent") as app:
             pass
         return result[0], result[2]
 
-    btn_watchlist.click(lambda h, a: quick_action("列表", h, a), [chatbot, agent_state], [chatbot, agent_state])
-    btn_history.click(lambda h, a: quick_action("历史", h, a), [chatbot, agent_state], [chatbot, agent_state])
+btn_watchlist.click(lambda h, a: fast_action("列表", h, a), [чат-бот, агент_состояние], [чат-бот, агент_состояние])
+btn_history.click(lambda h, a: fast_action("历史", h, a), [чат-бот, агент_состояние], [чат-бот, агент_состояние])
     btn_kb.click(lambda h, a: quick_action("知识库", h, a), [chatbot, agent_state], [chatbot, agent_state])
-    btn_prefs.click(lambda h, a: quick_action("偏好", h, a), [chatbot, agent_state], [chatbot, agent_state])
+btn_prefs.click(lambda h, a: fast_action("偏好", h, a), [чат-бот, агент_состояние], [чат-бот, агент_состояние])
 
 if __name__ == "__main__":
     app.launch(

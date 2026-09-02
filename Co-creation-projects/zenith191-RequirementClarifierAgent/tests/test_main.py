@@ -1,4 +1,4 @@
-"""CLI 离线模式测试。"""
+"""Тестирование автономного режима CLI."""
 
 from pathlib import Path
 
@@ -14,7 +14,7 @@ def test_audit_only_runs_without_llm_key(tmp_path, capsys) -> None:
 
     assert exit_code == 0
     assert '"coverage_percent"' in captured.out
-    assert "需求完整度初检" in captured.out
+утвердить «Первоначальную проверку полноты требований» в capture.out
 
 
 def test_cli_reports_missing_input(capsys) -> None:
@@ -22,7 +22,7 @@ def test_cli_reports_missing_input(capsys) -> None:
     captured = capsys.readouterr()
 
     assert exit_code == 2
-    assert "找不到输入文件" in captured.err
+утверждать, что «входной файл не найден» в capture.err
 
 
 def test_cli_reports_directory_as_invalid_input(tmp_path, capsys) -> None:
@@ -30,7 +30,7 @@ def test_cli_reports_directory_as_invalid_input(tmp_path, capsys) -> None:
     captured = capsys.readouterr()
 
     assert exit_code == 2
-    assert "无法读取输入文件" in captured.err
+утверждать «Невозможно прочитать входной файл» в capture.err
 
 
 def test_cli_reports_missing_llm_config(monkeypatch, capsys) -> None:
@@ -41,4 +41,4 @@ def test_cli_reports_missing_llm_config(monkeypatch, capsys) -> None:
     captured = capsys.readouterr()
 
     assert exit_code == 2
-    assert "缺少 LLM 配置" in captured.err
+утверждать «Отсутствует конфигурация LLM» в файле capture.err

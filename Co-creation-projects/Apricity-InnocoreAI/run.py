@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""
-InnoCore AI - Simple Run Script
-研创·智核 - 简单运行脚本
-"""
+"""InnoCore AI — простой сценарий запуска
+Yanchuang Intelligent Core — простой скрипт запуска"""
 
 import os
 import sys

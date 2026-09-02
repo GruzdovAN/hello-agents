@@ -37,7 +37,7 @@ type MessageSegment = TextSegment | ToolSegment
 interface Message {
   id: number
   role: 'user' | 'assistant'
-  content: string  // 用于从历史加载的消息
+  content: string  // 用于从История加载的消息
   timestamp: Date
   segments?: MessageSegment[]  // 用于流式消息的分段
 }
@@ -57,7 +57,7 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const abortController = ref<AbortController | null>(null)
 const initializing = ref(true)
 const collapsedTools = ref<Set<number>>(new Set())
-// 默认所有工具都是展开的（用于新建的工具）
+// 默认所有Инструмент都是Развернуть的（用于新建的Инструмент）
 const expandedTools = ref<Set<number>>(new Set())
 
 // 消息分组（Slack 风格）
@@ -81,7 +81,7 @@ const messageGroups = computed<MessageGroup[]>(() => {
 })
 
 // 是否应该显示加载指示器（底部的独立指示器）
-// 只有当助手消息组完全没有可见内容时才显示
+// шт.有当助手消息组完全没有可见内容时才显示
 const shouldShowLoadingIndicator = computed(() => {
   if (messages.value.length === 0) {
     return true
@@ -92,8 +92,8 @@ const shouldShowLoadingIndicator = computed(() => {
     return true
   }
 
-  // 只有当完全没有可见内容时才显示底部指示器
-  // 如果有工具卡片等可见内容，等待状态会在消息组内部显示
+  // шт.有当完全没有可见内容时才显示底部指示器
+  // 如果有Инструмент卡片等可见内容，等待Статус会在消息组内部显示
   return !hasVisibleContent(lastMsg)
 })
 
@@ -107,7 +107,7 @@ const hasGroupVisibleContent = (group: MessageGroup): boolean => {
   return false
 }
 
-// 检查消息组是否有文本内容
+// 检查消息组是否有Текст内容
 const hasGroupTextContent = (group: MessageGroup): boolean => {
   for (const msg of group.messages) {
     if (hasTextContent(msg)) {
@@ -117,7 +117,7 @@ const hasGroupTextContent = (group: MessageGroup): boolean => {
   return false
 }
 
-// 检查消息组是否有正在执行或已完成的工具（但还没有文本回复）
+// 检查消息组是否有正在执行或已Готово的Инструмент（但还没有Текст回复）
 const hasGroupToolWithoutText = (group: MessageGroup): boolean => {
   if (group.role !== 'assistant') return false
   let hasTool = false
@@ -136,26 +136,26 @@ const hasGroupToolWithoutText = (group: MessageGroup): boolean => {
   return hasTool && !hasText
 }
 
-// 保存当前会话 ID 到 localStorage
+// Сохранить当前Сессии ID 到 localStorage
 const saveCurrentSession = (sessionId: string) => {
   localStorage.setItem(SESSION_STORAGE_KEY, sessionId)
 }
 
-// 从 localStorage 读取上次会话 ID
+// 从 localStorage 读取上次Сессии ID
 const getLastSession = (): string | null => {
   return localStorage.getItem(SESSION_STORAGE_KEY)
 }
 
-// 加载会话历史（按照 OpenAI 标准格式解析）
+// 加载СессииИстория（按照 OpenAI 标准格式解析）
 const loadSessionHistory = async (sessionId: string) => {
   try {
     const res = await sessionApi.getHistory(sessionId)
     const rawMessages = res.messages
 
-    // 用于存储工具调用结果（tool_call_id -> result）
+    // 用于存储Инструмент调用Результат（tool_call_id -> result）
     const toolResults: Map<string, string> = new Map()
 
-    // 第一遍：收集所有 tool 消息的结果
+    // 第一遍：收集所有 tool 消息的Результат
     for (const msg of rawMessages) {
       if (msg.role === 'tool' && msg.tool_call_id && msg.content) {
         toolResults.set(msg.tool_call_id, msg.content)
@@ -185,10 +185,10 @@ const loadSessionHistory = async (sessionId: string) => {
       }
       else if (msg.role === 'assistant') {
         if (msg.tool_calls && msg.tool_calls.length > 0) {
-          // 包含工具调用的 assistant 消息
+          // 包含Инструмент调用的 assistant 消息
           const segments: MessageSegment[] = []
 
-          // 添加工具调用段
+          // 添加Инструмент调用段
           msg.tool_calls.forEach((tc, tcIndex) => {
             const result = toolResults.get(tc.id)
             segments.push({
@@ -204,7 +204,7 @@ const loadSessionHistory = async (sessionId: string) => {
           // 检查下一个消息是否是最终的 assistant 回答（没有 tool_calls）
           const nextMsg = rawMessages[i + 1]
           if (nextMsg && nextMsg.role === 'assistant' && !nextMsg.tool_calls && nextMsg.content) {
-            // 有最终回答，添加文本段
+            // 有最终回答，添加Текст段
             segments.push({
               type: 'text',
               id: Date.now() + i * 1000 + 100,
@@ -221,7 +221,7 @@ const loadSessionHistory = async (sessionId: string) => {
             segments
           }
         } else if (msg.content) {
-          // 普通的 assistant 文本消息
+          // 普通的 assistant Текст消息
           if (pendingAssistant) {
             // 追加到待处理的 assistant 消息
             if (!pendingAssistant.segments) {
@@ -254,12 +254,12 @@ const loadSessionHistory = async (sessionId: string) => {
     messages.value = displayMessages
     await scrollToBottom()
   } catch (error) {
-    // 会话不存在或加载失败，清空消息
+    // Сессии不存在或Ошибка загрузки，Очистить消息
     messages.value = []
   }
 }
 
-// 初始化会话
+// ИнициализацияСессии
 const initSession = async () => {
   // 获取助手名字
   try {
@@ -268,14 +268,14 @@ const initSession = async () => {
       assistantName.value = agentInfo.name
     }
   } catch (error) {
-    // 获取失败时使用默认名字
-    console.warn('获取助手名字失败:', error)
+    // 获取Ошибка时Используется默认名字
+    console.warn('获取助手名字Ошибка:', error)
   }
 
   const urlSession = route.query.session as string | undefined
 
   if (urlSession) {
-    // URL 中有 session 参数，使用它
+    // URL 中有 session 参数，Используется它
     currentSessionId.value = urlSession
     saveCurrentSession(urlSession)
     await loadSessionHistory(urlSession)
@@ -284,35 +284,35 @@ const initSession = async () => {
     // URL 中没有 session 参数，尝试从 localStorage 读取
     const lastSession = getLastSession()
     if (lastSession) {
-      // 有上次会话，设置 session 并加载历史，然后更新 URL
+      // 有上次Сессии，设置 session 并加载История，然后更新 URL
       currentSessionId.value = lastSession
       saveCurrentSession(lastSession)
       await loadSessionHistory(lastSession)
-      // 使用 replace 更新 URL（不触发导航）
+      // Используется replace 更新 URL（不触发导航）
       window.history.replaceState({}, '', `/?session=${lastSession}`)
       initializing.value = false
     } else {
-      // 没有上次会话，创建新会话
+      // 没有上次Сессии，创建新Сессии
       try {
         const res = await sessionApi.create()
         saveCurrentSession(res.session_id)
         currentSessionId.value = res.session_id
-        // 使用 replace 更新 URL（不触发导航）
+        // Используется replace 更新 URL（不触发导航）
         window.history.replaceState({}, '', `/?session=${res.session_id}`)
         initializing.value = false
       } catch (error) {
-        message.error('创建会话失败')
+        message.error('Не удалось создать сессию')
         initializing.value = false
       }
     }
   }
 }
 
-// 监听 session 参数变化（处理从其他地方跳转过来的情况）
+// 监听 session 参数变化（处理从Другое地方跳转过来的情况）
 watch(
   () => route.query.session,
   async (newSession, oldSession) => {
-    // 如果正在初始化，跳过
+    // 如果正在Инициализация，跳过
     if (initializing.value) return
 
     // 如果 session 没有实际变化，跳过
@@ -323,7 +323,7 @@ watch(
     // 如果新 session 为空，不做处理（应该由 initSession 处理）
     if (!sessionId) return
 
-    // 切换到新会话
+    // 切换到新Сессии
     currentSessionId.value = sessionId
     saveCurrentSession(sessionId)
     inputMessage.value = ''
@@ -331,7 +331,7 @@ watch(
   }
 )
 
-// 监听 refresh 参数变化（处理从配置页面初始化后跳转的情况）
+// 监听 refresh 参数变化（处理从Настройки页面Инициализация后跳转的情况）
 watch(
   () => route.query.refresh,
   async (newRefresh) => {
@@ -343,10 +343,10 @@ watch(
           assistantName.value = agentInfo.name
         }
       } catch (error) {
-        console.warn('获取助手名字失败:', error)
+        console.warn('获取助手名字Ошибка:', error)
       }
 
-      // 清除 URL 中的 refresh 参数
+      // Очистить URL 中的 refresh 参数
       const currentQuery = { ...route.query }
       delete currentQuery.refresh
       router.replace({ query: currentQuery })
@@ -354,7 +354,7 @@ watch(
   }
 )
 
-// 组件挂载时初始化会话
+// 组件挂载时ИнициализацияСессии
 onMounted(async () => {
   await initSession()
 })
@@ -367,7 +367,7 @@ const scrollToBottom = async () => {
   }
 }
 
-// 切换工具折叠状态
+// 切换Инструмент折叠Статус
 const toggleToolCollapse = (toolId: number) => {
   if (expandedTools.value.has(toolId)) {
     expandedTools.value.delete(toolId)
@@ -376,7 +376,7 @@ const toggleToolCollapse = (toolId: number) => {
   }
 }
 
-// 检查工具是否展开（默认折叠，只有点击后才展开）
+// 检查Инструмент是否Развернуть（默认折叠，只有点击后才Развернуть）
 const isToolExpanded = (toolId: number): boolean => {
   return expandedTools.value.has(toolId)
 }
@@ -400,12 +400,12 @@ const hasVisibleContent = (msg: Message): boolean => {
   return false
 }
 
-// 检查消息是否有文本内容（用于决定是否显示加载指示器）
+// 检查消息是否有Текст内容（用于决定是否显示加载指示器）
 const hasTextContent = (msg: Message): boolean => {
   if (!msg.segments || msg.segments.length === 0) {
     return !!msg.content
   }
-  // 只检查文本段
+  // шт.检查Текст段
   for (const segment of msg.segments) {
     if (segment.type === 'text' && segment.content) {
       return true
@@ -414,7 +414,7 @@ const hasTextContent = (msg: Message): boolean => {
   return false
 }
 
-// 检查消息是否有可见的工具调用（用于决定是否显示工具卡片而非加载指示器）
+// 检查消息是否有可见的Инструмент调用（用于决定是否显示Инструмент卡片而非加载指示器）
 const hasVisibleTools = (msg: Message): boolean => {
   if (!msg.segments) return false
   for (const segment of msg.segments) {
@@ -428,11 +428,11 @@ const hasVisibleTools = (msg: Message): boolean => {
 // 检查消息组是否正在等待响应（用于隐藏 group-footer）
 const isGroupWaiting = (group: MessageGroup): boolean => {
   if (group.role !== 'assistant' || !loading.value) return false
-  // 检查组内所有消息是否都没有文本内容
+  // 检查组内所有消息是否都没有Текст内容
   return group.messages.every(msg => !hasTextContent(msg))
 }
 
-// 停止生成
+// Остановить генерацию
 const stopGeneration = () => {
   if (abortController.value) {
     abortController.value.abort()
@@ -486,13 +486,13 @@ const sendMessage = async () => {
       currentSessionId.value || undefined,
       (event) => {
         if (event.type === 'session') {
-          // 收到会话 ID
+          // 收到Сессии ID
           if (event.session_id) {
             currentSessionId.value = event.session_id
             saveCurrentSession(event.session_id)
           }
         } else if (event.type === 'step_start') {
-          // 新步骤开始 - 创建新的文本段
+          // 新步骤开始 - 创建新的Текст段
           currentTextSegmentId = Date.now()
           currentSegments.push({
             type: 'text',
@@ -515,7 +515,7 @@ const sendMessage = async () => {
           }
           scrollToBottom()
         } else if (event.type === 'chunk' && event.content) {
-          // 更新当前文本段
+          // 更新当前Текст段
           const textSegment = currentSegments.find(s => s.type === 'text' && s.id === currentTextSegmentId) as TextSegment | undefined
           if (textSegment) {
             textSegment.content += event.content
@@ -523,7 +523,7 @@ const sendMessage = async () => {
           }
           scrollToBottom()
         } else if (event.type === 'tool_start') {
-          // 工具调用开始 - 创建工具段
+          // Инструмент调用开始 - 创建Инструмент段
           currentSegments.push({
             type: 'tool',
             id: Date.now(),
@@ -547,14 +547,14 @@ const sendMessage = async () => {
           }
           scrollToBottom()
         } else if (event.type === 'tool_finish') {
-          // 工具调用结束 - 查找或创建工具段
+          // Инструмент调用结束 - 查找或创建Инструмент段
           const lastToolSegment = [...currentSegments].reverse().find(s => s.type === 'tool' && s.status === 'running') as ToolSegment | undefined
           if (lastToolSegment) {
-            // 更新现有的运行中工具
+            // 更新现有的运行中Инструмент
             lastToolSegment.result = event.result
             lastToolSegment.status = 'done'
           } else {
-            // 没有对应的 tool_start，直接添加为完成的工具
+            // 没有对应的 tool_start，直接添加为Готово的Инструмент
             currentSegments.push({
               type: 'tool',
               id: Date.now(),
@@ -567,7 +567,7 @@ const sendMessage = async () => {
           updateMessageSegments(assistantMsgIndex, currentSegments)
           scrollToBottom()
         } else if (event.type === 'done') {
-          // 完成
+          // Готово
           if (event.session_id) {
             currentSessionId.value = event.session_id
           }
@@ -580,7 +580,7 @@ const sendMessage = async () => {
             // 忽略错误，保持当前名字
           })
         } else if (event.type === 'error') {
-          message.error(event.error || '发送消息失败')
+          message.error(event.error || 'Не удалось отправить сообщение')
         }
       },
       abortController.value.signal
@@ -588,13 +588,13 @@ const sendMessage = async () => {
 
     await scrollToBottom()
   } catch (error: unknown) {
-    // 如果是用户主动取消，不显示错误
+    // 如果是用户主动Отмена，不显示错误
     if (error instanceof Error && error.name === 'AbortError') {
-      console.log('用户取消了请求')
-      // 取消时保留已生成的内容
+      console.log('用户Отмена了请求')
+      // Отмена时保留已生成的内容
     } else {
-      console.error('发送消息失败:', error)
-      message.error('发送消息失败')
+      console.error('Не удалось отправить сообщение:', error)
+      message.error('Не удалось отправить сообщение')
       // 移除用户消息
       messages.value.pop()
     }
@@ -610,7 +610,7 @@ const createNewSession = async () => {
     saveCurrentSession(res.session_id)
     router.push({ name: 'chat', query: { session: res.session_id } })
   } catch (error) {
-    message.error('新建会话失败')
+    message.error('Не удалось создать сессию')
   }
 }
 </script>
@@ -619,10 +619,10 @@ const createNewSession = async () => {
   <div class="chat-view">
     <!-- 消息区域 -->
     <div class="chat-messages" ref="messagesContainer">
-      <!-- 初始化加载状态 -->
+      <!-- Инициализация加载Статус -->
       <div v-if="initializing" class="empty-state">
         <img :src="LobsterIcon" alt="HelloClaw" class="empty-icon loading" />
-        <p class="empty-hint">加载中...</p>
+        <p class="empty-hint">Загрузка...</p>
       </div>
       <template v-else-if="messages.length > 0">
         <div
@@ -634,7 +634,7 @@ const createNewSession = async () => {
           <!-- 头像 -->
           <div class="group-avatar">
             <img v-if="group.role === 'assistant'" :src="LobsterIcon" alt="HelloClaw" />
-            <div v-else class="user-avatar">你</div>
+            <div v-else class="user-avatar">Вы</div>
           </div>
 
           <!-- 消息内容 -->
@@ -644,14 +644,14 @@ const createNewSession = async () => {
               <!-- 如果有分段，按分段显示 -->
               <template v-if="msg.segments && msg.segments.length > 0">
                 <template v-for="segment in msg.segments" :key="segment.id">
-                  <!-- 文本段 -->
+                  <!-- Текст段 -->
                   <div v-if="segment.type === 'text' && segment.content" class="message-bubble">
                     <div
                       class="message-text"
                       v-html="renderMarkdown(segment.content)"
                     ></div>
                   </div>
-                  <!-- 工具调用段 - 只显示非隐藏的工具 -->
+                  <!-- Инструмент调用段 - шт.显示非隐藏的Инструмент -->
                   <div
                     v-if="segment.type === 'tool' && !getToolConfig(segment.tool).hidden"
                     :class="['tool-card', segment.status]"
@@ -662,14 +662,14 @@ const createNewSession = async () => {
                     >
                       <span class="tool-icon">{{ getToolConfig(segment.tool).icon }}</span>
                       <span class="tool-name">
-                        <template v-if="!isToolExpanded(segment.id)">使用了</template>
+                        <template v-if="!isToolExpanded(segment.id)">Использован</template>
                         {{ getToolConfig(segment.tool).name }}
                       </span>
                       <Tag v-if="segment.status === 'running'" color="processing" class="tool-tag">
-                        <LoadingOutlined /> 执行中
+                        <LoadingOutlined /> Выполняется
                       </Tag>
-                      <Tag v-else-if="segment.status === 'done'" color="success" class="tool-tag">完成</Tag>
-                      <Tag v-else-if="segment.status === 'error'" color="error" class="tool-tag">失败</Tag>
+                      <Tag v-else-if="segment.status === 'done'" color="success" class="tool-tag">Готово</Tag>
+                      <Tag v-else-if="segment.status === 'error'" color="error" class="tool-tag">Ошибка</Tag>
                       <span
                         v-if="segment.status !== 'running'"
                         class="collapse-indicator"
@@ -677,23 +677,23 @@ const createNewSession = async () => {
                         {{ isToolExpanded(segment.id) ? '▼' : '▶' }}
                       </span>
                     </div>
-                    <!-- 展开后显示入参和结果 -->
+                    <!-- Развернуть后显示Входные данные和Результат -->
                     <div v-if="isToolExpanded(segment.id)" class="tool-details">
-                      <!-- 入参 -->
+                      <!-- Входные данные -->
                       <div v-if="segment.args && Object.keys(segment.args).length > 0" class="tool-args">
-                        <div class="tool-detail-label">入参</div>
+                        <div class="tool-detail-label">Входные данные</div>
                         <pre class="tool-detail-content">{{ formatToolArgs(segment.args) }}</pre>
                       </div>
-                      <!-- 结果 -->
+                      <!-- Результат -->
                       <div v-if="segment.result" class="tool-result-wrapper">
-                        <div class="tool-detail-label">结果</div>
+                        <div class="tool-detail-label">Результат</div>
                         <pre class="tool-detail-content">{{ formatToolResult(segment.result) }}</pre>
                       </div>
                     </div>
                   </div>
                 </template>
               </template>
-              <!-- 如果没有分段，显示普通内容（历史消息） -->
+              <!-- 如果没有分段，显示普通内容（История消息） -->
               <div v-else-if="msg.content" class="message-bubble">
                 <div
                   class="message-text"
@@ -702,7 +702,7 @@ const createNewSession = async () => {
               </div>
             </template>
 
-            <!-- 消息组内部的等待状态（有工具调用但没有文本回复时） -->
+            <!-- 消息组内部的等待Статус（有Инструмент调用但没有Текст回复时） -->
             <div v-if="loading && hasGroupToolWithoutText(group)" class="message-bubble">
               <div class="loading-dots">
                 <span></span>
@@ -711,19 +711,19 @@ const createNewSession = async () => {
               </div>
             </div>
 
-            <!-- 组底部：名称和时间（加载等待时隐藏） -->
+            <!-- 组底部：Название和Время（加载等待时隐藏） -->
             <div v-if="!isGroupWaiting(group)" class="group-footer">
-              <span class="group-name">{{ group.role === 'user' ? '你' : assistantName }}</span>
+              <span class="group-name">{{ group.role === 'user' ? 'Вы' : assistantName }}</span>
               <span class="group-time">{{ formatTime(group.messages[group.messages.length - 1]?.timestamp || new Date()) }}</span>
             </div>
           </div>
         </div>
       </template>
 
-      <!-- 空状态 -->
+      <!-- 空Статус -->
       <div v-else class="empty-state">
         <img :src="LobsterIcon" alt="HelloClaw" class="empty-icon" />
-        <p class="empty-hint">发送消息开始对话</p>
+        <p class="empty-hint">Отправьте сообщение, чтобы начать диалог</p>
       </div>
 
       <!-- 加载指示器（助手消息组样式）- 等待响应时显示 -->
@@ -749,37 +749,37 @@ const createNewSession = async () => {
         <!-- 输入框 -->
         <Input.TextArea
           v-model:value="inputMessage"
-          placeholder="输入消息... (Enter 发送, Shift+Enter 换行)"
+          placeholder="Введите сообщение... (Enter — отправить, Shift+Enter — новая строка)"
           :auto-size="{ minRows: 1, maxRows: 4 }"
           @press-enter="(e: KeyboardEvent) => { if (!e.shiftKey) { e.preventDefault(); sendMessage() } }"
         />
         <!-- 按钮区域（固定宽度） -->
         <div class="input-actions">
-          <!-- 新建会话按钮 -->
+          <!-- Новая сессия按钮 -->
           <Button
             class="icon-btn"
             @click="createNewSession"
-            title="新建会话"
+            title="Новая сессия"
           >
             <template #icon>
               <PlusOutlined />
             </template>
           </Button>
-          <!-- 停止按钮（loading 时显示） -->
+          <!-- Стоп按钮（loading 时显示） -->
           <button
             v-if="loading"
             class="stop-btn"
             @click="stopGeneration"
-            title="停止生成"
+            title="Остановить генерацию"
           >
             <div class="stop-icon"></div>
           </button>
-          <!-- 发送按钮（有文字时显示） -->
+          <!-- Отправить按钮（有文字时显示） -->
           <button
             v-else-if="inputMessage.trim()"
             class="send-btn active"
             @click="sendMessage"
-            title="发送消息"
+            title="Отправить"
           >
             <SendOutlined />
           </button>
@@ -946,7 +946,7 @@ const createNewSession = async () => {
   color: var(--color-text-secondary);
 }
 
-/* 空状态 */
+/* 空Статус */
 .empty-state {
   flex: 1;
   display: flex;
@@ -1055,7 +1055,7 @@ const createNewSession = async () => {
   width: 92px;
 }
 
-/* 新建会话按钮 */
+/* Новая сессия按钮 */
 .input-actions .icon-btn {
   width: 40px;
   height: 40px;
@@ -1075,7 +1075,7 @@ const createNewSession = async () => {
   color: var(--color-primary);
 }
 
-/* 发送按钮 - 白底 + 黑色图标，输入后红底 + 白色图标 */
+/* Отправить按钮 - 白底 + 黑色图标，输入后红底 + 白色图标 */
 .input-actions .send-btn {
   width: 40px;
   height: 40px;
@@ -1108,7 +1108,7 @@ const createNewSession = async () => {
   border-color: var(--color-primary-hover);
 }
 
-/* 停止按钮 - 红底 + 白色圆角方块图标 */
+/* Стоп按钮 - 红底 + 白色圆角方块图标 */
 .input-actions .stop-btn {
   width: 40px;
   height: 40px;
@@ -1134,7 +1134,7 @@ const createNewSession = async () => {
   border-radius: 3px;
 }
 
-/* 工具调用卡片 */
+/* Инструмент调用卡片 */
 .tool-calls {
   display: flex;
   flex-direction: column;
@@ -1151,7 +1151,7 @@ const createNewSession = async () => {
   transition: all 0.2s ease;
 }
 
-/* 执行中状态 - 龙虾红主题 */
+/* ВыполняетсяСтатус - 龙虾红主题 */
 .tool-card.running {
   border-color: var(--color-primary);
   background: var(--color-primary-light);
@@ -1162,13 +1162,13 @@ const createNewSession = async () => {
   color: var(--color-primary);
 }
 
-/* 完成状态 - 灰色调 */
+/* ГотовоСтатус - 灰色调 */
 .tool-card.done {
   border-color: var(--color-border);
   background: var(--color-surface);
 }
 
-/* 失败状态 - 红色调 */
+/* ОшибкаСтатус - 红色调 */
 .tool-card.error {
   border-color: var(--color-primary);
   background: #fff1f0;
@@ -1216,7 +1216,7 @@ const createNewSession = async () => {
   transition: transform 0.2s ease;
 }
 
-/* 工具详情区域 */
+/* Инструмент详情区域 */
 .tool-details {
   margin-top: 10px;
   padding-top: 10px;

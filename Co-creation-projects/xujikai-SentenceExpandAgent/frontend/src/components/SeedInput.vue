@@ -4,14 +4,14 @@
 -->
 <template>
   <div class="seed-input">
-    <h2 class="title">英语句子扩写智能体</h2>
-    <p class="subtitle">通过记者提问法将简单句子逐步扩写为高级长句</p>
+    <h2 class="title">Агент расширения английских предложений</h2>
+    <p class="subtitle">Метод «журналистских вопросов»: от простого предложения к сложному</p>
 
     <div class="input-group">
       <textarea
         v-model="inputSentence"
         class="sentence-input"
-        placeholder="输入一个简单的英文句子，例如：I like reading."
+        placeholder="Введите простое английское предложение, например: I like reading."
         rows="3"
         @keydown.enter.prevent="handleSubmit"
       />
@@ -23,16 +23,16 @@
         :class="{ active: selectedMode === 'manual' }"
         @click="selectedMode = 'manual'"
       >
-        📝 手动模式
-        <span class="mode-desc">逐步引导，逐阶段回答</span>
+        📝 Ручной режим
+        <span class="mode-desc">Пошаговое сопровождение</span>
       </button>
       <button
         class="mode-btn"
         :class="{ active: selectedMode === 'auto' }"
         @click="selectedMode = 'auto'"
       >
-        🚀 自动模式
-        <span class="mode-desc">一键自动演示全过程</span>
+        🚀 Автоматический режим
+        <span class="mode-desc">Автодемонстрация всего процесса</span>
       </button>
     </div>
 
@@ -41,7 +41,7 @@
       :disabled="!inputSentence.trim() || loading"
       @click="handleSubmit"
     >
-      {{ loading ? '正在启动...' : '开始扩写' }}
+      {{ loading ? 'Запуск...' : 'Начать расширение' }}
     </button>
 
     <p v-if="error" class="error-message">{{ error }}</p>

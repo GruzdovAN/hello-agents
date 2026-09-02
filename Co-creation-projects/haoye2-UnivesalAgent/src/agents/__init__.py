@@ -1,5 +1,5 @@
 """
-智能体相关代码
+Код, связанный с агентами
 """
 
 from .agent_universal import UniversalAgent

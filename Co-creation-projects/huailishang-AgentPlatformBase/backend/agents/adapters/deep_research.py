@@ -26,7 +26,7 @@ class DeepResearchAdapter(BaseAgent):
         try:
             output, artifacts = self._run_with_artifacts(request)
         except Exception as exc:
-            output = f"deep_research 运行失败：{type(exc).__name__}: {exc}"
+            output = f"deep_research завершился с ошибкой: {type(exc).__name__}: {exc}"
             artifacts = {"error": str(exc), "error_type": type(exc).__name__}
 
         memory_store.add(self.agent_id, f"input={request.input} output={output}")
@@ -61,14 +61,14 @@ class DeepResearchAdapter(BaseAgent):
 
         if request.context.get("mode") == "group_chat":
             return (
-                "deep_research 是长耗时研究流程。请单独使用 @deep_research 提交明确研究主题。",
+                "deep_research — длительный исследовательский процесс. Используйте @deep_research отдельно с чёткой темой.",
                 {"skipped": True, "reason": "batch_guard", "cleanup": cleanup_stats},
             )
 
         deep_research_path = Path(settings.chapter14_backend_path).resolve()
         if not deep_research_path.exists():
             return (
-                f"DeepResearch 内置源码路径不存在，无法运行 deep_research：{deep_research_path}",
+                f"Путь к встроенному исходному коду DeepResearch не существует, deep_research не может быть запущен: {deep_research_path}",
                 {
                     "ready": False,
                     "deep_research_path": str(deep_research_path),
@@ -78,7 +78,7 @@ class DeepResearchAdapter(BaseAgent):
 
         if request.context.get("dry_run"):
             return (
-                "deep_research 已接入内置 DeepResearchAgent，真实运行时会执行搜索调研流程。",
+                "deep_research подключён к встроенному DeepResearchAgent; при реальном запуске выполняется поиск и исследование.",
                 {
                     "ready": True,
                     "deep_research_path": str(deep_research_path),
@@ -146,9 +146,9 @@ class DeepResearchAdapter(BaseAgent):
 
         if todo_items and not completed_items and not report:
             output = (
-                "搜索员没有拿到可用的搜索总结，因此未返回正式研究报告。\n"
-                "可能原因：搜索后端无结果、网络 API 调用失败，或任务执行阶段没有产出摘要。\n"
-                "请查看后端日志和 data/deep_research/runs 目录下的 task_* 文件。"
+                "У исследователя не было полезной сводки поиска, поэтому официальный отчёт не был возвращён.\n"
+                "Возможные причины: поиск не дал результатов, сбой сетевого API или этап задачи не создал сводку.\n"
+                "Проверьте логи бэкенда и файлы task_* в каталоге data/deep_research/runs."
             )
             print(f"[deep_research] failed seconds={timings['total_seconds']}")
             return output, artifacts
@@ -156,7 +156,7 @@ class DeepResearchAdapter(BaseAgent):
         if todo_items and not completed_items:
             artifacts["warning"] = "no_completed_research_tasks"
 
-        output = report or "deep_research 已完成，但没有生成报告正文。"
+        output = report or "deep_research завершён, но текст отчёта не был создан."
         print(f"[deep_research] complete seconds={timings['total_seconds']}")
         return output, artifacts
 

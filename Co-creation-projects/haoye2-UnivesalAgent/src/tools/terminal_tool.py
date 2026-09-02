@@ -4,42 +4,42 @@ import os
 
 class TerminalTool:
     name = "terminal_exec"
-    description = "执行终端命令查看目录、文件和系统信息（支持：pwd, ls, cat, echo, whoami, date等）"
+    description = "Выполняет терминальные команды для просмотра каталогов, файлов и системной информации (поддерживаются: pwd, ls, cat, echo, whoami, date и др.)"
 
     def __init__(self, security_mode="strict"):
         """
-        初始化终端工具
+        Инициализирует терминальный инструмент
         
         Args:
-            security_mode: "strict"（严格模式，直接拒绝） 或 "warning"（警告模式，给出提示）
+            security_mode: "strict" (строгий режим, немедленный отказ) или "warning" (режим предупреждений)
         """
         self.security_mode = security_mode
         
-        # 扩展的白名单命令列表（无参数或安全参数的命令）
+        # Расширенный белый список команд (без аргументов или с безопасными аргументами)
         self.allowed_commands = {
-            "ls": [],  # ls 可以带参数如 -l, -a
+            "ls": [],  # ls может принимать аргументы вроде -l, -a
             "pwd": [],
-            "echo": ["*"],  # echo 允许任何参数
+            "echo": ["*"],  # echo допускает любые аргументы
             "whoami": [],
-            "cat": ["*"],  # cat 允许文件名参数
-            "head": ["-n"],  # head 允许 -n 参数
+            "cat": ["*"],  # cat допускает аргументы с именами файлов
+            "head": ["-n"],  # head допускает аргумент -n
             "tail": ["-n"],
             "wc": ["-l", "-w"],
             "date": [],
             "uname": ["-a"],
-            "find": ["."],  # 限制搜索起点
-            # 新增的常用安全命令
-            "cd": [],  # 目录切换
-            "mkdir": ["-p"],  # 创建目录
-            "touch": [],  # 创建文件
-            "grep": ["-i", "-n", "-r"],  # 文本搜索
-            "which": [],  # 查找命令位置
-            "whereis": [],  # 查找程序位置
-            "du": ["-h", "-s"],  # 磁盘使用情况
-            "df": ["-h"],  # 文件系统信息
+            "find": ["."],  # ограничиваем точку старта поиска
+            # Дополнительные часто используемые безопасные команды
+            "cd": [],  # смена каталога
+            "mkdir": ["-p"],  # создание каталога
+            "touch": [],  # создание файла
+            "grep": ["-i", "-n", "-r"],  # поиск текста
+            "which": [],  # поиск расположения команды
+            "whereis": [],  # поиск расположения программы
+            "du": ["-h", "-s"],  # использование диска
+            "df": ["-h"],  # информация о файловой системе
         }
         
-        # 危险关键词，用于额外安全检查
+        # Опасные ключевые слова для дополнительной проверки безопасности
         self.dangerous_keywords = [
             "rm", "delete", "del", "format", "mkfs",
             "sudo", "su", "passwd", "chmod", "chown",
@@ -51,43 +51,43 @@ class TerminalTool:
         return {
             "input": {
                 "type": "str", 
-                "description": "输入终端命令，如：pwd, ls -la, cat filename.txt", 
+                "description": "Введите терминальную команду, например: pwd, ls -la, cat filename.txt", 
                 "required": True,
                 "examples": ["pwd", "ls -la", "cat README.md", "echo hello", "whoami", "date"]
             }
         }
 
     def _check_command_safety(self, cmd):
-        """检查命令安全性
+        """Проверяет безопасность команды
         
         Returns:
             tuple: (is_safe, error_msg, warning_msg)
-                is_safe: bool - 是否安全
-                error_msg: str - 错误消息
-                warning_msg: str - 警告消息
+                is_safe: bool — безопасна ли команда
+                error_msg: str — сообщение об ошибке
+                warning_msg: str — предупреждение
         """
-        # 检查危险关键词
+        # Проверка опасных ключевых слов
         cmd_lower = cmd.lower()
         for keyword in self.dangerous_keywords:
             if keyword in cmd_lower:
-                error_msg = f"检测到不安全的操作：{keyword}"
-                warning_msg = f"⚠️ 警告：此命令包含 '{keyword}' 操作，可能导致系统损坏或数据丢失！"
+                error_msg = f"Обнаружена небезопасная операция: {keyword}"
+                warning_msg = f"⚠️ Предупреждение: команда содержит операцию '{keyword}', что может повредить систему или привести к потере данных!"
                 return False, error_msg, warning_msg
         
-        # 检查是否包含管道、重定向等操作
+        # Проверка наличия конвейеров, перенаправлений и т.п.
         operators = ["|", ">", "<", "&", "&&", "||", ";"]
         for op in operators:
             if op in cmd:
-                error_msg = f"检测到不安全的操作符：{op}"
-                warning_msg = f"⚠️ 警告：此命令包含 '{op}' 操作符，可能导致意外行为！"
+                error_msg = f"Обнаружен небезопасный оператор: {op}"
+                warning_msg = f"⚠️ Предупреждение: команда содержит оператор '{op}', что может привести к неожиданному поведению!"
                 return False, error_msg, warning_msg
         
         return True, None, None
 
     def run(self, parameters):
-        # 确保参数处理的安全性
+        # Безопасная обработка параметров
         if isinstance(parameters, dict):
-            # 统一使用 {"input": command} 格式
+            # Единый формат {"input": command}
             cmd = parameters.get("input", "")
         else:
             cmd = str(parameters) if parameters else ""
@@ -95,140 +95,140 @@ class TerminalTool:
         cmd = cmd.strip() if cmd else ""
         
         if not cmd:
-            return "错误: 命令不能为空"
+            return "Ошибка: команда не может быть пустой"
         
-        # 安全检查
+        # Проверка безопасности
         is_safe, error_msg, warning_msg = self._check_command_safety(cmd)
         if not is_safe:
             if self.security_mode == "strict":
-                return f"🚫 安全拒绝: {error_msg}"
+                return f"🚫 Отклонено по соображениям безопасности: {error_msg}"
             else:  # warning mode
-                return f"{warning_msg}\n\n命令: {cmd}\n\n如需继续执行，请确认操作的安全性。\n(当前为警告模式，尚未真正执行)"
+                return f"{warning_msg}\n\nКоманда: {cmd}\n\nДля продолжения подтвердите безопасность операции.\n(Сейчас режим предупреждений, команда фактически не выполняется)"
         
-        # 分割命令和参数
+        # Разделение команды и аргументов
         parts = shlex.split(cmd)
         if not parts:
-            return "错误: 无效的命令"
+            return "Ошибка: недопустимая команда"
         
         command_name = parts[0]
         args = parts[1:] if len(parts) > 1 else []
         
-        # 检查命令是否在白名单中
+        # Проверка наличия команды в белом списке
         if command_name not in self.allowed_commands:
             allowed_list = ", ".join(sorted(self.allowed_commands.keys()))
             similar_commands = self._find_similar_commands(command_name)
-            error_msg = f"🚫 命令 '{command_name}' 不在允许列表中。"
-            error_msg += f"\n\n✅ 允许的命令: {allowed_list}"
+            error_msg = f"🚫 Команда '{command_name}' не входит в список разрешённых."
+            error_msg += f"\n\n✅ Разрешённые команды: {allowed_list}"
             if similar_commands:
-                error_msg += f"\n💡 您是否想使用: {', '.join(similar_commands)}?"
-            error_msg += f"\n\n📖 输入 'help' 或 '?' 查看命令帮助"
+                error_msg += f"\n💡 Возможно, вы имели в виду: {', '.join(similar_commands)}?"
+            error_msg += f"\n\n📖 Введите 'help' или '?' для справки по командам"
             return error_msg
         
-        # 检查参数
+        # Проверка аргументов
         allowed_args = self.allowed_commands[command_name]
         
-        # 改进的参数验证逻辑
+        # Улучшенная логика проверки аргументов
         if "*" not in allowed_args and args:
             validation_result = self._validate_parameters(command_name, args)
-            if not validation_result[0]:  # 验证失败
+            if not validation_result[0]:  # проверка не пройдена
                 return validation_result[1]
         
-        # 如果允许任何参数，进行基本安全检查
+        # Если разрешены любые аргументы — базовая проверка безопасности
         elif "*" in allowed_args and args:
             validation_result = self._validate_wildcard_args(command_name, args)
-            if not validation_result[0]:  # 验证失败
+            if not validation_result[0]:  # проверка не пройдена
                 return validation_result[1]
         
-        # 执行命令（使用 shell=False 提高安全性）
+        # Выполнение команды (shell=False повышает безопасность)
         try:
-            # 使用 shlex.split 可以正确处理带引号的参数
+            # shlex.split корректно обрабатывает аргументы в кавычках
             result = subprocess.run(
                 cmd,
-                shell=True,  # 保持向后兼容，但需要更严格的白名单
+                shell=True,  # обратная совместимость, но с более строгим белым списком
                 capture_output=True,
                 text=True,
                 timeout=15,
-                cwd=None  # 限制在安全目录执行
+                cwd=None  # ограничение выполнения безопасным каталогом
             )
             
-            # 组合标准输出和标准错误
+            # Объединение стандартного вывода и ошибок
             output = result.stdout
             if result.stderr:
-                output += f"\n[标准错误]\n{result.stderr}"
+                output += f"\n[стандартная ошибка]\n{result.stderr}"
             
-            # 返回执行结果
+            # Возврат результата выполнения
             if result.returncode == 0:
-                return output.strip() if output.strip() else "命令执行成功（无输出）"
+                return output.strip() if output.strip() else "Команда выполнена успешно (без вывода)"
             else:
-                return f"命令执行失败 (返回码: {result.returncode})\n{output.strip()}"
+                return f"Ошибка выполнения команды (код возврата: {result.returncode})\n{output.strip()}"
                 
         except subprocess.TimeoutExpired:
-            return "命令执行超时（超过15秒）。"
+            return "Превышено время ожидания выполнения команды (более 15 секунд)."
         except subprocess.CalledProcessError as e:
             error_output = e.stderr.decode() if isinstance(e.stderr, bytes) else e.stderr
-            return f"命令执行错误: {error_output or str(e)}"
+            return f"Ошибка выполнения команды: {error_output or str(e)}"
         except Exception as e:
-            return f"执行异常: {str(e)}"
+            return f"Исключение при выполнении: {str(e)}"
 
     def _validate_parameters(self, command_name, args):
-        """验证特定命令的参数
+        """Проверяет аргументы конкретной команды
         
         Args:
-            command_name: 命令名称
-            args: 参数列表
+            command_name: имя команды
+            args: список аргументов
             
         Returns:
             tuple: (is_valid, error_message)
         """
         allowed_args = self.allowed_commands[command_name]
         
-        # 验证选项参数
+        # Проверка опций
         option_args = [arg for arg in args if arg.startswith("-")]
         for arg in option_args:
-            if arg not in allowed_args and arg != "-p":  # -p 是特殊的，允许mkdir使用
+            if arg not in allowed_args and arg != "-p":  # -p особый, разрешён для mkdir
                 help_text = self._get_command_help(command_name)
-                return False, f"参数 '{arg}' 不被允许。\n{help_text}"
+                return False, f"Аргумент '{arg}' не разрешён.\n{help_text}"
         
-        # 验证非选项参数（通常是文件路径）
+        # Проверка неопциональных аргументов (обычно пути к файлам)
         file_args = [arg for arg in args if not arg.startswith("-")]
         for arg in file_args:
             if self._is_dangerous_path(arg):
-                return False, f"危险路径: {arg}\n只允许访问当前目录及其子目录"
+                return False, f"Опасный путь: {arg}\nДоступ разрешён только к текущему каталогу и его подкаталогам"
         
         return True, None
 
     def _validate_wildcard_args(self, command_name, args):
-        """验证通配符参数（适用于cat、echo等）
+        """Проверяет аргументы с подстановочными знаками (для cat, echo и т.п.)
         
         Args:
-            command_name: 命令名称
-            args: 参数列表
+            command_name: имя команды
+            args: список аргументов
             
         Returns:
             tuple: (is_valid, error_message)
         """
-        # 对于文件操作命令，进行路径安全检查
+        # Для файловых команд — проверка безопасности путей
         if command_name in ["cat", "head", "tail", "grep"]:
             for arg in args:
                 if not arg.startswith("-") and self._is_dangerous_path(arg):
-                    return False, f"危险路径: {arg}\n只允许访问当前目录及其子目录"
+                    return False, f"Опасный путь: {arg}\nДоступ разрешён только к текущему каталогу и его подкаталогам"
         
         return True, None
 
     def _is_dangerous_path(self, path):
-        """检查路径是否危险
+        """Проверяет, является ли путь опасным
         
         Args:
-            path: 要检查的路径
+            path: проверяемый путь
             
         Returns:
-            bool: 是否为危险路径
+            bool: опасен ли путь
         """
-        # 检查绝对路径
+        # Проверка абсолютных путей
         if os.path.isabs(path):
             return True
         
-        # 检查包含危险字符的路径
+        # Проверка путей с опасными символами
         dangerous_patterns = ["../", "..\\", "~/", "/etc", "/bin", "/usr", "/var", "/sys"]
         for pattern in dangerous_patterns:
             if pattern in path:
@@ -237,52 +237,52 @@ class TerminalTool:
         return False
 
     def _get_command_help(self, command_name):
-        """返回命令的使用帮助
+        """Возвращает справку по использованию команды
         
         Args:
-            command_name: 命令名称
+            command_name: имя команды
             
         Returns:
-            str: 帮助信息
+            str: справочная информация
         """
         help_text = {
-            "pwd": "用法: pwd\n功能: 显示当前工作目录",
-            "ls": "用法: ls [-la] [路径]\n功能: 列出目录内容\n选项: -l(详细信息), -a(显示隐藏文件)",
-            "cat": "用法: cat <文件名>\n功能: 显示文件内容",
-            "head": "用法: head [-n 行数] <文件>\n功能: 显示文件开头内容",
-            "tail": "用法: tail [-n 行数] <文件>\n功能: 显示文件末尾内容",
-            "wc": "用法: wc [-l|-w] <文件>\n功能: 统计文件行数、字数\n选项: -l(行数), -w(字数)",
-            "echo": "用法: echo <文本>\n功能: 输出文本",
-            "whoami": "用法: whoami\n功能: 显示当前用户名",
-            "date": "用法: date\n功能: 显示当前日期时间",
-            "uname": "用法: uname [-a]\n功能: 显示系统信息\n选项: -a(所有信息)",
-            "find": "用法: find . [选项]\n功能: 查找文件\n注意: 只能在当前目录搜索",
-            "cd": "用法: cd <目录>\n功能: 切换到指定目录",
-            "mkdir": "用法: mkdir [-p] <目录名>\n功能: 创建目录\n选项: -p(递归创建)",
-            "touch": "用法: touch <文件名>\n功能: 创建空文件",
-            "grep": "用法: grep [-inr] '模式' <文件>\n功能: 搜索文本\n选项: -i(忽略大小写), -n(显示行号), -r(递归)",
-            "which": "用法: which <命令>\n功能: 查找命令位置",
-            "whereis": "用法: whereis <程序>\n功能: 查找程序位置",
-            "du": "用法: du [-hs] [路径]\n功能: 显示磁盘使用情况\n选项: -h(人类可读), -s(总计)",
-            "df": "用法: df [-h]\n功能: 显示文件系统信息\n选项: -h(人类可读)"
+            "pwd": "Использование: pwd\nНазначение: показать текущий рабочий каталог",
+            "ls": "Использование: ls [-la] [путь]\nНазначение: вывести содержимое каталога\nОпции: -l (подробно), -a (скрытые файлы)",
+            "cat": "Использование: cat <имя_файла>\nНазначение: показать содержимое файла",
+            "head": "Использование: head [-n число_строк] <файл>\nНазначение: показать начало файла",
+            "tail": "Использование: tail [-n число_строк] <файл>\nНазначение: показать конец файла",
+            "wc": "Использование: wc [-l|-w] <файл>\nНазначение: подсчёт строк и слов\nОпции: -l (строки), -w (слова)",
+            "echo": "Использование: echo <текст>\nНазначение: вывести текст",
+            "whoami": "Использование: whoami\nНазначение: показать имя текущего пользователя",
+            "date": "Использование: date\nНазначение: показать текущие дату и время",
+            "uname": "Использование: uname [-a]\nНазначение: показать системную информацию\nОпции: -a (вся информация)",
+            "find": "Использование: find . [опции]\nНазначение: поиск файлов\nПримечание: поиск только в текущем каталоге",
+            "cd": "Использование: cd <каталог>\nНазначение: перейти в указанный каталог",
+            "mkdir": "Использование: mkdir [-p] <имя_каталога>\nНазначение: создать каталог\nОпции: -p (рекурсивно)",
+            "touch": "Использование: touch <имя_файла>\nНазначение: создать пустой файл",
+            "grep": "Использование: grep [-inr] 'шаблон' <файл>\nНазначение: поиск текста\nОпции: -i (без учёта регистра), -n (номера строк), -r (рекурсивно)",
+            "which": "Использование: which <команда>\nНазначение: найти расположение команды",
+            "whereis": "Использование: whereis <программа>\nНазначение: найти расположение программы",
+            "du": "Использование: du [-hs] [путь]\nНазначение: показать использование диска\nОпции: -h (читаемый формат), -s (итого)",
+            "df": "Использование: df [-h]\nНазначение: показать информацию о файловой системе\nОпции: -h (читаемый формат)"
         }
-        return help_text.get(command_name, f"命令 '{command_name}' 暂无帮助信息")
+        return help_text.get(command_name, f"Для команды '{command_name}' справка отсутствует")
 
     def _find_similar_commands(self, command_name):
-        """查找相似的命令名称
+        """Ищет похожие имена команд
         
         Args:
-            command_name: 输入的命令名称
+            command_name: введённое имя команды
             
         Returns:
-            list: 相似命令列表
+            list: список похожих команд
         """
         import difflib
         
-        # 获取所有允许的命令
+        # Получаем все разрешённые команды
         allowed_commands = list(self.allowed_commands.keys())
         
-        # 使用difflib查找相似命令
+        # Ищем похожие команды через difflib
         similar = difflib.get_close_matches(command_name, allowed_commands, n=3, cutoff=0.6)
         
         return similar

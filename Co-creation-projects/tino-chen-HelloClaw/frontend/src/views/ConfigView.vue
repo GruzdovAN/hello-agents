@@ -21,17 +21,17 @@ const resetOptions = ref({
 })
 
 const configDescriptions: Record<string, string> = {
-  CONFIG: '全局配置',
-  IDENTITY: '身份定义',
-  USER: '用户信息',
-  SOUL: '人格模板',
-  MEMORY: '长期记忆',
-  AGENTS: '工作空间规则',
-  HEARTBEAT: '心跳任务',
-  BOOTSTRAP: '初始化引导',
+  CONFIG: 'Глобальные настройки',
+  IDENTITY: 'Определение личности',
+  USER: 'Данные пользователя',
+  SOUL: 'Шаблон характера',
+  MEMORY: 'Долгосрочная память',
+  AGENTS: 'Правила рабочего пространства',
+  HEARTBEAT: 'Задачи heartbeat',
+  BOOTSTRAP: 'Начальная настройка',
 }
 
-// 获取配置文件的后缀
+// 获取Файлы конфигурации的后缀
 const getConfigExtension = (name: string): string => {
   return name === 'CONFIG' ? '.json' : '.md'
 }
@@ -42,7 +42,7 @@ const loadConfigs = async () => {
     const res = await configApi.list()
     configs.value = res.configs
   } catch (error) {
-    message.error('加载配置列表失败')
+    message.error('Не удалось загрузить список настроек')
   } finally {
     loading.value = false
   }
@@ -54,7 +54,7 @@ const selectConfig = async (name: string) => {
     selectedConfig.value = res
     editingContent.value = res.content
   } catch (error) {
-    message.error('加载配置失败')
+    message.error('Не удалось загрузить настройки')
   }
 }
 
@@ -64,10 +64,10 @@ const saveConfig = async () => {
   saving.value = true
   try {
     await configApi.update(selectedConfig.value.name, editingContent.value)
-    message.success('保存成功')
+    message.success('Сохранено')
   } catch (error: any) {
-    // 透传后端错误信息
-    const errorMsg = error?.response?.data?.detail || error?.message || '保存失败'
+    // 透传后端Сообщение об ошибке
+    const errorMsg = error?.response?.data?.detail || error?.message || 'Не удалось сохранить'
     message.error(errorMsg)
   } finally {
     saving.value = false
@@ -93,17 +93,17 @@ const handleReset = async () => {
     selectedConfig.value = null
     editingContent.value = ''
 
-    // 如果清除了会话历史，也要清除 localStorage 中的上次会话 ID
+    // 如果Очистить了СессииИстория，也要Очистить localStorage 中的上次Сессии ID
     if (resetOptions.value.reset_sessions) {
       localStorage.removeItem('helloclaw.lastSessionId')
     }
 
     await loadConfigs()
 
-    // 导航到聊天页面并传递刷新参数，让 ChatView 重新获取 agent 信息
+    // 导航到Чат页面并传递Обновить参数，让 ChatView 重新获取 agent 信息
     router.push({ name: 'chat', query: { refresh: Date.now().toString() } })
   } catch (error) {
-    message.error('重置失败')
+    message.error('重置Ошибка')
   } finally {
     resetting.value = false
   }
@@ -117,27 +117,27 @@ onMounted(() => {
 <template>
   <div class="config-view">
     <div class="config-header">
-      <h1>配置管理</h1>
-      <p>管理 Agent 的配置文件和身份信息</p>
+      <h1>Управление настройками</h1>
+      <p>Управление конфигурацией и идентичностью агента</p>
     </div>
 
     <div class="config-content">
-      <!-- 配置列表 -->
+      <!-- Настройки列表 -->
       <div class="config-list">
         <Card :loading="loading" class="list-card">
           <template #title>
-            <FileTextOutlined /> 配置文件
+            <FileTextOutlined /> Файлы конфигурации
           </template>
           <template #extra>
             <button
               class="reset-btn"
               @click="confirmReset"
-              title="重置为初始模板"
+              title="Сбросить к шаблону"
             >
-              <ReloadOutlined /> 初始化
+              <ReloadOutlined /> Инициализация
             </button>
           </template>
-          <List :data-source="configs" :locale="{ emptyText: '暂无配置文件' }">
+          <List :data-source="configs" :locale="{ emptyText: 'Нет файлов конфигурации' }">
             <template #renderItem="{ item }">
               <List.Item
                 @click="selectConfig(item)"
@@ -168,7 +168,7 @@ onMounted(() => {
               :loading="saving"
               @click="saveConfig"
             >
-              <SaveOutlined /> 保存
+              <SaveOutlined /> Сохранить
             </Button>
           </template>
           <Input.TextArea
@@ -180,50 +180,50 @@ onMounted(() => {
 
         <Card v-else class="empty-card">
           <Empty
-            description="请从左侧选择一个配置文件"
+            description="Выберите файл конфигурации слева"
             :image-style="{ height: '80px' }"
           />
         </Card>
       </div>
     </div>
 
-    <!-- 重置确认弹窗 -->
+    <!-- 重置Подтвердить弹窗 -->
     <Modal
       v-model:open="showResetModal"
-      title="确认初始化"
+      title="Подтвердить инициализацию"
       :confirm-loading="resetting"
       @ok="handleReset"
-      okText="确认初始化"
-      cancelText="取消"
+      okText="Подтвердить инициализацию"
+      cancelText="Отмена"
       okType="danger"
     >
       <div class="reset-warning">
-        <p style="color: #ff4d4f; font-weight: 500;">⚠️ 警告：此操作不可撤销！</p>
-        <p>初始化将把所有配置文件恢复为默认模板，包括：</p>
+        <p style="color: #ff4d4f; font-weight: 500;">⚠️ Внимание: действие необратимо!</p>
+        <p>Инициализация восстановит все файлы к шаблону:</p>
         <ul>
-          <li>AGENTS.md - 工作空间规则</li>
-          <li>IDENTITY.md - 身份信息</li>
-          <li>USER.md - 用户信息</li>
-          <li>SOUL.md - 人格模板</li>
-          <li>MEMORY.md - 长期记忆</li>
-          <li>HEARTBEAT.md - 心跳任务</li>
-          <li>BOOTSTRAP.md - 初始化引导</li>
+          <li>AGENTS.md — правила рабочего пространства</li>
+          <li>IDENTITY.md — идентичность</li>
+          <li>USER.md — данные пользователя</li>
+          <li>SOUL.md — шаблон характера</li>
+          <li>MEMORY.md — долгосрочная память</li>
+          <li>HEARTBEAT.md — задачи heartbeat</li>
+          <li>BOOTSTRAP.md — начальная настройка</li>
         </ul>
 
         <div class="reset-options">
-          <p style="font-weight: 500; margin-bottom: 8px;">额外清除选项：</p>
+          <p style="font-weight: 500; margin-bottom: 8px;">Дополнительные опции очистки:</p>
           <Checkbox v-model:checked="resetOptions.reset_sessions">
-            清除所有会话历史
+            Очистить всю историю сессий
           </Checkbox>
           <Checkbox v-model:checked="resetOptions.reset_memory">
-            清除每日记忆文件
+            Очистить ежедневные файлы памяти
           </Checkbox>
           <Checkbox v-model:checked="resetOptions.reset_global_config">
-            重置全局配置（LLM、Agent 设置等）
+            Сбросить глобальные настройки (LLM, Agent и т.д.)
           </Checkbox>
         </div>
 
-        <p style="margin-top: 16px;">您确定要继续吗？</p>
+        <p style="margin-top: 16px;">Продолжить?</p>
       </div>
     </Modal>
   </div>
@@ -350,7 +350,7 @@ onMounted(() => {
   justify-content: center;
 }
 
-/* 初始化按钮 - 纯红色背景 + 白色字体（可操作） */
+/* Инициализация按钮 - 纯红色背景 + 白色字体（可Действие） */
 .reset-btn {
   padding: 4px 12px;
   font-size: 13px;

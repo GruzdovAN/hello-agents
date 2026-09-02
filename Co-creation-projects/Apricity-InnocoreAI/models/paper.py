@@ -1,5 +1,5 @@
 """
-论文模型
+Модель эссе
 """
 
 from datetime import datetime
@@ -11,14 +11,14 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 class PaperDB(Base):
-    """论文数据库模型"""
+"""Модель базы данных диссертации"""
     __tablename__ = "papers"
     
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(500), nullable=False, index=True)
-    authors = Column(Text)  # JSON格式存储作者列表
+авторы = Столбец(Текст) #Хранение списка авторов в формате JSON
     abstract = Column(Text)
-    keywords = Column(Text)  # JSON格式存储关键词
+ключевые слова = Столбец(Текст) #Ключевые слова для хранения в формате JSON
     publication_year = Column(Integer)
     journal = Column(String(200))
     doi = Column(String(100), unique=True, index=True)
@@ -26,8 +26,8 @@ class PaperDB(Base):
     pdf_url = Column(String(500))
     pdf_path = Column(String(500))
     full_text = Column(Text)
-    embeddings = Column(JSON)  # 存储向量嵌入
-    metadata = Column(JSON)  # 存储额外的元数据
+embeddings = Column(JSON) # Сохранение векторных векторных представлений
+метаданные = Столбец(JSON) # Сохранение дополнительных метаданных
     quality_score = Column(Float, default=0.0)
     relevance_score = Column(Float, default=0.0)
     is_processed = Column(Boolean, default=False)
@@ -36,7 +36,7 @@ class PaperDB(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Paper(BaseModel):
-    """论文响应模型"""
+"""Бумажная модель ответа"""
     id: int
     title: str
     authors: List[str]
@@ -56,7 +56,7 @@ class Paper(BaseModel):
         from_attributes = True
 
 class PaperCreate(BaseModel):
-    """论文创建模型"""
+"""Модель создания диссертации"""
     title: str = Field(..., min_length=1, max_length=500)
     authors: List[str] = []
     abstract: Optional[str] = None
@@ -68,7 +68,7 @@ class PaperCreate(BaseModel):
     pdf_url: Optional[str] = None
 
 class PaperUpdate(BaseModel):
-    """论文更新模型"""
+"""Модель обновления диссертации"""
     title: Optional[str] = None
     authors: Optional[List[str]] = None
     abstract: Optional[str] = None
@@ -79,7 +79,7 @@ class PaperUpdate(BaseModel):
     relevance_score: Optional[float] = None
 
 class PaperSearch(BaseModel):
-    """论文搜索模型"""
+"""Модель поиска по бумаге"""
     query: str = Field(..., min_length=1)
     filters: Dict[str, Any] = {}
     sort_by: str = "relevance"
@@ -87,7 +87,7 @@ class PaperSearch(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 class PaperAnalysis(BaseModel):
-    """论文分析结果"""
+"""Результаты анализа диссертации"""
     paper_id: int
     summary: str
     key_findings: List[str]

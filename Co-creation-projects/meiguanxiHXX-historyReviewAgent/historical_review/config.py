@@ -1,4 +1,4 @@
-"""LLM 配置：OpenRouter（OpenAI 兼容）。"""
+"""Конфигурация LLM: OpenRouter (совместим с OpenAI)."""
 
 from __future__ import annotations
 
@@ -17,11 +17,12 @@ def create_llm(
     timeout: int | None = None,
 ) -> HelloAgentsLLM:
     """
-    OpenRouter：
+    OpenRouter:
         OPENROUTER_API_KEY / OPENROUTER_BASE_URL / OPENROUTER_MODEL
-    或通用 LLM_* 变量。
+    или общие переменные LLM_*.
 
-    传入的 api_key / base_url / model / timeout 优先于环境变量（供 Web 等场景覆盖）。
+    Переданные api_key / base_url / model / timeout имеют приоритет над переменными окружения
+    (для переопределения в Web и других сценариях).
     """
     resolved_key = (
         (api_key.strip() if api_key else None)

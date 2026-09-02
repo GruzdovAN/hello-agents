@@ -4,13 +4,13 @@
     <div class="term-titlebar">
       <!-- Traffic Lights -->
       <div class="flex items-center gap-[7px] mr-4">
-        <div class="term-dot term-dot-red" title="关闭">
+        <div class="term-dot term-dot-red" title="Закрыть">
           <svg class="term-dot-icon" viewBox="0 0 12 12"><path d="M3.5 3.5l5 5M8.5 3.5l-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
-        <div class="term-dot term-dot-yellow" title="最小化">
+        <div class="term-dot term-dot-yellow" title="Свернуть">
           <svg class="term-dot-icon" viewBox="0 0 12 12"><path d="M2.5 6h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
-        <div class="term-dot term-dot-green" title="最大化">
+        <div class="term-dot term-dot-green" title="Развернуть">
           <svg class="term-dot-icon" viewBox="0 0 12 12"><path d="M3.5 8.5V5a1 1 0 011-1H8M8.5 3.5V7a1 1 0 01-1 1H4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
       </div>
@@ -41,11 +41,11 @@
       <!-- Waiting States -->
       <div v-if="isWaiting && logs.length === 0" class="term-waiting-init">
         <div class="term-spinner"></div>
-        <span>正在初始化...</span>
+        <span>Инициализация...</span>
       </div>
       <div v-else-if="isWaiting" class="term-waiting">
         <span class="term-cursor"></span>
-        <span>处理中{{ waitingDots }}</span>
+        <span>Обработка{{ waitingDots }}</span>
       </div>
     </div>
   </div>

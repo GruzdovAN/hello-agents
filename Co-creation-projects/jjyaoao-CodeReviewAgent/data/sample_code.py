@@ -1,29 +1,29 @@
 """
-示例代码：一个简单的用户管理系统
-用于演示代码审查功能
+Пример кода: простая система управления пользователями
+Для демонстрации функции ревью кода
 """
 
 class UserManager:
-    """用户管理类"""
+    """Класс управления пользователями"""
     
     def __init__(self):
         self.users = []
     
     def add_user(self, name, age, email):
-        """添加用户"""
+        """Добавить пользователя"""
         user = {"name": name, "age": age, "email": email}
         self.users.append(user)
         return True
     
     def get_user(self, name):
-        """获取用户信息"""
+        """Получить информацию о пользователе"""
         for user in self.users:
             if user["name"] == name:
                 return user
         return None
     
     def delete_user(self, name):
-        """删除用户"""
+        """Удалить пользователя"""
         for i, user in enumerate(self.users):
             if user["name"] == name:
                 del self.users[i]
@@ -31,14 +31,13 @@ class UserManager:
         return False
 
 def calculate_average_age(users):
-    """计算平均年龄"""
+    """Вычислить средний возраст"""
     total = 0
     for user in users:
         total += user["age"]
     return total / len(users)
 
 def send_email(email, message):
-    """发送邮件（模拟）"""
-    print(f"发送邮件到 {email}: {message}")
+    """Отправить письмо (имитация)"""
+    print(f"Отправка письма на {email}: {message}")
     return True
-

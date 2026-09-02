@@ -55,16 +55,16 @@ class DeepResearchAgent:
         self._state_lock = Lock()
 
         self.todo_agent = self._create_tool_aware_agent(
-            name="研究规划专家",
+            name="Эксперт по планированию исследований",
             system_prompt=todo_planner_system_prompt.strip(),
         )
         self.report_agent = self._create_tool_aware_agent(
-            name="报告撰写专家",
+            name="Эксперт по написанию отчётов",
             system_prompt=report_writer_instructions.strip(),
         )
 
         self._summarizer_factory: Callable[[], ToolAwareSimpleAgent] = lambda: self._create_tool_aware_agent(  # noqa: E501
-            name="任务总结专家",
+            name="Эксперт по сводкам задач",
             system_prompt=task_summarizer_instructions.strip(),
         )
 
@@ -151,7 +151,7 @@ class DeepResearchAgent:
         """Execute the workflow yielding incremental progress events."""
         state = SummaryState(research_topic=topic)
         logger.debug("Starting streaming research: topic=%s", topic)
-        yield {"type": "status", "message": "初始化研究流程"}
+        yield {"type": "status", "message": "Инициализация исследовательского процесса"}
 
         state.todo_items = self.planner.plan_todo_list(state)
         for event in self._drain_tool_events(state, step=0):
@@ -393,7 +393,7 @@ class DeepResearchAgent:
             summary_text = self.summarizer.summarize_task(state, task, context)
             self._drain_tool_events(state)
 
-        task.summary = summary_text.strip() if summary_text else "暂无可用信息"
+        task.summary = summary_text.strip() if summary_text else "Информация недоступна"
         task.status = "completed"
 
         if emit_stream:
@@ -448,7 +448,7 @@ class DeepResearchAgent:
         if not self.note_tool or not report or not report.strip():
             return None
 
-        note_title = f"研究报告：{state.research_topic}".strip() or "研究报告"
+        note_title = f"Исследовательский отчёт: {state.research_topic}".strip() or "Исследовательский отчёт"
         tags = ["deep_research", "report"]
         content = report.strip()
 
@@ -521,7 +521,7 @@ class DeepResearchAgent:
             note_type = parameters.get("note_type")
             if note_type != "conclusion":
                 title = parameters.get("title")
-                if not (isinstance(title, str) and title.startswith("研究报告")):
+                if not (isinstance(title, str) and title.startswith("Исследовательский отчёт")):
                     continue
 
             note_id = parameters.get("note_id")

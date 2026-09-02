@@ -749,7 +749,7 @@ def get_cleaned_theorem_seqs(problem_initial, theorem_seqs):
 
 
 def get_dag(applied_theorems, edges):
-    n = len(applied_theorems)  # 这里去重的代码，还能再优化下
+    n = len(applied_theorems)  # дедупликация; можно оптимизировать
     closure = [[False] * n for _ in range(n)]
 
     for head, tail in edges:
@@ -882,7 +882,7 @@ def get_meta_hypertree(problem):
         premise_ids = tuple(sorted(list(premise_ids)))
         theorem = inverse_parse_theorem(problem.operations[operation_id])
 
-        if theorem == "extend_construction":  # 不需要这些节点
+        if theorem == "extend_construction":  # эти узлы не нужны
             continue
 
         cdl[fact_id] = inverse_parse_cdl(predicate, instance)

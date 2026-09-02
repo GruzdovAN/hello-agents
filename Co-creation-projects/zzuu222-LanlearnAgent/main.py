@@ -2,13 +2,13 @@ from dotenv import load_dotenv
 from hello_agents import HelloAgentsLLM
 from src.agents.conversation import SpeakTeacherAgent
 
-#加载环境变量
+#Загрузить переменные среды
 load_dotenv()
 llm = HelloAgentsLLM()
 
-# 传入参数为 语言、难度、偏好
-# 难度可选：入门、初级、中级、高级
-# 偏好可选：科技、日常等
-talkagent = SpeakTeacherAgent(llm,"英语","中级","科技")
+#Входящие параметры: язык, сложность, предпочтения.
+#Варианты сложности: начальный, начинающий, средний, продвинутый.
+# Варианты предпочтений: технологии, повседневная жизнь и т. д.
+talkagent = SpeakTeacherAgent(llm,"Английский","Средний","Технологии")
 result = talkagent.letstalk()
 

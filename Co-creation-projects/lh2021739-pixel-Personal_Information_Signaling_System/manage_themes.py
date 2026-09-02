@@ -1,5 +1,5 @@
 """
-主题管理工具 - 管理themes.yaml文件
+Инструмент управления темами — работа с файлом themes.yaml
 """
 
 import sys
@@ -7,8 +7,8 @@ import yaml
 from pathlib import Path
 from typing import List
 
-# 设置控制台编码为UTF-8（Windows）
-# 注意：只在作为主脚本运行时重定向，避免在被导入时冲突
+# Кодировка консоли UTF-8 (Windows)
+# Только при запуске как основной скрипт, чтобы не конфликтовать при импорте
 if sys.platform == 'win32' and __name__ == "__main__":
     import io
     if not isinstance(sys.stdout, io.TextIOWrapper):
@@ -18,7 +18,7 @@ if sys.platform == 'win32' and __name__ == "__main__":
 
 
 def load_themes(themes_file: Path) -> List[str]:
-    """从themes.yaml加载themes"""
+    """Загрузить themes из themes.yaml"""
     if not themes_file.exists():
         return []
     
@@ -29,12 +29,12 @@ def load_themes(themes_file: Path) -> List[str]:
                 return []
             return data.get('themes', [])
     except Exception as e:
-        print(f"⚠️  读取themes.yaml失败: {e}")
+        print(f"⚠️  Ошибка чтения themes.yaml: {e}")
         return []
 
 
 def save_themes(themes_file: Path, themes: List[str]):
-    """保存themes到themes.yaml"""
+    """Сохранить themes в themes.yaml"""
     themes_file.parent.mkdir(parents=True, exist_ok=True)
     
     data = {'themes': themes}
@@ -42,19 +42,19 @@ def save_themes(themes_file: Path, themes: List[str]):
     try:
         with open(themes_file, 'w', encoding='utf-8') as f:
             yaml.dump(data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
-        print(f"✅ themes已保存到: {themes_file}")
+        print(f"✅ themes сохранены в: {themes_file}")
         return True
     except Exception as e:
-        print(f"❌ 保存失败: {e}")
+        print(f"❌ Ошибка сохранения: {e}")
         return False
 
 
 def add_theme(themes_file: Path, theme: str) -> bool:
-    """添加theme"""
+    """Добавить theme"""
     themes = load_themes(themes_file)
     
     if theme in themes:
-        print(f"⚠️  theme '{theme}' 已存在")
+        print(f"⚠️  theme '{theme}' уже существует")
         return False
     
     themes.append(theme)
@@ -62,11 +62,11 @@ def add_theme(themes_file: Path, theme: str) -> bool:
 
 
 def remove_theme(themes_file: Path, theme: str) -> bool:
-    """删除theme"""
+    """Удалить theme"""
     themes = load_themes(themes_file)
     
     if theme not in themes:
-        print(f"⚠️  theme '{theme}' 不存在")
+        print(f"⚠️  theme '{theme}' не существует")
         return False
     
     themes.remove(theme)
@@ -74,14 +74,14 @@ def remove_theme(themes_file: Path, theme: str) -> bool:
 
 
 def list_themes(themes_file: Path):
-    """列出所有themes"""
+    """Вывести список всех themes"""
     themes = load_themes(themes_file)
     
     if not themes:
-        print("📋 当前没有themes")
+        print("📋 Сейчас нет themes")
         return
     
-    print(f"📋 当前themes ({len(themes)}个):")
+    print(f"📋 Текущие themes ({len(themes)}):")
     print("-" * 70)
     for i, theme in enumerate(themes, 1):
         print(f"  {i}. {theme}")
@@ -89,52 +89,52 @@ def list_themes(themes_file: Path):
 
 
 def interactive_theme_management(base_dir: Path):
-    """交互式主题管理"""
+    """Интерактивное управление темами"""
     themes_file = base_dir / "themes.yaml"
     
     while True:
         print("\n" + "=" * 70)
-        print("主题管理")
+        print("Управление темами")
         print("=" * 70)
         list_themes(themes_file)
         
-        print("\n请选择操作：")
-        print("  1. 添加theme")
-        print("  2. 删除theme")
-        print("  3. 查看themes")
-        print("  0. 退出")
+        print("\nВыберите действие:")
+        print("  1. Добавить theme")
+        print("  2. Удалить theme")
+        print("  3. Показать themes")
+        print("  0. Выход")
         
-        choice = input("\n请选择 (0-3): ").strip()
+        choice = input("\nВыбор (0-3): ").strip()
         
         if choice == "0":
             break
         elif choice == "1":
-            theme = input("请输入要添加的theme: ").strip()
+            theme = input("Введите theme для добавления: ").strip()
             if theme:
                 if add_theme(themes_file, theme):
-                    print(f"✅ 已添加theme: {theme}")
+                    print(f"✅ theme добавлен: {theme}")
         elif choice == "2":
-            theme = input("请输入要删除的theme: ").strip()
+            theme = input("Введите theme для удаления: ").strip()
             if theme:
-                confirm = input(f"确认删除 '{theme}'? (y/n): ").strip().lower()
-                if confirm in ['y', 'yes', '是']:
+                confirm = input(f"Подтвердить удаление '{theme}'? (y/n): ").strip().lower()
+                if confirm in ['y', 'yes', 'да']:
                     if remove_theme(themes_file, theme):
-                        print(f"✅ 已删除theme: {theme}")
+                        print(f"✅ theme удалён: {theme}")
         elif choice == "3":
             list_themes(themes_file)
         else:
-            print("⚠️  无效选择，请重试")
+            print("⚠️  Неверный выбор, попробуйте снова")
 
 
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="主题管理工具")
-    parser.add_argument("--add", type=str, help="添加theme")
-    parser.add_argument("--remove", type=str, help="删除theme")
-    parser.add_argument("--list", action="store_true", help="列出所有themes")
-    parser.add_argument("--interactive", action="store_true", help="交互式管理")
-    parser.add_argument("--base-dir", type=str, help="基础目录路径（默认为脚本所在目录）")
+    parser = argparse.ArgumentParser(description="Инструмент управления темами")
+    parser.add_argument("--add", type=str, help="Добавить theme")
+    parser.add_argument("--remove", type=str, help="Удалить theme")
+    parser.add_argument("--list", action="store_true", help="Список всех themes")
+    parser.add_argument("--interactive", action="store_true", help="Интерактивный режим")
+    parser.add_argument("--base-dir", type=str, help="Базовый каталог (по умолчанию — каталог скрипта)")
     
     args = parser.parse_args()
     
@@ -150,6 +150,5 @@ if __name__ == "__main__":
     elif args.interactive:
         interactive_theme_management(base_dir)
     else:
-        # 默认交互式
+        # По умолчанию — интерактивный режим
         interactive_theme_management(base_dir)
-

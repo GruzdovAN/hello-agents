@@ -1,7 +1,7 @@
 """
-智能股票分析助手 — 自选股管理API路由
+Интеллектуальный помощник по анализу запасов — маршрутизация через API управления запасами по собственному выбору
 
-提供自选股查询、添加、删除接口。
+Предоставляет интерфейсы для запроса, добавления и удаления самостоятельно выбранных акций.
 """
 
 from fastapi import APIRouter, Query
@@ -13,20 +13,20 @@ router = APIRouter(prefix="/watchlist", tags=["自选股管理"])
 
 
 class WatchlistAddRequest(BaseModel):
-    """添加自选股请求"""
-    stock: str = Field(..., description="股票名称或代码，如'贵州茅台'或'600519'", min_length=1)
+"""Добавить дискреционный запрос на акции"""
+stock: str = Field(...,description="Название или код акции, например, 'Kweichow Moutai' или '600519'", min_length=1)
 
 
 class WatchlistDeleteRequest(BaseModel):
-    """删除自选股请求"""
-    stock: str = Field(..., description="股票名称或代码，如'贵州茅台'或'600519'", min_length=1)
+"""Удалить запрос на выбор акций"""
+stock: str = Field(...,description="Название или код акции, например, 'Kweichow Moutai' или '600519'", min_length=1)
 
 
 @router.get("/")
 async def get_watchlist():
-    """查询自选股列表
+"""Запросить список самостоятельно выбранных акций
 
-    返回当前账户下的所有自选股及其行情数据。
+Возвращает все дополнительные акции текущего счета и их рыночные данные.
     """
     result = watchlist_service.get_watchlist()
     if not result["success"]:
@@ -37,17 +37,17 @@ async def get_watchlist():
             "stocks": result["stocks"],
             "total": result["total"],
         },
-        message=f"共 {result['total']} 只自选股",
+message=f"Всего {result['total']} только акции, выбранные вами самостоятельно",
     )
 
 
 @router.post("/")
 async def add_watchlist(body: WatchlistAddRequest):
-    """添加自选股
+"""Добавить дополнительные акции
 
-    将指定股票添加到自选股列表。
+Добавьте указанную акцию в список акций, выбранный вами самостоятельно.
 
-    - **stock**: 股票名称或6位代码，如'贵州茅台'、'600519'
+- **stock**: название акции или 6-значный код, например «Kweichow Moutai», «600519».
     """
     if not body.stock or not body.stock.strip():
         return error_response(code=400, message="请输入股票名称或代码")
@@ -61,11 +61,11 @@ async def add_watchlist(body: WatchlistAddRequest):
 
 @router.delete("/{stock}")
 async def delete_watchlist(stock: str):
-    """删除自选股
+"""Удалить выбранные акции
 
-    将指定股票从自选股列表中移除。
+Удалите указанную акцию из списка дискреционных акций.
 
-    - **stock**: 股票名称或6位代码，如'贵州茅台'、'600519'
+- **stock**: название акции или 6-значный код, например «Kweichow Moutai», «600519».
     """
     if not stock or not stock.strip():
         return error_response(code=400, message="请输入股票名称或代码")

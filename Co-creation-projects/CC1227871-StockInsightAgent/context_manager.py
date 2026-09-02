@@ -1,4 +1,4 @@
-"""Step 8: 上下文工程 — 对话压缩、Token 管理、多轮连贯性"""
+"""Шаг 8. Разработка контекста — сжатие диалогов, управление токенами, многораундовая согласованность"""
 import json
 import os
 from datetime import datetime
@@ -6,12 +6,12 @@ from typing import List, Dict, Optional
 
 
 class ContextManager:
-    """对话上下文管理器：压缩历史、控制 Token 用量、保持连贯性"""
+"""Менеджер контекста разговора: сжимает историю, контролирует использование токенов, поддерживает непрерывность"""
 
     def __init__(self, max_tokens: int = 4000, summary_trigger: int = 3000):
         self.max_tokens = max_tokens        # 上下文最大 token 数
         self.summary_trigger = summary_trigger  # 触发压缩的阈值
-        self.turns: List[Dict] = []          # 对话轮次
+self.turns: List[Dict] = [] # Повороты диалога
         self.summary: str = ""               # 压缩后的摘要
         self.total_turns = 0
 
@@ -23,7 +23,7 @@ class ContextManager:
         return int(chinese / 1.5 + other / 4)
 
     def add_turn(self, role: str, content: str):
-        """添加一轮对话"""
+"""Добавить раунд диалога"""
         self.total_turns += 1
         turn = {
             "id": self.total_turns,
@@ -34,22 +34,22 @@ class ContextManager:
         }
         self.turns.append(turn)
 
-        # 检查是否需要压缩
+# Проверьте, требуется ли сжатие
         total = sum(t["tokens"] for t in self.turns)
         if total > self.summary_trigger:
             self._compress()
 
     def _compress(self):
-        """压缩早期对话为摘要"""
+"""Сжимайте ранние разговоры в сводки"""
         if len(self.turns) <= 4:
-            return  # 保留最近 4 轮
+return # сохранить последние 4 раунда
 
-        # 取最早的 60% 轮次进行压缩
+# Берем самые ранние 60% раундов для сжатия
         split = max(1, int(len(self.turns) * 0.6))
         old_turns = self.turns[:split]
         recent = self.turns[split:]
 
-        # 生成摘要
+# Создать сводку
         lines = []
         for t in old_turns:
             role_label = "用户" if t["role"] == "user" else "助手"
@@ -62,7 +62,7 @@ class ContextManager:
         else:
             self.summary = new_summary
 
-        # 限制摘要长度
+# Ограничить длину сводки
         while self._estimate_tokens(self.summary) > 1500:
             # Drop the earliest part of the summary string by splitting on lines
             lines = self.summary.split('\n')
@@ -77,17 +77,17 @@ class ContextManager:
 
     def get_context(self, system_prompt: str = "",
                     current_query: str = "") -> str:
-        """构建当前上下文字符串"""
+"""Построить текущую контекстную строку"""
         parts = []
 
-        # 压缩摘要
+#Сжать сводку
         if self.summary:
             parts.append(f"## 历史对话摘要\n{self.summary[:2000]}")
 
-        # 最近对话
+# недавних разговоров
         if self.turns:
-            parts.append("## 最近对话")
-            for t in self.turns[-8:]:  # 最近 8 轮
+parts.append("## Последние разговоры")
+for t in self.turns[-8:]: # Последние 8 раундов
                 role_label = "用户" if t["role"] == "user" else "助手"
                 content = t["content"]
                 if self._estimate_tokens(content) > 500:
@@ -97,12 +97,12 @@ class ContextManager:
         return "\n\n".join(parts)
 
     def get_stats(self) -> str:
-        """获取上下文使用统计"""
+"""Получить статистику использования контекста"""
         total = sum(t["tokens"] for t in self.turns)
         summary_tokens = self._estimate_tokens(self.summary) if self.summary else 0
-        return (f"上下文: {len(self.turns)} 活跃轮次, "
+return (f"Контекст: {len(self.turns)} активные ходы, "
                 f"约 {total} tokens 活跃 + {summary_tokens} tokens 摘要, "
-                f"总计 {self.total_turns} 轮对话")
+f"Всего разговоров: {self.total_turns}")
 
     def clear(self):
         self.turns = []
@@ -110,7 +110,7 @@ class ContextManager:
         self.total_turns = 0
 
 
-# ===== 上下文感知的 System Prompt 构建器 =====
+# ===== Контекстно-зависимый конструктор системных подсказок =====
 
 def build_context_aware_prompt(
     ctx: ContextManager,
@@ -119,27 +119,27 @@ def build_context_aware_prompt(
     memory_context: str = "",
     kb_context: str = "",
 ) -> str:
-    """构建完整上下文感知的系统消息"""
+"""Создание полных контекстно-зависимых системных сообщений"""
 
     parts = [base_prompt]
 
-    # 对话上下文
+#Контекст разговора
     context_str = ctx.get_context()
     if context_str:
-        parts.append(f"\n## 当前对话上下文\n{context_str}")
+parts.append(f"\n## Текущий контекст разговора\n{context_str}")
 
-    # 记忆上下文
+#Контекст памяти
     if memory_context:
         parts.append(f"\n## 用户记忆\n{memory_context}")
 
-    # 知识库上下文
+#Контекст базы знаний
     if kb_context:
         parts.append(f"\n## 相关知识\n{kb_context}")
 
     return "\n".join(parts)
 
 
-# 全局单例
+# Глобальный синглтон
 _ctx_instance: Optional[ContextManager] = None
 
 
@@ -150,7 +150,7 @@ def get_context() -> ContextManager:
     return _ctx_instance
 
 
-# ===== 工具函数 =====
+# ===== Вспомогательные функции =====
 
 def context_stats(query: str = "") -> str:
     """查看当前上下文使用统计"""
@@ -158,13 +158,13 @@ def context_stats(query: str = "") -> str:
 
 
 def context_clear(query: str = "") -> str:
-    """清空上下文（开始新会话）"""
+"""Очистить контекст (начать новый сеанс)"""
     get_context().clear()
-    return "上下文已清空，开始新会话。"
+return «Контекст очищен, начните новый сеанс».
 
 
 def context_summarize(query: str = "") -> str:
-    """手动触发上下文压缩"""
+"""Вручную активировать сжатие контекста"""
     ctx = get_context()
     ctx._compress()
     return ctx.get_stats()

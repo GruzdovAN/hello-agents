@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-妙想自选管理skill (mx_zixuan)
-支持查询、添加、删除东方财富自选股
-统一输出到 /root/.openclaw/workspace/mx_data/output/
+Дополнительный навык управления Мяосян (mx_zixuan)
+Поддерживает запрос, добавление и удаление акций, выбранных компанией Oriental Fortune самостоятельно.
+Унифицированный вывод в /root/.openclaw/workspace/mx_data/output/
 """
 
 import os
@@ -14,7 +14,7 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Any
 
-# 接口配置
+# Конфигурация интерфейса
 QUERY_URL = "https://mkapi2.dfcfs.com/finskillshub/api/claw/self-select/get"
 MANAGE_URL = "https://mkapi2.dfcfs.com/finskillshub/api/claw/self-select/manage"
 
@@ -26,10 +26,10 @@ def safe_filename(s: str, max_len: int = 80) -> str:
     return s or "query"
 
 def get_apikey() -> str:
-    """从环境变量获取apikey"""
+"""Получить apikey из переменной среды"""
     apikey = os.environ.get("MX_APIKEY", "")
     if not apikey:
-        # 尝试从.env文件读取
+# Попробуйте прочитать файл .env
         env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
         if os.path.exists(env_file):
             try:
@@ -47,12 +47,12 @@ def get_apikey() -> str:
     if not apikey:
         print("❌ 未找到MX_APIKEY，请设置环境变量：", file=sys.stderr)
         print("   export MX_APIKEY=your_apikey", file=sys.stderr)
-        raise RuntimeError("MX_APIKEY 未配置")
+поднять RuntimeError("MX_APIKEY не настроен")
     
     return apikey
 
 def query_self_select(apikey: str) -> Dict:
-    """查询自选股列表"""
+"""Запросить список самостоятельно выбранных акций"""
     headers = {
         "Content-Type": "application/json",
         "apikey": apikey
@@ -63,7 +63,7 @@ def query_self_select(apikey: str) -> Dict:
     return response.json()
 
 def manage_self_select(apikey: str, query: str) -> Dict:
-    """添加或删除自选股"""
+"""Добавить или удалить дополнительные акции"""
     headers = {
         "Content-Type": "application/json",
         "apikey": apikey
@@ -78,9 +78,9 @@ def manage_self_select(apikey: str, query: str) -> Dict:
     return response.json()
 
 def format_query_result(result: Dict, output_dir: Path):
-    """格式化查询结果输出 + 保存 CSV"""
+"""Отформатировать вывод результатов запроса + сохранить CSV"""
     if result.get("status") != 0 and result.get("code") != 0:
-        print(f"❌ 查询失败: {result.get('message', '未知错误')}", file=sys.stderr)
+print(f"❌ Ошибка запроса: {result.get('message', 'Неизвестная ошибка')}", file=sys.stderr)
         return
     
     data = result.get("data", {})
@@ -90,28 +90,28 @@ def format_query_result(result: Dict, output_dir: Path):
     data_list = result_data.get("dataList", [])
     
     if not data_list:
-        print("ℹ️  自选股列表为空，请到东方财富App查询")
+print("ℹ️ Список дополнительных акций пуст, зайдите в приложение Oriental Fortune, чтобы проверить")
         return
     
-    # 提取需要显示的字段
+#Извлекаем поля, которые нужно отобразить
     display_fields = [
-        ("SECURITY_CODE", "股票代码", 8),
-        ("SECURITY_SHORT_NAME", "股票名称", 8),
-        ("NEWEST_PRICE", "最新价(元)", 10),
-        ("CHG", "涨跌幅(%)", 10),
-        ("PCHG", "涨跌额(元)", 10),
-        ("010000_TURNOVER_RATE", "换手率(%)", 10),
-        ("010000_LIANGBI", "量比", 6)
+("SECURITY_CODE", "Код акции", 8),
+("SECURITY_SHORT_NAME", "Название акции", 8),
+("NEWEST_PRICE", "Последняя цена (юани)", 10),
+(«CHG», «Изменение (%)», 10),
+(«ПЧГ», «Повышение или понижение (юань)», 10),
+("010000_TURNOVER_RATE", "Оборачиваемость (%)", 10),
+("010000_LIANGBI", "количественное соотношение", 6)
     ]
     
-    # 打印表头
-    print("📊 我的自选股列表")
+# Печать заголовка
+print("📊 Мой список выбора акций")
     print("=" * 100)
     header = " | ".join([f"{name:<{width}}" for _, name, width in display_fields])
     print(header)
     print("-" * 100)
     
-    # 打印数据行
+#Печать строк данных
     for stock in data_list:
         row = []
         for key, _, width in display_fields:
@@ -132,10 +132,10 @@ def format_query_result(result: Dict, output_dir: Path):
         print(" | ".join(row))
     
     print("-" * 100)
-    print(f"共 {len(data_list)} 只自选股")
+print(f"Всего {len(data_list)} только выбранных вами акций")
     
     # 保存到 CSV - same output convention as other mx_* skills
-    safe_name = "我的自选股列表"
+Safe_name = "Мой список выбора акций"
     csv_path = output_dir / f"mx_zixuan_{safe_filename(safe_name)}.csv"
     
     # Build CSV header from all columns (Chinese names)
@@ -165,22 +165,22 @@ def format_query_result(result: Dict, output_dir: Path):
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
     
-    print(f"\n✅ CSV 已保存: {csv_path}")
-    print(f"📄 原始JSON: {json_path}")
+print(f"\nвещество CSV сохранено: {csv_path}")
+print(f"📄 Исходный JSON: {json_path}")
 
 def format_manage_result(result: Dict, query: str):
-    """格式化操作结果输出"""
+"""Форматирование вывода результата операции"""
     if result.get("status") != 0 and result.get("code") != 0:
-        print(f"❌ 操作失败: {result.get('message', '未知错误')}", file=sys.stderr)
+print(f"❌ Операция не удалась: {result.get('message', 'Неизвестная ошибка')}", file=sys.stderr)
         return
     
     print(f"✅ 操作成功: {result.get('message', '已完成')}")
 
 def main():
-    parser = argparse.ArgumentParser(description="妙想自选管理工具 (mx_zixuan)")
-    parser.add_argument("command", nargs="?", help="命令: query/add/delete 或自然语言指令")
+parser = argparse.ArgumentParser(description="Замечательный инструмент управления выбором (mx_zixuan)")
+parser.add_argument("command", nargs="?", help="Команда: запрос/добавление/удаление или команда естественного языка")
     parser.add_argument("stock", nargs="?", help="股票名称或代码（可选）")
-    parser.add_argument("--output-dir", dest="output_dir", help=f"输出目录，默认 {Path('/root/.openclaw/workspace/mx_data/output')}")
+parser.add_argument("--output-dir", dest="output_dir", help=f"Каталог вывода, по умолчанию {Path('/root/.openclaw/workspace/mx_data/output')}")
     
     args = parser.parse_args()
     
@@ -191,40 +191,40 @@ def main():
     
     apikey = get_apikey()
     
-    # 处理命令
+# Команды процесса
     if not args.command:
-        print("ℹ️  使用方式:", file=sys.stderr)
-        print("  查询自选股: python scripts/mx_zixuan.py query", file=sys.stderr)
+print("ℹ️ Использование:", file=sys.stderr)
+print("Запросить выбранные акции: скрипты Python/запрос mx_zixuan.py", file=sys.stderr)
         print("  添加自选股: python scripts/mx_zixuan.py add 贵州茅台", file=sys.stderr)
-        print("  删除自选股: python scripts/mx_zixuan.py delete 贵州茅台", file=sys.stderr)
-        print("  自然语言: python scripts/mx_zixuan.py \"把贵州茅台加入自选\"", file=sys.stderr)
+print("Удалить дополнительные акции: скрипты Python/mx_zixuan.py delete Kweichow Moutai", file=sys.stderr)
+print("Естественный язык: скрипты Python/mx_zixuan.py \"Добавьте Квейчоу Мутая в свой выбор\"", file=sys.stderr)
         print(f"\n  默认输出目录: {output_dir}", file=sys.stderr)
         sys.exit(1)
     
     command = args.command.lower()
     
     if command in ["query", "list", "查询", "列表"]:
-        # 查询自选股
+# Запрос дополнительных акций
         result = query_self_select(apikey)
         format_query_result(result, output_dir)
     elif command in ["add", "添加", "增加"] and args.stock:
-        # 添加股票
-        query = f"把{args.stock}添加到我的自选股列表"
+# Добавить акции
+query = f"Добавить {args.stock} в мой список выбора акций"
         result = manage_self_select(apikey, query)
         format_manage_result(result, query)
-    elif command in ["delete", "del", "remove", "删除", "移除"] and args.stock:
-        # 删除股票
-        query = f"把{args.stock}从我的自选股列表删除"
+Команда elif в ["delete", "del", "remove", "delete", "remove"] и args.stock:
+# Удаление акций
+query = f"Удалить {args.stock} из моего списка выбора акций"
         result = manage_self_select(apikey, query)
         format_manage_result(result, query)
     else:
-        # 自然语言处理
+# обработка естественного языка
         query = args.command
         if args.stock:
             query += " " + args.stock
         
-        # 判断是查询还是管理操作
-        if any(keyword in query for keyword in ["查询", "列表", "我的自选", "有哪些"]):
+# Определить, является ли это запросом или операцией управления
+если есть(ключевое слово в запросе по ключевому слову в ["запрос", "список", "мой выбор", "что там"]):
             result = query_self_select(apikey)
             format_query_result(result, output_dir)
         else:

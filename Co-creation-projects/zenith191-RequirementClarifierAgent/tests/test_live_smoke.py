@@ -1,4 +1,4 @@
-"""显式启用后才调用真实 LLM 的冒烟测试。"""
+"""Явно включается перед вызовом настоящего дымового теста LLM."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def test_live_multi_agent_workflow() -> None:
     )
 
     result = workflow.run(
-        "面向社区居民开发一个活动报名工具，希望一个月内完成首版。"
+«Разработайте инструмент регистрации мероприятий для жителей сообщества и надеемся завершить первую версию в течение месяца».
     )
 
     assert all(f"## {heading}" in result.report for heading in REQUIRED_REPORT_HEADINGS)

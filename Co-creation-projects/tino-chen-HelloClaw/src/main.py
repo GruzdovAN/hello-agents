@@ -1,9 +1,8 @@
-"""
-HelloClaw Backend - FastAPI 入口
-"""
+"""HelloClaw Backend — портал FastAPI"""
 import os
 
-# 禁用 PYTHONSTARTUP 以避免 I/O 问题
+# Отключите PYTHONSTARTUP, чтобы избежать проблем с вводом-выводом.
+
 os.environ.pop("PYTHONSTARTUP", None)
 
 from contextlib import asynccontextmanager
@@ -15,43 +14,50 @@ from .api import chat, session, config, memory
 from .workspace.manager import WorkspaceManager
 from .agent.helloclaw_agent import HelloClawAgent
 
-# 加载环境变量
+# Загрузить переменные среды
+
 load_dotenv()
 
-# 全局 Agent 实例
+# Экземпляр глобального агента
+
 _agent: HelloClawAgent = None
 
 
 def get_agent() -> HelloClawAgent:
-    """获取全局 Agent 实例"""
+    """Получить глобальный экземпляр агента"""
     global _agent
     return _agent
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期管理"""
+    """Управление жизненным циклом приложений"""
     global _agent
 
-    # 启动时初始化
+    # Инициализировать при запуске
+
     print("HelloClaw Backend starting...")
 
-    # 初始化工作空间
+    # Инициализировать рабочую область
+
     workspace_path = os.getenv("WORKSPACE_PATH", "~/.helloclaw/workspace")
     workspace = WorkspaceManager(workspace_path)
     workspace.ensure_workspace_exists()
     print(f"Workspace initialized at: {workspace.workspace_path}")
 
-    # 设置全局 workspace 实例
+    # Настройка экземпляра глобальной рабочей области
+
     config.set_workspace(workspace)
     memory.set_workspace(workspace)
 
-    # 初始化全局 Agent 实例
+    # Инициализируйте экземпляр глобального агента
+
     _agent = HelloClawAgent(workspace_path=workspace_path)
     print("HelloClawAgent initialized")
 
     yield
-    # 关闭时清理
+    # Очистка при выключении
+
     print("HelloClaw Backend shutting down...")
 
 
@@ -62,7 +68,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS 配置
+# Конфигурация CORS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:5173").split(","),
@@ -72,13 +79,15 @@ app.add_middleware(
 )
 
 
-# 健康检查
+# проверка здоровья
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "helloclaw-backend"}
 
 
-# 注册 API 路由
+# Зарегистрировать маршрут API
+
 app.include_router(chat.router, prefix="/api")
 app.include_router(session.router, prefix="/api")
 app.include_router(config.router, prefix="/api")

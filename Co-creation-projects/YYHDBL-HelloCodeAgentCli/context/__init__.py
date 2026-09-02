@@ -1,7 +1,7 @@
-"""上下文工程模块
+"""Модуль инженерии контекста
 
-为HelloAgents框架提供上下文工程能力：
-- ContextBuilder: GSSC流水线（Gather-Select-Structure-Compress）
+Обеспечивает инженерию контекста для фреймворка HelloAgents:
+- ContextBuilder: конвейер GSSC (Gather-Select-Structure-Compress)
 """
 
 from .builder import ContextBuilder, ContextConfig, ContextPacket

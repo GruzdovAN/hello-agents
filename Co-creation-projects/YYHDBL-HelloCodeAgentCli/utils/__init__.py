@@ -1,4 +1,4 @@
-"""通用工具模块"""
+"""Общие утилиты"""
 
 from .logging import setup_logger, get_logger
 from .serialization import serialize_object, deserialize_object

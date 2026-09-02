@@ -1,5 +1,5 @@
 """
-写作模型
+модель письма
 """
 
 from datetime import datetime
@@ -11,28 +11,28 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 class WritingDB(Base):
-    """写作数据库模型"""
+"""Написание модели базы данных"""
     __tablename__ = "writing"
     
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200), nullable=False)
     writing_type = Column(String(50), nullable=False)  # review, summary, critique, proposal
     content = Column(Text)
-    outline = Column(JSON)  # 大纲结构
-    sections = Column(JSON)  # 章节内容
-    citations = Column(JSON)  # 引用信息
-    metadata = Column(JSON)  # 额外元数据
+контур = Столбец (JSON) # Структура структуры
+разделы = Столбец(JSON) # Содержимое раздела
+citations = Column(JSON) #Информация о цитировании
+метаданные = Столбец(JSON) # Дополнительные метаданные
     quality_score = Column(Float, default=0.0)
     word_count = Column(Integer, default=0)
     status = Column(String(20), default="draft")  # draft, reviewing, completed
-    paper_ids = Column(JSON)  # 参考论文ID列表
+paper_ids = Column(JSON) # Список идентификаторов справочной бумаги
     user_id = Column(Integer, index=True)
     task_id = Column(Integer, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Writing(BaseModel):
-    """写作响应模型"""
+"""Написание модели ответа"""
     id: int
     title: str
     writing_type: str
@@ -49,14 +49,14 @@ class Writing(BaseModel):
         from_attributes = True
 
 class WritingCreate(BaseModel):
-    """写作创建模型"""
+"""Написание модели создания"""
     title: str = Field(..., min_length=1, max_length=200)
     writing_type: str = Field(..., regex=r'^(review|summary|critique|proposal)$')
     paper_ids: List[int] = []
     outline: Optional[List[Dict[str, Any]]] = None
 
 class WritingUpdate(BaseModel):
-    """写作更新模型"""
+"""Написание модели обновления"""
     title: Optional[str] = None
     content: Optional[str] = None
     outline: Optional[List[Dict[str, Any]]] = None
@@ -66,7 +66,7 @@ class WritingUpdate(BaseModel):
     quality_score: Optional[float] = Field(None, ge=0.0, le=1.0)
 
 class LiteratureReview(BaseModel):
-    """文献综述"""
+"""литературный обзор"""
     introduction: str
     methodology_review: str
     findings_synthesis: str
@@ -75,7 +75,7 @@ class LiteratureReview(BaseModel):
     references: List[Dict[str, Any]]
 
 class PaperSummary(BaseModel):
-    """论文总结"""
+"""Резюме диссертации"""
     background: str
     methods: str
     results: str
@@ -83,7 +83,7 @@ class PaperSummary(BaseModel):
     significance: str
 
 class PaperCritique(BaseModel):
-    """论文评述"""
+"""Обзор статьи"""
     strengths: List[str]
     weaknesses: List[str]
     methodological_issues: List[str]
@@ -91,7 +91,7 @@ class PaperCritique(BaseModel):
     suggestions: List[str]
 
 class ResearchProposal(BaseModel):
-    """研究提案"""
+"""Предложение по исследованию"""
     background: str
     problem_statement: str
     research_questions: List[str]
@@ -101,11 +101,11 @@ class ResearchProposal(BaseModel):
     timeline: str
 
 class WritingSection(BaseModel):
-    """写作章节"""
+"""Написание глав"""
     title: str
     content: str
     subsections: List['WritingSection'] = []
     citations: List[str] = []
 
-# 解决前向引用
+#Разрешить прямые ссылки
 WritingSection.model_rebuild()

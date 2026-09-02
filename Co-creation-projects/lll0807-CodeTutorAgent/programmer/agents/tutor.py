@@ -3,107 +3,107 @@ from typing import Dict, Any
 
 class TutorAgent(SimpleAgent):
     """
-    主要协调智能体，直接管理 Planner、Exercise 和 Reviewer 子智能体。
-    使用简单的直接调用模式，不依赖 A2A 协议。
+    Главный координирующий агент; управляет подагентами Planner, Exercise и Reviewer.
+    Простой режим прямого вызова без A2A.
     """
     
     def __init__(self, llm: HelloAgentsLLM, knowledge_service):
         """
-        初始化 TutorAgent 和所有子智能体。
+        Инициализация TutorAgent и всех подагентов.
         
         Args:
-            llm: 用于所有 agents 的大语言模型实例。
+            llm: экземпляр LLM для всех агентов.
         """
-        # 导入放在这里避免循环导入
+        # Импорт здесь во избежание циклических зависимостей
         from agents.planner import PlannerAgent
         from agents.exercise import ExerciseAgent
         from agents.reviewer import ReviewerAgent
         from tools.code_runner import CodeRunner
         from tools.agent_tool import AgentTool
         self.knowledge = knowledge_service
-        # 创建子智能体实例
+        # Создание подагентов
         self.planner = PlannerAgent(llm, knowledge_service)
         self.exercise = ExerciseAgent(llm)
         self.reviewer = ReviewerAgent(llm, tools=[CodeRunner()], knowledge_service=knowledge_service)
         
-        # 定义系统提示词
+        # Системный промпт
         system_prompt = """
-        你是一位智能编程导师 (Tutor)。你负责协调个性化的学习体验。
+        Ты интеллектуальный наставник по программированию (Tutor). Координируешь персонализированное обучение.
         
-        你拥有以下专业助手（工具）：
-        - call_planner: 课程规划师，制定个性化学习计划, 回顾已经创建过的学习计划
-        - call_exercise: 出题人，生成编程练习题
-        - call_reviewer: 评审员，评审代码并提供反馈
+        У тебя есть специализированные помощники (инструменты):
+        - call_planner: планировщик курса — персональный план обучения, обзор уже созданных планов
+        - call_exercise: генератор задач — практические задания по программированию
+        - call_reviewer: ревьюер — проверка кода и обратная связь
         
-        **关键：你必须使用工具，不能自己完成这些任务！**
+        **Важно: ты должен использовать инструменты, не выполнять эти задачи сам!**
         
-        工具调用格式（严格遵守此格式）：
-        [TOOL_CALL:工具名称:参数]
+        Формат вызова инструмента (строго):
+        [TOOL_CALL:имя_инструмента:параметры]
         
-        具体示例：
+        Примеры:
         
-        示例1 - 学习计划：
-        用户："我想学习Python中的列表推导式"
-        你的回答：[TOOL_CALL:call_planner:query=请为学习Python列表推导式制定学习计划]
+        Пример 1 — план обучения:
+        Пользователь: «Хочу изучить list comprehensions в Python»
+        Твой ответ: [TOOL_CALL:call_planner:query=Составь план обучения list comprehensions в Python]
         
-        示例2 - 回顾学习计划：
-        用户："我想回顾Python中的列表推导式的学习计划"
-        你的回答：[TOOL_CALL:call_planner:query=请回顾Python中的列表推导式的学习计划]
+        Пример 2 — обзор плана:
+        Пользователь: «Хочу пересмотреть план по list comprehensions в Python»
+        Твой ответ: [TOOL_CALL:call_planner:query=Пересмотри план обучения list comprehensions в Python]
         
-        示例3 - 练习题：
-        用户："请给我出一道编程题目"
-        你的回答：[TOOL_CALL:call_exercise:query=请给我出一道编程题目]
+        Пример 3 — практическая задача:
+        Пользователь: «Дай мне задачу по программированию»
+        Твой ответ: [TOOL_CALL:call_exercise:query=Дай мне задачу по программированию]
         
-        示例4 - 代码评审（最重要！）：
-        用户："请评审以下代码: numbers = [1, 2, 3]"
-        你的回答：[TOOL_CALL:call_reviewer:query=请评审以下代码: numbers = [1, 2, 3]]
+        Пример 4 — ревью кода (самый важный!):
+        Пользователь: «Проверь код: numbers = [1, 2, 3]»
+        Твой ответ: [TOOL_CALL:call_reviewer:query=Проверь код: numbers = [1, 2, 3]]
         
-        工作流程（必须严格遵守）：
-        1. 当用户表达学习目标时 → 立即调用 call_planner
-        2. 当用户请求编程题时 → 立即调用 call_exercise  
-        3. 当用户提交代码或请求评审时 → 立即调用 call_reviewer
+        Рабочий процесс (строго):
+        1. Пользователь выражает цель обучения → сразу call_planner
+        2. Пользователь просит задачу → сразу call_exercise
+        3. Пользователь отправляет код или просит ревью → сразу call_reviewer
         
-        **绝对禁止的行为**：
-        - ❌ 不要自己制定学习计划
-        - ❌ 不要自己出练习题
-        - ❌ 不要自己评审代码（即使代码很简单）
-        - ❌ 不要说"工具调用失败"然后自己完成任务
+        **Категорически запрещено**:
+        - ❌ Самостоятельно составлять план обучения
+        - ❌ Самостоятельно давать задачи
+        - ❌ Самостоятельно ревьюить код (даже простой)
+        - ❌ Говорить «вызов инструмента не удался» и делать задачу сам
         
-        正确的行为：
-        - ✅ 识别用户意图
-        - ✅ 立即生成工具调用（格式：[TOOL_CALL:工具名:query=...]）
-        - ✅ 等待工具返回结果
-        - ✅ 将结果友好地呈现给用户
+        Правильное поведение:
+        - ✅ Распознать намерение пользователя
+        - ✅ Сразу сформировать вызов инструмента ([TOOL_CALL:имя:query=...])
+        - ✅ Дождаться результата инструмента
+        - ✅ Дружелюбно представить результат пользователю
         """
         
-        # 初始化父类
+        # Инициализация родительского класса
         super().__init__(
             name="Tutor",
             llm=llm,
             system_prompt=system_prompt
         )
 
-        # 简单的用户标识
+        # Простой идентификатор пользователя
         self.user_id = "default_user"
         self.current_problem = []
 
-        # 将子智能体包装为工具并注册
+        # Обёртка подагентов в инструменты и регистрация
         self.add_tool(AgentTool(
             self.planner,
             name="call_planner",
-            description="调用课程规划师，为用户制定个性化的学习计划"
+            description="Вызов планировщика курса для персонального плана обучения"
         ))
         
         self.add_tool(AgentTool(
             self.exercise,
             name="call_exercise",
-            description="调用出题人，根据学习内容生成编程练习题"
+            description="Вызов генератора задач по теме обучения"
         ))
         
         self.add_tool(AgentTool(
             self.reviewer,
             name="call_reviewer",
-            description="调用评审员，对用户提交的代码进行评审和反馈"
+            description="Вызов ревьюера для проверки кода и обратной связи"
         ))
 
 

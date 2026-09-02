@@ -6,7 +6,7 @@ import LobsterIcon from '@/assets/lobster.svg'
 
 const route = useRoute()
 
-// 龙虾红主题配置
+// Красная тема (lobster)
 const customTheme = {
   token: {
     colorPrimary: '#ff5c5c',
@@ -34,25 +34,25 @@ const customTheme = {
           <Menu.Item key="chat">
             <RouterLink to="/">
               <MessageOutlined />
-              <span>聊天</span>
+              <span>Чат</span>
             </RouterLink>
           </Menu.Item>
           <Menu.Item key="sessions">
             <RouterLink to="/sessions">
               <HistoryOutlined />
-              <span>会话</span>
+              <span>Сессии</span>
             </RouterLink>
           </Menu.Item>
           <Menu.Item key="memory">
             <RouterLink to="/memory">
               <BookOutlined />
-              <span>记忆</span>
+              <span>Память</span>
             </RouterLink>
           </Menu.Item>
           <Menu.Item key="config">
             <RouterLink to="/config">
               <SettingOutlined />
-              <span>配置</span>
+              <span>Настройки</span>
             </RouterLink>
           </Menu.Item>
         </Menu>

@@ -1,5 +1,5 @@
 """
-分析模型
+Аналитическая модель
 """
 
 from datetime import datetime
@@ -11,15 +11,15 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 class AnalysisDB(Base):
-    """分析数据库模型"""
+"""Анализ модели базы данных"""
     __tablename__ = "analysis"
     
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200), nullable=False)
     analysis_type = Column(String(50), nullable=False)
-    paper_ids = Column(JSON)  # 分析的论文ID列表
+paper_ids = Column(JSON) # Список идентификаторов проанализированных бумаг
     methodology = Column(Text)
-    findings = Column(JSON)  # 分析发现
+результаты = Столбец (JSON) # Результаты анализа
     insights = Column(Text)
     limitations = Column(Text)
     recommendations = Column(Text)
@@ -33,7 +33,7 @@ class AnalysisDB(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Analysis(BaseModel):
-    """分析响应模型"""
+"""Анализ модели реагирования"""
     id: int
     title: str
     analysis_type: str
@@ -51,14 +51,14 @@ class Analysis(BaseModel):
         from_attributes = True
 
 class AnalysisCreate(BaseModel):
-    """分析创建模型"""
+"""Анализ и создание моделей"""
     title: str = Field(..., min_length=1, max_length=200)
     analysis_type: str = Field(..., regex=r'^(comprehensive|methodology|findings|gap|trend)$')
     paper_ids: List[int] = []
     methodology: Optional[str] = None
 
 class AnalysisUpdate(BaseModel):
-    """分析更新模型"""
+"""Модель обновления анализа"""
     title: Optional[str] = None
     methodology: Optional[str] = None
     findings: Optional[Dict[str, Any]] = None
@@ -70,7 +70,7 @@ class AnalysisUpdate(BaseModel):
     impact_score: Optional[float] = Field(None, ge=0.0, le=1.0)
 
 class ComprehensiveAnalysis(BaseModel):
-    """综合分析结果"""
+"""Результаты комплексного анализа"""
     summary: str
     key_findings: List[str]
     methodological_trends: List[str]
@@ -80,28 +80,28 @@ class ComprehensiveAnalysis(BaseModel):
     citation_network: Dict[str, Any]
 
 class MethodologyAnalysis(BaseModel):
-    """方法论分析结果"""
+"""Результаты методического анализа"""
     common_methods: List[str]
     method_comparison: Dict[str, Any]
     strengths_weaknesses: Dict[str, List[str]]
     best_practices: List[str]
 
 class FindingsAnalysis(BaseModel):
-    """研究发现分析"""
+"""Анализ результатов исследования"""
     consensus_points: List[str]
     controversial_points: List[str]
     emerging_patterns: List[str]
     evidence_strength: Dict[str, float]
 
 class GapAnalysis(BaseModel):
-    """研究缺口分析"""
+"""Анализ пробелов в исследованиях"""
     identified_gaps: List[str]
     gap_categories: Dict[str, List[str]]
     opportunity_areas: List[str]
     research_questions: List[str]
 
 class TrendAnalysis(BaseModel):
-    """趋势分析结果"""
+"""Результаты анализа тенденций"""
     temporal_trends: Dict[str, Any]
     topic_evolution: List[str]
     emerging_topics: List[str]

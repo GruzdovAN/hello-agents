@@ -1,4 +1,4 @@
-"""LLM 进程内单例（多智能体共享同一模型客户端，避免重复初始化）。"""
+"""Одноэлементный элемент LLM в процессе (несколько агентов используют один и тот же клиент модели, чтобы избежать повторной инициализации)."""
 
 from hello_agents import HelloAgentsLLM
 
@@ -10,12 +10,12 @@ _llm_instance: HelloAgentsLLM | None = None
 
 
 def get_llm() -> HelloAgentsLLM:
-    """HelloAgentsLLM 自动读取 LLM_API_KEY / LLM_BASE_URL / LLM_MODEL_ID。"""
+"""HelloAgentsLLM автоматически считывает LLM_API_KEY / LLM_BASE_URL / LLM_MODEL_ID."""
     global _llm_instance
     if _llm_instance is None:
         _llm_instance = HelloAgentsLLM()
         logger.info(
-            "LLM 初始化: provider=%s model=%s",
+"Инициализация LLM: поставщик=%s модель=%s",
             getattr(_llm_instance, "provider", "?"),
             getattr(_llm_instance, "model", "?"),
         )

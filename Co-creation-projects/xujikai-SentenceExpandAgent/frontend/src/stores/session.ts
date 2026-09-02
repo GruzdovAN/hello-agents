@@ -1,6 +1,6 @@
 /**
- * 英语句子扩写智能体 - 会话状态管理
- * 使用 Pinia 管理会话状态
+ * Агент расширения английских предложений - СессииСтатус管理
+ * Используется Pinia 管理СессииСтатус
  */
 
 import { defineStore } from 'pinia';
@@ -15,7 +15,7 @@ import type {
 import { startSession, submitSentence, getSession } from '../api/expand';
 
 export const useSessionStore = defineStore('session', () => {
-  // 状态
+  // Статус
   const session = ref<SessionState | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -31,7 +31,7 @@ export const useSessionStore = defineStore('session', () => {
   const sessionId = computed(() => session.value?.session_id || '');
 
   /**
-   * 开始新的会话
+   * 开始新的Сессии
    */
   async function startNewSession(seedSentence: string, mode: Mode) {
     loading.value = true;
@@ -52,7 +52,7 @@ export const useSessionStore = defineStore('session', () => {
         mode,
       });
 
-      // 更新状态
+      // 更新Статус
       session.value = {
         session_id: response.session_id,
         mode,
@@ -62,7 +62,7 @@ export const useSessionStore = defineStore('session', () => {
         final_polished: response.final_polished || null,
       };
 
-      // 保存当前提问
+      // Сохранить当前提问
       currentQuestion.value = response.question || null;
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to start session';
@@ -73,7 +73,7 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
-   * 提交用户句子（手动模式）
+   * Отправить用户句子（Ручной режим）
    */
   async function submitUserSentence(userSentence: string) {
     if (!session.value) {
@@ -90,7 +90,7 @@ export const useSessionStore = defineStore('session', () => {
       });
 
       // 直接从响应中获取信息，不调用 refreshSession
-      // 首先，需要手动更新会话状态
+      // 首先，需要手动更新СессииСтатус
       if (session.value && response.evaluation && response.expanded_sentence) {
         // 创建新的 round 记录
         const newRound = {
@@ -109,13 +109,13 @@ export const useSessionStore = defineStore('session', () => {
           session.value.current_stage = response.stage;
         }
         
-        // 更新最终润色结果
+        // 更新最终润色Результат
         if (response.final_polished) {
           session.value.final_polished = response.final_polished;
         }
       }
 
-      // 保存当前提问
+      // Сохранить当前提问
       currentQuestion.value = response.question || null;
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to submit sentence';
@@ -126,7 +126,7 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
-   * 刷新会话状态
+   * ОбновитьСессииСтатус
    */
   async function refreshSession() {
     if (!session.value) {
@@ -143,7 +143,7 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
-   * 添加轮次记录（用于自动模式）
+   * 添加轮次记录（用于Автоматический режим）
    */
   function addRound(round: RoundRecord) {
     if (!session.value) {
@@ -163,7 +163,7 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
-   * 设置最终润色版本
+   * 设置最终润色Версия
    */
   function setFinalPolished(polished: string) {
     if (!session.value) {
@@ -180,7 +180,7 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
-   * 清除会话
+   * ОчиститьСессии
    */
   function clearSession() {
     session.value = null;
@@ -194,16 +194,16 @@ export const useSessionStore = defineStore('session', () => {
    */
   function getStageTitle(stage: Stage): string {
     const titles: Record<Stage, string> = {
-      stage1: '第一阶段：添加时间与地点',
-      stage2: '第二阶段：添加人物与原因',
-      stage3: '第三阶段：添加方式与细节',
-      done: '完成',
+      stage1: 'Этап 1: время и место',
+      stage2: 'Этап 2: персонажи и причины',
+      stage3: 'Этап 3: способ и детали',
+      done: 'Готово',
     };
     return titles[stage];
   }
 
   return {
-    // 状态
+    // Статус
     session,
     loading,
     error,

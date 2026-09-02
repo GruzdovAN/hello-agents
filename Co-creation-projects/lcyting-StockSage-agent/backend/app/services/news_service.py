@@ -1,8 +1,8 @@
 """
-智能股票分析助手 — 资讯搜索服务层
+Интеллектуальный помощник по анализу запасов — уровень службы поиска информации
 
-封装金融资讯搜索、个股舆情分析的数据查询逻辑。
-含 mx-search 计时缓存与额度用尽时的缓存降级。
+Инкапсулирует логику запроса данных для поиска финансовой информации и анализа общественного мнения по отдельным акциям.
+Содержит кеш времени mx-поиска и ухудшение состояния кеша при исчерпании квоты.
 """
 
 from __future__ import annotations
@@ -71,8 +71,8 @@ def _merge_item_text_fields(item: dict) -> str:
 def _normalize_information_type(item: dict) -> tuple[str, str]:
     """将妙想条目上的类型字段统一为 (NEWS|REPORT|ANNOUNCEMENT|OTHER, 中文标签)。
 
-    常见坑：仅写了 info_type 默认 NEWS，但 info_type_cn 因 informationType 为空变成「资讯」，
-    前端饼图只认三种中文，导致大量条目不计入分布。
+Распространенные ошибки: записывается только NEWS по умолчанию info_type, но info_type_cn становится «информацией», поскольку InformationType пуст.
+Круговая диаграмма внешнего интерфейса распознает только три китайских языка, в результате чего большое количество записей не включено в дистрибутив.
     """
     raw = item.get("informationType")
     if raw is None or (isinstance(raw, str) and not raw.strip()):
@@ -88,7 +88,7 @@ def _normalize_information_type(item: dict) -> tuple[str, str]:
         return "NEWS", cn_by_en["NEWS"]
 
     if isinstance(raw, (int, float)):
-        # 无公开数字枚举说明时不猜测，避免错分进「仅研报」等畸形分布
+# Не делайте догадок, когда нет общедоступного числового описания перечисления, чтобы избежать ошибочной классификации на «только отчет об исследовании» и других аномальных распределений.
         return "OTHER", cn_by_en["OTHER"]
 
     s = str(raw).strip()
@@ -97,7 +97,7 @@ def _normalize_information_type(item: dict) -> tuple[str, str]:
     if u in ("NEWS", "REPORT", "ANNOUNCEMENT"):
         return u, cn_by_en[u]
 
-    # 小写 json：news / report / announcement
+# JSON строчными буквами: новости/отчет/объявление
     low = s.lower()
     if low in ("news",):
         return "NEWS", cn_by_en["NEWS"]
@@ -106,12 +106,12 @@ def _normalize_information_type(item: dict) -> tuple[str, str]:
     if low in ("announcement", "announce"):
         return "ANNOUNCEMENT", cn_by_en["ANNOUNCEMENT"]
 
-    # 中文或混合文案
-    if "公告" in s:
+# Китайский или смешанный копирайтинг
+если «объявление» в s:
         return "ANNOUNCEMENT", cn_by_en["ANNOUNCEMENT"]
-    if "研报" in s or "研究报告" in s:
+если «отчет об исследовании» в s или «отчет об исследовании» в s:
         return "REPORT", cn_by_en["REPORT"]
-    if "新闻" in s:
+если «новости» в s:
         return "NEWS", cn_by_en["NEWS"]
 
     if "ANNOUNCE" in u or "NOTICE" in u:
@@ -124,7 +124,7 @@ def _normalize_information_type(item: dict) -> tuple[str, str]:
     return "OTHER", cn_by_en["OTHER"]
 
 
-# 妙想 / 东方财富资讯条目可能出现的链接字段（含嵌套 dict 扫描）
+# Поля ссылок, которые могут появляться в информационных записях Miaoxiang/Oriental Fortune (включая вложенное сканирование dict)
 _URL_KEYS_ORDERED = (
     "url",
     "link",
@@ -156,7 +156,7 @@ _URL_KEYS_ORDERED = (
     "share_link",
 )
 
-# 递归扫描时跳过明显正文/标题字段，避免误把片段当外链
+# Пропускайте очевидные поля текста/заголовка во время рекурсивного сканирования, чтобы не принять фрагменты за внешние ссылки.
 _SKIP_URL_SCAN_KEYS = frozenset(
     {
         "content",
@@ -176,7 +176,7 @@ _SKIP_URL_SCAN_KEYS = frozenset(
 
 
 def _item_original_url(item: dict, *, depth: int = 0) -> str:
-    """提取可外链打开的原文地址（若有）。兼容多层嵌套与非常规字段名。"""
+"""Извлеките исходный адрес, который можно открыть по внешним ссылкам (если таковые имеются). Совместимость с многоуровневой вложенностью и нестандартными именами полей."""
     if not isinstance(item, dict) or depth > 6:
         return ""
 
@@ -210,7 +210,7 @@ def _item_original_url(item: dict, *, depth: int = 0) -> str:
 
 
 def _mx_search_from_raw(query: str, raw_result: dict) -> dict:
-    """将 mx-search 原始响应转为统一 payload"""
+"""Преобразование необработанного ответа mx-search в унифицированную полезную нагрузку"""
     result = {
         "success": False,
         "query": query,
@@ -236,7 +236,7 @@ def _mx_search_from_raw(query: str, raw_result: dict) -> dict:
         body = _merge_item_text_fields(item)
         en_type, cn_type = _normalize_information_type(item)
         parsed_items.append({
-            "title": item.get("title", "无标题"),
+"title": item.get("title", "Без названия"),
             "content": body,
             "date": item.get("date", ""),
             "institution": item.get("insName", ""),
@@ -339,25 +339,25 @@ def search_news(query: str) -> dict:
 
 
 def search_stock_news(code: str) -> dict:
-    """搜索个股相关资讯"""
-    query = f"{code} 最新研报 新闻 公告"
+"""Поиск информации, относящейся к отдельным акциям"""
+query = f"Объявление новостей о последнем исследовательском отчете {code}"
     return search_news(query)
 
 
 def search_sector_news(sector: str) -> dict:
     """搜索行业/板块相关资讯"""
-    query = f"{sector}板块近期新闻 政策解读"
+query = f"Последние новости и интерпретация политики в {секторе}"
     return search_news(query)
 
 
 def search_market_news() -> dict:
-    """搜索市场热门资讯"""
-    query = "今日A股市场热点 大盘动态 北向资金"
+"""Поиск популярной рыночной информации"""
+query = «Сегодняшние горячие точки рынка акций А, динамика рынка, фонды, движущиеся на север»
     return search_news(query)
 
 
 def analyze_sentiment(code: str) -> dict:
-    """个股舆情分析（文件缓存优先 + 继承底层 search 的 _mx_meta）"""
+"""Анализ общественного мнения по отдельным акциям (приоритет файлового кэша + наследование _mx_meta базового поиска)"""
     from app.services.stock_file_cache import get_stock_file_cache
     fc = get_stock_file_cache()
 

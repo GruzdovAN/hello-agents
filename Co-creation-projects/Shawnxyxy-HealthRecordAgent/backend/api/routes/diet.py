@@ -26,9 +26,9 @@ class DietContext(BaseModel):
     )
     channels: List[str] = Field(
         default_factory=lambda: ["convenience_store", "delivery"],
-        description="可购买渠道标签",
+описание="Покупные теги канала",
     )
-    activity_context: str = Field(default="", max_length=2000, description="运动/睡眠等上下文")
+Activity_context: str = Field(default="", max_length=2000,description="Упражнение/сон и другие контексты")
     free_notes: str = Field(
         default="", max_length=2000, description="额外说明（如只有便利店）"
     )
@@ -43,12 +43,12 @@ class DietRecommendRequest(BaseModel):
     def strip_uid(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("user_id 不能为空")
+поднять ValueError("user_id не может быть пустым")
         return v
 
 
 class DietReplayRequest(BaseModel):
-    """可选：传入 user_id 时必须与 run 一致，防止误重放。"""
+"""Необязательно: при передаче user_id он должен совпадать с run, чтобы предотвратить случайное воспроизведение."""
 
     user_id: Optional[str] = Field(default=None, max_length=256)
 
@@ -71,9 +71,9 @@ class DietReflectRequest(BaseModel):
 @router.post("/diet/recommend")
 async def diet_recommend(body: DietRecommendRequest):
     """
-    饮食推荐：阶段 2 为 **Nutritionist → Coach → Habit** 三 Agent，固定 JSON schema + Pydantic 校验；
-    每阶段最多 2 次尝试，失败则降级并写入 `errors` / `degraded`。
-    仍落库 `diet_runs`，并读取 Reflect 记忆。
+Рекомендации по диете: Этап 2 – **Детолог → Тренер → Привычка**, три агента, фиксированная схема JSON + проверка Pydantic;
+На каждом этапе максимум 2 попытки. В случае неудачи он будет ухудшен и записан в `errors`/`degraded`.
+Библиотека Diet_runs по-прежнему удаляется, и память Reflect считывается.
     """
     svc = DietRecommendService()
     ctx = body.context.model_dump()
@@ -139,7 +139,7 @@ async def diet_run_detail(run_id: str):
 @router.get("/diet/runs/{run_id}/observability")
 async def diet_run_observability(run_id: str):
     """
-    阶段 3：可观测性视图 — timeline / errors / replay 说明（trace 已持久化在 diet_runs）。
+Этап 3: Просмотр наблюдаемости — временная шкала/ошибки/описание повтора (след сохраняется в Diet_runs).
     """
     row = get_diet_run(run_id.strip())
     if not row:
@@ -153,15 +153,15 @@ async def diet_run_replay(
     body: DietReplayRequest | None = Body(default=None),
 ):
     """
-    阶段 3：用该 run 落库的 input 重跑流水线（新 run_id；列 replayed_from_run_id 与 output.replayed_from 溯源）。
-    Mock 工具确定性较高，LLM 输出仍可能不同。
+Этап 3. Используйте входные данные прогона для повторного запуска конвейера (новый run_id; столбцы replayed_from_run_id и output.replayed_from для отслеживания).
+Макетные инструменты более детерминированы, результаты LLM все равно могут различаться.
     """
     rid = run_id.strip()
     row = get_diet_run(rid)
     if not row:
         raise HTTPException(status_code=404, detail="run 不存在")
     if body and body.user_id and body.user_id.strip() != row["user_id"]:
-        raise HTTPException(status_code=403, detail="user_id 与 run 不匹配")
+поднять HTTPException (status_code=403, Detail="user_id не соответствует запуску")
     try:
         return await replay_diet_run(rid)
     except ValueError as e:

@@ -1,11 +1,11 @@
-"""工具基类"""
+"""Базовый класс инструмента"""
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from pydantic import BaseModel
 
 class ToolParameter(BaseModel):
-    """工具参数定义"""
+    """Определение параметра инструмента"""
     name: str
     type: str
     description: str
@@ -13,7 +13,7 @@ class ToolParameter(BaseModel):
     default: Any = None
 
 class Tool(ABC):
-    """工具基类"""
+    """Базовый класс инструмента"""
     
     def __init__(self, name: str, description: str):
         self.name = name
@@ -21,21 +21,21 @@ class Tool(ABC):
     
     @abstractmethod
     def run(self, parameters: Dict[str, Any]) -> str:
-        """执行工具"""
+        """Выполняет инструмент"""
         pass
     
     @abstractmethod
     def get_parameters(self) -> List[ToolParameter]:
-        """获取工具参数定义"""
+        """Возвращает определения параметров инструмента"""
         pass
     
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
-        """验证参数"""
+        """Проверяет параметры"""
         required_params = [p.name for p in self.get_parameters() if p.required]
         return all(param in parameters for param in required_params)
     
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典格式"""
+        """Преобразует в формат словаря"""
         return {
             "name": self.name,
             "description": self.description,

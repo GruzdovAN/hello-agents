@@ -1,4 +1,4 @@
-"""命令行交互：议题、是否网络附录、运行前确认。"""
+"""CLI: тема, сетевое приложение, подтверждение перед запуском."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ import sys
 
 def prompt_yes_no(question: str, *, default: bool = True) -> bool:
     """
-    询问 Y/n 或 y/N，回车采用 default。
-    在非 TTY 环境下直接返回 default，避免管道挂住。
+    Спрашивает Y/n или y/N; Enter принимает значение default.
+    Вне TTY сразу возвращает default, чтобы не зависнуть в pipe.
     """
     if not sys.stdin.isatty():
         return default
@@ -21,9 +21,9 @@ def prompt_yes_no(question: str, *, default: bool = True) -> bool:
 
     if raw == "":
         return default
-    if raw in ("y", "yes", "是", "好", "确认", "1"):
+    if raw in ("y", "yes", "да", "д", "1"):
         return True
-    if raw in ("n", "no", "否", "不", "0"):
+    if raw in ("n", "no", "нет", "н", "0"):
         return False
     return default
 
@@ -34,7 +34,7 @@ def prompt_topic(default_topic: str) -> str:
 
     try:
         raw = input(
-            f"请输入历史议题（直接回车使用示例）：\n> ",
+            "Введите историческую тему (Enter — использовать пример):\n> ",
         ).strip()
     except EOFError:
         return default_topic

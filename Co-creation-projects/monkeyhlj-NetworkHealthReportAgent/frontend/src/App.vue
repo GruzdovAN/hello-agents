@@ -3,8 +3,8 @@
     <header class="hero-panel">
       <div class="hero-copy">
         <p class="eyebrow">Network Health Report Agent</p>
-        <h1>站点地图、健康报告、智能问答一屏联动</h1>
-        <p class="hero-text">基于 HelloAgents + FastAPI + MCP 构建的多站点网络健康演示，支持周报生成、文件下载和全局问答。</p>
+        <h1>Карта сайтов, отчёты о здоровье и умный Q&A на одном экране</h1>
+        <p class="hero-text">Демо сетевого здоровья для нескольких сайтов на HelloAgents + FastAPI + MCP: еженедельные отчёты, загрузка файлов и глобальный Q&A.</p>
       </div>
 
       <div class="hero-status" v-if="runtime">
@@ -15,43 +15,43 @@
           MCP {{ runtime.qa_agent?.mcp_enabled ? 'ON' : 'OFF' }}
         </span>
         <span class="runtime-desc">
-          {{ runtime.qa_agent?.mcp_enabled ? 'MCP 工具由 Agent 通过 server_command 自动拉起' : '当前环境未启用 MCPTool，采用上下文问答回退模式' }}
+          {{ runtime.qa_agent?.mcp_enabled ? 'MCP-инструменты автоматически запускаются агентом через server_command' : 'MCPTool не включён — используется режим Q&A по контексту' }}
         </span>
       </div>
     </header>
 
     <div class="toolbar panel-surface">
       <div class="field">
-        <label>当前站点</label>
-        <input :value="selectedSite ? selectedSite.site_name : '未选择'" disabled />
+        <label>Текущий сайт</label>
+        <input :value="selectedSite ? selectedSite.site_name : 'Не выбран'" disabled />
       </div>
 
       <div class="field">
-        <label>开始日期</label>
+        <label>Дата начала</label>
         <input type="date" v-model="startDate" />
       </div>
 
       <div class="field">
-        <label>结束日期</label>
+        <label>Дата окончания</label>
         <input type="date" v-model="endDate" />
       </div>
 
       <button class="primary-button" @click="reloadReport" :disabled="!selectedSite || loading">
-        {{ loading ? '加载中...' : '刷新报告' }}
+        {{ loading ? 'Загрузка...' : 'Обновить отчёт' }}
       </button>
     </div>
 
-    <div v-if="reportError" class="error-banner panel-surface">报告请求失败：{{ reportError }}</div>
+    <div v-if="reportError" class="error-banner panel-surface">Ошибка запроса отчёта: {{ reportError }}</div>
 
     <main class="layout-grid">
       <section class="left-column">
         <div class="panel-surface map-panel">
           <div class="section-header">
             <div>
-              <strong>站点地理分布</strong>
-              <small>点击站点查看健康报告</small>
+              <strong>География сайтов</strong>
+              <small>Нажмите на сайт для просмотра отчёта</small>
             </div>
-            <span class="section-hint">地图在左，报告在下</span>
+            <span class="section-hint">Карта слева, отчёт ниже</span>
           </div>
           <SiteMap :sites="sites" :selected-site-id="selectedSite?.site_id || ''" @select="handleSelectSite" />
           <div class="site-list">
@@ -73,8 +73,8 @@
       <aside class="panel-surface qa-panel">
         <div class="section-header">
           <div>
-            <strong>全局网络问答</strong>
-            <small>示例：有几个 site？上海有哪些 site？帮我生成当前站点近一周报告</small>
+            <strong>Глобальный сетевой Q&A</strong>
+            <small>Пример: сколько site? Какие site в Шанхае? Сгенерируй отчёт за неделю</small>
           </div>
         </div>
 
@@ -84,31 +84,31 @@
               v-model="question"
               type="text"
               class="qa-input"
-              placeholder="请输入问题，例如：帮我生成当前站点近一周的报告"
+              placeholder="Введите вопрос, например: сгенерируй отчёт за неделю для текущего сайта"
               @keyup.enter="ask"
             />
             <button class="primary-button" @click="ask" :disabled="!question.trim() || qaLoading">
-              {{ qaLoading ? '回答中...' : '提问' }}
+              {{ qaLoading ? 'Отвечаю...' : 'Спросить' }}
             </button>
           </div>
 
           <div class="qa-answer" v-if="qaAnswer">
-            <h3>Agent 回答</h3>
+            <h3>Ответ агента</h3>
             <pre>{{ qaAnswer }}</pre>
           </div>
 
           <div v-if="qaArtifact" class="qa-artifact">
-            <div class="artifact-title">已生成文件</div>
+            <div class="artifact-title">Сгенерированные файлы</div>
             <a :href="qaArtifact.downloadUrl" target="_blank" rel="noreferrer" download>
-              下载 {{ qaArtifact.fileName }}
+              Скачать {{ qaArtifact.fileName }}
             </a>
           </div>
 
-          <div v-if="qaError" class="error-banner">问答失败：{{ qaError }}</div>
+          <div v-if="qaError" class="error-banner">Ошибка Q&A: {{ qaError }}</div>
 
           <div class="qa-debug" v-if="qaDebug">
-            调试信息：LLM={{ qaDebug.llmEnabled ? 'ON' : 'OFF' }}, MCP={{ qaDebug.mcpEnabled ? 'ON' : 'OFF' }}
-            <span v-if="qaDebug.reportIntent">，已触发报告生成</span>
+            Отладка: LLM={{ qaDebug.llmEnabled ? 'ON' : 'OFF' }}, MCP={{ qaDebug.mcpEnabled ? 'ON' : 'OFF' }}
+            <span v-if="qaDebug.reportIntent">, запущена генерация отчёта</span>
           </div>
         </div>
       </aside>
@@ -143,9 +143,9 @@ const startDate = ref(startDateObj.toISOString().slice(0, 10))
 
 const panelTitle = computed(() => {
   if (!selectedSite.value) {
-    return '网络健康报告'
+    return 'Отчёт о сетевом здоровье'
   }
-  return `${selectedSite.value.site_name} - ${startDate.value} 至 ${endDate.value}`
+  return `${selectedSite.value.site_name} - ${startDate.value} — ${endDate.value}`
 })
 
 async function loadSites() {
@@ -156,7 +156,7 @@ async function loadSites() {
       await handleSelectSite(sites.value[0])
     }
   } catch (err) {
-    reportError.value = err?.message || '初始化失败，请检查后端服务是否启动。'
+    reportError.value = err?.message || 'Ошибка инициализации — проверьте, запущен ли бэкенд.'
   }
 }
 
@@ -173,7 +173,7 @@ async function reloadReport() {
     report.value = await fetchReport(selectedSite.value.site_id, startDate.value, endDate.value)
   } catch (err) {
     report.value = null
-    reportError.value = err?.message || '报告加载失败'
+    reportError.value = err?.message || 'Не удалось загрузить отчёт'
   } finally {
     loading.value = false
   }
@@ -205,10 +205,10 @@ async function ask() {
       }
     }
     if (!qaAnswer.value.trim()) {
-      qaError.value = '接口已返回，但内容为空。请检查 LLM 配置或查看后端日志。'
+      qaError.value = 'Интерфейс ответил, но содержимое пустое. Проверьте конфигурацию LLM или логи бэкенда.'
     }
   } catch (err) {
-    qaError.value = err?.message || '问答失败'
+    qaError.value = err?.message || 'Ошибка Q&A'
   } finally {
     qaLoading.value = false
   }

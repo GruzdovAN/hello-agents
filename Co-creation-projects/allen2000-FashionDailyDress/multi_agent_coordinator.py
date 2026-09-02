@@ -1,6 +1,6 @@
 """
-多智能体协调器
-管理天气查询智能体和穿衣建议智能体的协作
+Мультиагентный координатор
+Управляет совместной работой агента погоды и агента рекомендаций по одежде
 """
 from hello_agents import SimpleAgent, HelloAgentsLLM
 from hello_agents.tools import MCPTool
@@ -11,13 +11,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class MultiAgentCoordinator:
-    """多智能体协调器"""
+    """Мультиагентный координатор"""
     
     def __init__(self):
-        """初始化协调器"""
-        # 创建主协调智能体
+        """Инициализация координатора"""
+        # Создание главного координирующего агента
         self.coordinator = SimpleAgent(
-            name="智能体协调器",
+            name="Координатор агентов",
             llm=HelloAgentsLLM(
                 api_key=os.environ.get("LLM_API_KEY"),
                 base_url=os.environ.get("LLM_BASE_URL"),
@@ -25,19 +25,19 @@ class MultiAgentCoordinator:
             )
         )
         
-        # 创建天气查询智能体
+        # Создание агента запроса погоды
         self.weather_agent = self._create_weather_agent()
         
-        # 创建穿衣建议智能体
+        # Создание агента рекомендаций по одежде
         self.fashion_agent = FashionAgent()
         
-        # 设置协调器的系统提示词
+        # Настройка системного промпта координатора
         self._setup_coordinator_prompt()
     
     def _create_weather_agent(self):
-        """创建天气查询智能体"""
+        """Создание агента запроса погоды"""
         weather_agent = SimpleAgent(
-            name="天气查询助手",
+            name="Помощник по погоде",
             llm=HelloAgentsLLM(
                 api_key=os.environ.get("LLM_API_KEY"),
                 base_url=os.environ.get("LLM_BASE_URL"),
@@ -45,7 +45,7 @@ class MultiAgentCoordinator:
             )
         )
         
-        # 配置MCP工具使用本地的weather_mcp.py服务器
+        # Настройка MCP-инструмента с локальным сервером weather_mcp.py
         mcp_tool = MCPTool(
             name="query_weather",
             server_command=["python", "weather_mcp.py"]
@@ -53,126 +53,126 @@ class MultiAgentCoordinator:
         
         weather_agent.add_tool(mcp_tool)
         
-        # 设置天气智能体的系统提示词
-        weather_agent.system_prompt = """你是一个天气查询助手。你可以使用query_weather工具查询指定城市的天气信息。
+        # Системный промпт агента погоды
+        weather_agent.system_prompt = """Вы помощник по запросу погоды. Вы можете использовать инструмент query_weather для получения погоды в указанном городе.
 
-请根据用户提供的城市名称查询天气，并返回详细的天气信息。"""
+Запросите погоду по названию города, предоставленному пользователем, и верните подробную погодную информацию."""
         
         return weather_agent
     
     def _setup_coordinator_prompt(self):
-        """设置协调器的系统提示词"""
-        system_prompt = """你是一个智能体协调器，负责管理天气查询智能体和穿衣建议智能体的协作。
+        """Настройка системного промпта координатора"""
+        system_prompt = """Вы координатор агентов, управляющий совместной работой агента погоды и агента рекомендаций по одежде.
 
-你的工作流程：
-1. 接收用户关于天气和穿衣建议的查询
-2. 调用天气查询智能体获取指定城市的天气信息
-3. 将天气信息传递给穿衣建议智能体
-4. 整合两个智能体的结果，提供完整的天气和穿衣建议
+Ваш рабочий процесс:
+1. Принять запрос пользователя о погоде и рекомендациях по одежде
+2. Вызвать агента погоды для получения информации о погоде в указанном городе
+3. Передать погодную информацию агенту рекомендаций по одежде
+4. Объединить результаты обоих агентов и предоставить полный ответ
 
-协作规则：
-- 首先获取准确的天气信息
-- 然后基于天气信息提供专业的穿衣建议
-- 确保信息的准确性和实用性
-- 提供清晰、完整的最终结果
+Правила совместной работы:
+- Сначала получить точную погодную информацию
+- Затем на её основе дать профессиональные рекомендации по одежде
+- Обеспечить точность и практичность информации
+- Предоставить ясный и полный итоговый результат
 
-请按照这个流程处理用户的查询。"""
+Обрабатывайте запросы пользователей по этому процессу."""
         
         self.coordinator.system_prompt = system_prompt
     
     def process_query(self, query):
         """
-        处理用户查询，协调多个智能体完成任务
+        Обработка запроса пользователя с координацией нескольких агентов
         
         Args:
-            query: 用户查询字符串
+            query: строка запроса пользователя
             
         Returns:
-            包含天气信息和穿衣建议的完整结果
+            полный результат с погодой и рекомендациями по одежде
         """
-        print("=== 开始处理查询 ===")
-        print(f"用户查询: {query}")
+        print("=== Начало обработки запроса ===")
+        print(f"Запрос пользователя: {query}")
         print()
         
-        # 步骤1: 使用天气智能体查询天气
-        print("步骤1: 查询天气信息...")
+        # Шаг 1: запрос погоды через агента погоды
+        print("Шаг 1: запрос погодной информации...")
         weather_response = self.weather_agent.run(query)
-        print(f"天气查询结果: {weather_response}")
+        print(f"Результат запроса погоды: {weather_response}")
         print()
         
-        # 步骤2: 使用穿衣建议智能体提供建议
-        print("步骤2: 生成穿衣建议...")
+        # Шаг 2: рекомендации по одежде
+        print("Шаг 2: формирование рекомендаций по одежде...")
         fashion_advice = self.fashion_agent.get_fashion_advice(weather_response)
-        print(f"穿衣建议: {fashion_advice}")
+        print(f"Рекомендации по одежде: {fashion_advice}")
         print()
         
-        # 步骤3: 整合结果
-        print("步骤3: 整合最终结果...")
+        # Шаг 3: объединение результатов
+        print("Шаг 3: формирование итогового результата...")
         final_result = self._format_final_result(weather_response, fashion_advice)
         
         return final_result
     
     def _format_final_result(self, weather_info, fashion_advice):
         """
-        格式化最终结果
+        Форматирование итогового результата
         
         Args:
-            weather_info: 天气信息
-            fashion_advice: 穿衣建议
+            weather_info: погодная информация
+            fashion_advice: рекомендации по одежде
             
         Returns:
-            格式化的完整结果
+            отформатированный полный результат
         """
-        result = f"""🎯 智能体协作完成！以下是您的完整天气和穿衣建议：
+        result = f"""🎯 Совместная работа агентов завершена! Вот полная погода и рекомендации по одежде:
 
-🌤️ 天气信息：
+🌤️ Погода:
 {weather_info}
 
-👗 穿衣建议：
+👗 Рекомендации по одежде:
 {fashion_advice}
 
-💡 温馨提示：
-- 请根据实际体感温度调整穿着
-- 考虑当天的具体活动安排
-- 如有特殊需求，可进一步咨询"""
+💡 Полезные советы:
+- Ориентируйтесь на ощущаемую температуру при выборе одежды
+- Учитывайте планы на день
+- При особых потребностях можно уточнить детали"""
         
         return result
     
     def get_weather_only(self, city_name):
         """
-        仅获取天气信息（不包含穿衣建议）
+        Получить только погодную информацию (без рекомендаций по одежде)
         
         Args:
-            city_name: 城市名称
+            city_name: название города
             
         Returns:
-            天气信息
+            погодная информация
         """
-        query = f"查询{city_name}的天气"
+        query = f"Запросить погоду в городе {city_name}"
         return self.weather_agent.run(query)
     
     def get_fashion_advice_only(self, weather_info):
         """
-        基于现有天气信息获取穿衣建议
+        Получить рекомендации по одежде на основе имеющейся погодной информации
         
         Args:
-            weather_info: 天气信息字符串
+            weather_info: строка с погодной информацией
             
         Returns:
-            穿衣建议
+            рекомендации по одежде
         """
         return self.fashion_agent.get_fashion_advice(weather_info)
 
 
 def main():
-    """测试函数"""
-    # 创建多智能体协调器
+    """Тестовая функция"""
+    # Создание мультиагентного координатора
     coordinator = MultiAgentCoordinator()
     
-    # 测试查询
-    test_query = "查询上海的天气并给出穿衣建议"
+    # Тестовый запрос
+    test_query = "Запросить погоду в Шанхае и дать рекомендации по одежде"
     
-    print("=== 多智能体协调器测试 ===")
+    print("=== Тест мультиагентного координатора ===")
     result = coordinator.process_query(test_query)
     print(result)
 

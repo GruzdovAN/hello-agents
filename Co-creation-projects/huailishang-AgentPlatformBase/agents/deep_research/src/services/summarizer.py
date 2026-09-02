@@ -42,7 +42,7 @@ class SummarizationService:
 
         summary_text = strip_tool_calls(summary_text).strip()
 
-        return summary_text or "暂无可用信息"
+        return summary_text or "Информация недоступна"
 
     def stream_task_summary(
         self, state: SummaryState, task: TodoItem, context: str
@@ -115,11 +115,11 @@ class SummarizationService:
         """Construct the summarization prompt shared by both modes."""
 
         return (
-            f"任务主题：{state.research_topic}\n"
-            f"任务名称：{task.title}\n"
-            f"任务目标：{task.intent}\n"
-            f"检索查询：{task.query}\n"
-            f"任务上下文：\n{context}\n"
+            f"Тема задачи: {state.research_topic}\n"
+            f"Название задачи: {task.title}\n"
+            f"Цель задачи: {task.intent}\n"
+            f"Поисковый запрос: {task.query}\n"
+            f"Контекст задачи:\n{context}\n"
             f"{build_note_guidance(task)}\n"
-            "请按照以上协作要求先同步笔记，然后返回一份面向用户的 Markdown 总结（仍遵循任务总结模板）。"
+            "Сначала синхронизируйте заметки по инструкциям выше, затем верните Markdown-сводку для пользователя (по шаблону сводки задачи)."
         )

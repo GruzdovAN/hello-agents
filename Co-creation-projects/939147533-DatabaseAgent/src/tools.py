@@ -1,5 +1,5 @@
 """
-数据库查询工具集
+Набор инструментов для запросов к базе данных
 """
 import oracledb
 from typing import Dict, Any
@@ -8,14 +8,14 @@ from hello_agents import HelloAgentsLLM
 
 
 class OracleQueryTool:
-    """Oracle数据库查询工具"""
+    """Инструмент запросов к Oracle-базе данных"""
     
     def __init__(self, config: DatabaseConfig):
         self.config = config
         self.connection = None
         
     def connect(self) -> bool:
-        """连接到Oracle数据库"""
+        """Подключиться к Oracle-базе данных"""
         try:
             self.connection = oracledb.connect(
                 user=self.config.username,
@@ -26,20 +26,20 @@ class OracleQueryTool:
             )
             return True
         except Exception as e:
-            print(f"数据库连接失败: {e}")
+            print(f"Ошибка подключения к базе данных: {e}")
             return False
     
     def disconnect(self):
-        """断开数据库连接"""
+        """Отключиться от базы данных"""
         if self.connection:
             self.connection.close()
             self.connection = None
     
     def execute_query(self, sql: str) -> Dict[str, Any]:
-        """执行SQL查询并返回结果"""
+        """Выполнить SQL-запрос и вернуть результат"""
         if not self.connection:
             if not self.connect():
-                return {"success": False, "error": "无法连接到数据库"}
+                return {"success": False, "error": "Не удалось подключиться к базе данных"}
         
         try:
             cursor = self.connection.cursor()
@@ -61,10 +61,10 @@ class OracleQueryTool:
             return {"success": False, "error": str(e), "sql": sql}
     
     def get_schema_info(self) -> str:
-        """获取数据库表结构信息"""
+        """Получить информацию о структуре таблиц базы данных"""
         if not self.connection:
             if not self.connect():
-                return "无法连接到数据库"
+                return "Не удалось подключиться к базе данных"
         
         try:
             cursor = self.connection.cursor()
@@ -90,44 +90,44 @@ class OracleQueryTool:
                     f"{col[0]} ({col[1]})" 
                     for col in columns
                 ])
-                schema_info.append(f"表 {table}: {col_desc}")
+                schema_info.append(f"Таблица {table}: {col_desc}")
             
             cursor.close()
             return "\n".join(schema_info)
         except Exception as e:
-            return f"获取表结构失败: {e}"
+            return f"Ошибка получения структуры таблиц: {e}"
 
 
 class SQLGeneratorTool:
-    """SQL生成工具 - 使用LLM将自然语言转换为SQL"""
+    """Инструмент генерации SQL — LLM преобразует естественный язык в SQL"""
     
     def __init__(self, llm: HelloAgentsLLM):
         self.llm = llm
-        self.system_prompt = """你是一个专业的SQL查询生成助手。你的任务是将用户的自然语言查询转换为准确的Oracle SQL语句。
+        self.system_prompt = """Ты профессиональный помощник по генерации SQL-запросов. Твоя задача — преобразовывать запросы пользователя на естественном языке в точные SQL-выражения для Oracle.
 
-# 规则:
-1. 只返回SQL语句，不要包含任何解释或额外文字
-2. 使用Oracle SQL语法
-3. 表名和字段名使用大写
-4. 日期格式使用 'YYYY-MM-DD'
-5. 字符串使用单引号
-6. 确保SQL语句安全，避免SQL注入
+# Правила:
+1. Возвращай только SQL-выражение, без пояснений и лишнего текста
+2. Используй синтаксис Oracle SQL
+3. Имена таблиц и полей — в верхнем регистре
+4. Формат даты: 'YYYY-MM-DD'
+5. Строки — в одинарных кавычках
+6. Обеспечь безопасность SQL, избегай SQL-инъекций
 
-# 数据库表结构:
+# Структура таблиц базы данных:
 {schema_info}
 
-# 示例:
-用户输入: 查询所有员工信息
-输出: SELECT * FROM EMPLOYEES
+# Примеры:
+Ввод пользователя: Получить информацию обо всех сотрудниках
+Вывод: SELECT * FROM EMPLOYEES
 
-用户输入: 查询工资大于5000的员工
-输出: SELECT * FROM EMPLOYEES WHERE SALARY > 5000
+Ввод пользователя: Найти сотрудников с зарплатой больше 5000
+Вывод: SELECT * FROM EMPLOYEES WHERE SALARY > 5000
 
-现在，请根据用户的自然语言输入生成对应的SQL语句。
+Теперь сгенерируй SQL по запросу пользователя на естественном языке.
 """
     
     def generate_sql(self, natural_query: str, schema_info: str) -> str:
-        """生成SQL语句"""
+        """Сгенерировать SQL-выражение"""
         prompt = self.system_prompt.format(schema_info=schema_info)
         
         messages = [
@@ -149,27 +149,27 @@ class SQLGeneratorTool:
         return sql.strip()
     
     def validate_sql(self, sql: str) -> tuple[bool, str]:
-        """验证SQL语句的基本语法"""
+        """Проверить базовый синтаксис SQL-выражения"""
         sql_upper = sql.upper().strip()
         
         if not sql_upper.startswith(("SELECT", "WITH")):
-            return False, "只允许SELECT查询语句"
+            return False, "Разрешены только SELECT-запросы"
         
         dangerous_keywords = ["DROP", "DELETE", "UPDATE", "INSERT", "TRUNCATE", "ALTER", "CREATE"]
         for keyword in dangerous_keywords:
             if keyword in sql_upper:
-                return False, f"不允许使用 {keyword} 语句"
+                return False, f"Запрещено использовать оператор {keyword}"
         
-        return True, "SQL语句验证通过"
+        return True, "SQL-выражение прошло проверку"
 
 
 def format_query_result(result: Dict[str, Any]) -> str:
-    """格式化查询结果为表格"""
+    """Форматировать результат запроса в виде таблицы"""
     if not result["success"]:
-        return f"查询失败: {result['error']}"
+        return f"Ошибка запроса: {result['error']}"
     
     if result["row_count"] == 0:
-        return "查询成功，但没有找到匹配的数据。"
+        return "Запрос выполнен успешно, но подходящих данных не найдено."
     
     columns = result["columns"]
     rows = result["rows"]

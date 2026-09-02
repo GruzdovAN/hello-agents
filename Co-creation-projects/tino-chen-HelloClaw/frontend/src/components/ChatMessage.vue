@@ -49,12 +49,12 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-// 切换工具折叠状态
+// 切换Инструмент折叠Статус
 const toggleToolCollapse = (toolId: number) => {
   emit('toggle-tool', toolId)
 }
 
-// 检查工具是否展开
+// 检查Инструмент是否Развернуть
 const isToolExpanded = (toolId: number): boolean => {
   return props.expandedTools.has(toolId)
 }
@@ -82,7 +82,7 @@ const hasVisibleContent = computed(() => {
     <!-- 头像 -->
     <div class="message-avatar">
       <img v-if="message.role === 'assistant'" :src="LobsterIcon" alt="HelloClaw" />
-      <div v-else class="user-avatar">你</div>
+      <div v-else class="user-avatar">Вы</div>
     </div>
 
     <!-- 消息内容 -->
@@ -90,14 +90,14 @@ const hasVisibleContent = computed(() => {
       <!-- 如果有分段，按分段显示 -->
       <template v-if="message.segments && message.segments.length > 0">
         <template v-for="segment in message.segments" :key="segment.id">
-          <!-- 文本段 -->
+          <!-- Текст段 -->
           <div v-if="segment.type === 'text' && segment.content" class="message-bubble">
             <div
               class="message-text"
               v-html="renderMarkdown(segment.content)"
             ></div>
           </div>
-          <!-- 工具调用段 - 只显示非隐藏的工具 -->
+          <!-- Инструмент调用段 - шт.显示非隐藏的Инструмент -->
           <div
             v-if="segment.type === 'tool' && !getToolConfig(segment.tool).hidden"
             :class="['tool-card', segment.status]"
@@ -108,14 +108,14 @@ const hasVisibleContent = computed(() => {
             >
               <span class="tool-icon">{{ getToolConfig(segment.tool).icon }}</span>
               <span class="tool-name">
-                <template v-if="!isToolExpanded(segment.id)">使用了</template>
+                <template v-if="!isToolExpanded(segment.id)">Использован</template>
                 {{ getToolConfig(segment.tool).name }}
               </span>
               <Tag v-if="segment.status === 'running'" color="processing" class="tool-tag">
-                <LoadingOutlined /> 执行中
+                <LoadingOutlined /> Выполняется
               </Tag>
-              <Tag v-else-if="segment.status === 'done'" color="success" class="tool-tag">完成</Tag>
-              <Tag v-else-if="segment.status === 'error'" color="error" class="tool-tag">失败</Tag>
+              <Tag v-else-if="segment.status === 'done'" color="success" class="tool-tag">Готово</Tag>
+              <Tag v-else-if="segment.status === 'error'" color="error" class="tool-tag">Ошибка</Tag>
               <span
                 v-if="segment.status !== 'running'"
                 class="collapse-indicator"
@@ -123,23 +123,23 @@ const hasVisibleContent = computed(() => {
                 {{ isToolExpanded(segment.id) ? '▼' : '▶' }}
               </span>
             </div>
-            <!-- 展开后显示入参和结果 -->
+            <!-- Развернуть后显示Входные данные和Результат -->
             <div v-if="isToolExpanded(segment.id)" class="tool-details">
-              <!-- 入参 -->
+              <!-- Входные данные -->
               <div v-if="segment.args && Object.keys(segment.args).length > 0" class="tool-args">
-                <div class="tool-detail-label">入参</div>
+                <div class="tool-detail-label">Входные данные</div>
                 <pre class="tool-detail-content">{{ formatToolArgs(segment.args) }}</pre>
               </div>
-              <!-- 结果 -->
+              <!-- Результат -->
               <div v-if="segment.result" class="tool-result-wrapper">
-                <div class="tool-detail-label">结果</div>
+                <div class="tool-detail-label">Результат</div>
                 <pre class="tool-detail-content">{{ formatToolResult(segment.result) }}</pre>
               </div>
             </div>
           </div>
         </template>
       </template>
-      <!-- 如果没有分段，显示普通内容（历史消息） -->
+      <!-- 如果没有分段，显示普通内容（История消息） -->
       <div v-else-if="message.content" class="message-bubble">
         <div
           class="message-text"
@@ -150,7 +150,7 @@ const hasVisibleContent = computed(() => {
       <!-- 消息元信息 -->
       <div class="message-meta">
         <span class="message-sender">
-          {{ message.role === 'user' ? '你' : assistantName }}
+          {{ message.role === 'user' ? 'Вы' : assistantName }}
         </span>
         <span class="message-time">{{ formatTime(message.timestamp) }}</span>
       </div>
@@ -296,7 +296,7 @@ const hasVisibleContent = computed(() => {
   color: var(--color-text-secondary);
 }
 
-/* 工具调用卡片 */
+/* Инструмент调用卡片 */
 .tool-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -307,7 +307,7 @@ const hasVisibleContent = computed(() => {
   margin-top: 8px;
 }
 
-/* 执行中状态 - 龙虾红主题 */
+/* ВыполняетсяСтатус - 龙虾红主题 */
 .tool-card.running {
   border-color: var(--color-primary);
   background: var(--color-primary-light);
@@ -318,13 +318,13 @@ const hasVisibleContent = computed(() => {
   color: var(--color-primary);
 }
 
-/* 完成状态 - 灰色调 */
+/* ГотовоСтатус - 灰色调 */
 .tool-card.done {
   border-color: var(--color-border);
   background: var(--color-surface);
 }
 
-/* 失败状态 - 红色调 */
+/* ОшибкаСтатус - 红色调 */
 .tool-card.error {
   border-color: var(--color-primary);
   background: #fff1f0;
@@ -372,7 +372,7 @@ const hasVisibleContent = computed(() => {
   transition: transform 0.2s ease;
 }
 
-/* 工具详情区域 */
+/* Инструмент详情区域 */
 .tool-details {
   margin-top: 10px;
   padding-top: 10px;

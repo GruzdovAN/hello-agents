@@ -13,7 +13,7 @@
           <span class="text-4xl">🎙️</span>
         </div>
         <h1 class="text-5xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 tracking-tight">DeepCast</h1>
-        <p class="text-base text-gray-400 font-light">进行深度研究并转化为引人入胜的播客</p>
+        <p class="text-base text-gray-400 font-light">Глубокое исследование и превращение в увлекательный подкаст</p>
       </div>
 
       <!-- Main Card -->
@@ -23,16 +23,16 @@
           <div class="mb-5">
             <label for="topic-input" class="block text-sm font-medium text-gray-300 mb-2.5 flex items-center gap-2">
               <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-              播客主题
+              Тема подкаста
             </label>
             <textarea
               id="topic-input"
               v-model="topic"
               class="setup-textarea"
-              placeholder="请输入播客主题（例如：AI Agent 的发展趋势）"
+              placeholder="Введите тему подкаста (например: тренды AI Agent)"
               required
               rows="4"
-              aria-label="播客主题输入"
+              aria-label="Ввод темы подкаста"
               @keydown.enter.prevent="$emit('start', topic)"
             ></textarea>
           </div>
@@ -41,15 +41,15 @@
           <div class="flex flex-wrap gap-2 mb-6">
             <div class="setup-badge">
               <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <span>混合搜索引擎</span>
+              <span>Гибридный поиск</span>
             </div>
             <div class="setup-badge">
               <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              <span>深度 AI 研究</span>
+              <span>Глубокое ИИ-исследование</span>
             </div>
             <div class="setup-badge">
               <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-              <span>自然语音合成</span>
+              <span>Естественный синтез речи</span>
             </div>
           </div>
 
@@ -57,16 +57,16 @@
           <button
             class="setup-btn w-full"
             :disabled="!topic.trim()"
-            aria-label="开始制作播客"
+            aria-label="Начать создание подкаста"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            开始制作播客
+            Начать создание подкаста
           </button>
         </form>
       </div>
 
       <!-- Footer hint -->
-      <p class="text-center text-xs text-gray-600 mt-5">基于 HelloAgents 框架 · 自动化深度研究 → 播客生成</p>
+      <p class="text-center text-xs text-gray-600 mt-5">На базе HelloAgents · автоматическое исследование → генерация подкаста</p>
     </div>
   </div>
 </template>

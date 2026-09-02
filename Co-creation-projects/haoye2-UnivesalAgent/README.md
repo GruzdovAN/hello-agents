@@ -1,197 +1,195 @@
-# UniversalAgent - 通用智能体系统
+# UniversalAgent — универсальная система агентов
 
-> 基于Hello-Agents框架的智能搜索和命令执行助手
+> Умный поиск и безопасное выполнение команд на фреймворке Hello-Agents
 
-## 📝 项目简介
+## 📝 О проекте
 
-这是一个基于 **Hello-Agents** 框架的通用智能体系统，采用 **单智能体 + 多工具** 设计。
-智能体通过 ToolRegistry 注册并调用多个工具实现复杂任务处理。
+Универсальная система на **Hello-Agents**: дизайн **один агент (Agent) + много инструментов**.
+Агент регистрирует и вызывает инструменты через ToolRegistry.
 
-### 核心功能
-- ✅ **智能网络搜索**：支持多引擎搜索和内容提取
-- ✅ **安全终端执行**：20+种安全命令，智能参数验证和错误提示
-- ✅ **记忆功能**：支持用户偏好和重要信息记忆（未来）
-- ✅ **多引擎支持**：DuckDuckGo、Brave、Ecosia、Searx
+### Основные возможности
+- ✅ **Умный веб-поиск**: несколько движков и извлечение контента
+- ✅ **Безопасный терминал**: 20+ разрешённых команд, проверка аргументов
+- ✅ **Память**: предпочтения и важная информация (в планах)
+- ✅ **Несколько движков**: DuckDuckGo, Brave, Ecosia, Searx
 
-## 🛠️ 技术栈
+## 🛠️ Стек технологий
 
-- HelloAgents框架（SimpleAgent + ToolRegistry）
-- Python AST模块（代码解析）
-- ModelScope API（Qwen模型）
-- Beautiful Soup（网页内容提取）
+- HelloAgents (SimpleAgent + ToolRegistry)
+- Python AST (разбор кода)
+- ModelScope API (модели Qwen)
+- Beautiful Soup (извлечение с веб-страниц)
 
 
-## 🚀 快速开始
+## 🚀 Быстрый старт
 
-### 环境要求
+### Требования
 
 - Python 3.10+
-- 其他要求见 requirements.txt
+- См. requirements.txt
 
-### 安装依赖
+### Установка
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 配置API密钥
+### API-ключ
 
 ```bash
-# 创建.env文件
 cp .env.example .env
 
-# 编辑.env文件，填入你的API密钥
 LLM_API_KEY=your_api_key_here
 ```
 
-### 运行项目
+### Запуск
 
-**方式1: Jupyter Notebook（推荐）**
+**Вариант 1: Jupyter Notebook (рекомендуется)**
 ```bash
 jupyter lab
-# 打开main.ipynb并运行
+# Откройте main.ipynb
 ```
 
-**方式2: 命令行界面**
+**Вариант 2: CLI**
 ```bash
 python main.py
 ```
 
-## 📖 使用示例
+## 📖 Примеры
 
-### 1. 智能搜索
+### 1. Умный поиск
 ```
-输入: 搜索Python人工智能最新发展
-输出: 返回相关的搜索结果和内容摘要
+Ввод: найди последние новости об ИИ в Python
+Вывод: результаты поиска и краткое содержание
 ```
 
-### 2. 终端命令
+### 2. Команды терминала
 ```
-输入: pwd
-输出: /Users/qinbohua/Developing/universal_hello_agent_llm_decision
+Ввод: pwd
+Вывод: /Users/qinbohua/Developing/universal_hello_agent_llm_decision
 
-输入: ls -la
-输出: total 48...（文件列表）
+Ввод: ls -la
+Вывод: total 48... (список файлов)
 
-输入: mkdir test_project && cd test_project
-输出: 目录创建成功并切换完成
+Ввод: mkdir test_project && cd test_project
+Вывод: каталог создан, переход выполнен
 
-输入: grep -n "import" src/
+Ввод: grep -n "import" src/
 output: src/agents/agent_universal.py:1:from hello_agents
 ```
 
-### 3. 复杂任务
+### 3. Сложная задача
 ```
-输入: 搜索LangChain框架的最新版本信息，然后查看当前目录的文件列表
-输出: 先执行搜索，然后列出文件，最后给出综合结果
+Ввод: найди последнюю версию LangChain и покажи файлы в текущем каталоге
+Вывод: сначала поиск, затем список файлов и сводка
 ```
 
-## 📂 项目结构
+## 📂 Структура проекта
 
 ```
 universal_hello_agent_llm_decision/
-├── README.md              # 项目说明文档
-├── requirements.txt       # Python依赖列表
-├── main.ipynb            # 主要的Jupyter Notebook
-├── main.py               # 命令行入口（可选）
-├── data/                 # 数据文件（可选）
+├── README.md              # Документация
+├── requirements.txt       # Зависимости Python
+├── main.ipynb            # Основной Notebook
+├── main.py               # CLI (опционально)
+├── data/                 # Данные (опционально)
 │   └── sample_queries.txt
-├── outputs/              # 输出结果（可选）
+├── outputs/              # Результаты (опционально)
 │   ├── demo_results.md
-│   ├── docs/             # 文档文件
+│   ├── docs/
 │   │   ├── CONTRIBUTING.md
 │   │   └── IMPROVEMENTS_SUMMARY.md
-│   └── tests/            # 测试文件
+│   └── tests/
 │       ├── test_agent_improvements.py
 │       └── test_tools.py
-└── src/                  # 源代码（可选，如果代码较多）
+└── src/
     ├── __init__.py
-    ├── agents/           # 智能体模块
+    ├── agents/
     │   ├── __init__.py
     │   ├── agent_universal.py
     │   └── config.py
-    ├── tools/            # 工具定义
+    ├── tools/
     │   ├── __init__.py
     │   ├── browser_tool.py
     │   └── terminal_tool.py
-    └── utils/            # 工具函数
+    └── utils/
         └── __init__.py
 ```
 
-## 🎯 项目亮点
+## 🎯 Преимущества
 
-- **模块化设计**: 工具和智能体分离，易于扩展
-- **安全优先**: 多层安全策略保护系统安全
-- **容错机制**: 智能降级和错误恢复策略
-- **标准兼容**: 符合Hello-Agents框架标准
-- **多引擎支持**: 4个搜索引擎智能切换
+- **Модульность**: инструменты и агенты разделены
+- **Безопасность**: многоуровневая защита
+- **Отказоустойчивость**: деградация и восстановление
+- **Совместимость**: стандарт Hello-Agents
+- **Поиск**: 4 движка с переключением
 
-## 🔮 未来计划
+## 🔮 Планы
 
-- [ ] 添加更多工具（文件操作、数据库查询等）
-- [ ] 实现真正的记忆功能集成
-- [ ] 优化搜索引擎的响应速度
-- [ ] 添加Web界面支持
-- [ ] 实现多智能体协作
+- [ ] Больше инструментов (файлы, БД)
+- [ ] Полноценная память
+- [ ] Ускорение поиска
+- [ ] Web-интерфейс
+- [ ] Мультиагентное взаимодействие
 
-## 🤝 贡献指南
+## 🤝 Как внести вклад
 
-欢迎提出Issue和Pull Request！
+Issue и Pull Request приветствуются!
 
-## 📄 许可证
+## 📄 Лицензия
 
 MIT License
 
-## 👤 作者
+## 👤 Автор
 
 - GitHub: [@haoye2](https://github.com/haoye2)
-- 项目链接:[UniversalAgent](https://github.com/datawhalechina/Hello-Agents/tree/main/Co-creation-projects/haoye2-UniversalAgent)
+- Проект: [UniversalAgent](https://github.com/datawhalechina/Hello-Agents/tree/main/Co-creation-projects/haoye2-UniversalAgent)
 
-## 🙏 致谢
+## 🙏 Благодарности
 
-感谢Datawhale社区和Hello-Agents项目！
+Сообществу Datawhale и проекту Hello-Agents!
 
 ---
 
-## 📚 更多信息
+## 📚 Подробнее
 
-### 浏览器搜索工具特性
+### Инструмент браузерного поиска
 
-#### 多引擎支持
-- **DuckDuckGo**: 稳定的HTML解析搜索
-- **Brave搜索**: 现代搜索引擎
-- **Ecosia**: 环保友好搜索引擎  
-- **Searx.xyz**: 开源元搜索引擎
+#### Движки
+- **DuckDuckGo**: стабильный HTML-поиск
+- **Brave**: современный поиск
+- **Ecosia**: экологичный поиск
+- **Searx.xyz**: метапоиск с открытым кодом
 
-#### 智能功能
-- **8秒快速响应**: 统一超时设置，避免长时间等待
-- **静默失败机制**: 快速切换引擎，优化用户体验
-- **智能降级策略**: 搜索建议兜底，100%成功率
-- **内容质量验证**: 多层过滤确保搜索结果准确性
-- **智能内容提取**: 5层策略提取页面主要内容
+#### Умные функции
+- **8 с на таймаут**: единый лимит ожидания
+- **Тихий failover**: быстрое переключение движка
+- **Деградация**: подсказки поиска как запасной вариант
+- **Проверка качества**: фильтрация результатов
+- **Извлечение контента**: 5 уровней для основного текста страницы
 
-### 配置文件说明
+### Конфигурация
 
-项目使用 `config.py` 统一管理工具配置，主要配置项：
+`config.py` — единая настройка инструментов.
 
-#### 终端工具安全模式
+#### Режим безопасности терминала
 ```python
 # config.py
-TERMINAL_SECURITY_MODE = "strict"  # 或 "warning"
+TERMINAL_SECURITY_MODE = "strict"  # или "warning"
 ```
-- **strict**（严格模式）：危险命令直接拒绝执行（推荐用于生产环境）
-- **warning**（警告模式）：给出警告提示（适合开发调试）
+- **strict**: опасные команды блокируются (рекомендуется в продакшене)
+- **warning**: предупреждение (для отладки)
 
-详细说明请参考：[CONFIG_GUIDE.md](./CONFIG_GUIDE.md)
+Подробнее: [CONFIG_GUIDE.md](./CONFIG_GUIDE.md)
 
-### 注意事项（安全）
+### Безопасность
 
-- 请勿把真实 API Key 上传到公有仓库。
-- `terminal_exec` 只执行列入白名单的命令，仍建议在容器或受控环境中运行。
-- DuckDuckGo HTML 抓取仅用于演示，生产环境请使用正规 Search API（SerpApi/Tavily 等）。
+- Не публикуйте реальные API Key в открытых репозиториях.
+- `terminal_exec` выполняет только команды из белого списка; предпочтительно контейнер или изолированная среда.
+- Парсинг DuckDuckGo HTML — для демо; в продакшене используйте Search API (SerpApi/Tavily и т.д.).
 
-### 问题排查
+### Устранение неполадок
 
-- 若 LLM 接口无法调用，请检查 `.env` 的 `LLM_API_BASE` 与 `LLM_API_KEY` 配置是否正确。
-- 若需要把搜索替换为 SerpApi，请参考 `src/tools/browser_tool.py` 并添加 API key。
-- 详细配置说明请查看：[CONFIG_GUIDE.md](./CONFIG_GUIDE.md)
+- Ошибки LLM: проверьте `LLM_API_BASE` и `LLM_API_KEY` в `.env`.
+- Замена на SerpApi: см. `src/tools/browser_tool.py` и добавьте ключ.
+- Конфигурация: [CONFIG_GUIDE.md](./CONFIG_GUIDE.md)

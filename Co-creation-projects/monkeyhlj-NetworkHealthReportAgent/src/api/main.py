@@ -130,7 +130,7 @@ def stream_global_question(payload: AskRequest, request: Request):
         days=7,
     )
 
-    report_intent = any(keyword in payload.question for keyword in ["生成", "导出", "下载", "报告", "周报", "近一周", "一周"])
+report_intent = any(keyword in payload.question for keyword in ["генерация", "экспорт", "скачивание", "отчёт", "周报", "近一周", "一周", "создать", "экспорт", "скачать", "отчёт", "отчет", "неделя", "за неделю"])
     answer_payload = None
     artifact = None
     debug = orchestrator.runtime_status().get("qa_agent", {})

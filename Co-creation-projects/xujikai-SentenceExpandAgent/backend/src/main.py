@@ -1,5 +1,5 @@
 """
-FastAPI 应用入口 - 英语句子扩写智能体
+Портал приложений FastAPI — агент расширения английского предложения
 """
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,35 +7,35 @@ from fastapi.responses import JSONResponse
 import sys
 import os
 
-# 添加当前目录（backend）到 Python 路径
+# Добавьте текущий каталог (бэкэнд) в путь Python
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from routers.expand import router as expand_router
 
-# 创建 FastAPI 应用
+#Создаем приложение FastAPI
 app = FastAPI(
-    title="英语句子扩写智能体 API",
-    description="基于多智能体协作的英语写作教练应用",
+title="API агента расширения английских предложений",
+описание="Приложение для обучения письму на английском языке, основанное на многоагентном сотрудничестве",
     version="1.0.0"
 )
 
-# 配置 CORS
+# Настройте CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源（开发环境）
+allow_origins=["*"], # Разрешить все источники (среда разработки)
     allow_credentials=True,
-    allow_methods=["*"],  # 允许所有 HTTP 方法
-    allow_headers=["*"],  # 允许所有请求头
+allow_methods=["*"], # Разрешить все методы HTTP
+allow_headers=["*"], # Разрешить все заголовки запросов
 )
 
-# 包含路由
+# Содержит маршруты
 app.include_router(expand_router)
 
 
-# 统一异常处理
+# Унифицированная обработка исключений
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """全局异常处理器"""
+"""Глобальный обработчик исключений"""
     return JSONResponse(
         status_code=500,
         content={
@@ -45,21 +45,21 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# 根路径
+# корневой путь
 @app.get("/")
 async def root():
-    """根路径"""
+"""Корневой путь"""
     return {
-        "message": "英语句子扩写智能体 API",
+"message": "API агента расширения предложений на английском языке",
         "version": "1.0.0",
         "docs": "/docs"
     }
 
 
-# 健康检查
+#Проверка здоровья
 @app.get("/health")
 async def health_check():
-    """健康检查"""
+"""Проверка здоровья"""
     return {"status": "ok"}
 
 

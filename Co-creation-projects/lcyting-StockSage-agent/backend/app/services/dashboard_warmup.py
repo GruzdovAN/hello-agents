@@ -1,8 +1,8 @@
 """
-仪表盘数据预热
+Прогрев данных панели мониторинга
 
-启动时通过 MemoryService 三线程并行获取指数、自选、热点资讯，
-将结果写入 MXTimedCache，首屏请求即可命中缓存。
+При запуске информация об индексе, самостоятельном выборе и горячих точках получается параллельно через три потока MemoryService.
+Запишите результат в MXTimedCache, и первый запрос экрана может попасть в кеш.
 """
 from __future__ import annotations
 
@@ -11,26 +11,26 @@ import logging
 logger = logging.getLogger(__name__)
 
 DASHBOARD_INDEX_NAMES: tuple[str, ...] = (
-    "上证指数",
-    "深证成指",
-    "创业板指",
-    "沪深300",
+«Шанхайский композитный индекс»,
+«Индекс компонентов Шэньчжэня»,
+«Индекс ГЕМ»,
+«CSI 300»,
 )
 
 
 def warm_dashboard_cache() -> None:
-    """通过记忆系统三线程并行预取仪表盘妙想缓存"""
+"""Параллельная предварительная выборка информационной панели через трехпоточный кеш системы памяти"""
     try:
         from app.services.memory_service import get_memory_service
 
         mem = get_memory_service()
 
         if mem.should_refresh():
-            logger.info("仪表盘预热: 触发三线程并行获取...")
+logger.info("Разминка информационной панели: запустить три потока для параллельного получения данных...")
             mem.parallel_fetch()
             logger.info("仪表盘预热: 完成 (indices=%d, watchlist=%d)",
                          len(mem.get_indices()), mem.get_stats().get("watchlist_count", 0))
         else:
-            logger.info("仪表盘预热: 今日已缓存，跳过刷新")
+logger.info("Разминка информационной панели: сегодняшний день сохранен в кэше, пропустить обновление")
     except Exception as exc:
         logger.warning("仪表盘预热失败（可忽略）: %s", exc)

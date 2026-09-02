@@ -1,15 +1,14 @@
-"""Memory Flush 管理器 - 在上下文压缩前提醒 Agent 保存记忆"""
+"""Диспетчер очистки памяти — напоминает агенту о необходимости сохранить память перед сжатием контекста."""
 
 from datetime import datetime
 from typing import Optional, Tuple
 
 
 class MemoryFlushManager:
-    """Memory Flush 管理器
+    """Менеджер очистки памяти
 
-    在上下文即将压缩前，触发一个静默回合，提醒 Agent 保存记忆。
-    这样可以防止有价值的上下文在压缩时丢失。
-    """
+    Прежде чем контекст будет сжат, запустите тихий раунд, чтобы напомнить агенту о необходимости сохранить свою память.
+    Это предотвращает потерю ценного контекста во время сжатия."""
 
     def __init__(
         self,
@@ -18,35 +17,35 @@ class MemoryFlushManager:
         soft_threshold_tokens: int = 4000,
         enabled: bool = True,
     ):
-        """初始化 Memory Flush 管理器
+        """Инициализируйте диспетчер очистки памяти
 
-        Args:
-            context_window: 上下文窗口大小
-            compression_threshold: 压缩阈值（比例）
-            soft_threshold_tokens: 软阈值 token 数（在压缩点之前触发 flush）
-            enabled: 是否启用 flush 功能
-        """
+        Аргументы:
+            context_window: размер окна контекста
+            compress_threshold: порог сжатия (коэффициент)
+            soft_threshold_tokens: количество токенов мягкого порога (триггерная очистка перед точкой сжатия)
+            включено: включать ли функцию смыва"""
         self.context_window = context_window
         self.compression_threshold = compression_threshold
         self.soft_threshold_tokens = soft_threshold_tokens
         self.enabled = enabled
 
-        # 记录是否已经触发过 flush（每个会话只触发一次）
+        # Запишите, была ли запущена очистка (срабатывает только один раз за сеанс)
+
         self._flush_triggered = False
 
     def should_trigger_flush(self, current_tokens: int) -> bool:
-        """判断是否应该触发 flush
+        """Определите, следует ли запускать сброс
 
-        Args:
-            current_tokens: 当前 token 数
+        Аргументы:
+            current_tokens: текущий номер токена
 
-        Returns:
-            是否应该触发 flush
-        """
+        Возврат:
+            Должен ли запускаться сброс"""
         if not self.enabled or self._flush_triggered:
             return False
 
-        # 计算触发点：压缩阈值 - 软阈值
+        # Вычисление триггерных точек: Порог сжатия – Мягкий порог
+
         trigger_point = (
             self.context_window * self.compression_threshold
             - self.soft_threshold_tokens
@@ -59,11 +58,10 @@ class MemoryFlushManager:
         return False
 
     def get_flush_prompt(self) -> str:
-        """获取 flush 提示词
+        """Получить слово подсказки для сброса
 
-        Returns:
-            静默回合的提示词
-        """
+        Возврат:
+            Слово-подсказка для тихого раунда"""
         today = datetime.now().strftime("%Y-%m-%d")
         return f"""Pre-compaction memory flush.
 
@@ -77,26 +75,24 @@ Guidelines:
 If nothing important needs to be stored, reply with exactly: [SILENT]"""
 
     def is_silent_response(self, response: str) -> bool:
-        """判断是否是静默响应
+        """Определите, является ли это молчаливым ответом
 
-        Args:
-            response: Agent 的响应
+        Аргументы:
+            ответ: ответ агента
 
-        Returns:
-            是否是静默响应（不需要返回给用户）
-        """
+        Возврат:
+            Является ли это молчаливым ответом (не обязательно возвращать пользователю)"""
         return response.strip() == "[SILENT]"
 
     def reset(self):
-        """重置 flush 状态（新会话时调用）"""
+        """Сбросить состояние сброса (вызывается при новом сеансе)"""
         self._flush_triggered = False
 
     def get_status(self) -> dict:
-        """获取当前状态
+        """Получить текущий статус
 
-        Returns:
-            状态信息字典
-        """
+        Возврат:
+            словарь информации о состоянии"""
         trigger_point = (
             self.context_window * self.compression_threshold
             - self.soft_threshold_tokens

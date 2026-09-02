@@ -7,8 +7,8 @@ from typing import Optional
 
 class LearningKnowledgeService:
     """
-    学习记忆 + 知识检索服务
-    供多智能体通过 A2A 调用
+    Сервис памяти обучения и поиска знаний.
+    Для вызова из мультиагентной системы через A2A.
     """
 
     def __init__(self, user_id: str):
@@ -26,7 +26,7 @@ class LearningKnowledgeService:
         return self.active_learning_plan_id
 
     # ======================
-    # 知识库相关
+    # База знаний
     # ======================
     def add_learning_material(self, file_path: str):
         return self.rag.run({
@@ -37,7 +37,7 @@ class LearningKnowledgeService:
         })
 
     def ask_knowledge(self, question: str):
-        self._log_working_memory(f"提问: {question}")
+        self._log_working_memory(f"Вопрос: {question}")
         answer = self.rag.run({
             "action": "ask",
             "question": question,
@@ -47,11 +47,11 @@ class LearningKnowledgeService:
             "enable_hyde": True
         })
 
-        self._log_episodic_memory(f"围绕问题 `{question}` 的学习")
+        self._log_episodic_memory(f"Обучение по вопросу `{question}`")
         return answer
 
     # ======================
-    # 记忆系统
+    # Система памяти
     # ======================
     def add_note(self, content: str, concept: Optional[str] = None):
         self.memory.run({
@@ -77,7 +77,7 @@ class LearningKnowledgeService:
         })
 
     # ======================
-    # 内部日志
+    # Внутреннее логирование
     # ======================
     def _log_working_memory(self, content: str):
         self.memory.run({

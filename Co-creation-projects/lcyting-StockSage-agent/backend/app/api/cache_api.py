@@ -1,22 +1,22 @@
 """
-股票文件缓存 API — grep搜索、缓存管理、数据统计
+API кэша стандартных файлов — поиск grep, управление кэшем, статистика данных
 """
 
 from fastapi import APIRouter, Query
 from app.services.stock_file_cache import get_stock_file_cache
 from app.utils.response import success_response, error_response
 
-router = APIRouter(prefix="/cache", tags=["文件缓存"])
+router = APIRouter(prefix="/cache", tags=["Кэш файлов"])
 
 
 @router.get("/search")
 async def grep_search(
     keyword: str = Query(..., description="搜索关键词"),
-    data_type: str = Query(None, description="限定数据类型: quote/financial/profile/holders/sentiment"),
+data_type: str = Query(None,description="Квалифицированный тип данных: цитата/финансовый/профиль/держатели/настроения"),
 ):
-    """grep 风格搜索缓存文件内容
+"""Содержимое файла кэша поиска в стиле Grep
 
-    在所有已缓存的股票数据文件中搜索关键词，返回匹配结果。
+Ищите ключевые слова во всех кэшированных файлах данных акций и возвращайте соответствующие результаты.
     """
     fc = get_stock_file_cache()
     results = fc.grep_search(keyword, data_type)
@@ -29,7 +29,7 @@ async def grep_search(
 
 @router.get("/stock/{stock_code}")
 async def get_stock_cache_info(stock_code: str):
-    """查询某股票的缓存状态"""
+"""Запрос состояния кэша акции"""
     fc = get_stock_file_cache()
     data_types = fc.get_stock_data_types(stock_code)
     return success_response(data={
@@ -45,7 +45,7 @@ async def get_stock_cache_info(stock_code: str):
 
 @router.get("/stats")
 async def cache_stats():
-    """获取缓存统计信息"""
+"""Получить статистику кэша"""
     fc = get_stock_file_cache()
     return success_response(data=fc.get_stats())
 
@@ -54,15 +54,15 @@ async def cache_stats():
 async def clear_cache(
     stock_code: str = Query(None, description="指定股票代码，不传则清空全部"),
 ):
-    """清除文件缓存"""
+"""Очистить кэш файлов"""
     fc = get_stock_file_cache()
     fc.clear_stock_cache(stock_code)
-    return success_response(message=f"缓存已清除{'(' + stock_code + ')' if stock_code else ''}")
+return Success_response(message=f"Кэш очищен{'(' + stock_code + ')' if stock_code else ''}")
 
 
 @router.get("/list")
 async def list_cached_stocks():
-    """列出所有已缓存的股票代码"""
+"""Перечислить все кэшированные биржевые символы"""
     fc = get_stock_file_cache()
     codes = fc.get_stock_codes()
     result = []

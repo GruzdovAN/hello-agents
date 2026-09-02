@@ -1,12 +1,12 @@
 """
-智能股票分析助手 — 自选股管理服务层
+Интеллектуальный помощник по анализу запасов — самостоятельно выбираемый уровень службы управления запасами
 
-封装自选股查询、添加、删除的数据查询逻辑，供API路由层调用。
+Инкапсулирует логику запроса данных для запроса, добавления и удаления самостоятельно выбранных акций для вызовов уровня маршрутизации API.
 """
 
 import sys
 from pathlib import Path
-# 确保skills路径可导入
+# Убедитесь, что путь навыков можно импортировать
 _PROJECT_ROOT = Path(__file__).parent.parent.parent.parent  # backend/app/services -> project root
 _AGENTS_DIR = _PROJECT_ROOT / "agents"
 _SKILLS_ZIXUAN = _PROJECT_ROOT / "skills" / "自选股管理" / "mx-zixuan"
@@ -31,13 +31,13 @@ def _invalidate_watchlist_cache() -> None:
 
 
 def _get_mx_zixuan_instance():
-    """创建mx_zixuan API调用实例"""
+"""Создать экземпляр вызова API mx_zixuan"""
     import mx_zixuan as _mx
     return _mx
 
 
 def get_watchlist() -> dict:
-    """查询自选股列表
+"""Запросить список самостоятельно выбранных акций
 
     Returns:
         {
@@ -69,14 +69,14 @@ def get_watchlist() -> dict:
     try:
         raw_result = _mx.query_self_select(settings.MX_APIKEY)
 
-        # 检查API状态
+# Проверьте статус API
         status = raw_result.get("status", -1)
         code = raw_result.get("code", -1)
         if status != 0 and code != 0:
             result["error"] = raw_result.get("message", "查询自选股失败")
             return result
 
-        # 解析查询结果
+# Анализ результатов запроса
         data = raw_result.get("data", {})
         all_results = data.get("allResults", {})
         result_data = all_results.get("result", {})
@@ -107,10 +107,10 @@ def get_watchlist() -> dict:
 
 
 def add_to_watchlist(stock_input: str) -> dict:
-    """添加股票到自选股
+"""Добавить акции в дополнительные акции
 
     Args:
-        stock_input: 股票名称或代码，如 "贵州茅台" 或 "600519"
+stock_input: название или код акции, например «Kweichow Moutai» или «600519».
 
     Returns:
         {
@@ -132,8 +132,8 @@ def add_to_watchlist(stock_input: str) -> dict:
         return result
 
     try:
-        # 构造自然语言添加指令
-        query = f"把{stock_input}添加到我的自选股列表"
+#Construct добавление инструкций на естественном языке
+query = f"Добавить {stock_input} в мой список выбора акций"
         raw_result = _mx.manage_self_select(settings.MX_APIKEY, query)
 
         status = raw_result.get("status", -1)
@@ -143,7 +143,7 @@ def add_to_watchlist(stock_input: str) -> dict:
             return result
 
         result["success"] = True
-        result["message"] = raw_result.get("message", f"已将 {stock_input} 加入自选")
+result["message"] = raw_result.get("message", f"{stock_input} добавлен в ваш выбор")
         _invalidate_watchlist_cache()
         return result
 
@@ -153,10 +153,10 @@ def add_to_watchlist(stock_input: str) -> dict:
 
 
 def delete_from_watchlist(stock_input: str) -> dict:
-    """从自选股中删除股票
+"""Удалить акции из дискреционных акций
 
     Args:
-        stock_input: 股票名称或代码，如 "贵州茅台" 或 "600519"
+stock_input: название или код акции, например «Kweichow Moutai» или «600519».
 
     Returns:
         {
@@ -178,8 +178,8 @@ def delete_from_watchlist(stock_input: str) -> dict:
         return result
 
     try:
-        # 构造自然语言删除指令
-        query = f"把{stock_input}从我的自选股列表删除"
+# Создание инструкций удаления на естественном языке
+query = f"Удалить {stock_input} из моего списка выбора акций"
         raw_result = _mx.manage_self_select(settings.MX_APIKEY, query)
 
         status = raw_result.get("status", -1)
@@ -189,7 +189,7 @@ def delete_from_watchlist(stock_input: str) -> dict:
             return result
 
         result["success"] = True
-        result["message"] = raw_result.get("message", f"已将 {stock_input} 从自选中移除")
+result["message"] = raw_result.get("message", f"{stock_input} удален из выбора")
         _invalidate_watchlist_cache()
         return result
 

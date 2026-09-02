@@ -1,10 +1,10 @@
-"""统一业务异常：抛出后由全局 handler 转成固定 JSON。"""
+"""Единое бизнес-исключение: после создания оно будет преобразовано в фиксированный JSON глобальным обработчиком."""
 
 from __future__ import annotations
 
 
 class AppError(Exception):
-    """可预期异常基类。"""
+"""Ожидаемый базовый класс исключения."""
 
     def __init__(
         self,
@@ -30,12 +30,12 @@ class NotFoundError(AppError):
 
 
 class ExternalServiceError(AppError):
-    def __init__(self, message: str = "外部服务调用失败", *, status_code: int = 502) -> None:
+def __init__(self, message: str = «Ошибка вызова внешней службы», *, status_code: int = 502) -> Нет:
         super().__init__(message, code="EXTERNAL_SERVICE", status_code=status_code)
 
 
 class MovieServiceError(ExternalServiceError):
-    """TMDB / MovieService 相关错误。"""
+"""Ошибки, связанные с TMDB/MovieService."""
 
     def __init__(self, message: str, *, status_code: int = 502) -> None:
         super().__init__(message, status_code=status_code)

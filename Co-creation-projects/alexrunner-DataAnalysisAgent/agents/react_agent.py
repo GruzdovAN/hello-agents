@@ -4,44 +4,44 @@ from hello_agents import ReActAgent, HelloAgentsLLM, Config, Message, ToolRegist
 from dotenv import load_dotenv
 
 MY_REACT_PROMPT = """
-请注意，你是一个有能力调用外部工具的智能助手。
+Обратите внимание: вы — интеллектуальный помощник, способный вызывать внешние инструменты.
 
-可用工具如下：
+Доступные инструменты:
 {tools}
 
-请严格按照以下格式进行回应：
+Строго соблюдайте следующий формат ответа:
 
-示例1：
+Пример 1:
 {{
-"Thought": "我需要先查询今天的美元兑人民币汇率，然后计算出净收益。",
-"Action": {{"tool_name": "Search", "tool_input": "今天美元兑人民币汇率"}},
+"Thought": "Сначала нужно узнать сегодняшний курс USD/CNY, а затем рассчитать чистую прибыль.",
+"Action": {{"tool_name": "Search", "tool_input": "сегодняшний курс USD/CNY"}},
 "Finish": []
 }}
 
-示例2：
+Пример 2:
 {{
-"Thought": "完成思考，准备给出最终答案。",
+"Thought": "Размышления завершены, готов выдать итоговый ответ.",
 "Action": {{}},
-"Finish": ["子任务1描述", "子任务2描述", "子任务3描述"]
+"Finish": ["описание подзадачи 1", "описание подзадачи 2", "описание подзадачи 3"]
 }}
 
-格式说明如下：
-Thought: 你的思考过程，用于分析问题、拆解任务和规划下一步行动。
-Action: 你决定采取的行动，格式必须是：`{{"tool_name": "Search", "tool_input": "今天美元兑人民币汇率"}}`，如果不采取行动，该项必须设置为{{}}。
-Finish: 当你收集到足够的信息，能够回答用户的最终问题时，你必须在此处输出最终结果；如果没有，该项必须设置为[]。
+Пояснение формата:
+Thought: ваш ход мыслей — анализ проблемы, декомпозиция задачи и планирование следующего шага.
+Action: действие, которое вы решили предпринять; формат: `{{"tool_name": "Search", "tool_input": "сегодняшний курс USD/CNY"}}`; если действие не требуется — `{{}}`.
+Finish: когда собрано достаточно информации для ответа на вопрос пользователя, выведите здесь итоговый результат; иначе — `[]`.
 
 
-现在，请开始解决以下问题：
+Теперь решите следующую задачу:
 Question: {question}
 History: {history}
 """
 
-# 加载环境变量
+# Загрузка переменных окружения
 load_dotenv()
 
 class NewReActAgent(ReActAgent):
     """
-    重写的ReAct Agent - 推理与行动结合的智能体
+    Переработанный ReAct Agent — агент, сочетающий рассуждение и действие
     """
 
     def __init__(
@@ -59,20 +59,20 @@ class NewReActAgent(ReActAgent):
         self.max_steps = max_steps
         self.current_history: List[str] = []
         self.prompt_template = custom_prompt if custom_prompt else MY_REACT_PROMPT
-        print(f"✅ {name} 初始化完成，最大步数: {max_steps}")
+        print(f"✅ {name} инициализирован, максимум шагов: {max_steps}")
 
     def run(self, input_text: str, **kwargs) -> str:
-        """运行ReAct Agent"""
+        """Запуск ReAct Agent"""
         self.current_history = []
         current_step = 0
 
-        print(f"\n🤖 {self.name} 开始处理问题: {input_text}")
+        print(f"\n🤖 {self.name} начинает обработку запроса: {input_text}")
 
         while current_step < self.max_steps:
             current_step += 1
-            print(f"\n--- 第 {current_step} 步 ---")
+            print(f"\n--- Шаг {current_step} ---")
 
-            # 1. 构建提示词
+            # 1. Формирование промпта
             tools_desc = self.tool_registry.get_tools_description()
             history_str = "\n".join(self.current_history)
             prompt = self.prompt_template.format(
@@ -81,34 +81,34 @@ class NewReActAgent(ReActAgent):
                 history=history_str
             )
 
-            # 2. 调用LLM
+            # 2. Вызов LLM
             messages = [{"role": "user", "content": prompt}]
             response_text = self.llm.invoke(messages, **kwargs)
             print(response_text)
 
-            # 3. 解析输出
+            # 3. Разбор вывода
             thought, action, finish = self._parse_output(response_text)
 
-            # 4. 检查完成条件
+            # 4. Проверка условия завершения
             if finish:
                 final_answer = finish
                 return final_answer
 
-            # 5. 执行工具调用
+            # 5. Выполнение вызова инструмента
             if action:
                 tool_name, tool_input = self._parse_action(action)
                 observation = self.tool_registry.execute_tool(tool_name, tool_input)
                 self.current_history.append(f"Action: {action}")
                 self.current_history.append(f"Observation: {observation}")
 
-        # 达到最大步数：让 LLM 一次性输出最终答案
-        print(f"\n⚠️ 达到最大步数 {self.max_steps}，开始生成最终答案")
+        # Достигнут лимит шагов: LLM формирует итоговый ответ за один раз
+        print(f"\n⚠️ Достигнут лимит шагов {self.max_steps}, формирование итогового ответа")
         history_str = "\n".join(self.current_history)
         final_prompt = self.prompt_template.format(
                 tools="",
                 question=input_text,
                 history=history_str +
-                "\n\n请基于以上信息一次性给出最终答案（必须填入 Finish 字段）"
+                "\n\nНа основе информации выше дайте итоговый ответ одним сообщением (обязательно заполните поле Finish)"
             )
         messages = [{"role": "user", "content": final_prompt}]
         final_response = self.llm.invoke(messages, **kwargs)
@@ -117,11 +117,11 @@ class NewReActAgent(ReActAgent):
             final_answer = finish
             return final_answer
         else:
-            print("警告：在生成最终答案时，没有找到 Finish 字段。")
-            return "抱歉，尝试生成最终答案时出错。"
+            print("Предупреждение: при формировании итогового ответа поле Finish не найдено.")
+            return "Извините, при попытке сформировать итоговый ответ произошла ошибка."
 
     def _parse_output(self, text: str):
-        # 清理模型输出，尝试提取JSON部分
+        # Очистка вывода модели, попытка извлечь JSON-часть
         cleaned_text = self._extract_json_from_response(text)
 
         try:
@@ -131,18 +131,18 @@ class NewReActAgent(ReActAgent):
             finish = data.get("Finish", [])
             return thought, action, finish
         except json.JSONDecodeError as e:
-            print(f"警告：LLM返回的文本不是有效的JSON格式。原始文本: {text}")
-            print(f"JSON解析错误: {e}")
+            print(f"Предупреждение: текст от LLM не является валидным JSON. Исходный текст: {text}")
+            print(f"Ошибка разбора JSON: {e}")
             return "", None, ""
 
     def _extract_json_from_response(self, text: str) -> str:
-        """从模型响应中提取JSON部分"""
+        """Извлечение JSON-части из ответа модели"""
         start = text.find('{')
         end = text.rfind('}')
 
         if start != -1 and end != -1 and start < end:
             candidate = text[start:end+1]
-            # 验证这是否是有效的JSON
+            # Проверка валидности JSON
             try:
                 json.loads(candidate)
                 return candidate
@@ -150,7 +150,7 @@ class NewReActAgent(ReActAgent):
                 pass
 
     def _parse_action(self, action_text: dict):
-        # 提取 tool_name 和 tool_input
+        # Извлечение tool_name и tool_input
         if not action_text or not isinstance(action_text, dict):
             return None, None
         tool_name = action_text.get("tool_name")
@@ -167,9 +167,9 @@ if __name__ == "__main__":
         tool_registry=tool_registry,
         max_steps=5
     )
-    question = "请简单介绍你自己"
+    question = "Кратко расскажите о себе"
     try:
         answer = agent.run(question)
-        print(f"最终答案: {answer}")
+        print(f"Итоговый ответ: {answer}")
     except Exception as e:
-        print(f"执行过程中出现错误: {e}")
+        print(f"Ошибка при выполнении: {e}")

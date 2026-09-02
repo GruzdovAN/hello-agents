@@ -1,10 +1,10 @@
 """
-HelloAgents - 灵活、可扩展的多智能体框架
+HelloAgents — гибкий, расширяемый мультиагентный фреймворк
 
-基于OpenAI原生API构建，提供简洁高效的智能体开发体验。
+Построен на нативном API OpenAI и даёт простой и эффективный опыт разработки агентов (Agent).
 """
 
-# 配置第三方库的日志级别，减少噪音
+# Уровни логирования сторонних библиотек — меньше шума
 import logging
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("qdrant_client").setLevel(logging.WARNING)
@@ -14,19 +14,19 @@ logging.getLogger("neo4j.notifications").setLevel(logging.WARNING)
 
 from .version import __version__, __author__, __email__, __description__
 
-# 核心组件
+# Компоненты ядра
 from .core.llm import HelloAgentsLLM
 from .core.config import Config
 from .core.message import Message
 from .core.exceptions import HelloAgentsException
 
-# Agent实现
+# Реализации Agent
 from .agents.simple_agent import SimpleAgent
 from .agents.react_agent import ReActAgent
 from .agents.reflection_agent import ReflectionAgent
 from .agents.plan_solve_agent import PlanAndSolveAgent
 
-# 工具系统
+# Система инструментов
 from .tools.registry import ToolRegistry, global_registry
 from .tools.builtin.search import SearchTool, search
 from .tools.builtin.calculator import CalculatorTool, calculate
@@ -34,25 +34,25 @@ from .tools.chain import ToolChain, ToolChainManager
 from .tools.async_executor import AsyncToolExecutor
 
 __all__ = [
-    # 版本信息
+    # Информация о версии
     "__version__",
     "__author__",
     "__email__",
     "__description__",
 
-    # 核心组件
+    # Компоненты ядра
     "HelloAgentsLLM",
     "Config",
     "Message",
     "HelloAgentsException",
 
-    # Agent范式
+    # Парадигмы Agent
     "SimpleAgent",
     "ReActAgent", 
     "ReflectionAgent",
     "PlanAndSolveAgent",
 
-    # 工具系统
+    # Система инструментов
     "ToolRegistry",
     "global_registry",
     "SearchTool",

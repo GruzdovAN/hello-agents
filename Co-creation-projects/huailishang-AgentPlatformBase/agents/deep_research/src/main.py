@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from config import Configuration, SearchAPI
 from agent import DeepResearchAgent
 
-# 添加控制台日志处理程序
+# Добавляем обработчик журнала консоли
 logger.add(
     sys.stderr,
     level="INFO",
@@ -24,7 +24,7 @@ logger.add(
 )
 
 
-# 添加错误日志文件处理程序
+# Добавляем обработчик файла журнала ошибок
 logger.add(
     sink=sys.stderr,
     level="ERROR",

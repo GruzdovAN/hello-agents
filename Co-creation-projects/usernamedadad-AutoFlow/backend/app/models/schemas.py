@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class PlanRequest(BaseModel):
-    text: str = Field(..., description="按行输入的计划文本")
+    text: str = Field(..., description="Текст плана, введённый построчно")
     direction: Literal["TD", "LR"] = "TD"
 
 

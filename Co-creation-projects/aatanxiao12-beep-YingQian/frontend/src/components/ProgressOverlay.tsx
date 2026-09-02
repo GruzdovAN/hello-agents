@@ -12,7 +12,7 @@ export function ProgressOverlay({ active, stageIndex }: ProgressOverlayProps) {
   return (
     <div className="progress-overlay" role="status" aria-live="polite">
       <div className="progress-panel">
-        <p className="progress-kicker">正在生成片单</p>
+        <p className="progress-kicker">Генерация списка фильмов</p>
         <ol className="progress-stages">
           {PROGRESS_STAGES.map((label: ProgressStage, i) => {
             const state =

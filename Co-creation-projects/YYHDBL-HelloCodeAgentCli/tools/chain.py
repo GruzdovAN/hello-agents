@@ -1,11 +1,11 @@
-"""工具链管理器 - HelloAgents工具链式调用支持"""
+"""Менеджер цепочек инструментов — последовательный вызов HelloAgents"""
 
 from typing import List, Dict, Any, Optional
 from .registry import ToolRegistry
 
 
 class ToolChain:
-    """工具链 - 支持多个工具的顺序执行"""
+    """Цепочка инструментов — последовательное выполнение"""
 
     def __init__(self, name: str, description: str):
         self.name = name
@@ -14,12 +14,12 @@ class ToolChain:
 
     def add_step(self, tool_name: str, input_template: str, output_key: str = None):
         """
-        添加工具执行步骤
+        Добавляет шаг выполнения инструмента
         
         Args:
-            tool_name: 工具名称
-            input_template: 输入模板，支持变量替换，如 "{input}" 或 "{search_result}"
-            output_key: 输出结果的键名，用于后续步骤引用
+            tool_name: имя инструмента
+            input_template: шаблон ввода с подстановкой переменных, например "{input}" или "{search_result}"
+            output_key: ключ результата для последующих шагов
         """
         step = {
             "tool_name": tool_name,
@@ -27,26 +27,25 @@ class ToolChain:
             "output_key": output_key or f"step_{len(self.steps)}_result"
         }
         self.steps.append(step)
-        print(f"✅ 工具链 '{self.name}' 添加步骤: {tool_name}")
+        print(f"✅ В цепочку '{self.name}' добавлен шаг: {tool_name}")
 
     def execute(self, registry: ToolRegistry, input_data: str, context: Dict[str, Any] = None) -> str:
         """
-        执行工具链
+        Выполняет цепочку инструментов
         
         Args:
-            registry: 工具注册表
-            input_data: 初始输入数据
-            context: 执行上下文，用于变量替换
+            registry: реестр инструментов
+            input_data: начальные входные данные
+            context: контекст выполнения для подстановки переменных
             
         Returns:
-            最终执行结果
+            Итоговый результат
         """
         if not self.steps:
-            return "❌ 工具链为空，无法执行"
+            return "❌ Цепочка пуста, выполнение невозможно"
 
-        print(f"🚀 开始执行工具链: {self.name}")
+        print(f"🚀 Запуск цепочки инструментов: {self.name}")
         
-        # 初始化上下文
         if context is None:
             context = {}
         context["input"] = input_data
@@ -58,53 +57,51 @@ class ToolChain:
             input_template = step["input_template"]
             output_key = step["output_key"]
             
-            print(f"📝 执行步骤 {i+1}/{len(self.steps)}: {tool_name}")
+            print(f"📝 Шаг {i+1}/{len(self.steps)}: {tool_name}")
             
-            # 替换模板中的变量
             try:
                 actual_input = input_template.format(**context)
             except KeyError as e:
-                return f"❌ 模板变量替换失败: {e}"
+                return f"❌ Ошибка подстановки переменных в шаблон: {e}"
             
-            # 执行工具
             try:
                 result = registry.execute_tool(tool_name, actual_input)
                 context[output_key] = result
                 final_result = result
-                print(f"✅ 步骤 {i+1} 完成")
+                print(f"✅ Шаг {i+1} завершён")
             except Exception as e:
-                return f"❌ 工具 '{tool_name}' 执行失败: {e}"
+                return f"❌ Инструмент '{tool_name}' завершился с ошибкой: {e}"
         
-        print(f"🎉 工具链 '{self.name}' 执行完成")
+        print(f"🎉 Цепочка '{self.name}' выполнена")
         return final_result
 
 
 class ToolChainManager:
-    """工具链管理器"""
+    """Менеджер цепочек инструментов"""
 
     def __init__(self, registry: ToolRegistry):
         self.registry = registry
         self.chains: Dict[str, ToolChain] = {}
 
     def register_chain(self, chain: ToolChain):
-        """注册工具链"""
+        """Регистрирует цепочку инструментов"""
         self.chains[chain.name] = chain
-        print(f"✅ 工具链 '{chain.name}' 已注册")
+        print(f"✅ Цепочка '{chain.name}' зарегистрирована")
 
     def execute_chain(self, chain_name: str, input_data: str, context: Dict[str, Any] = None) -> str:
-        """执行指定的工具链"""
+        """Выполняет указанную цепочку"""
         if chain_name not in self.chains:
-            return f"❌ 工具链 '{chain_name}' 不存在"
+            return f"❌ Цепочка '{chain_name}' не существует"
 
         chain = self.chains[chain_name]
         return chain.execute(self.registry, input_data, context)
 
     def list_chains(self) -> List[str]:
-        """列出所有已注册的工具链"""
+        """Список зарегистрированных цепочек"""
         return list(self.chains.keys())
 
     def get_chain_info(self, chain_name: str) -> Optional[Dict[str, Any]]:
-        """获取工具链信息"""
+        """Возвращает информацию о цепочке"""
         if chain_name not in self.chains:
             return None
         
@@ -124,25 +121,22 @@ class ToolChainManager:
         }
 
 
-# 便捷函数
 def create_research_chain() -> ToolChain:
-    """创建一个研究工具链：搜索 -> 计算 -> 总结"""
+    """Создаёт исследовательскую цепочку: поиск -> вычисление -> итог"""
     chain = ToolChain(
         name="research_and_calculate",
-        description="搜索信息并进行相关计算"
+        description="Поиск информации и связанные вычисления"
     )
 
-    # 步骤1：搜索信息
     chain.add_step(
         tool_name="search",
         input_template="{input}",
         output_key="search_result"
     )
 
-    # 步骤2：基于搜索结果进行计算
     chain.add_step(
         tool_name="my_calculator",
-        input_template="2 + 2",  # 简单的计算示例
+        input_template="2 + 2",
         output_key="calc_result"
     )
 
@@ -150,13 +144,12 @@ def create_research_chain() -> ToolChain:
 
 
 def create_simple_chain() -> ToolChain:
-    """创建一个简单的工具链示例"""
+    """Простая демонстрационная цепочка"""
     chain = ToolChain(
         name="simple_demo",
-        description="简单的工具链演示"
+        description="Простая демонстрация цепочки инструментов"
     )
 
-    # 只包含一个计算步骤
     chain.add_step(
         tool_name="my_calculator",
         input_template="{input}",

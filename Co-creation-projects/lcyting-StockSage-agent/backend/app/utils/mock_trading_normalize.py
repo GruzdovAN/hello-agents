@@ -1,12 +1,12 @@
 """
-妙想模拟交易 — 委托列表字段规范化
+Имитированная торговля Miaoxiang — стандартизация полей списка заказов
 
 上游 `/api/claw/mockTrading/orders` 返回的字段名与取值在不同版本间可能不一致：
-- 买卖方向可能是数值（如 1=买入、2=卖出）而非字符串 buy/sell
-- 委托状态多为数值枚举，需映射为前端可用的 pending/done 等
-- 代码、名称、委托号、时间等可能存在 snake_case 或其它别名
+- Направление покупки и продажи может быть числовым значением (например, 1 = покупка, 2 = продажа) вместо строки покупки/продажи.
+- Статус делегирования в основном представляет собой числовое перечисление, которое необходимо сопоставить с ожидающими/выполненными и т. д., доступными во внешнем интерфейсе.
+- Код, имя, номер заказа, время и т. д. могут иметь Snake_case или другие псевдонимы.
 
-此处集中做兼容解析，供 simulation_service 与 Agent 工具共用。
+Здесь мы сосредоточимся на анализе совместимости для совместного использования инструментов Simulation_service и Agent.
 """
 
 from __future__ import annotations
@@ -31,13 +31,13 @@ def extract_orders_dicts(data: Any) -> list[dict[str, Any]]:
                     return [x for x in inner if isinstance(x, dict)]
         return []
 
-    # 单一列表字段优先（避免把多个片段重复拼接）
+# Установите приоритет для отдельных полей списка (чтобы избежать многократного объединения нескольких фрагментов)
     for key in ("orders", "orderList", "list", "entrustList"):
         chunk = coerce_dict_list(data.get(key))
         if chunk:
             return chunk
 
-    # 当日 + 历史分段返回时合并（仅当顶层未给出统一 orders）
+# Объединить текущий день + исторические сегменты при возврате (только когда верхний уровень не дает единых ордеров)
     merged: list[dict[str, Any]] = []
     for key in ("todayOrders", "today_order_list", "historyOrders", "hisOrders"):
         merged.extend(coerce_dict_list(data.get(key)))
@@ -45,7 +45,7 @@ def extract_orders_dicts(data: Any) -> list[dict[str, Any]]:
 
 
 def _first(d: Mapping[str, Any], keys: tuple[str, ...]) -> Any:
-    """从左到右取第一个非空值（None / 空字符串跳过）。"""
+"""Получить первое ненулевое значение слева направо (нет/пустая строка пропускается)."""
     for k in keys:
         if k not in d:
             continue
@@ -57,7 +57,7 @@ def _first(d: Mapping[str, Any], keys: tuple[str, ...]) -> Any:
 
 
 def _nested_stock(order: Mapping[str, Any]) -> Mapping[str, Any]:
-    """部分响应把证券信息放在子对象里。"""
+"""Часть ответа помещает информацию о ценных бумагах в подобъект."""
     for k in ("stock", "security", "stockInfo"):
         sub = order.get(k)
         if isinstance(sub, Mapping):
@@ -91,16 +91,16 @@ def parse_trade_type(order: Mapping[str, Any]) -> str:
             return None
         if isinstance(val, (int, float)):
             iv = int(val)
-            # 东方财富系常见：1 买入，2 卖出
+# Восточная система богатства является общей: 1 покупка, 2 продажа.
             if iv == 1:
                 return "buy"
             if iv == 2:
                 return "sell"
             return None
         s = str(val).strip().lower()
-        if s in ("buy", "b", "1", "买入", "买"):
+if s in ("купить", "b", "1", "КУПИТЬ", "КУПИТЬ"):
             return "buy"
-        if s in ("sell", "s", "2", "卖出", "卖"):
+if s in ("продать", "s", "2", "продать", "продать"):
             return "sell"
         return None
 
@@ -115,7 +115,7 @@ def parse_trade_type(order: Mapping[str, Any]) -> str:
             if parsed:
                 return parsed
 
-    # type：部分接口表示买卖；也可能是限价/市价等业务类型，故仅在可识别时采用
+# тип: Некоторые интерфейсы представляют покупку и продажу; они также могут быть бизнес-типами, такими как предельная цена/рыночная цена, поэтому они используются только тогда, когда их можно идентифицировать.
     for src in (order, nested):
         t_raw = src.get("type")
         parsed_t = norm(t_raw)
@@ -127,9 +127,9 @@ def parse_trade_type(order: Mapping[str, Any]) -> str:
 
 def parse_order_status(order: Mapping[str, Any]) -> tuple[str, str]:
     """
-    返回 (canonical_status, chinese_label)。
+Возврат (canonical_status, chinese_label).
 
-    canonical 供前端撤单逻辑使用：pending / done / part_deal / canceled / unknown
+canonical используется для логики отмены заказа: ожидание / выполнено / part_deal / отменено / неизвестно.
     """
     nested = _nested_stock(order)
     status_keys = (
@@ -143,25 +143,25 @@ def parse_order_status(order: Mapping[str, Any]) -> tuple[str, str]:
 
     def to_canonical_and_label(val: Any) -> tuple[str, str]:
         if val is None:
-            return "unknown", "未知"
+вернуть «неизвестно», «неизвестно»
         if isinstance(val, str):
             sl = val.strip().lower()
             known = {
-                "pending": ("pending", "未成交"),
-                "unfilled": ("pending", "未成交"),
-                "open": ("pending", "未成交"),
-                "done": ("done", "已成交"),
-                "filled": ("done", "已成交"),
-                "success": ("done", "已成交"),
+"pending": ("pending", "Untransacted"),
+"незаполнено": ("ожидает", "незаполнено"),
+"open": ("ожидание", "Нетранзакция"),
+"сделано": ("сделано", "сделано"),
+"заполнено": ("выполнено", "сдано"),
+"успех": ("сделано", "сделано"),
                 "part_deal": ("part_deal", "部分成交"),
                 "partial": ("part_deal", "部分成交"),
-                "canceled": ("canceled", "已撤销"),
-                "cancelled": ("canceled", "已撤销"),
-                "withdrawn": ("canceled", "已撤销"),
+"отменено": ("отменено", "отменено"),
+"отменено": ("отменено", "отменено"),
+"снято": ("отменено", "снято"),
             }
             if sl in known:
                 return known[sl]
-            # 已是中文等情况：当作未知但保留原文展示
+# Уже на китайском языке и т. д.: считать его неизвестным, но сохранить исходное текстовое отображение.
             if sl.isdigit():
                 return to_canonical_and_label(int(sl))
             return "unknown", str(val)
@@ -171,21 +171,21 @@ def parse_order_status(order: Mapping[str, Any]) -> tuple[str, str]:
         except (TypeError, ValueError):
             return "unknown", str(val)
 
-        # 常见券商委托状态码（保守映射，未覆盖的显示「状态{n}」）
+# Общие коды статуса брокерской комиссии (консервативное отображение, отображается «статус {n}», если он не покрыт)
         mapping: dict[int, tuple[str, str]] = {
-            0: ("pending", "待报/待成交"),
-            1: ("pending", "未成交"),
-            2: ("part_deal", "部分成交"),
-            3: ("done", "已成交"),
-            4: ("part_deal", "部成部撤"),
-            5: ("canceled", "已撤销"),
-            6: ("canceled", "已撤"),
-            7: ("done", "成交"),
-            8: ("canceled", "废单"),
+0: («ожидание», «ожидающий отчет/ожидающая транзакция»),
+1: («ожидание», «Незавершенная сделка»),
+2: ("part_deal", "Частичная сделка"),
+3: («Готово», «Раздано»),
+4: ("part_deal", "Часть становится частью, часть уходит"),
+5: («отменено», «отменено»),
+6: («отменено», «отменено»),
+7: («сделано», «сделка»),
+8: («отменен», «отмененный заказ»),
         }
         if iv in mapping:
             return mapping[iv]
-        return "unknown", f"状态{iv}"
+вернуть «неизвестно», f»status{iv}»
 
     for src in (order, nested):
         for k in status_keys:
@@ -200,7 +200,7 @@ def parse_order_status(order: Mapping[str, Any]) -> tuple[str, str]:
 
 
 def normalize_mock_order_row(order: Mapping[str, Any]) -> dict[str, Any]:
-    """将单条原始委托转为前端/路由使用的统一结构。"""
+"""Преобразовать единое исходное делегирование в единую структуру, используемую интерфейсом/маршрутизацией."""
     nested = _nested_stock(order)
 
     order_id = _first(

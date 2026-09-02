@@ -1,6 +1,4 @@
-"""
-论文服务
-"""
+"""Диссертационная служба"""
 
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
@@ -14,7 +12,7 @@ from ..utils.embedding import EmbeddingService
 import json
 
 class PaperService:
-    """论文服务类"""
+    """Бумажные услуги"""
     
     def __init__(self, db: Session):
         self.db = db
@@ -23,34 +21,34 @@ class PaperService:
         self.embedding_service = EmbeddingService()
     
     def get_paper_by_id(self, paper_id: int) -> Optional[Paper]:
-        """根据ID获取论文"""
+        """Получить документы по удостоверению личности"""
         paper_db = self.db.query(PaperDB).filter(PaperDB.id == paper_id).first()
         if not paper_db:
             raise PaperNotFoundError(f"Paper with id {paper_id} not found")
         return Paper.from_orm(paper_db)
     
     def get_papers_by_user(self, user_id: int, skip: int = 0, limit: int = 20) -> List[Paper]:
-        """获取用户的论文列表"""
+        """Получить список бумаг пользователя"""
         papers_db = self.db.query(PaperDB).filter(
             PaperDB.user_id == user_id
         ).offset(skip).limit(limit).all()
         return [Paper.from_orm(paper) for paper in papers_db]
     
     def create_paper(self, paper_create: PaperCreate, user_id: int) -> Paper:
-        """创建论文记录"""
-        # 检查DOI是否已存在
+        """Создать бумажную запись"""
+        # Проверяем, существует ли уже DOI
         if paper_create.doi:
             existing = self.db.query(PaperDB).filter(PaperDB.doi == paper_create.doi).first()
             if existing:
                 raise PaperAlreadyExistsError(f"Paper with DOI {paper_create.doi} already exists")
         
-        # 检查arXiv ID是否已存在
+        # Проверяем, существует ли уже идентификатор arXiv
         if paper_create.arxiv_id:
             existing = self.db.query(PaperDB).filter(PaperDB.arxiv_id == paper_create.arxiv_id).first()
             if existing:
                 raise PaperAlreadyExistsError(f"Paper with arXiv ID {paper_create.arxiv_id} already exists")
         
-        # 创建论文记录
+        #Создать бумажную запись
         paper_db = PaperDB(
             title=paper_create.title,
             authors=json.dumps(paper_create.authors),
@@ -68,18 +66,18 @@ class PaperService:
         self.db.commit()
         self.db.refresh(paper_db)
         
-        # 异步处理PDF和嵌入
+        # Асинхронная обработка PDF и встраивание
         self._process_paper_async(paper_db.id)
         
         return Paper.from_orm(paper_db)
     
     def update_paper(self, paper_id: int, paper_update: PaperUpdate) -> Paper:
-        """更新论文信息"""
+        """Обновить информацию о бумаге"""
         paper_db = self.db.query(PaperDB).filter(PaperDB.id == paper_id).first()
         if not paper_db:
             raise PaperNotFoundError(f"Paper with id {paper_id} not found")
         
-        # 更新字段
+        #Обновить поля
         update_data = paper_update.dict(exclude_unset=True)
         for field, value in update_data.items():
             if field in ['authors', 'keywords']:
@@ -93,12 +91,12 @@ class PaperService:
         return Paper.from_orm(paper_db)
     
     def delete_paper(self, paper_id: int) -> bool:
-        """删除论文"""
+        """Удалить бумагу"""
         paper_db = self.db.query(PaperDB).filter(PaperDB.id == paper_id).first()
         if not paper_db:
             raise PaperNotFoundError(f"Paper with id {paper_id} not found")
         
-        # 从向量存储中删除
+        # Удалить из векторного хранилища
         if paper_db.embeddings:
             self.vector_store.delete_document(paper_id)
         
@@ -108,10 +106,10 @@ class PaperService:
         return True
     
     def search_papers(self, search: PaperSearch, user_id: int) -> List[Paper]:
-        """搜索论文"""
+        """Поиск документов"""
         query = self.db.query(PaperDB).filter(PaperDB.user_id == user_id)
         
-        # 文本搜索
+        # Текстовый поиск
         if search.query:
             search_filter = or_(
                 PaperDB.title.contains(search.query),
@@ -120,7 +118,7 @@ class PaperService:
             )
             query = query.filter(search_filter)
         
-        # 应用过滤器
+        # Применить фильтр
         filters = search.filters
         if 'year_range' in filters:
             start_year, end_year = filters['year_range']
@@ -140,7 +138,7 @@ class PaperService:
             ])
             query = query.filter(author_filter)
         
-        # 排序
+        # Сортировать
         if search.sort_by == "relevance":
             query = query.order_by(desc(PaperDB.relevance_score))
         elif search.sort_by == "quality":
@@ -150,19 +148,19 @@ class PaperService:
         else:
             query = query.order_by(desc(PaperDB.created_at))
         
-        # 分页
+        # Пагинация
         papers_db = query.offset(search.offset).limit(search.limit).all()
         return [Paper.from_orm(paper) for paper in papers_db]
     
     def semantic_search(self, query: str, user_id: int, limit: int = 10) -> List[Paper]:
-        """语义搜索论文"""
-        # 生成查询向量
+        """Бумага семантического поиска"""
+        # Генерируем вектор запроса
         query_embedding = self.embedding_service.get_embedding(query)
         
-        # 在向量存储中搜索
+        # Поиск в векторном хранилище
         results = self.vector_store.search(query_embedding, user_id, limit)
         
-        # 获取对应的论文
+        # Получите соответствующую бумагу
         paper_ids = [result['id'] for result in results]
         papers_db = self.db.query(PaperDB).filter(
             and_(
@@ -171,7 +169,7 @@ class PaperService:
             )
         ).all()
         
-        # 按相似度排序
+        # Сортировка по сходству
         paper_dict = {paper.id: paper for paper in papers_db}
         sorted_papers = []
         for result in results:
@@ -183,19 +181,19 @@ class PaperService:
         return sorted_papers
     
     def _process_paper_async(self, paper_id: int):
-        """异步处理论文（PDF解析和嵌入生成）"""
+        """Асинхронная обработка документов (парсинг и встраивание PDF-файлов)"""
         try:
             paper_db = self.db.query(PaperDB).filter(PaperDB.id == paper_id).first()
             if not paper_db:
                 return
             
-            # 如果有PDF URL，下载并解析
+            # Если есть URL-адрес PDF, загрузите и проанализируйте его
             if paper_db.pdf_url and not paper_db.full_text:
                 full_text = self.pdf_parser.parse_pdf_from_url(paper_db.pdf_url)
                 if full_text:
                     paper_db.full_text = full_text
             
-            # 生成嵌入
+            # Генерация встраивания
             text_to_embed = paper_db.title + " " + (paper_db.abstract or "")
             if paper_db.full_text:
                 text_to_embed += " " + paper_db.full_text
@@ -203,7 +201,7 @@ class PaperService:
             embedding = self.embedding_service.get_embedding(text_to_embed)
             paper_db.embeddings = embedding.tolist()
             
-            # 添加到向量存储
+            #Добавить в векторное хранилище
             self.vector_store.add_document(
                 doc_id=paper_id,
                 embedding=embedding,
@@ -218,22 +216,22 @@ class PaperService:
             
         except Exception as e:
             print(f"Error processing paper {paper_id}: {e}")
-            # 可以在这里添加错误日志记录
+            # Здесь вы можете добавить регистрацию ошибок
     
     def get_paper_statistics(self, user_id: int) -> Dict[str, Any]:
-        """获取论文统计信息"""
+        """Получить бумажную статистику"""
         total_papers = self.db.query(PaperDB).filter(PaperDB.user_id == user_id).count()
         processed_papers = self.db.query(PaperDB).filter(
             and_(PaperDB.user_id == user_id, PaperDB.is_processed == True)
         ).count()
         
-        # 按年份统计
+        # Статистика по годам
         year_stats = self.db.query(
             PaperDB.publication_year,
             self.db.func.count(PaperDB.id)
         ).filter(PaperDB.user_id == user_id).group_by(PaperDB.publication_year).all()
         
-        # 按期刊统计
+        # Статистика по журналам
         journal_stats = self.db.query(
             PaperDB.journal,
             self.db.func.count(PaperDB.id)

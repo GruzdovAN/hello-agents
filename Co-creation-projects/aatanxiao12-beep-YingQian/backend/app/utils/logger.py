@@ -1,4 +1,4 @@
-"""全局日志：统一格式与级别，供各模块 get_logger 使用。"""
+"""Глобальный журнал: единый формат и уровень для каждого модуля get_logger."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ _configured = False
 
 
 def setup_logging() -> None:
-    """按 Settings.log_level 初始化根日志（幂等）。"""
+"""Инициализируйте корневой журнал с помощью Settings.log_level (идемпотент)."""
     global _configured
     if _configured:
         return

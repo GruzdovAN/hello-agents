@@ -6,7 +6,7 @@ from app.prompts.inspire_prompt import INSPIRE_PROMPT
 from app.services.llm_service import LLMService
 from app.tools.mermaid_validator_tool import MermaidValidatorTool
 
-EXECUTION_HINT = "执行要求：先调用 MermaidValidatorTool 校验；若返回 INVALID 再修复并调用一次；最终仅输出 Mermaid 代码。"
+EXECUTION_HINT = "Требование: сначала вызовите MermaidValidatorTool для проверки; при INVALID исправьте и вызовите ещё раз; в конце выводите только код Mermaid."
 
 
 def _prompt_by_mode(mode: str) -> str:

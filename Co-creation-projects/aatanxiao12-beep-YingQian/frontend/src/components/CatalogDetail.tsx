@@ -33,7 +33,7 @@ export function CatalogDetail({ movie, onClose, onSeenChange }: CatalogDetailPro
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setError(err instanceof Error ? err.message : '详情加载失败')
+        setError(err instanceof Error ? err.message : 'Не удалось загрузить детали')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -58,8 +58,8 @@ export function CatalogDetail({ movie, onClose, onSeenChange }: CatalogDetailPro
     const genre = detail.genres[0]
     navigate('/', {
       state: genre
-        ? { prefillGenres: [genre], hint: `已带入类型「${genre}」，可继续调整偏好` }
-        : { hint: '请手动选择类型后再生成片单' },
+        ? { prefillGenres: [genre], hint: `Добавлен жанр «${genre}» — можно изменить предпочтения` }
+        : { hint: 'Выберите жанры вручную перед генерацией' },
     })
   }
 
@@ -68,10 +68,10 @@ export function CatalogDetail({ movie, onClose, onSeenChange }: CatalogDetailPro
   const rich = 'directors' in detail ? (detail as MovieDetail) : null
 
   return (
-    <aside className="catalog-detail" aria-label="影片详情">
+    <aside className="catalog-detail" aria-label="Детали фильма">
       <div className="catalog-detail__toolbar">
         <button type="button" className="btn btn--ghost btn--compact" onClick={onClose}>
-          关闭
+          Закрыть
         </button>
       </div>
 
@@ -87,7 +87,7 @@ export function CatalogDetail({ movie, onClose, onSeenChange }: CatalogDetailPro
         <div className="catalog-detail__body">
           <h2>{detail.title}</h2>
           <p className="catalog-detail__meta">
-            {[detail.year, rating && `评分 ${rating}`, runtime]
+            {[detail.year, rating && `Рейтинг ${rating}`, runtime]
               .filter(Boolean)
               .join(' · ')}
           </p>
@@ -99,7 +99,7 @@ export function CatalogDetail({ movie, onClose, onSeenChange }: CatalogDetailPro
             </ul>
           )}
 
-          {loading && <p className="muted">正在拉取完整信息…</p>}
+          {loading && <p className="muted">Загрузка полной информации…</p>}
           {error && <p className="error-text">{error}</p>}
           {!loading && rich?.tagline && (
             <p className="detail-tagline">{rich.tagline}</p>
@@ -108,13 +108,13 @@ export function CatalogDetail({ movie, onClose, onSeenChange }: CatalogDetailPro
             <p className="catalog-detail__overview">{detail.overview}</p>
           )}
           {!loading && !detail.overview && !error && (
-            <p className="muted">暂无简介</p>
+            <p className="muted">Описание отсутствует</p>
           )}
           {!loading && rich && <DetailFacts detail={rich} />}
           {!loading && rich?.tmdb_url && (
             <p className="detail-link">
               <a href={rich.tmdb_url} target="_blank" rel="noreferrer">
-                在 TMDB 查看
+                Открыть в TMDB
               </a>
             </p>
           )}
@@ -125,17 +125,17 @@ export function CatalogDetail({ movie, onClose, onSeenChange }: CatalogDetailPro
               className={seen ? 'btn btn--primary btn--compact' : 'btn btn--ghost btn--compact'}
               onClick={handleToggleSeen}
             >
-              {seen ? '已标记已看' : '标记已看'}
+              {seen ? 'Отмечено как просмотренное' : 'Отметить просмотренным'}
             </button>
             <button
               type="button"
               className="btn btn--ghost btn--compact"
               onClick={handleRecommendWithGenre}
             >
-              用此类型去推荐
+              Рекомендовать по этому жанру
             </button>
             <Link to="/" className="btn btn--ghost btn--compact">
-              返回智能推荐
+              Вернуться к рекомендациям
             </Link>
           </div>
         </div>

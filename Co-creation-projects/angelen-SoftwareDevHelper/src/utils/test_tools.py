@@ -11,7 +11,7 @@ def test_user_memory_tool():
     
     # Test update
     res = tool.run({"action": "update", "level": "intermediate", "record": "hello_world"})
-    assert res == "记忆更新成功"
+    assert res == "Память обновлена успешно"
     
     # Test get again
     res = tool.run({"action": "get"})

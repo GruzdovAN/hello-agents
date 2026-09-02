@@ -24,88 +24,88 @@ def parse_response(response):
             json_end = response.rfind("}") + 1
             json_str = response[json_start:json_end]
         else:
-            raise ValueError("响应中未找到JSON数据")
+поднять ValueError("Данные JSON не найдены в ответе")
         
         data = json.loads(json_str)
         return data
     except Exception as e:
-        print(f"⚠️  解析响应失败: {str(e)}")
+print(f"⚠️ Не удалось проанализировать ответ: {str(e)}")
         return None
 
 
 def write_content_to_file(content):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # 例: 20260428_143022
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") # 例: 20260428_143022
     filename = f"recipes/recipes_{timestamp}.md" 
 
     with open(filename, "w", encoding="utf-8") as wf:
         wf.write(content)
 
-    print(f"✅ 菜谱已创建: {filename}")
+print(f" ✅ Рецепт создан: {имя файла}")
 
 
 web_search_tool = MCPTool(name="web_research", server_command=["npx", "-y", "@mzxrai/mcp-webresearch@latest"])
 
 
-# ===================================== 菜谱搜索助手 =====================================
+# =================================== Ассистент поиска рецептов =====================================
 caipu_search_agent = SimpleAgent(
     name="caipu_search_agent",
     llm=HelloAgentsLLM(),
     system_prompt="""
-你是菜谱搜索专家。你的任务是根据用户的需求和用户偏好搜索合适的菜谱。
+Вы эксперт по поиску рецептов. Ваша задача — поиск подходящих рецептов, исходя из потребностей и предпочтений пользователя.
 
-**重要提示:**
+**ВАЖНОЕ ПРИМЕЧАНИЕ:**
 你必须使用工具来搜索菜谱!不要自己编造菜谱信息!返回的内容至少包括菜名和菜谱链接!可以包括菜品特点,便于后续筛选!
 
-**工具调用格式:**
-使用visit_page工具时,必须严格按照以下格式:
+**Формат вызова инструмента:**
+При использовании инструмента visit_page вы должны строго следовать следующему формату:
 `[TOOL_CALL:visit_page:url=https://www.xiangha.com/so/?q=caipu&s=菜谱]`
 `[TOOL_CALL:visit_page:url=https://www.xiangha.com/so/?q=caipu&s=食材]`
 
 
-**示例:**
-用户: "搜索五花肉的做法"
-你的回复: [TOOL_CALL:visit_page:url=https://www.xiangha.com/so/?q=caipu&s=五花肉]
+**Пример:**
+Пользователь: «Ищите, как приготовить свиную грудинку»
+Ваш ответ: [TOOL_CALL:visit_page:url=https://www.xiangha.com/so/?q=caipu&s=Свиная грудинка]
 
-用户: "搜索和鱼有关的菜谱"
-你的回复: [TOOL_CALL:visit_page:url=https://www.xiangha.com/so/?q=caipu&s=鱼]
+Пользователь: «Поиск рецептов, связанных с рыбой»
+Ваш ответ: [TOOL_CALL:visit_page:url=https://www.xiangha.com/so/?q=caipu&s=鱼]
 
-**注意:**
-1. 必须使用工具,不要直接回答
+**Уведомление:**
+1. Вы должны использовать инструменты, а не отвечать напрямую
 2. 格式必须完全正确,包括方括号和冒号
-3. 参数用逗号分隔
+3. Разделяйте параметры запятыми.
 """
 )
 caipu_search_agent.add_tool(web_search_tool)
 
 
 def build_caipu_search_prompts(user_input):
-    return f"调用visit_page工具, 用户需求: {user_input}"
+return f"Вызовите инструмент visit_page, требования пользователя: {user_input}"
 
 
-# ===================================== 饮食专家助手 =====================================
+# =================================== Помощник эксперта по диете ======================================
 caipu_select_agent = SimpleAgent(
     name="caipu_select_agent",
     llm=HelloAgentsLLM(),
     system_prompt="""
 你是饮食专家。你的任务是根据用户需求和推荐的菜谱列表，为用户选择一个最合适的菜谱，并给出推荐理由。
 
-**重要提示:**
-你必须从推荐的菜谱列表中选择，不能凭空产生新的菜名和菜谱链接。
+**ВАЖНОЕ ПРИМЕЧАНИЕ:**
+Вы должны выбирать из списка рекомендуемых рецептов, а новые названия блюд и ссылки на рецепты не могут быть созданы из воздуха.
 
-请严格按照以下JSON格式返回推荐菜谱:
+Для возврата рекомендуемых рецептов строго следуйте следующему формату JSON:
 ```json
 {
-  "name": "红烧鲫鱼",
+"name": "Тушеный карась",
   "url": "https://www.xiangha.com/caipu/102880489.html",
-  "reason": "**推荐理由：**
-    - 🐟 **清蒸烹饪** - 最清淡的烹饪方式，少油少盐
-    - 🔥 **适合降火** - 清蒸做法不辛辣、不油腻，不会加重上火症状
-    - 💪 **营养丰富** - 石斑鱼富含优质蛋白，肉质细嫩鲜美
+"reason": "**Причина рекомендации:**
+- 🐟 **Приготовление на пару** — Самый легкий способ приготовления, меньше масла и соли.
+- 🔥 **Подходит для снижения внутреннего жара** - Метод приготовления на пару не является острым или жирным и не усугубляет симптомы внутреннего жара.
+- 💪 **Богат питательными веществами** - Окунь богат высококачественным белком, а мясо нежное и вкусное.
   "
 }
 ```
 
-如果没有合适的推荐结果，请返回空的json数据，格式如下：
+Если подходящего результата рекомендации нет, верните пустые данные JSON в следующем формате:
 ```json
 {
 
@@ -119,29 +119,29 @@ def build_caipu_select_prompts(user_input, caipu_list):
     return f"用户需求: {user_input}，推荐的菜谱列表: {caipu_list}"
 
 
-# ===================================== 网页内容提取助手 =====================================
+# =================================== Помощник по извлечению веб-контента =====================================
 output_agent = SimpleAgent(
     name="demand_analyzer",
     llm=HelloAgentsLLM(),
     system_prompt="""
-你是网页内容提取专家。你的任务是根据用户选择的菜名和菜谱链接，返回最终完整的的菜谱。
+Вы являетесь экспертом в извлечении веб-контента. Ваша задача — вернуть окончательный полный рецепт на основе названия блюда и ссылки на рецепт, выбранных пользователем.
 
-**重要提示:**
-你必须使用工具来获取菜谱信息!不要自己编造菜谱信息!
+**ВАЖНОЕ ПРИМЕЧАНИЕ:**
+Вы должны использовать инструменты, чтобы получить информацию о рецептах! Не выдумывайте информацию о рецептах самостоятельно!
 
-**工具调用格式:**
-使用visit_page工具时,必须严格按照以下格式:
-`[TOOL_CALL:visit_page:url=菜谱链接]`
+**Формат вызова инструмента:**
+При использовании инструмента visit_page вы должны строго следовать следующему формату:
+`[TOOL_CALL:visit_page:url=ссылка на рецепт]`
 
 
-**示例:**
+**Пример:**
 用户: 菜名: 红烧鲫鱼，菜谱链接: https://www.xiangha.com/caipu/102880489.html
-你的回复: [TOOL_CALL:visit_page:url=https://www.xiangha.com/caipu/102880489.html]
+Ваш ответ: [TOOL_CALL:visit_page:url=https://www.xiangha.com/caipu/102880489.html]
 
-**注意:**
-1. 必须使用工具,不要直接回答
+**Уведомление:**
+1. Вы должны использовать инструменты, а не отвечать напрямую
 2. 格式必须完全正确,包括方括号和冒号
-3. 参数用逗号分隔
+3. Разделяйте параметры запятыми.
 """
 )
 output_agent.add_tool(web_search_tool)
@@ -151,28 +151,28 @@ def build_output_prompts(caipu_json):
     return f"菜名: {caipu_json['name']}, 菜谱链接: {caipu_json['url']}"
 
 
-# ===================================== 完整流程 =====================================
+# =================================== Полный процесс =====================================
 
-user_input = input("请输入菜谱需求(例如：我想吃小龙虾) >>> ")
+user_input = input("Пожалуйста, введите требования к рецепту (например: я хочу съесть раков) >>>")
 
-print("\n\n正在搜索菜谱...")
+print("\n\nИщем рецепты...")
 search_caipu_result = caipu_search_agent.run(build_caipu_search_prompts(user_input=user_input))
 print(search_caipu_result)
 
-print("\n\n正在筛选菜谱...")
+print("\n\nФильтрация рецептов...")
 caipu_select_result = caipu_select_agent.run(build_caipu_select_prompts(user_input=user_input, caipu_list=search_caipu_result))
 print(caipu_select_result)
 
-print("\n\n正在解析结果...")
+print("\n\nРезультаты анализа...")
 caipu_select_json = parse_response(caipu_select_result)
 print(caipu_select_json)
 
 if caipu_select_json:
-    print("\n\n正在生成菜谱...")
+print("\n\nГенерация рецептов...")
     output_result = output_agent.run(build_output_prompts(caipu_select_json))
 
-    print("\n\n正在保存菜谱...")
-    print(f"菜名: {caipu_select_json['name']}\n推荐理由: {caipu_select_json['reason']}")
+print("\n\nСохраняем рецепт...")
+print(f"Название блюда: {caipu_select_json['name']}\nПричина рекомендации: {caipu_select_json['reason']}")
     write_content_to_file(output_result)
 else:
-    print("\n\n未找到合适的菜谱")
+print("\n\nПодходящего рецепта не найдено")

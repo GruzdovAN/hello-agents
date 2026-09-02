@@ -9,12 +9,12 @@ class LearningNotesService:
         user_id: str,
         progress: "LearningProgress"
     ):
-        """保存学习路径与进度"""
+        """Сохраняет путь обучения и прогресс"""
         content = self._format_learning_content(progress)
 
         self.note_tool.run({
             "action": "create",
-            "title": f"学习进度｜{progress.topic}",
+            "title": f"Прогресс обучения｜{progress.topic}",
             "content": content,
             "tags": [
                 "learning",
@@ -25,11 +25,11 @@ class LearningNotesService:
         })
 
     def _format_learning_content(self, progress: "LearningProgress") -> str:
-        content = f"# 学习主题：{progress.topic}\n\n"
-        content += f"**当前水平**：{progress.level}\n\n"
+        content = f"# Тема обучения: {progress.topic}\n\n"
+        content += f"**Текущий уровень**: {progress.level}\n\n"
 
-        # 学习路径
-        content += "## 学习路径\n\n"
+        # Путь обучения
+        content += "## Путь обучения\n\n"
         for idx, step in enumerate(progress.steps, start=1):
             status_icon = {
                 "completed": "✅",
@@ -39,25 +39,25 @@ class LearningNotesService:
 
             content += f"{idx}. {status_icon} **{step.title}**\n"
             if step.notes:
-                content += f"   - 备注：{step.notes}\n"
+                content += f"   - Заметка: {step.notes}\n"
         content += "\n"
 
-        # 掌握点
+        # Освоенные темы
         if progress.mastered_points:
-            content += "## 已掌握知识点\n\n"
+            content += "## Освоенные темы\n\n"
             for p in progress.mastered_points:
                 content += f"- ✅ {p}\n"
             content += "\n"
 
-        # 薄弱点
+        # Слабые места
         if progress.weak_points:
-            content += "## 薄弱点\n\n"
+            content += "## Слабые места\n\n"
             for p in progress.weak_points:
                 content += f"- ⚠️ {p}\n"
             content += "\n"
 
-        # 下一步建议
-        content += "## 下一步学习建议\n\n"
+        # Следующий шаг
+        content += "## Рекомендации для следующего шага\n\n"
         content += f"{progress.next_suggestion}\n"
 
         return content

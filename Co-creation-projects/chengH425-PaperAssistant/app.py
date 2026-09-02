@@ -1,8 +1,8 @@
 """
-PaperAssistant - 智能论文助手 Gradio Web 界面
+PaperAssistant — интеллектуальный ассистент по статьям, Gradio Web-интерфейс
 
-提供文献检索、论文总结、引用生成、论文润色、大纲生成、PDF 提取等功能。
-所有操作自动记录到对话历史，可回溯查看。
+Предоставляет поиск литературы, резюме статей, генерацию цитат, редактуру, создание плана и извлечение PDF.
+Все действия записываются в журнал диалогов для просмотра.
 """
 import os
 import sys
@@ -13,7 +13,7 @@ import gradio as gr
 from dotenv import load_dotenv
 load_dotenv()
 
-# Windows UTF-8 兼容
+# Совместимость Windows UTF-8
 sys.stdout.reconfigure(encoding='utf-8')
 
 from hello_agents import (
@@ -30,12 +30,12 @@ from src.aminer_tool import AminerSearchTool
 
 
 # ========================================
-# 对话日志系统
+# Система журнала диалогов
 # ========================================
 HISTORY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "conversations")
 
 class ConversationLogger:
-    """对话日志管理器：记录、持久化、检索所有交互"""
+    """Менеджер журнала диалогов: запись, сохранение и поиск всех взаимодействий"""
 
     def __init__(self, save_dir=HISTORY_DIR):
         self.save_dir = save_dir
@@ -43,12 +43,12 @@ class ConversationLogger:
         self.records = self._load_all()
 
     def _filepath(self):
-        """当前会话的日志文件"""
+        """Файл журнала текущей сессии"""
         today = datetime.now().strftime("%Y-%m-%d")
         return os.path.join(self.save_dir, f"session_{today}.json")
 
     def _load_all(self):
-        """加载所有历史记录"""
+        """Загрузить всю историю"""
         records = []
         if os.path.exists(self.save_dir):
             for fname in sorted(os.listdir(self.save_dir), reverse=True):
@@ -62,7 +62,7 @@ class ConversationLogger:
         return records
 
     def add(self, tab, action, user_input, output):
-        """添加一条对话记录并持久化"""
+        """Добавить запись диалога и сохранить"""
         record = {
             "id": len(self.records) + 1,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -72,9 +72,9 @@ class ConversationLogger:
             "output_preview": output[:200] + ("..." if len(output) > 200 else ""),
             "output_full": output
         }
-        self.records.insert(0, record)  # 最新的在前
+        self.records.insert(0, record)  # Новые записи в начале
 
-        # 追加到今日文件
+        # Добавить в файл за сегодня
         today_file = self._filepath()
         try:
             existing = []
@@ -90,11 +90,11 @@ class ConversationLogger:
         return record
 
     def format_history_html(self):
-        """格式化为 HTML 展示，每条记录带独立删除按钮"""
+        """Форматировать в HTML; у каждой записи кнопка удаления"""
         if not self.records:
-            return "<p><i>暂无对话记录，开始使用后会自动保存。</i></p>"
+            return "<p><i>Записей диалога пока нет — после использования они сохранятся автоматически.</i></p>"
 
-        lines = [f'<p style="color:#888;">共 {len(self.records)} 条记录</p>']
+        lines = [f'<p style="color:#888;">Всего записей: {len(self.records)}</p>']
         for r in self.records[:50]:
             escaped_output = (r['output_full']
                              .replace("&", "&amp;")
@@ -110,15 +110,15 @@ class ConversationLogger:
                      document.getElementById('del_trigger').querySelector('textarea,input').dispatchEvent(new Event('input',{{bubbles:true}}));
                      document.getElementById('del_trigger').querySelector('textarea,input').dispatchEvent(new Event('change',{{bubbles:true}}));"
             style="background:#e74c3c; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:4px 12px; font-size:12px;">
-      ✕ 删除
+      ✕ Удалить
     </button>
   </div>
   <div style="margin-right:70px;">
     <strong>[#{r['id']}] {r['timestamp']}</strong>
     <span style="color:#666;"> | {r['tab']} | {r['action']}</span>
-    <p style="margin:6px 0 2px 0; color:#555; font-size:13px;"><b>输入:</b> {r['user_input']}</p>
+    <p style="margin:6px 0 2px 0; color:#555; font-size:13px;"><b>Ввод:</b> {r['user_input']}</p>
     <details style="margin-top:6px;">
-      <summary style="cursor:pointer; color:#2980b9;">查看完整输出</summary>
+      <summary style="cursor:pointer; color:#2980b9;">Показать полный вывод</summary>
       <div style="background:#f8f9fa; padding:10px; border-radius:4px; margin-top:4px; max-height:300px; overflow-y:auto; font-size:13px; white-space:pre-wrap;">{escaped_output}</div>
     </details>
   </div>
@@ -126,38 +126,38 @@ class ConversationLogger:
         return "\n".join(lines)
 
     def delete_record(self, record_id: int) -> str:
-        """删除单条记录"""
+        """Удалить одну запись"""
         for i, r in enumerate(self.records):
             if r.get("id") == record_id:
                 del self.records[i]
-                # 重新持久化当天文件
+                # Повторно сохранить файл за текущий день
                 today_file = self._filepath()
                 try:
                     with open(today_file, "w", encoding="utf-8") as f:
                         json.dump(self.records, f, ensure_ascii=False, indent=2)
                 except Exception:
                     pass
-                return f"已删除记录 #{record_id}"
-        return f"未找到记录 #{record_id}"
+                return f"Запись удалена #{record_id}"
+        return f"Запись не найдена #{record_id}"
 
     def clear(self):
-        """清空记录"""
+        """Очистить записи"""
         self.records = []
         for fname in os.listdir(self.save_dir):
             if fname.endswith(".json"):
                 os.remove(os.path.join(self.save_dir, fname))
-        return "对话记录已清空。"
+        return "Журнал диалогов очищен."
 
 
-# 全局日志实例
+# Глобальный экземпляр журнала
 logger = ConversationLogger()
 
 
 # ========================================
-# 会话管理器（润色 & 大纲的对话历史）
+# Менеджер сессий (история диалогов редактуры и плана)
 # ========================================
 class ChatSessionManager:
-    """管理润色和大纲的多轮对话会话"""
+    """Управление многораундовыми сессиями редактуры и плана"""
 
     def __init__(self, save_dir: str):
         self.save_dir = save_dir
@@ -167,10 +167,10 @@ class ChatSessionManager:
         return os.path.join(self.save_dir, f"{session_id}.json")
 
     def save(self, session_id: str, messages: list, title: str = ""):
-        """保存会话"""
+        """Сохранить сессию"""
         data = {
             "id": session_id,
-            "title": title or f"会话 {session_id[:8]}",
+            "title": title or f"Сессии {session_id[:8]}",
             "updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "messages": messages
         }
@@ -178,13 +178,13 @@ class ChatSessionManager:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def load(self, session_id: str) -> list:
-        """加载会话，返回 messages 列表"""
+        """Загрузить сессию, вернуть список messages"""
         with open(self._filepath(session_id), "r", encoding="utf-8") as f:
             data = json.load(f)
         return data.get("messages", [])
 
     def list_sessions(self):
-        """列出所有会话 [(id, title, updated), ...]"""
+        """Список всех сессий [(id, title, updated), ...]"""
         sessions = []
         if os.path.exists(self.save_dir):
             for fname in sorted(os.listdir(self.save_dir), reverse=True):
@@ -202,20 +202,20 @@ class ChatSessionManager:
         return sessions
 
     def delete(self, session_id: str):
-        """删除会话"""
+        """Удалить сессию"""
         path = self._filepath(session_id)
         if os.path.exists(path):
             os.remove(path)
 
 
-# 为润色和大纲各创建一个会话管理器
+# Отдельный менеджер сессий для редактуры и плана
 polish_sessions = ChatSessionManager(os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "polish_sessions"))
 outline_sessions = ChatSessionManager(os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "outline_sessions"))
 paper_sessions = ChatSessionManager(os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "paper_sessions"))
 
 
 # ========================================
-# 初始化：LLM + 工具 + 智能体
+# Инициализация: LLM + инструменты + агенты
 # ========================================
 config = Config(trace_enabled=False)
 llm = HelloAgentsLLM()
@@ -230,25 +230,25 @@ tool_registry.register_tool(AminerSearchTool())
 tool_registry.register_tool(PDFExtractTool())
 tool_registry.register_tool(CitationTool())
 
-# ---- 文献检索智能体 ----
+# ---- Агент поиска литературы ----
 search_agent = SimpleAgent(
-    name="文献检索助手", llm=llm, config=config,
-    system_prompt="""你是一位学术文献检索专家。你有 6 个检索工具可用，请严格按用户指定的工具名称调用：
+    name="Помощник поиска литературы", llm=llm, config=config,
+    system_prompt="""Вы — эксперт по академическому поиску литературы. У вас 6 инструментов поиска; строго вызывайте инструмент с именем, указанным пользователем:
 
-- literature_search: Semantic Scholar，全学科覆盖（推荐）
-- aminer_search: AMiner，中文学术论文
-- openalex_search: OpenAlex，开放获取论文
-- pubmed_search: PubMed，生物医学领域
-- crossref_search: CrossRef，期刊论文元数据
-- arxiv_search: arXiv，CS/数学/物理预印本
+- literature_search: Semantic Scholar, все дисциплины (рекомендуется)
+- aminer_search: AMiner, китайскоязычные академические статьи
+- openalex_search: OpenAlex, открытый доступ
+- pubmed_search: PubMed, биомедицина
+- crossref_search: CrossRef, метаданные журнальных статей
+- arxiv_search: arXiv, препринты CS/математики/физики
 
-规则：
-1. 必须使用用户指定的工具搜索论文，不要用其他工具替代
-2. 基于工具返回的真实结果进行分析和推荐
-3. 绝对禁止在工具调用失败时凭空编造论文信息
-4. 如果工具返回错误，直接向用户报告错误"""
+Правила:
+1. Для поиска статей используйте только инструмент, указанный пользователем; не заменяйте другим
+2. Анализируйте и рекомендуйте на основе реальных результатов инструмента
+3. Категорически запрещено выдумывать информацию о статьях при ошибке вызова инструмента
+4. При ошибке инструмента сообщайте об ошибке пользователю напрямую"""
 )
-# 注册全部 5 个检索工具
+# Зарегистрировать все 6 инструментов поиска
 search_agent.add_tool(tool_registry.get_tool("literature_search"))
 search_agent.add_tool(tool_registry.get_tool("openalex_search"))
 search_agent.add_tool(tool_registry.get_tool("pubmed_search"))
@@ -256,75 +256,75 @@ search_agent.add_tool(tool_registry.get_tool("crossref_search"))
 search_agent.add_tool(tool_registry.get_tool("arxiv_search"))
 search_agent.add_tool(tool_registry.get_tool("aminer_search"))
 
-# ---- 论文总结智能体 ----
+# ---- Агент резюме статьи ----
 summary_agent = SimpleAgent(
-    name="论文总结助手", llm=llm, config=config,
-    system_prompt="""你是一位学术论文审稿专家。请按以下结构生成总结报告：
+    name="Помощник резюме статьи", llm=llm, config=config,
+    system_prompt="""Вы — эксперт по рецензированию академических статей. Сформируйте отчёт-резюме по структуре:
 
-## 论文信息
-## 研究问题
-## 方法与创新点
-## 贡献与局限
-## 启发与延伸
+## Информация о статье
+## Исследовательский вопрос
+## Методы и новизна
+## Вклад и ограничения
+## Выводы и перспективы
 
-请使用中文输出报告，专业术语保留英文。"""
+Используйте русский язык для отчёта; профессиональные термины можно оставлять на английском."""
 )
 
-# ---- 对话智能体工厂（每次新对话创建独立实例，保持上下文记忆） ----
+# ---- Фабрика диалоговых агентов (новый экземпляр на диалог) ----
 
 def create_polish_agent():
-    """创建论文润色对话智能体"""
+    """Создать диалогового агента редактуры"""
     return SimpleAgent(
-        name="论文润色助手", llm=llm, config=config,
-        system_prompt="""你是资深学术论文语言编辑。以对话方式帮助用户润色论文。
+        name="Помощник редактуры статей", llm=llm, config=config,
+        system_prompt="""Вы — опытный редактор академических текстов. Помогайте пользователю редактировать статью в диалоге.
 
-润色原则：
-1. 保持原意不变，仅优化表达
-2. 改善句式结构，消除冗余
-3. 确保逻辑连贯，统一术语
-4. 对修改处简要说明原因
+Принципы редактуры:
+1. Сохранять исходный смысл, улучшать только формулировки
+2. Улучшать структуру предложений, убирать избыточность
+3. Обеспечивать логическую связность и единообразие терминов
+4. Кратко пояснять причины правок
 
-对话方式：用户可能多次提出修改要求（如"更正式一些"、"缩短第三段"），
-你需要记住之前的内容和修改历史，在此基础上继续优化。"""
+Формат диалога: пользователь может несколько раз уточнять требования (например, «более формально», «сократить третий абзац»);
+запоминайте предыдущий контент и историю правок и продолжайте оптимизацию на этой основе."""
     )
 
 def create_outline_agent():
-    """创建论文大纲对话智能体"""
+    """Создать диалогового агента плана"""
     return SimpleAgent(
-        name="大纲生成助手", llm=llm, config=config,
-        system_prompt="""你是经验丰富的学术导师。以对话方式帮助用户构建论文大纲。
+        name="Помощник генерации плана", llm=llm, config=config,
+        system_prompt="""Вы — опытный академический наставник. Помогайте пользователю составить план статьи в диалоге.
 
-你需要：
-1. 根据主题拆解核心章节和子主题
-2. 为每个章节规划核心内容要点
-3. 推荐研究方法和参考文献方向
+Вам нужно:
+1. Разбить тему на ключевые главы и подтемы
+2. Для каждой главы спланировать основные пункты содержания
+3. Рекомендовать методы исследования и примеры литературы
 
-对话方式：用户可能多次要求调整（如"在第三章加入实验对比"、"细化文献综述部分"），
-你需要记住已生成的大纲内容，在此基础上修改，而不是每次重新开始。"""
+Формат диалога: пользователь может просить корректировки (например, «добавить сравнение экспериментов в третью главу», «детализировать обзор литературы»);
+запоминайте уже сгенерированный план и вносите изменения, а не начинайте заново каждый раз."""
     )
 
 def create_paper_writer_agent():
-    """创建论文写作对话智能体（带文献检索能力）"""
+    """Создать диалогового агента написания (с поиском литературы)"""
     agent = SimpleAgent(
-        name="论文写作助手", llm=llm, config=config,
-        system_prompt="""你是一位学术论文写作专家。你有 6 个文献检索工具可用：
+        name="Помощник написания статей", llm=llm, config=config,
+        system_prompt="""Вы — эксперт по написанию академических статей. У вас 6 инструментов поиска литературы:
 
-- literature_search: Semantic Scholar，全学科文献检索（推荐优先使用）
-- aminer_search: AMiner，中文学术论文
-- openalex_search: OpenAlex，开放获取论文
-- pubmed_search: PubMed，生物医学文献
-- crossref_search: CrossRef，期刊论文
-- arxiv_search: arXiv，预印本
+- literature_search: Semantic Scholar, поиск по всем дисциплинам (рекомендуется в первую очередь)
+- aminer_search: AMiner, китайскоязычные академические статьи
+- openalex_search: OpenAlex, открытый доступ
+- pubmed_search: PubMed, биомедицинская литература
+- crossref_search: CrossRef, журнальные статьи
+- arxiv_search: arXiv, препринты
 
-写作规则（必须严格遵守）：
-1. 根据用户提供的大纲，逐章节撰写论文
-2. 学术化语言风格，逻辑严谨，段落清晰
-3. **引用文献时，必须先使用检索工具搜索真实论文，只引用工具返回的真实文献**
-4. 每引用一篇论文，必须在参考文献处标注真实信息（作者、标题、年份、期刊）
-5. **绝对禁止**编造不存在的论文标题、作者或期刊名
-6. 如果工具检索失败，明确告知用户"该领域文献检索失败，建议稍后重试"，而不是编造文献"""
+Правила написания (строго соблюдать):
+1. По предоставленному плану писать статью главу за главой
+2. Академический стиль, строгая логика, чёткие абзацы
+3. **При цитировании сначала ищите реальные статьи через инструменты поиска; цитируйте только реальные результаты**
+4. Для каждой цитаты указывайте в списке литературы реальные данные (автор, заголовок, год, журнал)
+5. **Категорически запрещено** выдумывать несуществующие заголовки, авторов или журналы
+6. При ошибке поиска сообщайте пользователю «ошибка поиска литературы в этой области, повторите позже», а не выдумывайте источники"""
     )
-    # 注册全部检索工具，确保文献来源真实
+    # Зарегистрировать все инструменты поиска для достоверных источников
     for name in ["literature_search", "openalex_search", "pubmed_search",
                  "crossref_search", "arxiv_search", "aminer_search"]:
         agent.add_tool(tool_registry.get_tool(name))
@@ -332,15 +332,15 @@ def create_paper_writer_agent():
 
 
 # ========================================
-# Gradio 回调函数（所有操作自动记录日志）
+# Callback Gradio (все действия логируются)
 # ========================================
 
 def search_papers(query, source, max_results, field, year_from, year_to):
-    """文献检索 — 支持 5 大数据源"""
+    """Поиск литературы — 5 источников"""
     if not query.strip():
-        return "请输入搜索关键词。"
+        return "Введите ключевые слова."
 
-    # 数据源 → 工具名映射
+    # Источник данных → имя инструмента
     SOURCE_MAP = {
         "Semantic Scholar": "literature_search",
         "AMiner": "aminer_search",
@@ -352,10 +352,10 @@ def search_papers(query, source, max_results, field, year_from, year_to):
     tool_name = next((v for k, v in SOURCE_MAP.items() if source.startswith(k)), "literature_search")
     source_name = next((k for k in SOURCE_MAP if source.startswith(k)), "Semantic Scholar")
 
-    # 构建参数（高级筛选仅 Semantic Scholar 和 OpenAlex 支持）
+    # Параметры (расширенные фильтры: Semantic Scholar, OpenAlex, PubMed, CrossRef)
     params_str = f"max_results={int(max_results)}"
     supports_advanced = source_name in ("Semantic Scholar", "OpenAlex", "PubMed", "CrossRef")
-    if supports_advanced and field and field != "全部领域":
+    if supports_advanced and field and field != "Все области":
         params_str += f", field='{field}'"
     if supports_advanced and year_from and year_from.strip():
         params_str += f", year_from='{year_from.strip()}'"
@@ -364,36 +364,36 @@ def search_papers(query, source, max_results, field, year_from, year_to):
 
     try:
         result = search_agent.run(
-            f"请使用 {tool_name} 工具搜索以下主题的论文，然后分析结果：{query}\n"
-            f"参数设置: {params_str}"
+            f"Используйте {tool_name} инструмент для поискастатей по теме，затем проанализируйтерезультат：{query}\n"
+            f"параметры: {params_str}"
         )
-        logger.add("文献检索", f"{source_name} 论文搜索", query, result)
+        logger.add("Поиск литературы", f"{source_name} поиск статей", query, result)
         return result
     except Exception as e:
-        err = f"检索出错: {str(e)}"
-        logger.add("文献检索", f"{source_name} 搜索失败", query, err)
+        err = f"ошибка поиска: {str(e)}"
+        logger.add("Поиск литературы", f"{source_name} ошибка поиска", query, err)
         return err
 
 
 def summarize_paper(content):
-    """论文总结"""
+    """Резюме статьи"""
     if not content.strip():
-        return "请输入论文内容。"
+        return "Введите содержание статьи."
     try:
-        result = summary_agent.run(f"请对以下论文内容进行结构化总结：\n\n{content}")
-        logger.add("论文总结", "结构化总结", content, result)
+        result = summary_agent.run(f"Структурированное резюме следующего содержания статьи：\n\n{content}")
+        logger.add("Резюме статьи", "структурированное резюме", content, result)
         return result
     except Exception as e:
-        err = f"总结出错: {str(e)}"
-        logger.add("论文总结", "总结失败", content, err)
+        err = f"Ошибка резюме: {str(e)}"
+        logger.add("Резюме статьи", "ошибка резюме", content, err)
         return err
 
 
 def generate_citation(title, authors, journal, year, volume, pages, doi, fmt):
-    """引用生成"""
+    """Генерация цитаты"""
     if not title.strip() or not authors.strip():
-        return "请至少填写论文标题和作者。"
-    user_input = f"{title} | {authors} | {journal} | {year} | 格式: {fmt}"
+        return "Укажите как минимум название и авторов."
+    user_input = f"{title} | {authors} | {journal} | {year} | формат: {fmt}"
     try:
         params = {
             "title": title, "authors": authors,
@@ -402,42 +402,42 @@ def generate_citation(title, authors, journal, year, volume, pages, doi, fmt):
             "format": fmt
         }
         resp = tool_registry.execute_tool("citation_generator", json.dumps(params))
-        logger.add("引用生成", f"{fmt} 格式引用", user_input, resp.text)
+        logger.add("Генерация цитаты", f"цитата в формате {fmt}", user_input, resp.text)
         return resp.text
     except Exception as e:
-        err = f"生成出错: {str(e)}"
-        logger.add("引用生成", "生成失败", user_input, err)
+        err = f"ошибка генерации: {str(e)}"
+        logger.add("Генерация цитаты", "ошибка генерации", user_input, err)
         return err
 
 
 def polish_chat(message, history, session_id):
-    """论文润色对话 — 多轮交互，自动保存会话"""
+    """Диалог редактуры статьи — многоходовый, автосохранение сессии"""
     if not message.strip():
         return "", history, session_id, _polish_sessions_dropdown()
 
-    # 新会话自动生成 ID
+    # Для новой сессии автоматически генерируется ID
     if not session_id:
         session_id = f"polish_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     try:
         context = ""
         for msg in history:
-            role = "用户" if msg["role"] == "user" else "助手"
+            role = "пользователь" if msg["role"] == "user" else "ассистент"
             context += f"{role}: {msg['content']}\n"
-        context += f"用户: {message}\n助手: "
+        context += f"пользователь: {message}\nассистент: "
 
         agent = create_polish_agent()
         result = agent.run(context)
         history.append({"role": "user", "content": message})
         history.append({"role": "assistant", "content": result})
 
-        # 自动保存（用第一条用户消息做标题）
-        title = history[0]["content"][:50] if history else "新对话"
+        # Автосохранение (заголовок из первого сообщения пользователя)
+        title = history[0]["content"][:50] if history else "новый диалог"
         polish_sessions.save(session_id, history, title)
-        logger.add("论文润色（对话）", "多轮润色", message, result)
+        logger.add("Редактура (диалог)", "многораундовая редактура", message, result)
         return "", history, session_id, _polish_sessions_dropdown()
     except Exception as e:
-        err = f"润色出错: {str(e)}"
+        err = f"Ошибка редактуры: {str(e)}"
         history.append({"role": "user", "content": message})
         history.append({"role": "assistant", "content": err})
         return "", history, session_id, _polish_sessions_dropdown()
@@ -446,7 +446,7 @@ def polish_chat(message, history, session_id):
 
 
 def outline_chat(message, history, session_id):
-    """大纲生成对话 — 多轮交互，自动保存会话"""
+    """Диалог генерации плана — многоходовый, автосохранение сессии"""
     if not message.strip():
         return "", history, session_id, _outline_sessions_dropdown()
     if not session_id:
@@ -454,19 +454,19 @@ def outline_chat(message, history, session_id):
     try:
         context = ""
         for msg in history:
-            role = "用户" if msg["role"] == "user" else "助手"
+            role = "пользователь" if msg["role"] == "user" else "ассистент"
             context += f"{role}: {msg['content']}\n"
-        context += f"用户: {message}\n助手: "
+        context += f"пользователь: {message}\nассистент: "
         agent = create_outline_agent()
         result = agent.run(context)
         history.append({"role": "user", "content": message})
         history.append({"role": "assistant", "content": result})
-        title = history[0]["content"][:50] if history else "新对话"
+        title = history[0]["content"][:50] if history else "новый диалог"
         outline_sessions.save(session_id, history, title)
-        logger.add("大纲生成（对话）", "多轮大纲调整", message, result)
+        logger.add("План (диалог)", "многораундовая корректировка плана", message, result)
         return "", history, session_id, _outline_sessions_dropdown()
     except Exception as e:
-        err = f"生成出错: {str(e)}"
+        err = f"ошибка генерации: {str(e)}"
         history.append({"role": "user", "content": message})
         history.append({"role": "assistant", "content": err})
         return "", history, session_id, _outline_sessions_dropdown()
@@ -485,32 +485,32 @@ def _paper_choices():
     return [(f"{t} ({u})", sid) for sid, t, u in sessions]
 
 def _polish_sessions_dropdown():
-    """润色会话列表 → gr.update"""
+    """Список сессий редактуры → gr.update"""
     choices = _polish_choices()
     return gr.update(choices=choices, value=None if not choices else choices[0][1])
 
 def _outline_sessions_dropdown():
-    """大纲会话列表 → gr.update"""
+    """Список сессий плана → gr.update"""
     choices = _outline_choices()
     return gr.update(choices=choices, value=None if not choices else choices[0][1])
 
 def _paper_sessions_dropdown():
-    """论文写作会话列表 → gr.update"""
+    """Список сессий написания → gr.update"""
     choices = _paper_choices()
     return gr.update(choices=choices, value=None if not choices else choices[0][1])
 
 def clear_polish_chat():
-    """重置润色对话"""
+    """Сбросить диалог редактуры"""
     return "", [], "", _polish_sessions_dropdown()
 
 
 def clear_outline_chat():
-    """重置大纲对话"""
+    """Сбросить диалог плана"""
     return "", [], "", _outline_sessions_dropdown()
 
 
 def load_polish_session(session_id):
-    """加载润色历史会话到 chatbot"""
+    """Загрузить историю сессии редактуры в chatbot"""
     if not session_id:
         return [], session_id, _polish_sessions_dropdown()
     try:
@@ -521,7 +521,7 @@ def load_polish_session(session_id):
 
 
 def load_outline_session(session_id):
-    """加载大纲历史会话到 chatbot"""
+    """Загрузить историю сессии плана в chatbot"""
     if not session_id:
         return [], session_id, _outline_sessions_dropdown()
     try:
@@ -531,23 +531,23 @@ def load_outline_session(session_id):
         return [], "", _outline_sessions_dropdown()
 
 def delete_polish_session(session_id):
-    """删除润色历史会话"""
+    """Удалить историю сессии редактуры"""
     if session_id:
         polish_sessions.delete(session_id)
     return [], "", _polish_sessions_dropdown()
 
 def delete_outline_session(session_id):
-    """删除大纲历史会话"""
+    """Удалить историю сессии плана"""
     if session_id:
         outline_sessions.delete(session_id)
     return [], "", _outline_sessions_dropdown()
 
 
 # ========================================
-# 论文写作回调（对话模式 + DOCX 下载）
+# Callback написания статьи (диалог)
 
 def paper_write_chat(message, history, session_id):
-    """论文写作对话 — 多轮交互，自动保存"""
+    """Диалог написания — многораундовый, автосохранение"""
     if not message.strip():
         return "", history, session_id, _paper_sessions_dropdown()
     if not session_id:
@@ -555,25 +555,25 @@ def paper_write_chat(message, history, session_id):
     try:
         context = ""
         for msg in history:
-            role = "用户" if msg["role"] == "user" else "助手"
+            role = "пользователь" if msg["role"] == "user" else "ассистент"
             context += f"{role}: {msg['content']}\n"
-        context += f"用户: {message}\n助手: "
+        context += f"пользователь: {message}\nассистент: "
         agent = create_paper_writer_agent()
         result = agent.run(context)
         history.append({"role": "user", "content": message})
         history.append({"role": "assistant", "content": result})
-        title = history[0]["content"][:50] if history else "新对话"
+        title = history[0]["content"][:50] if history else "новый диалог"
         paper_sessions.save(session_id, history, title)
-        logger.add("论文写作（对话）", "多轮写作", message, result)
+        logger.add("Написание (диалог)", "многораундовое написание", message, result)
         return "", history, session_id, _paper_sessions_dropdown()
     except Exception as e:
-        err = f"写作出错: {str(e)}"
+        err = f"Ошибка написания: {str(e)}"
         history.append({"role": "user", "content": message})
         history.append({"role": "assistant", "content": err})
         return "", history, session_id, _paper_sessions_dropdown()
 
 def load_paper_session(session_id):
-    """加载论文写作历史会话"""
+    """Загрузить историю сессии написания"""
     if not session_id:
         return [], session_id, _paper_sessions_dropdown()
     try:
@@ -583,39 +583,39 @@ def load_paper_session(session_id):
         return [], "", _paper_sessions_dropdown()
 
 def delete_paper_session(session_id):
-    """删除论文写作历史会话"""
+    """Удалить историю сессии написания"""
     if session_id:
         paper_sessions.delete(session_id)
     return [], "", _paper_sessions_dropdown()
 
 def clear_paper_chat():
-    """重置论文写作对话"""
+    """Сбросить диалог написания"""
     return "", [], "", _paper_sessions_dropdown()
 
 def extract_pdf(pdf_file, max_chars):
-    """PDF 文本提取"""
+    """Извлечение текста из PDF"""
     if pdf_file is None:
-        return "请上传一个 PDF 文件。"
+        return "Загрузите PDF-файл."
     try:
         resp = tool_registry.execute_tool("pdf_extract", json.dumps({
             "file_path": pdf_file.name,
             "max_chars": int(max_chars)
         }))
-        logger.add("PDF 提取", "PDF 文本提取", f"文件: {pdf_file.name}", resp.text)
+        logger.add("Извлечение PDF", "Извлечение текста из PDF", f"файл: {pdf_file.name}", resp.text)
         return resp.text
     except Exception as e:
-        err = f"提取出错: {str(e)}"
-        logger.add("PDF 提取", "提取失败", f"文件: {pdf_file.name}", err)
+        err = f"Ошибка извлечения: {str(e)}"
+        logger.add("Извлечение PDF", "ошибка извлечения", f"файл: {pdf_file.name}", err)
         return err
 
 
 def refresh_history():
-    """刷新对话记录显示"""
+    """Обновить отображение журнала диалогов"""
     return logger.format_history_html()
 
 
 def delete_history_record(record_id):
-    """删除指定编号的记录（由 HTML 按钮触发）"""
+    """Удалить запись по номеру (кнопка HTML)"""
     if not record_id:
         return logger.format_history_html()
     try:
@@ -627,107 +627,106 @@ def delete_history_record(record_id):
 
 
 def clear_history():
-    """清空对话记录"""
+    """Очистить журнал диалогов"""
     msg = logger.clear()
     return msg
 
 
 # ========================================
-# Gradio UI 布局
+# Разметка Gradio UI
 # ========================================
 
 THEME = gr.themes.Soft(primary_hue="blue", secondary_hue="slate")
 
-with gr.Blocks(title="PaperAssistant - 智能论文助手") as demo:
+with gr.Blocks(title="PaperAssistant — умный помощник по статьям") as demo:
     gr.Markdown("""
-    # 🎓 PaperAssistant - 智能论文助手
-    ### 基于 HelloAgents 框架 + DeepSeek 的多智能体论文学术辅助工具
+    # 🎓 PaperAssistant — умный помощник по статьям
+    ### Мультиагентный академический инструмент на HelloAgents + DeepSeek
     """)
 
-    with gr.Tab("📚 文献检索"):
+    with gr.Tab("📚 Поиск литературы"):
         with gr.Row():
             with gr.Column(scale=3):
                 search_input = gr.Textbox(
-                    label="研究主题",
-                    placeholder="支持中英文关键词，如：气候变化对农业的影响、cancer immunotherapy...",
+                    label="Тема исследования",
+                    placeholder="Ключевые слова на любом языке, напр.: влияние климата на сельское хозяйство...",
                     lines=2
                 )
                 with gr.Row():
                     search_source = gr.Dropdown(
                         choices=[
-                            "Semantic Scholar（全学科推荐）",
-                            "AMiner（中文论文强项）",
-                            "OpenAlex（开放获取综合）",
-                            "PubMed（生物医学）",
-                            "CrossRef（期刊论文）",
-                            "arXiv（CS/数学/物理）"
+                            "Semantic Scholar (все дисциплины)",
+                            "AMiner (китайские публикации)",
+                            "OpenAlex (открытый доступ)",
+                            "PubMed (биомедицина)",
+                            "CrossRef (журналы)",
+                            "arXiv (CS/математика/физика)"
                         ],
-                        value="Semantic Scholar（全学科推荐）",
-                        label="数据源"
+                        value="Semantic Scholar (все дисциплины)",
+                        label="Источник данных"
                     )
-                    max_results = gr.Slider(1, 10, value=5, step=1, label="返回论文数")
+                    max_results = gr.Slider(1, 10, value=5, step=1, label="Число статей")
 
-                # 高级筛选（仅 Semantic Scholar 支持）
-                with gr.Accordion("高级筛选", open=False):
+                with gr.Accordion("Расширенные фильтры", open=False):
                     search_field = gr.Dropdown(
-                        choices=["全部领域"] + [
-                            "计算机科学", "人工智能", "医学", "生物学", "物理学", "化学",
-                            "数学", "经济学", "心理学", "社会学", "语言学", "哲学",
-                            "工程", "环境科学", "材料科学", "教育学", "法学", "商学"
+                        choices=["Все области"] + [
+                            "Информатика", "ИИ", "Медицина", "Биология", "Физика", "Химия",
+                            "Математика", "Экономика", "Психология", "Социология", "Лингвистика", "Философия",
+                            "Инженерия", "Экология", "Материаловедение", "Педагогика", "Право", "Бизнес"
                         ],
-                        value="全部领域",
-                        label="学科领域"
+                        value="Все области",
+                        label="Область"
                     )
                     with gr.Row():
-                        year_from = gr.Textbox(label="起始年份", placeholder="2020", scale=1)
-                        year_to = gr.Textbox(label="截止年份", placeholder="2025", scale=1)
+                        year_from = gr.Textbox(label="Год от", placeholder="2020", scale=1)
+                        year_to = gr.Textbox(label="Год до", placeholder="2025", scale=1)
 
-                search_btn = gr.Button("🔍 开始检索", variant="primary")
+                search_btn = gr.Button("🔍 Начать поиск", variant="primary")
             with gr.Column(scale=7):
-                search_output = gr.Markdown(label="检索结果", value="*等待搜索...*")
+                search_output = gr.Markdown(label="результаты поиска", value="*Ожидание поиска...*")
         search_btn.click(
             fn=search_papers,
             inputs=[search_input, search_source, max_results, search_field, year_from, year_to],
             outputs=search_output
         )
 
-    with gr.Tab("📝 论文总结"):
+    with gr.Tab("📝 Резюме статьи"):
         with gr.Row():
             with gr.Column(scale=4):
                 summary_input = gr.Textbox(
-                    label="论文内容（粘贴标题、作者、摘要等信息）",
-                    placeholder="粘贴论文信息，包括标题、作者、摘要、方法描述...",
+                    label="Содержание статьи (заголовок, авторы, аннотация)",
+                    placeholder="Вставьте информацию о статье: заголовок, авторы, аннотация, методы...",
                     lines=15
                 )
-                summary_btn = gr.Button("📝 生成总结", variant="primary")
+                summary_btn = gr.Button("📝 Сгенерировать резюме", variant="primary")
             with gr.Column(scale=6):
-                summary_output = gr.Markdown(label="总结报告", value="*等待输入...*")
+                summary_output = gr.Markdown(label="Отчёт-резюме", value="*Ожидание ввода...*")
         summary_btn.click(
             fn=summarize_paper,
             inputs=[summary_input],
             outputs=summary_output
         )
 
-    with gr.Tab("📎 引用生成"):
+    with gr.Tab("📎 Генерация цитаты"):
         with gr.Row():
             with gr.Column(scale=4):
-                cite_title = gr.Textbox(label="论文标题 *", placeholder="Attention Is All You Need")
-                cite_authors = gr.Textbox(label="作者 *", placeholder="Vaswani, A., Shazeer, N., Parmar, N., et al.")
+                cite_title = gr.Textbox(label="Название статьи *", placeholder="Attention Is All You Need")
+                cite_authors = gr.Textbox(label="Авторы *", placeholder="Vaswani, A., Shazeer, N., Parmar, N., et al.")
                 with gr.Row():
-                    cite_journal = gr.Textbox(label="期刊/会议", placeholder="NeurIPS")
-                    cite_year = gr.Textbox(label="年份", placeholder="2017")
+                    cite_journal = gr.Textbox(label="Журнал/конференция", placeholder="NeurIPS")
+                    cite_year = gr.Textbox(label="Год", placeholder="2017")
                 with gr.Row():
-                    cite_volume = gr.Textbox(label="卷号", placeholder="30")
-                    cite_pages = gr.Textbox(label="页码", placeholder="5998-6008")
-                cite_doi = gr.Textbox(label="DOI（可选）")
+                    cite_volume = gr.Textbox(label="Том", placeholder="30")
+                    cite_pages = gr.Textbox(label="Страницы", placeholder="5998-6008")
+                cite_doi = gr.Textbox(label="DOI (необязательно)")
                 cite_format = gr.Radio(
                     choices=["gbt7714", "apa", "mla"],
                     value="gbt7714",
-                    label="引用格式"
+                    label="Формат цитирования"
                 )
-                cite_btn = gr.Button("📎 生成引用", variant="primary")
+                cite_btn = gr.Button("📎 Сгенерировать цитату", variant="primary")
             with gr.Column(scale=6):
-                cite_output = gr.Textbox(label="生成的引用", lines=8)
+                cite_output = gr.Textbox(label="Сгенерированная цитата", lines=8)
         cite_btn.click(
             fn=generate_citation,
             inputs=[cite_title, cite_authors, cite_journal, cite_year,
@@ -735,33 +734,30 @@ with gr.Blocks(title="PaperAssistant - 智能论文助手") as demo:
             outputs=cite_output
         )
 
-    with gr.Tab("✍️ 论文润色"):
-        # 当前会话 ID（隐藏）
+    with gr.Tab("✍️ Редактура статьи"):
         polish_session_id = gr.State(value="")
 
-        # 历史会话面板
-        with gr.Accordion("📋 历史会话", open=False):
+        with gr.Accordion("📋 История сессий", open=False):
             with gr.Row():
                 polish_history_list = gr.Dropdown(
-                    label="历史对话", choices=_polish_choices(), scale=6,
-                    info="选择一条历史会话后点击加载，可继续对话"
+                    label="История диалогов", choices=_polish_choices(), scale=6,
+                    info="Выберите сессию и нажмите «Загрузить» для продолжения"
                 )
-                polish_load_btn = gr.Button("📂 加载", variant="primary", size="sm", scale=1)
-                polish_del_btn = gr.Button("🗑️ 删除", variant="stop", size="sm", scale=1)
+                polish_load_btn = gr.Button("📂 Загрузить", variant="primary", size="sm", scale=1)
+                polish_del_btn = gr.Button("🗑️ Удалить", variant="stop", size="sm", scale=1)
 
-        # 对话区
-        gr.Markdown("粘贴文本后可以持续对话: 说'更正式一些'、'缩短第三段'等，我会记住上下文。")
-        polish_chatbot = gr.Chatbot(label="润色对话", height=450)
+        gr.Markdown("Вставьте текст и продолжайте диалог: «сделай формальнее», «сократи третий абзац» — контекст сохраняется.")
+        polish_chatbot = gr.Chatbot(label="Диалог редактуры", height=450)
         with gr.Row():
             polish_msg = gr.Textbox(
-                label="输入修改要求",
-                placeholder="例如：请润色这段文字... / 把第二段改得更学术化...",
+                label="Запрос на правку",
+                placeholder="Например: отредактируйте этот фрагмент... / сделайте второй абзац более академичным...",
                 scale=7
             )
-            polish_send = gr.Button("发送", variant="primary", scale=1)
-        polish_clear = gr.Button("🗑️ 开始新对话", size="sm", variant="stop")
+            polish_send = gr.Button("Отправить", variant="primary", scale=1)
+        polish_clear = gr.Button("🗑️ Новый диалог", size="sm", variant="stop")
 
-        # 事件绑定
+        # Привязка событий
         polish_send.click(
             fn=polish_chat,
             inputs=[polish_msg, polish_chatbot, polish_session_id],
@@ -787,33 +783,30 @@ with gr.Blocks(title="PaperAssistant - 智能论文助手") as demo:
             outputs=[polish_chatbot, polish_session_id, polish_history_list]
         )
 
-    with gr.Tab("📊 大纲生成"):
-        # 当前会话 ID（隐藏）
+    with gr.Tab("📊 Генерация плана"):
         outline_session_id = gr.State(value="")
 
-        # 历史会话面板
-        with gr.Accordion("📋 历史会话", open=False):
+        with gr.Accordion("📋 История сессий", open=False):
             with gr.Row():
                 outline_history_list = gr.Dropdown(
-                    label="历史对话", choices=_outline_choices(), scale=6,
-                    info="选择一条历史会话后点击加载，可继续对话"
+                    label="История диалогов", choices=_outline_choices(), scale=6,
+                    info="Выберите сессию и нажмите «Загрузить» для продолжения"
                 )
-                outline_load_btn = gr.Button("📂 加载", variant="primary", size="sm", scale=1)
-                outline_del_btn = gr.Button("🗑️ 删除", variant="stop", size="sm", scale=1)
+                outline_load_btn = gr.Button("📂 Загрузить", variant="primary", size="sm", scale=1)
+                outline_del_btn = gr.Button("🗑️ Удалить", variant="stop", size="sm", scale=1)
 
-        # 对话区
-        gr.Markdown("输入论文主题后，可以持续对话优化: 说'细化第三章'、'增加实验对比章节'等，我会记住已有大纲并在此基础上修改。")
-        outline_chatbot = gr.Chatbot(label="大纲对话", height=450)
+        gr.Markdown("Введите тему и уточняйте план в диалоге: «детализируй главу 3», «добавь раздел сравнения экспериментов».")
+        outline_chatbot = gr.Chatbot(label="Диалог по плану", height=450)
         with gr.Row():
             outline_msg = gr.Textbox(
-                label="输入要求",
-                placeholder="例如：我想写一篇关于XX的毕业论文，帮我生成大纲...",
+                label="Запрос",
+                placeholder="Например: нужен план диплома по теме XX...",
                 scale=7
             )
-            outline_send = gr.Button("发送", variant="primary", scale=1)
-        outline_clear = gr.Button("🗑️ 开始新对话", size="sm", variant="stop")
+            outline_send = gr.Button("Отправить", variant="primary", scale=1)
+        outline_clear = gr.Button("🗑️ Новый диалог", size="sm", variant="stop")
 
-        # 事件绑定
+        # Привязка событий
         outline_send.click(
             fn=outline_chat,
             inputs=[outline_msg, outline_chatbot, outline_session_id],
@@ -839,29 +832,29 @@ with gr.Blocks(title="PaperAssistant - 智能论文助手") as demo:
             outputs=[outline_chatbot, outline_session_id, outline_history_list]
         )
 
-    with gr.Tab("📝 论文写作"):
+    with gr.Tab("📝 Написание статьи"):
         paper_session_id = gr.State(value="")
 
-        with gr.Accordion("📋 历史会话", open=False):
+        with gr.Accordion("📋 История сессий", open=False):
             with gr.Row():
                 paper_history_list = gr.Dropdown(
-                    label="历史对话", choices=_paper_choices(), scale=6,
-                    info="选择历史会话后加载，可继续写作"
+                    label="История диалогов", choices=_paper_choices(), scale=6,
+                    info="Выберите сессию для продолжения написания"
                 )
-                paper_load_btn = gr.Button("📂 加载", variant="primary", size="sm", scale=1)
-                paper_del_btn = gr.Button("🗑️ 删除", variant="stop", size="sm", scale=1)
+                paper_load_btn = gr.Button("📂 Загрузить", variant="primary", size="sm", scale=1)
+                paper_del_btn = gr.Button("🗑️ Удалить", variant="stop", size="sm", scale=1)
 
-        gr.Markdown("根据大纲逐章撰写论文。粘贴大纲后说'开始写第一章'，可持续对话调整内容。")
-        paper_chatbot = gr.Chatbot(label="论文写作对话", height=450)
+        gr.Markdown("Пишите по плану главу за главой. Вставьте план и скажите «начни с первой главы» — можно править в диалоге.")
+        paper_chatbot = gr.Chatbot(label="Диалог написания", height=450)
         with gr.Row():
             paper_msg = gr.Textbox(
-                label="输入写作要求",
-                placeholder="例如：以下是论文大纲...请从摘要开始撰写 / 写第三章实验部分 / 这部分再详细一些...",
+                label="Запрос на написание",
+                placeholder="Например: вот план... начни с аннотации / напиши главу 3 / добавь деталей...",
                 scale=7
             )
-            paper_send = gr.Button("发送", variant="primary", scale=1)
+            paper_send = gr.Button("Отправить", variant="primary", scale=1)
         with gr.Row():
-            paper_clear = gr.Button("🗑️ 开始新对话", size="sm", variant="stop")
+            paper_clear = gr.Button("🗑️ Новый диалог", size="sm", variant="stop")
 
         paper_send.click(
             fn=paper_write_chat,
@@ -888,31 +881,30 @@ with gr.Blocks(title="PaperAssistant - 智能论文助手") as demo:
             outputs=[paper_chatbot, paper_session_id, paper_history_list]
         )
     with gr.Tab("📄 PDF → Markdown"):
-        gr.Markdown("上传 PDF 论文，自动识别标题、章节、段落，输出为格式化的 **Markdown** 文本。")
+        gr.Markdown("Загрузите PDF — система распознает заголовки, главы и абзацы и вернёт **Markdown**.")
         with gr.Row():
             with gr.Column(scale=4):
-                pdf_input = gr.File(label="上传 PDF 文件", file_types=[".pdf"])
+                pdf_input = gr.File(label="Загрузить PDF", file_types=[".pdf"])
                 pdf_max_chars = gr.Slider(0, 100000, value=0, step=1000,
-                                           label="字符上限（0=不限制）")
-                pdf_btn = gr.Button("📄 转换为 Markdown", variant="primary")
+                                           label="Лимит символов (0 = без лимита)")
+                pdf_btn = gr.Button("📄 Конвертировать в Markdown", variant="primary")
             with gr.Column(scale=6):
-                pdf_output = gr.Code(label="Markdown 输出", language="markdown", lines=20)
+                pdf_output = gr.Code(label="Вывод Markdown", language="markdown", lines=20)
         pdf_btn.click(
             fn=extract_pdf,
             inputs=[pdf_input, pdf_max_chars],
             outputs=pdf_output
         )
 
-    with gr.Tab("💬 对话记录"):
-        # 操作按钮（页面顶部）
+    with gr.Tab("💬 История диалогов"):
         with gr.Row():
-            refresh_btn = gr.Button("🔄 刷新", size="sm")
-            clear_btn = gr.Button("🗑️ 清空全部", size="sm", variant="stop")
+            refresh_btn = gr.Button("🔄 Обновить", size="sm")
+            clear_btn = gr.Button("🗑️ Очистить всё", size="sm", variant="stop")
 
-        # 隐藏触发组件：删除按钮通过 JS 填充此字段
+        # Скрытый триггер: кнопка удаления через JS
         delete_trigger = gr.Textbox(visible=False, elem_id="del_trigger")
 
-        # 历史展示（HTML 格式，每条带删除按钮）
+        # Отображение истории (HTML, кнопка удаления)
         history_display = gr.HTML(value=logger.format_history_html())
 
         refresh_btn.click(fn=refresh_history, outputs=history_display)
@@ -925,7 +917,7 @@ with gr.Blocks(title="PaperAssistant - 智能论文助手") as demo:
 
     gr.Markdown("""
     ---
-    ### 👤 作者: [@chengH425](https://github.com/chengH425) | 🙏 感谢 Datawhale 社区和 Hello-Agents 项目
+    ### 👤 Автор: [@chengH425](https://github.com/chengH425) | 🙏 Спасибо сообществу Datawhale и проекту Hello-Agents
     """)
 
 

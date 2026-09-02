@@ -31,7 +31,7 @@ def test_tts_api():
 
     payload = {
         "model": model,
-        "input": "你好，这是一个测试语音。",
+"input": "Привет, это тестовый голос.",
         "voice": "xiayu",
         "speed": 1.0
     }

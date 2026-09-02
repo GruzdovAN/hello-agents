@@ -24,7 +24,7 @@ from pydantic import BaseModel, Field
 from agent import DeepResearchAgent
 from config import Configuration
 
-# 添加控制台日志处理程序
+# Добавляем обработчик журнала консоли
 logger.add(
     sys.stderr,
     level="INFO",
@@ -34,33 +34,33 @@ logger.add(
 
 
 class ResearchRequest(BaseModel):
-    """触发研究运行的负载。"""
+"""Нагрузка, запускающая исследование."""
 
     topic: str = Field(..., description="用户提供的研究主题")
 
 class PodcastScript(BaseModel):
-    """播客脚本内容模型。"""
+"""Модель контента сценария подкаста."""
     script: str = Field(..., description="生成的播客脚本内容")
 
 
 class ResearchResponse(BaseModel):
-    """包含生成报告和结构化任务的 HTTP 响应。"""
+"""Содержит HTTP-ответы для создания отчетов и структурированных задач."""
 
     report_markdown: str = Field(
         ..., description="Markdown 格式的研究报告，包含各个部分"
     )
     todo_items: list[dict[str, Any]] = Field(
         default_factory=list,
-        description="带有摘要和来源的结构化待办事项",
+описание="Структурированная задача с кратким описанием и источниками",
     )
     podcast_script: PodcastScript | None = Field(
         default=None,
-        description="生成的播客脚本内容",
+описание="Сгенерированный контент сценария подкаста",
     )
 
 
 def _mask_secret(value: str | None, visible: int = 4) -> str:
-    """在保持前导和尾随字符的同时，掩盖敏感令牌。"""
+"""Маскируйте чувствительные токены, сохраняя начальные и конечные символы."""
     if not value:
         return "unset"
 
@@ -75,19 +75,19 @@ def _build_config(payload: ResearchRequest) -> Configuration:
 
 
 def create_app() -> FastAPI:
-    """创建并配置 FastAPI 应用实例。"""
+"""Создайте и настройте экземпляр приложения FastAPI."""
 
-    # 当前活跃的研究 agent 引用，用于支持取消操作
+# В настоящее время активная ссылка на исследовательский агент, используемая для поддержки операций отмены
     _active_agent: dict[str, DeepResearchAgent | None] = {"current": None}
 
-    # 确保输出目录存在（使用绝对路径，基于 backend 根目录）
+# Убедитесь, что выходной каталог существует (используйте абсолютный путь, основанный на корневом каталоге серверной части)
     backend_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     output_dir = os.path.join(backend_root, "output")
     os.makedirs(output_dir, exist_ok=True)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        """应用生命周期管理：启动时记录配置，关闭时清理资源。"""
+"""Управление жизненным циклом приложений: запись конфигурации при запуске и очистка ресурсов при завершении работы."""
         config = Configuration.from_env()
         logger.info(
             "DeepResearch configuration loaded: provider=%s model=%s base_url=%s search_api=%s "
@@ -102,13 +102,13 @@ def create_app() -> FastAPI:
             config.strip_thinking_tokens,
             _mask_secret(config.llm_api_key),
         )
-        yield  # 应用运行中
-        # 关闭时清理
+доходность # Приложение запущено
+# Очистка при выключении
         _active_agent["current"] = None
 
     app = FastAPI(title="DeepCast - 自动播客生成智能体", lifespan=lifespan)
 
-    # 从配置读取 CORS 允许的源，避免生产环境使用通配符
+# Прочитайте разрешенные источники CORS из конфигурации, чтобы избежать использования подстановочных знаков в производственных средах.
     _startup_config = Configuration.from_env()
     _allowed_origins = [
         origin.strip()
@@ -123,7 +123,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # 挂载静态文件目录，用于访问生成的音频文件
+#Подключаем каталог статических файлов для доступа к сгенерированным аудиофайлам
     app.mount("/output", StaticFiles(directory=output_dir), name="output")
 
     @app.get("/healthz")
@@ -132,19 +132,19 @@ def create_app() -> FastAPI:
 
     @app.get("/api/audio/latest")
     def get_latest_audio() -> dict[str, Any]:
-        """获取最新生成的音频文件。"""
+"""Получить последний созданный аудиофайл."""
         audio_dir = os.path.join(output_dir, "audio")
         if not os.path.exists(audio_dir):
             return {"file": None, "error": "音频目录不存在"}
         
-        # 查找所有 podcast_*.mp3 文件
+# Найти все файлы podcast_*.mp3
         pattern = os.path.join(audio_dir, "podcast_*.mp3")
         files = glob.glob(pattern)
         
         if not files:
             return {"file": None, "error": "没有找到音频文件"}
         
-        # 按修改时间排序，获取最新的
+# Сортируйте по времени модификации, чтобы получить самую свежую информацию
         latest_file = max(files, key=os.path.getmtime)
         filename = os.path.basename(latest_file)
         return {"file": filename, "url": f"/output/audio/{filename}"}
@@ -152,9 +152,9 @@ def create_app() -> FastAPI:
     @app.post("/research", response_model=ResearchResponse)
     def run_research(payload: ResearchRequest) -> ResearchResponse:
         """
-        触发同步研究任务。
+Запускайте синхронные исследовательские задачи.
         
-        执行完整的研究流程，并在 HTTP 响应中一次性返回所有结果。
+Выполните полный процесс исследования и верните все результаты сразу в ответе HTTP.
         """
         try:
             config = _build_config(payload)
@@ -199,9 +199,9 @@ def create_app() -> FastAPI:
     @app.post("/research/cancel")
     async def cancel_research() -> dict[str, str]:
         """
-        主动取消当前正在执行的研究任务。
+Заблаговременно отмените текущие исследовательские задачи.
         
-        前端可以通过此端点显式通知后端停止处理。
+Внешний интерфейс может явно уведомить серверную часть о прекращении обработки через эту конечную точку.
         """
         agent = _active_agent.get("current")
         if agent and not agent.is_cancelled():
@@ -213,7 +213,7 @@ def create_app() -> FastAPI:
     @app.post("/research/stream")
     async def stream_research(payload: ResearchRequest, request: Request) -> StreamingResponse:
         """
-        触发流式研究任务。
+Запускайте потоковые исследовательские задачи.
         
         通过 Server-Sent Events (SSE) 实时返回研究进度、日志和部分结果。
         支持客户端断开连接时自动取消后端任务。
@@ -227,10 +227,10 @@ def create_app() -> FastAPI:
 
         async def event_iterator():
             loop = asyncio.get_event_loop()
-            # 用 asyncio.Queue 桥接同步生成器和异步循环
+# Используйте asyncio.Queue для соединения синхронных генераторов и асинхронных циклов
             # 生成器在单一后台线程中完整运行，避免并发调用 next() 破坏生成器状态
             event_queue: asyncio.Queue = asyncio.Queue()
-            _SENTINEL = object()  # 生成器结束的哨兵值
+_SENTINEL = object() # Значение дозорного в конце генератора
 
             def run_generator():
                 """在后台线程中完整运行生成器，将事件逐一推入异步队列。"""
@@ -249,7 +249,7 @@ def create_app() -> FastAPI:
                 finally:
                     loop.call_soon_threadsafe(event_queue.put_nowait, _SENTINEL)
 
-            # 启动断开连接监控任务
+# Запускаем задачу мониторинга отключения
             async def monitor_disconnect():
                 while True:
                     if await request.is_disconnected():
@@ -265,17 +265,17 @@ def create_app() -> FastAPI:
             try:
                 while True:
                     try:
-                        # 带超时等待，以便能及时响应取消
+# С ожиданием тайм-аута, чтобы на отмену можно было отреагировать вовремя
                         item = await asyncio.wait_for(event_queue.get(), timeout=1.0)
                     except asyncio.TimeoutError:
                         # 超时时检查是否已取消（用于客户端断开但生成器还未感知的情况）
                         if agent.is_cancelled():
                             logger.info("✅ 本次任务已取消（超时检测）")
-                            yield 'data: {"type": "cancelled", "message": "研究任务已被用户取消"}\n\n'
+выход 'data: {"type": "cancelled", "message": "Исследовательская задача была отменена пользователем"}\n\n'
                             break
                         continue
 
-                    # 哨兵：生成器已结束
+# Sentinel: Генератор закончился
                     if item is _SENTINEL:
                         break
 
@@ -285,9 +285,9 @@ def create_app() -> FastAPI:
                     if event.get("type") in ("done", "cancelled", "error"):
                         break
             finally:
-                # 确保取消信号被设置 —— 这是取消机制的核心：
+# Убедитесь, что сигнал отмены установлен — это ядро ​​механизма отмены:
                 # 前端 abort SSE 后 monitor_task 可能还未检测到断连就被 cancel，
-                # 而 /research/cancel API 到达时 _active_agent 可能已被置 None。
+# Для _active_agent могло быть установлено значение None при поступлении API /research/cancel.
                 # 因此必须在此处显式调用 cancel() 确保后台线程能感知取消。
                 agent.cancel()
                 monitor_task.cancel()

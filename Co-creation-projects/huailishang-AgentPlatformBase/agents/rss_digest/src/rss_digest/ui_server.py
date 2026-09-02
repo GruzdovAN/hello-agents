@@ -140,28 +140,28 @@ def build_handler(root_dir: Path, state: UIState):
 <body>
   <main class="page">
     <section class="hero">
-      <h1>RSS Digest 控制台</h1>
+      <h1>Панель управления RSS Digest</h1>
       <div class="meta">
-        <div>摘要模型：{env_summary["summary_model"] or "未配置"}</div>
-        <div>翻译模型：{env_summary["translation_model"] or "未配置"}</div>
-        <div>每轮文章数：{env_summary["max_articles_per_run"]} | 重做旧摘要：{env_summary["resummarize_existing"]} | 全文翻译：{env_summary["fetch_full_translation"]}</div>
-        <div>运行状态：{"运行中" if snapshot["running"] else "空闲"}</div>
-        <div>最近启动：{snapshot["last_started_at"] or "暂无"} | 最近完成：{snapshot["last_finished_at"] or "暂无"}</div>
-        <div>最近错误：{snapshot["last_error"] or "无"}</div>
+        <div>Модель сводки: {env_summary["summary_model"] or "Не настроена"}</div>
+        <div>Модель перевода: {env_summary["translation_model"] or "Не настроена"}</div>
+        <div>Статей за раунд: {env_summary["max_articles_per_run"]} | Пересоздать старые сводки: {env_summary["resummarize_existing"]} | Полный перевод: {env_summary["fetch_full_translation"]}</div>
+        <div>Статус: {"Выполняется" if snapshot["running"] else "Свободен"}</div>
+        <div>Последний запуск: {snapshot["last_started_at"] or "Нет"} | Последнее завершение: {snapshot["last_finished_at"] or "Нет"}</div>
+        <div>Последняя ошибка: {snapshot["last_error"] or "Нет"}</div>
       </div>
       <div class="row">
-        <button onclick="runDigest()">运行一次</button>
-        <button class="secondary" onclick="refreshStatus()">刷新状态</button>
-        <a class="btn secondary" href="/digest" target="_blank">打开最新 HTML</a>
+        <button onclick="runDigest()">Запустить один раз</button>
+        <button class="secondary" onclick="refreshStatus()">Обновить статус</button>
+        <a class="btn secondary" href="/digest" target="_blank">Открыть последний HTML</a>
       </div>
     </section>
     <section class="grid">
       <section class="panel">
-        <h2>最近文章</h2>
+        <h2>Последние статьи</h2>
         <div id="articles" class="articles"></div>
       </section>
       <section class="panel">
-        <h2>最新日报预览</h2>
+        <h2>Предпросмотр последнего дайджеста</h2>
         <iframe src="/digest"></iframe>
       </section>
     </section>
@@ -181,10 +181,10 @@ def build_handler(root_dir: Path, state: UIState):
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
-          <div><strong>${{article.title}}</strong><span class="score">${{article.article_score ?? '-'}} 分</span></div>
-          <div class="muted">${{article.source_name}} · ${{article.category}} · ${{article.worth_reading ?? '未评级'}}</div>
-          <div style="margin-top:8px;">${{article.one_line ?? article.summary_cn ?? '暂无摘要'}}</div>
-          <div style="margin-top:8px;"><a href="${{article.link}}" target="_blank">原文</a></div>
+          <div><strong>${{article.title}}</strong><span class="score">${{article.article_score ?? '-'}} баллов</span></div>
+          <div class="muted">${{article.source_name}} · ${{article.category}} · ${{article.worth_reading ?? 'Без оценки'}}</div>
+          <div style="margin-top:8px;">${{article.one_line ?? article.summary_cn ?? 'Сводка отсутствует'}}</div>
+          <div style="margin-top:8px;"><a href="${{article.link}}" target="_blank">Оригинал</a></div>
         `;
         root.appendChild(div);
       }}
@@ -217,7 +217,7 @@ def build_handler(root_dir: Path, state: UIState):
             if parsed.path == "/digest":
                 digest_path = _latest_digest_path(root_dir, state.data_root)
                 if not digest_path:
-                    self._html("<p>暂无日报，请先运行一次任务。</p>", status=200)
+                    self._html("<p>Дайджест отсутствует. Сначала запустите задачу.</p>", status=200)
                     return
                 data = Path(digest_path).read_text(encoding="utf-8")
                 self._html(data)
@@ -229,10 +229,10 @@ def build_handler(root_dir: Path, state: UIState):
             parsed = urlparse(self.path)
             if parsed.path == "/api/run":
                 if not state.start_run():
-                    self._json({"ok": False, "message": "任务已经在运行中。"}, status=409)
+                    self._json({"ok": False, "message": "Задача уже выполняется."}, status=409)
                     return
                 Thread(target=_run_pipeline_background, args=(state,), daemon=True).start()
-                self._json({"ok": True, "message": "后台任务已启动。"})
+                self._json({"ok": True, "message": "Фоновая задача запущена."})
                 return
             self._json({"ok": False, "message": "Not found"}, status=404)
 

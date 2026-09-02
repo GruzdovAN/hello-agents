@@ -1,14 +1,14 @@
 """
-智能股票分析助手 — HelloAgents 资讯搜索工具封装
+Интеллектуальный помощник по анализу акций — пакет инструментов поиска информации HelloAgents
 
 将东方财富 mx-search Skill 封装为符合 HelloAgents 标准 Tool 接口的工具类。
-Agent可通过此工具调用自然语言搜索金融资讯（新闻、研报、公告）。
+Агент может использовать этот инструмент для вызова естественного языка для поиска финансовой информации (новостей, исследовательских отчетов, объявлений).
 """
 
 import sys
 from pathlib import Path
 
-# 将HelloAgents框架和skills路径加入sys.path
+# Добавьте структуру HelloAgents и путь к навыкам в sys.path
 _PROJECT_ROOT = Path(__file__).parent.parent.parent
 _HELLO_PATH = _PROJECT_ROOT / "HelloAgents Optimized"
 _SKILLS_PATH = _PROJECT_ROOT / "skills" / "资讯搜索" / "mx-search"
@@ -21,22 +21,22 @@ from hello_agents.tools import Tool, ToolParameter
 
 from ..text_truncation import truncate_at_natural_boundary
 
-# 单条资讯正文展示上限（字符）；放宽可减少摘要中途截断
+# Верхний предел текстового отображения одного фрагмента информации (символов); Расслабление может уменьшить усечение абстрактного.
 MX_SEARCH_CONTENT_MAX_CHARS = 2500
 
 
 class MXSearchTool(Tool):
-    """金融资讯搜索工具 — 封装东方财富妙想mx-search Skill
+"""Инструмент поиска финансовой информации — инкапсуляция восточного чуда богатства mx-search Skill
 
-    支持通过自然语言搜索金融资讯，包括：
-    - 个股相关：研报、公告、机构观点
-    - 行业/板块：产业新闻、政策解读
-    - 宏观/市场：经济分析、资金流向
-    - 事件/规则：分红公告、交易规则等
+Поддерживает поиск финансовой информации на естественном языке, в том числе:
+- Отдельные акции, связанные с: отчеты об исследованиях, объявления, институциональные мнения
+- Отрасль/сектор: новости отрасли, интерпретация политики.
+- Макро/рынок: экономический анализ, движение капитала.
+- События/правила: объявления о дивидендах, правила торговли и т. д.
 
-    使用示例:
+Пример использования:
         tool = MXSearchTool(api_key="your_mx_apikey")
-        result = tool.run({"query": "贵州茅台最新研报"})
+result =tool.run({"query": "Последний исследовательский отчет Квейчоу Моутая"})
     """
 
     def __init__(self, api_key: str = None):
@@ -46,19 +46,19 @@ class MXSearchTool(Tool):
                 "东方财富金融资讯搜索工具。支持搜索A股相关的新闻、研报、公告、"
                 "政策解读、行业分析等金融资讯。适用于获取时效性信息和特定事件信息。"
                 "支持自然语言查询，如'贵州茅台最新研报'、'人工智能板块近期新闻'、"
-                "'美联储加息对A股影响分析'、'新能源汽车产业政策最新解读'。"
+«Анализ влияния повышения процентных ставок Федеральной резервной системы на акции А», «Последняя интерпретация новой политики в области энергетических транспортных средств».
             ),
         )
 
-        # 获取API密钥：优先参数 > 环境变量
+# Получить ключ API: параметры приоритета > переменные среды
         import os
         self.api_key = api_key or os.getenv("MX_APIKEY", "")
 
-        # 延迟导入mx_search模块
+# Задержка импорта модуля mx_search
         self._mx_module = None
 
     def _get_mx_module(self):
-        """延迟导入mx_search模块（避免初始化时的导入错误）"""
+"""Отложен импорт модуля mx_search (во избежание ошибок импорта при инициализации)"""
         if self._mx_module is None:
             import mx_search as _mx_search
             self._mx_module = _mx_search
@@ -70,12 +70,12 @@ class MXSearchTool(Tool):
                 name="query",
                 type="string",
                 description=(
-                    "自然语言查询语句。支持中文查询，例如：\n"
+«Оператор запроса на естественном языке. Поддерживает запросы на китайском языке, например:\n»
                     "- 个股资讯: '贵州茅台最新研报', '比亚迪机构观点汇总'\n"
                     "- 行业新闻: '人工智能板块近期新闻', '新能源汽车产业政策'\n"
                     "- 宏观分析: '美联储加息对A股影响分析', '北向资金最新流向'\n"
                     "- 事件公告: '贵州茅台分红派息实施公告', '宁德时代定增预案'\n"
-                    "- 交易规则: '科创板涨跌幅限制', '新股申购规则'"
+«-Торговые правила: «Ценовой лимит Совета по инновациям в области науки и технологий», «Новые правила подписки на акции»»
                 ),
                 required=True,
             ),
@@ -85,14 +85,14 @@ class MXSearchTool(Tool):
         """执行金融资讯搜索
 
         Args:
-            parameters: {"query": "自然语言查询"}
+параметры: {"query": "Запрос на естественном языке"}
 
         Returns:
-            格式化的搜索结果文本
+Форматированный текст результатов поиска
         """
         query = parameters.get("query", "")
         if not query:
-            return "错误：查询内容不能为空"
+вернуть «Ошибка: содержимое запроса не может быть пустым»
 
         if not self.api_key:
             return "错误：MX_APIKEY 未配置，无法搜索资讯。请设置环境变量 MX_APIKEY"
@@ -100,55 +100,55 @@ class MXSearchTool(Tool):
         try:
             mx = self._get_mx_module()
 
-            # 创建MXSearch实例并查询
+#Создаем экземпляр MXSearch и запрос
             search_client = mx.MXSearch(api_key=self.api_key)
             result = search_client.search(query)
 
-            # 格式化输出为可读文本
+# Форматируем вывод в читаемый текст
             return self._format_result(result, query)
 
         except Exception as e:
-            return f"资讯搜索异常: {str(e)}"
+return f"Исключение поиска информации: {str(e)}"
 
     def _format_result(self, result: dict, query: str) -> str:
-        """将搜索结果格式化为可读文本"""
+"""Форматировать результаты поиска в читаемый текст"""
         lines = []
 
-        # 检查API状态
+# Проверьте статус API
         status = result.get("status")
         message = result.get("message", "")
         if status != 0:
-            lines.append(f"## 资讯搜索结果")
-            lines.append(f"查询: {query}")
+lines.append(f"## Результаты поиска информации")
+lines.append(f"query: {query}")
             lines.append(f"错误: 状态码 {status} - {message}")
             return "\n".join(lines)
 
-        # 解析搜索结果
+# Анализ результатов поиска
         data = result.get("data", {})
         inner_data = data.get("data", {})
         search_response = inner_data.get("llmSearchResponse", {})
         items = search_response.get("data", [])
 
         if not items:
-            return f"未找到与'{query}'相关的最新金融资讯"
+return f «Последняя финансовая информация, связанная с «{query}», не найдена»
 
-        # 类型映射
+#Сопоставление типов
         type_map = {
-            "REPORT": "研报",
-            "NEWS": "新闻",
-            "ANNOUNCEMENT": "公告"
+«ОТЧЕТ»: «Отчет об исследовании»,
+«НОВОСТИ»: «Новости»,
+«ОБЪЯВЛЕНИЕ»: «ОБЪЯВЛЕНИЕ»
         }
 
-        # 限制输出条数
+# Ограничить количество выводимых элементов
         max_items = 15
         display_items = items[:max_items]
 
-        lines.append(f"## 资讯搜索结果")
-        lines.append(f"查询: {query}")
-        lines.append(f"共找到 {len(items)} 条相关资讯\n")
+lines.append(f"## Результаты поиска информации")
+lines.append(f"query: {query}")
+lines.append(f"Всего найдено {len(items)} связанной информации\n")
 
         for i, item in enumerate(display_items):
-            title = item.get("title", "无标题")
+title = item.get("title", "Без названия")
             content = item.get("content", "")
             date = item.get("date", "")
             ins_name = item.get("insName", "")
@@ -167,13 +167,13 @@ class MXSearchTool(Tool):
                 meta_parts.append(f"机构: {ins_name}")
             if date:
                 meta_parts.append(f"日期: {date.split()[0]}")
-            lines.append(f"类型: {type_cn} | {' | '.join(meta_parts)}")
+lines.append(f"类型: {type_cn} | {' | '.join(meta_parts)}")
 
             if rating:
-                lines.append(f"评级: {rating}")
+lines.append(f"Рейтинг: {rating}")
 
             if content:
-                # 截断过长内容（优先段落/句号）
+#Обрезать слишком длинный контент (отдавать приоритет абзацам/периодам)
                 if len(content) > MX_SEARCH_CONTENT_MAX_CHARS:
                     content = truncate_at_natural_boundary(
                         content, MX_SEARCH_CONTENT_MAX_CHARS, "..."

@@ -1,6 +1,6 @@
 """
-InnoCore AI 前哨探员 (Hunter Agent)
-负责每日根据关键词监控ArXiv/IEEE，初筛并下载PDF
+Агент InnoCore AI Hunter
+Отвечает за ежедневный мониторинг ArXiv/IEEE на основе ключевых слов, предварительный просмотр и загрузку PDF.
 """
 
 import asyncio
@@ -18,7 +18,7 @@ from core.database import db_manager
 from core.exceptions import AgentException, ExternalAPIException
 
 class HunterAgent(BaseAgent):
-    """前哨探员智能体"""
+"""Агент-агент аванпоста"""
     
     def __init__(self, llm=None):
         super().__init__("Hunter", llm)
@@ -26,17 +26,17 @@ class HunterAgent(BaseAgent):
         self.ieee_base_url = "https://ieeexploreapi.ieee.org/api/v1"
         self.download_dir = "downloads/papers"
         
-        # 确保下载目录存在
+# Убедитесь, что каталог загрузки существует
         os.makedirs(self.download_dir, exist_ok=True)
         
-        # 添加工具
+# Добавить инструменты
         self.add_tool("search_arxiv", self._search_arxiv, "搜索ArXiv论文")
         self.add_tool("search_ieee", self._search_ieee, "搜索IEEE论文")
         self.add_tool("download_pdf", self._download_pdf, "下载PDF文件")
-        self.add_tool("extract_metadata", self._extract_metadata, "提取论文元数据")
+self.add_tool("extract_metadata", self._extract_metadata, "Извлечь метаданные документа")
     
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """执行论文抓取任务"""
+"""Выполнить задачу сканирования документов"""
         await self.validate_input(input_data)
         
         self.set_state("running")
@@ -49,7 +49,7 @@ class HunterAgent(BaseAgent):
             
             all_papers = []
             
-            # 搜索不同来源
+# Поиск в разных источниках
             if "arxiv" in sources:
                 arxiv_papers = await self._search_papers_from_arxiv(keywords, max_papers, days_back)
                 all_papers.extend(arxiv_papers)
@@ -58,7 +58,7 @@ class HunterAgent(BaseAgent):
                 ieee_papers = await self._search_papers_from_ieee(keywords, max_papers, days_back)
                 all_papers.extend(ieee_papers)
             
-            # 去重和筛选
+# Дедупликация и фильтрация
             unique_papers = self._deduplicate_papers(all_papers)
             filtered_papers = await self._filter_papers(unique_papers, keywords)
             
@@ -70,7 +70,7 @@ class HunterAgent(BaseAgent):
                     if downloaded_paper:
                         downloaded_papers.append(downloaded_paper)
                 except Exception as e:
-                    self._add_to_history(f"下载论文失败 {paper.get('title', 'Unknown')}: {str(e)}")
+self._add_to_history(f"Не удалось загрузить статью {paper.get('title', 'Unknown')}: {str(e)}")
             
             self.set_state("completed")
             
@@ -88,20 +88,20 @@ class HunterAgent(BaseAgent):
             raise AgentException(f"Hunter Agent执行失败: {str(e)}")
     
     def get_required_fields(self) -> List[str]:
-        """获取必需的输入字段"""
+"""Получить необходимые поля ввода"""
         return ["keywords"]
     
     async def _search_papers_from_arxiv(self, keywords: List[str], max_papers: int, days_back: int) -> List[Dict]:
-        """从ArXiv搜索论文"""
+"""Поиск документов в ArXiv"""
         papers = []
         
-        # 构建查询字符串
+# Создаем строку запроса
         query_parts = []
         for keyword in keywords:
             query_parts.append(f'all:"{keyword}"')
         query = " OR ".join(query_parts)
         
-        # 添加时间过滤
+#Добавить временной фильтр
         date_filter = ""
         if days_back > 0:
             start_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y%m%d")
@@ -119,7 +119,7 @@ class HunterAgent(BaseAgent):
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.arxiv_base_url, params=params) as response:
                     if response.status != 200:
-                        raise ExternalAPIException(f"ArXiv API请求失败: {response.status}")
+поднять ExternalAPIException(f"Ошибка запроса ArXiv API: {response.status}")
                     
                     xml_content = await response.text()
                     feed = feedparser.parse(xml_content)
@@ -145,17 +145,17 @@ class HunterAgent(BaseAgent):
         return papers
     
     async def _search_papers_from_ieee(self, keywords: List[str], max_papers: int, days_back: int) -> List[Dict]:
-        """从IEEE搜索论文"""
+"""Поиск статей в IEEE"""
         papers = []
         
-        # IEEE API需要API key，这里提供基础实现框架
+# Для IEEE API требуется ключ API, здесь представлена ​​базовая структура реализации.
         config = self.config.external_apis
         
         if not config.ieee_base_url:
             self._add_to_history("IEEE API配置缺失，跳过IEEE搜索")
             return papers
         
-        # 构建查询参数
+# Построение параметров запроса
         query = " OR ".join([f'"All Meta Data:{keyword}"' for keyword in keywords])
         
         params = {
@@ -171,7 +171,7 @@ class HunterAgent(BaseAgent):
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.ieee_base_url, params=params) as response:
                     if response.status != 200:
-                        raise ExternalAPIException(f"IEEE API请求失败: {response.status}")
+поднять ExternalAPIException(f «Ошибка запроса API IEEE: {response.status}»)
                     
                     data = await response.json()
                     
@@ -211,7 +211,7 @@ class HunterAgent(BaseAgent):
         return unique_papers
     
     async def _filter_papers(self, papers: List[Dict], keywords: List[str]) -> List[Dict]:
-        """根据关键词筛选论文"""
+"""Фильтровальная бумага по ключевым словам"""
         filtered_papers = []
         
         for paper in papers:
@@ -219,38 +219,38 @@ class HunterAgent(BaseAgent):
             abstract = paper.get("abstract", "").lower()
             combined_text = f"{title} {abstract}"
             
-            # 计算关键词匹配分数
+# Рассчитать показатель соответствия ключевых слов
             score = 0
             for keyword in keywords:
                 keyword_lower = keyword.lower()
                 if keyword_lower in title:
-                    score += 2  # 标题匹配权重更高
+Оценка += 2 # Соответствие заголовку имеет более высокий вес
                 if keyword_lower in abstract:
                     score += 1
             
-            # 设定阈值
+# Установить порог
             if score >= 1:
                 paper["relevance_score"] = score
                 filtered_papers.append(paper)
         
-        # 按相关性分数排序
+# Сортировка по показателю релевантности
         filtered_papers.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
         
         return filtered_papers
     
     async def _download_and_save_paper(self, paper: Dict) -> Optional[Dict]:
-        """下载并保存论文"""
+"""Загрузите и сохраните статью"""
         pdf_url = paper.get("pdf_url")
         if not pdf_url:
             return None
         
         try:
-            # 生成文件名
+# Генерируем имя файла
             safe_title = re.sub(r'[^\w\s-]', '', paper.get("title", "unknown"))[:50]
             filename = f"{paper['id']}_{safe_title}.pdf"
             file_path = os.path.join(self.download_dir, filename)
             
-            # 检查文件是否已存在
+#Проверяем, существует ли файл уже
             if os.path.exists(file_path):
                 self._add_to_history(f"论文已存在: {filename}")
                 paper["file_path"] = file_path
@@ -265,21 +265,21 @@ class HunterAgent(BaseAgent):
                         with open(file_path, 'wb') as f:
                             f.write(content)
                         
-                        # 计算文件哈希
+# Вычисляем хэш файла
                         content_hash = hashlib.sha256(content).hexdigest()
                         
-                        # 更新论文信息
+# Обновление информации о бумаге
                         paper["file_path"] = file_path
                         paper["content_hash"] = content_hash
                         paper["file_size"] = len(content)
                         
-                        # 保存到数据库
+# Сохранить в базу данных
                         await self._save_paper_to_db(paper)
                         
                         self._add_to_history(f"成功下载论文: {filename}")
                         return paper
                     else:
-                        self._add_to_history(f"下载失败，HTTP状态码: {response.status}")
+self._add_to_history(f"Загрузка не удалась, код состояния HTTP: {response.status}")
                         return None
                         
         except Exception as e:
@@ -287,15 +287,15 @@ class HunterAgent(BaseAgent):
             return None
     
     async def _save_paper_to_db(self, paper: Dict):
-        """保存论文到数据库"""
+"""Сохранить статью в базу данных"""
         try:
             # 检查是否已存在
             existing_paper = await db_manager.get_paper_by_hash(paper.get("content_hash"))
             if existing_paper:
-                self._add_to_history(f"论文已存在于数据库: {paper.get('title')}")
+self._add_to_history(f"Документ уже существует в базе данных: {paper.get('title')}")
                 return
             
-            # 创建论文记录
+#Создать бумажную запись
             paper_id = await db_manager.create_paper(
                 title=paper.get("title", ""),
                 authors=paper.get("authors", []),
@@ -312,19 +312,19 @@ class HunterAgent(BaseAgent):
         except Exception as e:
             self._add_to_history(f"保存论文到数据库失败: {str(e)}")
     
-    # 工具方法
+# Служебные методы
     async def _search_arxiv(self, query: str) -> List[Dict]:
-        """搜索ArXiv工具"""
+"""Поиск инструментов ArXiv"""
         keywords = [kw.strip() for kw in query.split(",")]
         return await self._search_papers_from_arxiv(keywords, 10, 7)
     
     async def _search_ieee(self, query: str) -> List[Dict]:
-        """搜索IEEE工具"""
+"""Поиск инструментов IEEE"""
         keywords = [kw.strip() for kw in query.split(",")]
         return await self._search_papers_from_ieee(keywords, 10, 7)
     
     async def _download_pdf(self, pdf_url: str) -> str:
-        """下载PDF工具"""
+"""Инструмент загрузки PDF"""
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(pdf_url) as response:
@@ -340,12 +340,12 @@ class HunterAgent(BaseAgent):
                     else:
                         return f"下载失败，状态码: {response.status}"
         except Exception as e:
-            return f"下载异常: {str(e)}"
+return f"Исключение загрузки: {str(e)}"
     
     async def _extract_metadata(self, file_path: str) -> Dict:
-        """提取论文元数据工具"""
-        # 这里应该使用PDF解析库提取元数据
-        # 暂时返回基础信息
+"""Инструмент для извлечения бумажных метаданных"""
+# Здесь вам следует использовать библиотеку синтаксического анализа PDF для извлечения метаданных
+# Временно вернуться к основной информации
         return {
             "file_path": file_path,
             "file_size": os.path.getsize(file_path) if os.path.exists(file_path) else 0,

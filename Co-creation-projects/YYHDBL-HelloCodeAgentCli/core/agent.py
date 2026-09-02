@@ -1,4 +1,4 @@
-"""Agent基类"""
+"""Базовый класс Agent"""
 
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -7,7 +7,7 @@ from .llm import HelloAgentsLLM
 from .config import Config
 
 class Agent(ABC):
-    """Agent基类"""
+    """Базовый класс Agent"""
     
     def __init__(
         self,
@@ -24,19 +24,19 @@ class Agent(ABC):
     
     @abstractmethod
     def run(self, input_text: str, **kwargs) -> str:
-        """运行Agent"""
+        """Запускает Agent"""
         pass
     
     def add_message(self, message: Message):
-        """添加消息到历史记录"""
+        """Добавляет сообщение в историю"""
         self._history.append(message)
     
     def clear_history(self):
-        """清空历史记录"""
+        """Очищает историю"""
         self._history.clear()
     
     def get_history(self) -> list[Message]:
-        """获取历史记录"""
+        """Возвращает историю"""
         return self._history.copy()
     
     def __str__(self) -> str:

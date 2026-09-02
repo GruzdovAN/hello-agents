@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'
 load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
 
 def test_llm_api():
-    """测试 ECNU LLM API 是否可用。"""
+"""Проверьте, доступен ли ECNU LLM API."""
     api_key = os.getenv("LLM_API_KEY")
     base_url = os.getenv("LLM_BASE_URL", "https://chat.ecnu.edu.cn/open/api/v1")
     model = os.getenv("LLM_MODEL_ID", "ecnu-max")

@@ -1,5 +1,5 @@
 """
-工具相关代码
+Код, связанный с инструментами
 """
 
 from .browser_tool import BrowserTool

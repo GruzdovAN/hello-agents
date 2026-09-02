@@ -12,9 +12,9 @@ class PlanConverter:
     def to_mermaid(text: str, direction: str = "TD") -> str:
         lines = PlanConverter._sanitize_lines(text)
         if not lines:
-            return f"flowchart {direction}\n    A[空计划]"
+            return f"flowchart {direction}\n    A[пустой план]"
 
-        # 支持单行 "A -> B -> C" 快捷输入
+        # Поддержка однострочного быстрого ввода «A -> B -> C»
         if len(lines) == 1 and "->" in lines[0]:
             segments = [seg.strip() for seg in lines[0].split("->") if seg.strip()]
             lines = segments

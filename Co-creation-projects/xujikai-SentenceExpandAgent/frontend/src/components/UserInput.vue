@@ -1,18 +1,18 @@
 <!--
 用户输入框组件
-用于手动模式下用户输入扩写的句子
+用于Ручной режим下用户输入扩写的句子
 -->
 <template>
   <div class="user-input">
     <div class="input-header">
       <span class="user-avatar">✍️</span>
-      <span class="user-name">你</span>
+      <span class="user-name">Вы</span>
     </div>
     <div class="input-area">
       <textarea
         v-model="userSentence"
         class="sentence-textarea"
-        placeholder="输入你的扩写句子..."
+        placeholder="Введите расширенное предложение..."
         rows="3"
         @keydown.enter.prevent="handleSubmit"
       />
@@ -21,7 +21,7 @@
         :disabled="!userSentence.trim() || loading"
         @click="handleSubmit"
       >
-        {{ loading ? '提交中...' : '提交' }}
+        {{ loading ? 'Отправка...' : 'Отправить' }}
       </button>
     </div>
     <p v-if="error" class="error-message">{{ error }}</p>
@@ -41,7 +41,7 @@ const error = ref<string | null>(null);
 
 async function handleSubmit() {
   if (!userSentence.value.trim()) {
-    error.value = '请输入你的扩写句子';
+    error.value = 'Введите расширенное предложение';
     return;
   }
 
@@ -52,7 +52,7 @@ async function handleSubmit() {
     emit('submit', userSentence.value.trim());
     userSentence.value = '';
   } catch (e) {
-    error.value = e instanceof Error ? e.message : '提交失败，请重试';
+    error.value = e instanceof Error ? e.message : 'Ошибка отправки — повторите';
   } finally {
     loading.value = false;
   }

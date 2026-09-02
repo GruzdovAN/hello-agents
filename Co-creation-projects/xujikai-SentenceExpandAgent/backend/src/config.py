@@ -1,5 +1,5 @@
 """
-LLM 配置 - 英语句子扩写智能体
+Конфигурация LLM — агент расширения английских предложений
 """
 import os
 import logging
@@ -16,11 +16,11 @@ def tool_listener(call_info):
     logger.info(f"Parameters: {call_info['parsed_parameters']}")
     logger.info(f"Result: {call_info['result']}")
 
-# LLM 配置
+# Конфигурация LLM
 class LLMConfig:
-    """LLM 配置类"""
+"""Класс конфигурации LLM"""
     
-    # 从环境变量读取配置
+# Читаем конфигурацию из переменных среды
     API_KEY = os.getenv("LLM_API_KEY", "")
     MODEL_ID = os.getenv("LLM_MODEL_ID", "")
     BASE_URL = os.getenv("LLM_BASE_URL", "")
@@ -28,10 +28,10 @@ class LLMConfig:
     @classmethod
     def create_llm(cls) -> HelloAgentsLLM:
         """
-        创建 LLM 实例
+Создать экземпляр LLM
         
         Returns:
-            HelloAgentsLLM: 配置好的 LLM 实例
+HelloAgentsLLM: настроенный экземпляр LLM
         """
         return HelloAgentsLLM(
             api_key=cls.API_KEY,
@@ -40,7 +40,7 @@ class LLMConfig:
         )
 
 
-# 全局 LLM 实例（懒加载）
+# Глобальный экземпляр LLM (ленивая загрузка)
 _llm_instance = None
 
 
@@ -49,7 +49,7 @@ def get_llm() -> HelloAgentsLLM:
     获取全局 LLM 实例（单例模式）
     
     Returns:
-        HelloAgentsLLM: LLM 实例
+HelloAgentsLLM: экземпляр LLM
     """
     global _llm_instance
     if _llm_instance is None:
@@ -58,6 +58,6 @@ def get_llm() -> HelloAgentsLLM:
 
 
 def reset_llm():
-    """重置 LLM 实例（用于测试或配置变更）"""
+"""Сбросить экземпляр LLM (для тестирования или изменения конфигурации)"""
     global _llm_instance
     _llm_instance = None

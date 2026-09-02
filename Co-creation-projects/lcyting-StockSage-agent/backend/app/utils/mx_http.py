@@ -1,4 +1,4 @@
-"""将带 _mx_meta 的妙想服务结果转换为统一 HTTP 响应"""
+"""Преобразование результатов службы Miaoxiang с помощью _mx_meta в единый ответ HTTP"""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from app.utils.response import error_response, success_response
 
 def mx_result_to_http(result: dict, *, http_error_code: int = 500) -> dict:
     """
-    result 可含 _mx_meta:
+результат может содержать _mx_meta:
       from_cache, quota_exhausted, cache_ttl_seconds, channel, hint
     """
     payload = copy.deepcopy(result)

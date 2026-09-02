@@ -51,7 +51,7 @@ export async function apiFetch<T>(
               'message' in payload &&
               typeof (payload as { message: unknown }).message === 'string'
             ? (payload as { message: string }).message
-            : `请求失败（${res.status}）`
+            : `Ошибка запроса (${res.status}）`
       throw new ApiError(detail, res.status)
     }
 
@@ -59,9 +59,9 @@ export async function apiFetch<T>(
   } catch (err) {
     if (err instanceof ApiError) throw err
     if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new ApiError('请求超时，请稍后重试或检查后端服务', 408)
+      throw new ApiError('Таймаут — повторите или проверьте бэкенд', 408)
     }
-    throw new ApiError(err instanceof Error ? err.message : '网络异常', 0)
+    throw new ApiError(err instanceof Error ? err.message : 'Сетевая ошибка', 0)
   } finally {
     window.clearTimeout(timer)
   }

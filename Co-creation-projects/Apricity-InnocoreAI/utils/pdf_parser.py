@@ -1,6 +1,6 @@
 """
-PDF 解析工具
-支持从 PDF 文件中提取文本、标题、作者等信息
+Инструмент анализа PDF-файлов
+Поддерживает извлечение текста, названия, автора и другой информации из файлов PDF.
 """
 
 import logging
@@ -10,18 +10,18 @@ import re
 logger = logging.getLogger(__name__)
 
 class PDFParser:
-    """PDF 解析器"""
+"""Парсер PDF"""
     
     def __init__(self):
-        """初始化 PDF 解析器"""
+"""Инициализировать анализатор PDF"""
         self.supported_formats = ['.pdf']
     
     async def parse_pdf(self, file_path: str) -> Dict[str, Any]:
         """
-        解析 PDF 文件
+Разбирать PDF-файлы
         
         Args:
-            file_path: PDF 文件路径
+file_path: путь к PDF-файлу
             
         Returns:
             包含解析结果的字典
@@ -32,7 +32,7 @@ class PDFParser:
             logger.info(f"开始解析 PDF: {file_path}")
             
             with pdfplumber.open(file_path) as pdf:
-                # 提取所有文本
+# Извлечь весь текст
                 full_text = ""
                 for page in pdf.pages:
                     text = page.extract_text()
@@ -43,22 +43,22 @@ class PDFParser:
                     logger.warning("PDF 文件为空或无法提取文本")
                     return {
                         "success": False,
-                        "error": "无法从 PDF 中提取文本"
+"error": "Невозможно извлечь текст из PDF"
                     }
                 
-                # 提取元数据
+# Извлечь метаданные
                 metadata = pdf.metadata or {}
                 
-                # 尝试从文本中提取标题（通常在第一页的前几行）
+# Попробуйте извлечь заголовок из текста (обычно первые несколько строк первой страницы)
                 title = self._extract_title(full_text, metadata)
                 
-                # 尝试提取作者
+# Попробуйте извлечь автора
                 authors = self._extract_authors(full_text, metadata)
                 
-                # 尝试提取摘要
+# Попробуйте извлечь резюме
                 abstract = self._extract_abstract(full_text)
                 
-                # 统计信息
+# Статистика
                 page_count = len(pdf.pages)
                 word_count = len(full_text.split())
                 
@@ -78,70 +78,70 @@ class PDFParser:
                     }
                 }
                 
-                logger.info(f"PDF 解析成功: {page_count} 页, {word_count} 词")
+logger.info(f"PDF успешно проанализирован: страниц: {page_count}, слов: {word_count}")
                 return result
                 
         except ImportError:
-            logger.error("pdfplumber 未安装")
+logger.error("pdfplumber не установлен")
             return {
                 "success": False,
                 "error": "PDF 解析库未安装，请运行: pip install pdfplumber"
             }
         except Exception as e:
-            logger.error(f"PDF 解析失败: {str(e)}")
+logger.error(f"Ошибка анализа PDF: {str(e)}")
             return {
                 "success": False,
-                "error": f"PDF 解析失败: {str(e)}"
+"ошибка": f"Ошибка анализа PDF: {str(e)}"
             }
     
     def _extract_title(self, text: str, metadata: Dict) -> str:
-        """从文本或元数据中提取标题"""
-        # 首先尝试从元数据获取
+"""Извлечение заголовков из текста или метаданных"""
+# Сначала попытаемся получить из метаданных
         if metadata.get("/Title"):
             return metadata["/Title"]
         
-        # 从文本前几行提取（通常标题在最前面且字体较大）
+# Извлеките первые несколько строк текста (обычно заголовок находится спереди, а шрифт крупнее)
         lines = text.split('\n')
         for i, line in enumerate(lines[:10]):  # 只检查前10行
             line = line.strip()
-            # 标题通常较长且不包含特殊字符
+# Заголовки обычно длиннее и не содержат специальных символов.
             if len(line) > 10 and len(line) < 200 and not line.startswith(('http', 'www', '@')):
-                # 排除一些常见的非标题行
+# Исключаем некоторые общие строки, не относящиеся к заголовку
                 if not any(keyword in line.lower() for keyword in ['abstract', 'introduction', 'page', 'arxiv']):
                     return line
         
-        return "未知标题"
+вернуть «Неизвестное название»
     
     def _extract_authors(self, text: str, metadata: Dict) -> list:
-        """从文本或元数据中提取作者"""
+"""Извлечь автора из текста или метаданных"""
         authors = []
         
-        # 首先尝试从元数据获取
+# Сначала попытаемся получить из метаданных
         if metadata.get("/Author"):
             author_str = metadata["/Author"]
             authors = [a.strip() for a in re.split(r'[,;]', author_str) if a.strip()]
             if authors:
                 return authors
         
-        # 从文本中提取（通常在标题后面）
+# Выдержка из текста (обычно после заголовка)
         lines = text.split('\n')
         for i, line in enumerate(lines[:20]):  # 检查前20行
             line = line.strip()
-            # 查找包含作者信息的行（通常包含邮箱或机构）
+# Найти строки, содержащие информацию об авторе (обычно адрес электронной почты или учреждение)
             if '@' in line or 'university' in line.lower() or 'institute' in line.lower():
-                # 尝试提取前面几行作为作者名
+# Попробуйте извлечь первые несколько строк имени автора
                 for j in range(max(0, i-3), i):
                     potential_author = lines[j].strip()
                     if potential_author and len(potential_author) < 100:
-                        # 简单的名字模式匹配
+# Простое сопоставление шаблонов имен
                         if re.match(r'^[A-Z][a-z]+\s+[A-Z][a-z]+', potential_author):
                             authors.append(potential_author)
         
-        return authors if authors else ["未知作者"]
+вернуть авторов, если авторы еще ["Неизвестный автор"]
     
     def _extract_abstract(self, text: str) -> str:
-        """从文本中提取摘要"""
-        # 查找 Abstract 关键词
+"""Извлечение резюме из текста"""
+# Найти абстрактное ключевое слово
         abstract_patterns = [
             r'Abstract\s*[:\-]?\s*(.*?)(?=\n\n|\nIntroduction|\n1\.|\nKeywords)',
             r'ABSTRACT\s*[:\-]?\s*(.*?)(?=\n\n|\nINTRODUCTION|\n1\.|\nKEYWORDS)',
@@ -152,20 +152,20 @@ class PDFParser:
             match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
             if match:
                 abstract = match.group(1).strip()
-                # 限制摘要长度
+# Ограничить длину сводки
                 if len(abstract) > 50 and len(abstract) < 2000:
                     return abstract[:1000]  # 最多返回1000字符
         
-        # 如果没找到，返回前500个字符作为摘要
+# Если не найден, вернуть первые 500 символов в виде сводки
         return text[:500].strip() + "..."
     
     async def parse_pdf_from_bytes(self, pdf_bytes: bytes, filename: str = "document.pdf") -> Dict[str, Any]:
         """
-        从字节流解析 PDF
+Разобрать PDF из байтового потока
         
         Args:
-            pdf_bytes: PDF 文件的字节内容
-            filename: 文件名（用于日志）
+pdf_bytes: Байтовое содержимое PDF-файла.
+имя_файла: имя файла (для журналов)
             
         Returns:
             包含解析结果的字典
@@ -177,7 +177,7 @@ class PDFParser:
             logger.info(f"开始解析 PDF 字节流: {filename}")
             
             with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                # 提取所有文本
+# Извлечь весь текст
                 full_text = ""
                 for page in pdf.pages:
                     text = page.extract_text()
@@ -187,13 +187,13 @@ class PDFParser:
                 if not full_text.strip():
                     return {
                         "success": False,
-                        "error": "无法从 PDF 中提取文本"
+"error": "Невозможно извлечь текст из PDF"
                     }
                 
-                # 提取元数据
+# Извлечь метаданные
                 metadata = pdf.metadata or {}
                 
-                # 提取信息
+# Извлечение информации
                 title = self._extract_title(full_text, metadata)
                 authors = self._extract_authors(full_text, metadata)
                 abstract = self._extract_abstract(full_text)
@@ -214,16 +214,16 @@ class PDFParser:
                     }
                 }
                 
-                logger.info(f"PDF 字节流解析成功")
+logger.info(f"Поток байтов PDF успешно проанализирован")
                 return result
                 
         except Exception as e:
-            logger.error(f"PDF 字节流解析失败: {str(e)}")
+logger.error(f"Ошибка анализа потока байтов PDF: {str(e)}")
             return {
                 "success": False,
-                "error": f"PDF 解析失败: {str(e)}"
+"ошибка": f"Ошибка анализа PDF: {str(e)}"
             }
 
 
-# 全局 PDF 解析器实例
+# Глобальный экземпляр парсера PDF
 pdf_parser = PDFParser()

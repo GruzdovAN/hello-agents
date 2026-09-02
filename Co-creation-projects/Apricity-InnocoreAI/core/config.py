@@ -1,5 +1,5 @@
 """
-InnoCore AI 核心配置模块
+Модуль конфигурации ядра InnoCore AI
 """
 
 from typing import Dict, List, Optional, Any
@@ -11,22 +11,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class LLMProvider(Enum):
-    """LLM提供商枚举"""
+"""Перечисление поставщиков LLM"""
     OPENAI = "openai"
     CLAUDE = "claude"
-    MODELSCOPE = "modelscope"  # 阿里云 ModelScope
-    OLLAMA = "ollama"  # 本地部署
-    DASHSCOPE = "dashscope"  # 阿里云灵积（推荐用于 Qwen 系列）
+MODELSCOPE = "modelscope" # Облако Alibaba ModelScope
+OLLAMA = "ollama" # Локальное развертывание
+DASHSCOPE = "dashscope" # Alibaba Cloud Lingji (рекомендуется для серии Qwen)
 
 class VectorDBType(Enum):
-    """向量数据库类型枚举"""
+"""Перечисление типов векторной базы данных"""
     QDRANT = "qdrant"
     CHROMA = "chroma"
     PINECONE = "pinecone"
 
 @dataclass
 class LLMConfig:
-    """LLM配置"""
+"""Конфигурация LLM"""
     provider: LLMProvider = LLMProvider.OPENAI
     model_name: str = "gpt-3.5-turbo"  # OpenAI: gpt-4, gpt-3.5-turbo, gpt-4-turbo-preview
                                         # DashScope: qwen-turbo, qwen-plus, qwen-max
@@ -39,7 +39,7 @@ class LLMConfig:
 
 @dataclass
 class VectorDBConfig:
-    """向量数据库配置"""
+"""Конфигурация векторной базы данных"""
     db_type: VectorDBType = VectorDBType.QDRANT
     host: str = "localhost"
     port: int = 6333
@@ -49,7 +49,7 @@ class VectorDBConfig:
 
 @dataclass
 class DatabaseConfig:
-    """关系数据库配置"""
+"""Конфигурация реляционной базы данных"""
     host: str = "localhost"
     port: int = 5432
     database: str = "innocore_ai"
@@ -59,7 +59,7 @@ class DatabaseConfig:
 
 @dataclass
 class RedisConfig:
-    """Redis配置"""
+"""Конфигурация Redis"""
     host: str = "localhost"
     port: int = 6379
     db: int = 0
@@ -68,7 +68,7 @@ class RedisConfig:
 
 @dataclass
 class ExternalAPIConfig:
-    """外部API配置"""
+"""Внешняя конфигурация API"""
     crossref_api_key: Optional[str] = None
     google_scholar_api_key: Optional[str] = None
     serpapi_key: Optional[str] = None
@@ -77,34 +77,34 @@ class ExternalAPIConfig:
 
 @dataclass
 class InnoCoreConfig:
-    """InnoCore AI 主配置类"""
+"""Основной класс конфигурации InnoCore AI"""
     
-    # 基础配置
+#Базовая конфигурация
     app_name: str = "InnoCore AI"
     debug: bool = False
     log_level: str = "INFO"
     
-    # LLM配置
+# Конфигурация LLM
     llm: LLMConfig = field(default_factory=LLMConfig)
     
-    # 向量数据库配置
+# Конфигурация векторной базы данных
     vector_db: VectorDBConfig = field(default_factory=VectorDBConfig)
     
-    # 关系数据库配置
+# Конфигурация реляционной базы данных
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
     
-    # Redis配置
+# Конфигурация Redis
     redis: RedisConfig = field(default_factory=RedisConfig)
     
-    # 外部API配置
+# Конфигурация внешнего API
     external_apis: ExternalAPIConfig = field(default_factory=ExternalAPIConfig)
     
-    # Agent配置
+#Конфигурация агента
     agent_max_steps: int = 5
     agent_timeout: int = 300
     concurrent_agents: int = 4
     
-    # RAG配置
+# Конфигурация RAG
     retrieval_top_k: int = 5
     similarity_threshold: float = 0.7
     hybrid_search_weights: Dict[str, float] = field(default_factory=lambda: {
@@ -112,18 +112,18 @@ class InnoCoreConfig:
         "keyword": 0.3
     })
     
-    # 性能配置
-    cache_ttl: int = 3600  # 缓存过期时间(秒)
+#Конфигурация производительности
+cache_ttl: int = 3600 # Срок действия кэша (секунды)
     batch_size: int = 10
     max_concurrent_requests: int = 50
     
     def __post_init__(self):
-        """初始化后处理"""
-        # 从环境变量加载配置
+"""Обработка после инициализации"""
+# Загрузить конфигурацию из переменных среды
         self.llm.api_key = self.llm.api_key or os.getenv("OPENAI_API_KEY")
         self.llm.base_url = self.llm.base_url or os.getenv("OPENAI_BASE_URL")
         
-        # 从环境变量加载模型名称（如果设置了）
+# Загрузить имя модели из переменной среды (если установлено)
         env_model = os.getenv("OPENAI_MODEL") or os.getenv("LLM_MODEL")
         if env_model:
             self.llm.model_name = env_model
@@ -138,15 +138,15 @@ class InnoCoreConfig:
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
 
-# 全局配置实例
+# Пример глобальной конфигурации
 config = InnoCoreConfig()
 
 def get_config() -> InnoCoreConfig:
-    """获取全局配置实例"""
+"""Получить экземпляр глобальной конфигурации"""
     return config
 
 def update_config(**kwargs) -> None:
-    """更新配置"""
+"""Обновить конфигурацию"""
     global config
     for key, value in kwargs.items():
         if hasattr(config, key):

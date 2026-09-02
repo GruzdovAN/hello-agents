@@ -1,5 +1,5 @@
 """
-InnoCore AI 基础智能体类
+Базовый класс агента InnoCore AI
 """
 
 import asyncio
@@ -16,7 +16,7 @@ from core.exceptions import AgentException, TimeoutException
 logger = logging.getLogger(__name__)
 
 class BaseAgent(ABC):
-    """基础智能体抽象类"""
+    """Базовый абстрактный класс агента"""
     
     def __init__(self, name: str, llm = None, 
                  max_steps: int = None, timeout: int = None):
@@ -34,20 +34,20 @@ class BaseAgent(ABC):
         
     @abstractmethod
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """执行智能体任务"""
+        """Выполнить задачу агента"""
         pass
     
     def add_tool(self, tool_name: str, tool_func: Callable, description: str = ""):
-        """添加工具"""
+        """Добавить инструмент"""
         self.tools[tool_name] = {
             "function": tool_func,
             "description": description
         }
     
     def get_tools_description(self) -> str:
-        """获取工具描述"""
+        """Получить описание инструментов"""
         if not self.tools:
-            return "暂无可用工具"
+            return "Нет доступных инструментов"
         
         descriptions = []
         for name, tool_info in self.tools.items():
@@ -56,9 +56,9 @@ class BaseAgent(ABC):
         return "\n".join(descriptions)
     
     async def call_tool(self, tool_name: str, tool_input: Any) -> Any:
-        """调用工具"""
+        """Вызвать инструмент"""
         if tool_name not in self.tools:
-            raise AgentException(f"工具 '{tool_name}' 不存在")
+            raise AgentException(f"Инструмент '{tool_name}' не существует")
         
         try:
             tool_func = self.tools[tool_name]["function"]
@@ -79,27 +79,27 @@ class BaseAgent(ABC):
             return result
             
         except asyncio.TimeoutError:
-            raise TimeoutException(f"工具 '{tool_name}' 执行超时")
+            raise TimeoutException(f"Превышено время ожидания выполнения инструмента '{tool_name}'")
         except Exception as e:
-            raise AgentException(f"工具 '{tool_name}' 执行失败: {str(e)}")
+            raise AgentException(f"Ошибка выполнения инструмента '{tool_name}': {str(e)}")
     
     async def think(self, prompt: str, context: Dict = None) -> str:
-        """调用LLM进行思考"""
+        """Вызвать LLM для рассуждения"""
         try:
-            # 构建完整的提示词
+            # Собрать полный промпт
             full_prompt = prompt
             
-            # 添加上下文信息
+            # Добавить контекст
             if context:
                 context_str = json.dumps(context, ensure_ascii=False, indent=2)
-                full_prompt = f"上下文信息:\n{context_str}\n\n任务:\n{prompt}"
+                full_prompt = f"Контекст:\n{context_str}\n\nЗадача:\n{prompt}"
             
-            # 添加历史记录
+            # Добавить историю
             if self.history:
-                history_str = "\n".join(self.history[-10:])  # 只保留最近10条
-                full_prompt += f"\n\n历史记录:\n{history_str}"
+                history_str = "\n".join(self.history[-10:])  # только последние 10 записей
+                full_prompt += f"\n\nИстория:\n{history_str}"
             
-            # 调用 HelloAgent LLM
+            # Вызов HelloAgent LLM
             response = await asyncio.wait_for(
                 self.llm.ainvoke(full_prompt),
                 timeout=self.timeout
@@ -113,34 +113,34 @@ class BaseAgent(ABC):
             return response_text
             
         except asyncio.TimeoutError:
-            raise TimeoutException("LLM思考超时")
+            raise TimeoutException("Превышено время ожидания ответа LLM")
         except Exception as e:
-            raise AgentException(f"LLM思考失败: {str(e)}")
+            raise AgentException(f"Ошибка рассуждения LLM: {str(e)}")
     
     def _add_to_history(self, message: str):
-        """添加到历史记录"""
+        """Добавить запись в историю"""
         timestamp = datetime.now().isoformat()
         self.history.append(f"[{timestamp}] {message}")
         
-        # 限制历史记录长度
+        # Ограничить длину истории
         if len(self.history) > 100:
             self.history = self.history[-50:]
     
     def get_history(self, limit: int = 10) -> List[str]:
-        """获取历史记录"""
+        """Получить историю"""
         return self.history[-limit:]
     
     def clear_history(self):
-        """清空历史记录"""
+        """Очистить историю"""
         self.history = []
     
     def set_state(self, state: str):
-        """设置智能体状态"""
+        """Установить состояние агента"""
         self.state = state
         logger.info(f"Agent {self.name} state changed to: {state}")
     
     def get_status(self) -> Dict[str, Any]:
-        """获取智能体状态"""
+        """Получить состояние агента"""
         return {
             "name": self.name,
             "state": self.state,
@@ -152,18 +152,18 @@ class BaseAgent(ABC):
         }
     
     async def validate_input(self, input_data: Dict[str, Any]) -> bool:
-        """验证输入数据"""
+        """Проверить входные данные"""
         required_fields = self.get_required_fields()
         
         for field in required_fields:
             if field not in input_data:
-                raise AgentException(f"缺少必需字段: {field}")
+                raise AgentException(f"Отсутствует обязательное поле: {field}")
         
         return True
     
     @abstractmethod
     def get_required_fields(self) -> List[str]:
-        """获取必需的输入字段"""
+        """Получить обязательные поля входных данных"""
         pass
     
     def __str__(self) -> str:

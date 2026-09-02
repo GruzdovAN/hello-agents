@@ -1,29 +1,29 @@
 """
-HealthRecordAgent 项目异常体系
+Система исключений проекта HealthRecordAgent
 """
 
 class HealthAgentException(Exception):
-    """ 基础异常类"""
+"""Базовые классы исключений"""
     def __init__(self, message: str):
         self.message = message
         super().__init__(message)
 
 
 class AgentException(HealthAgentException):
-    """Agent 执行异常"""
+"""Исключение выполнения агента"""
     pass
 
 
 class ValidationException(HealthAgentException):
-    """输入 / 输出校验异常"""
+"""Исключение проверки ввода/вывода"""
     pass
 
 
 class LLMException(HealthAgentException):
-    """LLM 调用异常"""
+"""Исключение вызова LLM"""
     pass
 
 
 class TimeoutException(HealthAgentException):
-    """超时异常"""
+"""Исключение тайм-аута"""
     pass

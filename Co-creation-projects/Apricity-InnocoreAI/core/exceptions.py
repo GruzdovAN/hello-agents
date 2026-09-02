@@ -1,50 +1,50 @@
 """
-InnoCore AI 自定义异常类
+Пользовательский класс исключений InnoCore AI
 """
 
 class InnoCoreException(Exception):
-    """InnoCore AI 基础异常类"""
+"""Базовый класс исключений InnoCore AI"""
     def __init__(self, message: str, error_code: str = None):
         self.message = message
         self.error_code = error_code
         super().__init__(self.message)
 
 class AgentException(InnoCoreException):
-    """Agent相关异常"""
+"""Исключение, связанное с агентом"""
     pass
 
 class VectorStoreException(InnoCoreException):
-    """向量存储异常"""
+"""Исключение векторного хранилища"""
     pass
 
 class DatabaseException(InnoCoreException):
-    """数据库异常"""
+"""Исключение базы данных"""
     pass
 
 class LLMException(InnoCoreException):
-    """LLM调用异常"""
+"""Исключение вызова LLM"""
     pass
 
 class PDFParsingException(InnoCoreException):
-    """PDF解析异常"""
+"""Исключение анализа PDF"""
     pass
 
 class ExternalAPIException(InnoCoreException):
-    """外部API调用异常"""
+"""Исключение вызова внешнего API"""
     pass
 
 class ConfigurationException(InnoCoreException):
-    """配置异常"""
+"""Исключение конфигурации"""
     pass
 
 class ValidationException(InnoCoreException):
-    """数据验证异常"""
+"""Исключение проверки данных"""
     pass
 
 class TimeoutException(InnoCoreException):
-    """超时异常"""
+"""Исключение тайм-аута"""
     pass
 
 class ResourceExhaustedException(InnoCoreException):
-    """资源耗尽异常"""
+"""Исключение исчерпания ресурсов"""
     pass

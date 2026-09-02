@@ -1,5 +1,5 @@
 # specialist/paper_analyzer.py
-"""PDF 论文分析专家"""
+"""Эксперт по анализу PDF-документов"""
 
 import os
 from pathlib import Path
@@ -10,58 +10,58 @@ from hello_agents import HelloAgentsLLM
 
 class PaperAnalyzerAgent:
     """
-    PDF 论文分析专家
+Эксперт по анализу PDF-документов
 
-    功能：
-    - 读取 PDF 论文
-    - 提取标题和摘要
-    - 识别核心概念
-    - 推断前置知识
-    - 确定研究领域
+Функция:
+- Читать PDF-документы
+- Извлечение заголовков и аннотаций
+- Определить основные понятия.
+- Сделать вывод о предварительном знании
+- Определить области исследований.
     """
 
     def __init__(self, llm: HelloAgentsLLM):
         """
-        初始化 PaperAnalyzerAgent
+Инициализация агента PaperAnalyzerAgent
 
         Args:
-            llm: HelloAgentsLLM 实例
+llm: экземпляр HelloAgentsLLM
         """
         self.llm = llm
 
     def _extract_title_from_path(self, file_path: str) -> str:
         """
-        从文件路径提取论文标题
+Извлечь название статьи из пути к файлу
 
         Args:
-            file_path: PDF 文件路径
+file_path: путь к PDF-файлу
 
         Returns:
-            论文标题
+Название статьи
         """
-        # 处理 ~ 路径
+# Процесс ~ путь
         if file_path.startswith("~"):
             file_path = os.path.expanduser(file_path)
 
-        # 获取文件名（去掉扩展名）
+# Получаем имя файла (удаляем расширение)
         filename = Path(file_path).stem
 
-        # 将连字符和下划线替换为空格
+# Заменяем дефисы и подчеркивания пробелами
         title = filename.replace("-", " ").replace("_", " ")
 
         return title
 
     def _extract_text_from_pdf(self, file_path: str) -> str:
         """
-        从 PDF 提取文本
+Извлечь текст из PDF
 
         Args:
-            file_path: PDF 文件路径
+file_path: путь к PDF-файлу
 
         Returns:
-            提取的文本内容
+Извлеченный текстовый контент
         """
-        # 处理 ~ 路径
+# Процесс ~ путь
         if file_path.startswith("~"):
             file_path = os.path.expanduser(file_path)
 
@@ -70,7 +70,7 @@ class PaperAnalyzerAgent:
                 reader = PyPDF2.PdfReader(file)
                 text = ""
 
-                # 提取前3页的内容（通常包含摘要和引言）
+# Извлеките содержимое первых трех страниц (обычно включая аннотацию и введение)
                 max_pages = min(3, len(reader.pages))
                 for i in range(max_pages):
                     page = reader.pages[i]
@@ -78,21 +78,21 @@ class PaperAnalyzerAgent:
 
                 return text
         except Exception as e:
-            raise IOError(f"无法读取 PDF 文件：{e}")
+поднять IOError(f «Невозможно прочитать PDF-файл: {e}»)
 
     def _extract_keywords_from_text(self, text: str) -> List[str]:
         """
-        从文本中提取关键词
+Извлечение ключевых слов из текста
 
         Args:
-            text: 论文文本
+текст: бумажный текст
 
         Returns:
-            关键词列表
+список ключевых слов
         """
-        # 学术领域常见关键词
+# Общие ключевые слова в академических областях
         academic_keywords = [
-            # 深度学习/机器学习
+# Глубокое обучение/Машинное обучение
             "Neural Network",
             "Deep Learning",
             "Transformer",
@@ -110,12 +110,12 @@ class PaperAnalyzerAgent:
             "Embedding",
             "BERT",
             "GPT",
-            # 计算机视觉
+#компьютерное зрение
             "Computer Vision",
             "Image Processing",
             "Convolution",
             "Feature Extraction",
-            # 其他
+# другой
             "Algorithm",
             "Data Structure",
             "Complexity",
@@ -137,12 +137,12 @@ class PaperAnalyzerAgent:
         根据关键词推断前置知识
 
         Args:
-            keywords: 关键词列表
+ключевые слова: список ключевых слов
 
         Returns:
-            前置知识列表
+Список необходимых знаний
         """
-        # 前置知识映射
+# Картирование предварительных знаний
         prereq_map = {
             "Deep Learning": ["Machine Learning", "Python", "Linear Algebra"],
             "Transformer": ["Attention Mechanism", "Sequence Models"],
@@ -158,7 +158,7 @@ class PaperAnalyzerAgent:
             if keyword in prereq_map:
                 prerequisites.extend(prereq_map[keyword])
 
-        # 去重
+# Удаляем дубликаты
         return list(set(prerequisites))
 
     def _analyze_with_llm(self, title: str, text: str) -> Dict[str, any]:
@@ -166,18 +166,18 @@ class PaperAnalyzerAgent:
         使用 LLM 深度分析论文
 
         Args:
-            title: 论文标题
-            text: 论文文本
+название: название статьи
+текст: бумажный текст
 
         Returns:
-            分析结果字典
+Словарь результатов анализа
         """
-        user_prompt = f"""请分析以下学术论文并提取学习相关信息：
+user_prompt = f"""Проанализируйте следующие научные статьи и извлеките информацию, связанную с обучением:
 
-【论文标题】
+【Название статьи】
 {title}
 
-【论文内容（前1000字）】
+[Содержание статьи (первые 1000 слов)]
 {text[:1000]}
 """
 
@@ -191,7 +191,7 @@ class PaperAnalyzerAgent:
 
         try:
             response = self.llm.invoke(messages)
-            # 简化实现：返回基于规则的分析结果
+# Упрощенная реализация: возврат результатов анализа на основе правил
             keywords = self._extract_keywords_from_text(text)
             prerequisites = self._identify_prerequisites(keywords)
 
@@ -200,11 +200,11 @@ class PaperAnalyzerAgent:
                 "core_concepts": keywords[:5],  # 前5个关键词
                 "prerequisites": prerequisites,
                 "title": title,
-                "learning_difficulty": "高级",
+"learning_difficulty": "高级",
                 "estimated_weeks": 8,
             }
         except Exception:
-            # 降级：使用基于规则的分析
+# Понижение версии: используйте анализ на основе правил.
             keywords = self._extract_keywords_from_text(text)
             prerequisites = self._identify_prerequisites(keywords)
 
@@ -213,26 +213,26 @@ class PaperAnalyzerAgent:
                 "core_concepts": keywords[:5],
                 "prerequisites": prerequisites,
                 "title": title,
-                "learning_difficulty": "高级",
+"learning_difficulty": "高级",
                 "estimated_weeks": 8,
             }
 
     def _infer_domain_from_keywords(self, keywords: List[str]) -> str:
         """
-        根据关键词推断研究领域
+Определите области исследований на основе ключевых слов
 
         Args:
-            keywords: 关键词列表
+ключевые слова: список ключевых слов
 
         Returns:
-            研究领域
+область исследования
         """
         if not keywords:
             return "general"
 
         keyword_lower = " ".join(keywords).lower()
 
-        # 领域映射
+# Сопоставление доменов
         if any(
             kw in keyword_lower
             for kw in ["transformer", "attention", "nlp", "language", "bert", "gpt"]
@@ -257,38 +257,38 @@ class PaperAnalyzerAgent:
 
     def analyze(self, pdf_path: str) -> Dict[str, any]:
         """
-        分析 PDF 论文
+Анализ PDF-документов
 
         Args:
-            pdf_path: PDF 文件路径
+pdf_path: путь к PDF-файлу
 
         Returns:
-            分析结果字典，包含：
-            - domain: 研究领域
-            - title: 论文标题
-            - core_concepts: 核心概念列表
-            - prerequisites: 前置知识列表
-            - learning_difficulty: 学习难度
-            - estimated_weeks: 估计学习周数
+Словарь результатов анализа, включающий:
+- домен: область исследований
+- title: название статьи
+- core_concepts: список основных концепций.
+- пререквизиты: список необходимых знаний
+- Learning_difficulty: сложность обучения
+- Assessment_weeks: примерное количество учебных недель.
         """
-        # 提取标题
+#Извлечь заголовок
         title = self._extract_title_from_path(pdf_path)
 
-        # 提取文本
+#Извлекаем текст
         try:
             text = self._extract_text_from_pdf(pdf_path)
         except IOError:
-            # 如果无法读取 PDF，使用基于路径的分析
+# Если PDF-файл не читается, используйте анализ на основе пути
             return {
                 "domain": "general",
                 "title": title,
                 "core_concepts": [],
                 "prerequisites": [],
-                "learning_difficulty": "高级",
+"learning_difficulty": "高级",
                 "estimated_weeks": 8,
             }
 
-        # 使用 LLM 深度分析
+#Используйте LLM для углубленного анализа
         result = self._analyze_with_llm(title, text)
 
         return result

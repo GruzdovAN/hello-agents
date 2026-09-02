@@ -1,4 +1,4 @@
-"""Code Plan Agent - 智能代码计划工具，具备Reflection反思功能"""
+"""Code Plan Agent — интеллектуальный инструмент планирования кода с функцией отражения Reflection."""
 
 import json
 from typing import Optional, List, Dict, Any, AsyncGenerator
@@ -14,14 +14,12 @@ from hello_agents.tools.registry import ToolRegistry
 
 
 class PlanMemory:
-    """
-    计划记忆模块，用于存储代码计划的生成轨迹和反思记录
-    """
+    """Модуль памяти плана, используемый для хранения трека генерации и записи отражения плана кода."""
     def __init__(self):
         self.records: List[Dict[str, Any]] = []
 
     def add_record(self, record_type: str, content: str, metadata: Optional[Dict] = None):
-        """向记忆中添加一条新记录"""
+        """Добавить новую запись в память"""
         self.records.append({
             "type": record_type,
             "content": content,
@@ -30,26 +28,26 @@ class PlanMemory:
         })
 
     def get_trajectory(self) -> str:
-        """将所有记忆记录格式化为一个连贯的字符串文本"""
+        """Отформатируйте все записи памяти в связный строковый текст."""
         trajectory = ""
         for record in self.records:
             if record['type'] == 'plan':
-                trajectory += f"--- 代码计划 ---\n{record['content']}\n\n"
+                trajectory += f"--- План кода ---\n{record['content']}\n\n"
             elif record['type'] == 'reflection':
-                trajectory += f"--- 反思反馈 ---\n{record['content']}\n\n"
+                trajectory += f"--- Рефлексивная обратная связь ---\n{record['content']}\n\n"
             elif record['type'] == 'revision':
-                trajectory += f"--- 优化后计划 ---\n{record['content']}\n\n"
+                trajectory += f"---Оптимизированный план ---\n{record['content']}\n\n"
         return trajectory.strip()
 
     def get_last_plan(self) -> str:
-        """获取最近一次的代码计划"""
+        """Получите последний план кода"""
         for record in reversed(self.records):
             if record['type'] in ['plan', 'revision']:
                 return record['content']
         return ""
 
     def get_last_reflection(self) -> str:
-        """获取最近一次的反思反馈"""
+        """Получите отзыв о своем последнем размышлении"""
         for record in reversed(self.records):
             if record['type'] == 'reflection':
                 return record['content']
@@ -57,26 +55,24 @@ class PlanMemory:
 
 
 class CodePlanAgent(Agent):
-    """
-    Code Plan Agent - 智能代码计划工具，具备Reflection反思功能
+    """Code Plan Agent — интеллектуальный инструмент планирования кода с функцией отражения Reflection.
 
-    核心能力：
-    1. 代码计划生成：根据需求描述生成结构化的代码实现计划
-    2. 自我反思：对生成的代码计划进行质量评估和改进建议
-    3. 迭代优化：根据反思结果优化代码计划
-    4. 支持工具调用（可选）
+    Основные компетенции:
+    1. Генерация плана кода. Создайте план реализации структурированного кода на основе описания требований.
+    2. Самоанализ: провести оценку качества и внести предложения по улучшению созданного плана кода.
+    3. Итеративная оптимизация: оптимизируйте план кода на основе результатов отражения.
+    4. Вызов инструмента поддержки (опционально)
 
-    输出格式：
-    - 代码计划采用结构化格式，包含多个步骤
-    - 每个步骤包含：步骤编号、任务描述、实现要点、预期输出
+    Выходной формат:
+    - Планы кода имеют структурированный формат и содержат несколько этапов.
+    - Каждый шаг включает: номер шага, описание задачи, точки реализации, ожидаемый результат.
 
-    反思维度：
-    - 完整性：计划是否覆盖所有需求
-    - 可行性：技术方案是否可行
-    - 效率：是否存在性能优化空间
-    - 可维护性：代码结构是否清晰
-    - 安全性：是否存在安全风险
-    """
+    Светоотражающий размер:
+    - Полнота: охватывает ли план все требования?
+    - Технико-экономическое обоснование: осуществимо ли техническое решение.
+    - Эффективность: есть ли возможности для оптимизации производительности?
+    - Ремонтопригодность: понятна ли структура кода?
+    - Безопасность: существуют ли риски безопасности?"""
 
     def __init__(
         self,
@@ -89,70 +85,69 @@ class CodePlanAgent(Agent):
         enable_tool_calling: bool = True,
         max_tool_iterations: int = 3
     ):
-        """
-        初始化CodePlanAgent
+        """Инициализация агента CodePlanAgent
 
-        Args:
-            name: Agent名称
-            llm: LLM实例
-            system_prompt: 系统提示词（定义角色和行为）
-            config: 配置对象
-            max_reflection_iterations: 最大反思迭代次数
-            tool_registry: 工具注册表（可选）
-            enable_tool_calling: 是否启用工具调用
-            max_tool_iterations: 最大工具调用迭代次数
-        """
-        # 默认 system_prompt - 代码规划专家
-        default_system_prompt = """你是一位资深的软件架构师和代码规划专家。
-你擅长将业务需求转化为清晰、可行的代码实现计划。
+        Аргументы:
+            имя: Имя агента
+            llm: экземпляр LLM
+            system_prompt: слово системной подсказки (определяет роли и поведение)
+            конфигурация: объект конфигурации
+            max_reflection_iterations: Максимальное количество итераций отражения.
+            tool_registry: реестр инструментов (необязательно)
+            Enable_tool_calling: Включить ли вызов инструмента
+            max_tool_iterations: Максимальное количество итераций вызова инструмента."""
+        # Default system_prompt — эксперт по планированию кода
 
-## 核心职责
-1. 分析需求并生成结构化的代码实现计划
-2. 确保计划覆盖所有核心功能和边界情况
-3. 设计合理的模块划分和接口定义
-4. 考虑代码的可维护性、扩展性和性能
+        default_system_prompt = """Вы старший архитектор программного обеспечения и эксперт по планированию кода.
+Вы хорошо умеете переводить бизнес-требования в четкие и действенные планы реализации кода.
 
-## 输出格式要求
-请按照以下结构化格式输出代码计划：
+## Основные обязанности
+1. Анализ требований и создание плана реализации структурированного кода.
+2. Убедитесь, что план охватывает все основные функции и крайние случаи.
+3. Разработайте разумное разделение модулей и определение интерфейса.
+4. Учитывайте удобство сопровождения кода, масштабируемость и производительность.
+
+## Требования к формату вывода
+Пожалуйста, выведите план кода в следующем структурированном формате:
 
 ```code_plan
-## 项目概述
-[简要描述项目目标和核心功能]
+## Обзор проекта
+[Краткое описание целей и основных особенностей проекта]
 
-## 技术栈
-- 语言：[编程语言]
-- 框架：[主要框架]
-- 数据库：[数据库类型]
-- 其他：[关键依赖]
+## Стек технологий
+- Язык: [Язык программирования]
+- Рамка: [Основной кадр]
+- База данных: [Тип базы данных]
+- Прочее: [Основные зависимости]
 
-## 目录结构
+## Структура каталогов
 ```
-[项目目录结构]
+[Структура каталогов проекта]
 ```
 
-## 实现步骤
-1. [步骤1描述]
-   - 实现要点：[关键实现细节]
-   - 文件路径：[涉及文件]
-   - 预期输出：[预期结果]
+## Этапы реализации
+1. [Описание шага 1]
+   - Точки реализации: [Основные детали реализации]
+   - Путь к файлу: [участвующий файл]
+   - ожидаемый результат: [ожидаемый результат]
 
-2. [步骤2描述]
-   - 实现要点：[关键实现细节]
-   - 文件路径：[涉及文件]
-   - 预期输出：[预期结果]
+2. [Описание шага 2]
+   - Точки реализации: [Основные детали реализации]
+   - Путь к файлу: [участвующий файл]
+   - ожидаемый результат: [ожидаемый результат]
 
 ...
 
-## 关键设计
-- [设计决策1]：[说明原因]
-- [设计决策2]：[说明原因]
+## Дизайн клавиш
+- [Проектное решение 1]: [Объясните почему]
+- [Проектное решение 2]: [Объясните почему]
 
-## 注意事项
-- [注意事项1]
-- [注意事项2]
+## Примечания
+- [Примечание 1]
+- [Примечание 2]
 ```
 
-请确保计划详细、清晰、可执行。"""
+Пожалуйста, убедитесь, что план подробный, ясный и выполнимый."""
 
         super().__init__(
             name,
@@ -168,156 +163,155 @@ class CodePlanAgent(Agent):
         self.max_tool_iterations = max_tool_iterations
 
     def run(self, input_text: str, **kwargs) -> str:
-        """
-        运行CodePlanAgent
+        """Запустите агент CodePlanAgent.
 
-        Args:
-            input_text: 需求描述
-            **kwargs: 其他参数（temperature, max_tokens等）
+        Аргументы:
+            input_text: описание требования
+            **kwargs: другие параметры (температура, max_tokens и т. д.)
 
-        Returns:
-            最终优化后的代码计划
-        """
-        print(f"\n🤖 {self.name} 开始处理代码规划任务: {input_text[:50]}...")
+        Возврат:
+            Окончательный оптимизированный план кода"""
+        print(f"\n🤖 {self.name} начинает обработку задач планирования кода: {input_text[:50]}...")
 
-        # 重置记忆
+        # сбросить память
+
         self.memory = PlanMemory()
 
-        # 1. 生成初始代码计划
-        print("\n--- 阶段1: 生成初始代码计划 ---")
+        # 1. Создайте первоначальный план кода.
+
+        print("\n--- Этап 1. Создание первоначального плана кода ---")
         initial_plan = self._generate_code_plan(input_text, **kwargs)
         self.memory.add_record("plan", initial_plan, {"phase": "initial"})
 
-        print(f"\n✅ 初始计划已生成:\n{initial_plan}")
+        print(f"\n✅ Первоначальный план создан:\n{initial_plan}")
 
-        # 2. 迭代反思与优化
+        # 2. Итеративное отражение и оптимизация
+
         for i in range(self.max_reflection_iterations):
-            print(f"\n--- 阶段2: 第 {i+1}/{self.max_reflection_iterations} 轮反思优化 ---")
+            print(f"\n--- Фаза 2: {i+1}/{self.max_reflection_iterations} раунд оптимизации отражения ---")
 
-            # a. 反思当前计划
-            print("\n-> 正在进行计划反思...")
+            # а. Подумайте о текущих планах
+
+            print("\n->Размышляя о плане...")
             last_plan = self.memory.get_last_plan()
             reflection = self._reflect_on_plan(input_text, last_plan, **kwargs)
             self.memory.add_record("reflection", reflection, {"iteration": i + 1})
 
-            print(f"\n💡 反思结果:\n{reflection}")
+            print(f"\n💡Результаты отражения:\n{reflection}")
 
-            # b. 检查是否需要停止
-            if "无需改进" in reflection or "no need for improvement" in reflection.lower():
-                print("\n✅ 反思认为计划已无需改进，任务完成。")
+            # б. Проверьте, нужно ли останавливаться
+
+            if "Никаких улучшений не требуется" in reflection or "no need for improvement" in reflection.lower():
+                print("\n ✅Поразмыслив, я считаю, что план больше не нуждается в улучшении и задача выполнена.")
                 break
 
-            # c. 优化计划
-            print("\n-> 正在优化代码计划...")
+            # в. Оптимизировать план
+
+            print("\n->Оптимизация плана кода...")
             refined_plan = self._refine_plan(input_text, last_plan, reflection, **kwargs)
             self.memory.add_record("revision", refined_plan, {"iteration": i + 1})
 
-            print(f"\n🔄 优化后的计划:\n{refined_plan}")
+            print(f"\n🔄 Оптимизированный план:\n{refined_plan}")
 
         final_plan = self.memory.get_last_plan()
-        print(f"\n--- 🎉 任务完成 ---\n最终代码计划:\n{final_plan}")
+        print(f"\n--- 🎉 Миссия выполнена ---\nОкончательный план кода:\n{final_plan}")
 
-        # 保存到历史记录
+        # Сохранить в историю
+
         self.add_message(Message(input_text, "user"))
         self.add_message(Message(final_plan, "assistant"))
 
         return final_plan
 
     def _generate_code_plan(self, requirements: str, **kwargs) -> str:
-        """
-        生成初始代码计划
+        """Создать первоначальный план кода
 
-        Args:
-            requirements: 需求描述
-            **kwargs: LLM调用参数
+        Аргументы:
+            требования: описание требования
+            **kwargs: параметры вызова LLM.
 
-        Returns:
-            代码计划文本
-        """
+        Возврат:
+            текст плана кода"""
         messages = [
             {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": f"""请根据以下需求描述，生成一份详细的代码实现计划：
+            {"role": "user", "content": f"""Создайте подробный план реализации кода на основе следующего описания требований:
 
-## 需求描述
-{requirements}
+## Описание требования
+{требования}
 
-请按照指定的格式输出代码计划。"""}
+Пожалуйста, выведите план кода в указанном формате."""}
         ]
 
         return self._get_llm_response(messages, **kwargs)
 
     def _reflect_on_plan(self, requirements: str, plan: str, **kwargs) -> str:
-        """
-        对代码计划进行反思评估
+        """Рефлексивная оценка планов кода
 
-        Args:
-            requirements: 原始需求
-            plan: 当前代码计划
-            **kwargs: LLM调用参数
+        Аргументы:
+            требования: первоначальные требования
+            план: текущий план кода
+            **kwargs: параметры вызова LLM.
 
-        Returns:
-            反思反馈文本
-        """
-        reflection_prompt = f"""你是一位资深的技术评审专家。请对以下代码计划进行全面评估：
+        Возврат:
+            Светоотражающий текст обратной связи"""
+        reflection_prompt = f"""Вы старший эксперт по технической экспертизе. Пожалуйста, проведите тщательную оценку следующих планов кода:
 
-## 原始需求
-{requirements}
+## Исходные требования
+{требования}
 
-## 当前代码计划
-{plan}
+## Текущий план кода
+{план}
 
-## 评审维度
-请从以下维度进行评估：
+## Просмотр размеров
+Пожалуйста, оцените по следующим параметрам:
 
-1. **完整性**：计划是否覆盖了所有核心需求？是否有遗漏的功能？
-2. **可行性**：技术方案是否可行？是否存在技术风险？
-3. **架构合理性**：模块划分是否合理？接口设计是否清晰？
-4. **可维护性**：代码结构是否清晰？是否遵循最佳实践？
-5. **性能考虑**：是否考虑了性能优化？是否存在潜在的性能瓶颈？
-6. **安全性**：是否存在安全风险？是否需要添加安全措施？
-7. **测试覆盖**：是否考虑了测试策略？关键路径是否有测试覆盖？
+1. **Полнота**. Охватывает ли план все основные требования? Есть ли недостающие функции?
+2. **Осуществимость**: Возможно ли техническое решение? Есть ли технические риски?
+3. **Рациональность архитектуры**: разумно ли разделение модулей? Дизайн интерфейса понятен?
+4. **Удобство обслуживания**: понятна ли структура кода? Соблюдаются ли лучшие практики?
+5. **Аспекты производительности**. Рассматривалась ли оптимизация производительности? Существуют ли потенциальные узкие места производительности?
+6. **Безопасность**: существуют ли риски безопасности? Вам нужно добавить меры безопасности?
+7. **Тестовое покрытие**: учитывается ли стратегия тестирования? Охватываются ли тестами критические пути?
 
-## 输出要求
-请给出具体的改进建议。如果计划已经很好，请回答"无需改进"。"""
+## Требования к выводу
+Пожалуйста, дайте конкретные предложения по улучшению. Если план уже хорош, ответьте: «Улучшений не требуется»."""
 
         messages = [
-            {"role": "system", "content": "你是一位严格的技术评审专家，擅长发现代码计划中的潜在问题并提出改进建议。"},
+            {"role": "system", "content": "Вы строгий технический обозреватель, умеющий выявлять потенциальные проблемы в планах кода и предлагать улучшения."},
             {"role": "user", "content": reflection_prompt}
         ]
 
         return self._get_llm_response(messages, **kwargs)
 
     def _refine_plan(self, requirements: str, current_plan: str, feedback: str, **kwargs) -> str:
-        """
-        根据反馈优化代码计划
+        """Оптимизация плана кода на основе отзывов
 
-        Args:
-            requirements: 原始需求
-            current_plan: 当前代码计划
-            feedback: 反思反馈
-            **kwargs: LLM调用参数
+        Аргументы:
+            требования: первоначальные требования
+            current_plan: текущий план кода
+            обратная связь: рефлексивная обратная связь
+            **kwargs: параметры вызова LLM.
 
-        Returns:
-            优化后的代码计划
-        """
-        refinement_prompt = f"""请根据评审反馈优化以下代码计划：
+        Возврат:
+            Оптимизированный план кода"""
+        refinement_prompt = f"""Пожалуйста, оптимизируйте следующий план кода на основе отзывов отзывов:
 
-## 原始需求
-{requirements}
+## Исходные требования
+{требования}
 
-## 当前代码计划
-{current_plan}
+## Текущий план кода
+{текущий_план}
 
-## 评审反馈
-{feedback}
+## Просмотрите отзыв
+{отзыв}
 
-## 优化要求
-请根据反馈意见对代码计划进行修改和完善，确保：
-1. 解决反馈中指出的所有问题
-2. 保持计划的结构化格式
-3. 提供具体的改进方案
+## Требования к оптимизации
+Пожалуйста, измените и улучшите план кода на основе отзывов, чтобы гарантировать:
+1. Устраните любые проблемы, отмеченные в отзыве.
+2. Держите план в структурированном формате
+3. Предоставьте конкретные планы улучшений.
 
-请输出优化后的完整代码计划。"""
+Пожалуйста, выведите полный оптимизированный план кода."""
 
         messages = [
             {"role": "system", "content": self.system_prompt},
@@ -327,22 +321,22 @@ class CodePlanAgent(Agent):
         return self._get_llm_response(messages, **kwargs)
 
     def _get_llm_response(self, messages: List[Dict[str, str]], **kwargs) -> str:
-        """
-        调用LLM并获取完整响应（支持 Function Calling）
+        """Позвоните в LLM и получите полный ответ (поддерживается вызов функций)
 
-        Args:
-            messages: 消息列表
-            **kwargs: 其他参数
+        Аргументы:
+            сообщения: список сообщений
+            **kwargs: другие параметры
 
-        Returns:
-            LLM响应文本
-        """
-        # 如果没有启用工具调用，直接返回
+        Возврат:
+            Текст ответа LLM"""
+        # Если вызов инструмента не включен, вернитесь напрямую
+
         if not self.enable_tool_calling or not self.tool_registry:
             llm_response = self.llm.invoke(messages, **kwargs)
             return llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
 
-        # 启用工具调用模式
+        # Включить режим вызова инструмента
+
         tool_schemas = self._build_tool_schemas()
         current_iteration = 0
 
@@ -357,18 +351,21 @@ class CodePlanAgent(Agent):
                     **kwargs
                 )
             except Exception as e:
-                print(f"❌ LLM 调用失败: {e}")
+                print(f"❌ Не удалось позвонить в LLM: {e}")
                 break
 
             response_message = response.choices[0].message
 
-            # 处理工具调用
+            # Обработка вызовов инструментов
+
             tool_calls = response_message.tool_calls
             if not tool_calls:
-                # 没有工具调用，返回文本响应
+                # Инструмент не вызывается, возвращается текстовый ответ
+
                 return response_message.content or ""
 
-            # 将助手消息添加到历史
+            # Добавить сообщение помощника в историю
+
             messages.append({
                 "role": "assistant",
                 "content": response_message.content,
@@ -385,7 +382,8 @@ class CodePlanAgent(Agent):
                 ]
             })
 
-            # 执行所有工具调用
+            # Выполнить все вызовы инструментов
+
             for tool_call in tool_calls:
                 tool_name = tool_call.function.name
                 tool_call_id = tool_call.id
@@ -393,25 +391,28 @@ class CodePlanAgent(Agent):
                 try:
                     arguments = json.loads(tool_call.function.arguments)
                 except json.JSONDecodeError as e:
-                    print(f"❌ 工具参数解析失败: {e}")
+                    print(f"❌ Не удалось проанализировать параметры инструмента: {e}.")
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call_id,
-                        "content": f"错误：参数格式不正确 - {str(e)}"
+                        "content": f"Ошибка: неправильный формат аргумента — {str(e)}"
                     })
                     continue
 
-                # 执行工具（复用基类方法）
+                # Инструменты выполнения (повторное использование методов базового класса)
+
                 result = self._execute_tool_call(tool_name, arguments)
 
-                # 添加工具结果到消息
+                # Добавить результаты инструмента в сообщение
+
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call_id,
                     "content": result
                 })
 
-        # 如果超过最大迭代次数，获取最后一次回答
+        # Если максимальное количество итераций превышено, получить последний ответ
+
         if current_iteration >= self.max_tool_iterations:
             llm_response = self.llm.invoke(messages, **kwargs)
             return llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
@@ -426,25 +427,24 @@ class CodePlanAgent(Agent):
         on_error: LifecycleHook = None,
         **kwargs
     ) -> AsyncGenerator[StreamEvent, None]:
-        """
-        CodePlanAgent 流式执行
+        """Потоковое выполнение CodePlanAgent
 
-        实时返回：
-        - 计划生成阶段的输出
-        - 反思阶段的思考过程
-        - 优化阶段的输出
+        Возврат в реальном времени:
+        - Результаты этапа разработки плана
+        - Мыслительный процесс на стадии размышления
+        - Выход этапа оптимизации
 
-        Args:
-            input_text: 用户输入
-            on_start: 开始钩子
-            on_finish: 完成钩子
-            on_error: 错误钩子
-            **kwargs: 其他参数
+        Аргументы:
+            input_text: ввод пользователя
+            on_start: начать хук
+            on_finish: крючок завершения
+            on_error: ловушка ошибки
+            **kwargs: другие параметры
 
-        Yields:
-            StreamEvent: 流式事件
-        """
-        # 发送开始事件
+        Выход:
+            StreamEvent: событие потоковой передачи"""
+        # Отправить стартовое событие
+
         yield StreamEvent.create(
             StreamEventType.AGENT_START,
             self.name,
@@ -452,24 +452,25 @@ class CodePlanAgent(Agent):
         )
 
         try:
-            # 阶段 1：生成代码计划
+            # Этап 1. Создание плана кода
+
             yield StreamEvent.create(
                 StreamEventType.STEP_START,
                 self.name,
                 phase="plan_generation",
-                description="生成初始代码计划"
+                description="Создать первоначальный план кода"
             )
 
             messages = []
             if self.system_prompt:
                 messages.append({"role": "system", "content": self.system_prompt})
 
-            plan_prompt = f"""请根据以下需求描述，生成一份详细的代码实现计划：
+            plan_prompt = f"""Создайте подробный план реализации кода на основе следующего описания требований:
 
-## 需求描述
+## Описание требования
 {input_text}
 
-请按照指定的格式输出代码计划。"""
+Пожалуйста, выведите план кода в указанном формате."""
 
             messages.append({"role": "user", "content": plan_prompt})
 
@@ -490,38 +491,40 @@ class CodePlanAgent(Agent):
                 result=initial_plan
             )
 
-            # 阶段 2：反思与优化循环
+            # Этап 2: Цикл размышлений и оптимизации
+
             current_plan = initial_plan
 
             for iteration in range(self.max_reflection_iterations):
-                # 反思阶段
+                # этап отражения
+
                 yield StreamEvent.create(
                     StreamEventType.STEP_START,
                     self.name,
                     phase="reflection",
                     iteration=iteration + 1,
-                    description=f"第 {iteration + 1} 次反思"
+                    description=f"{итерация + 1} отражение"
                 )
 
-                reflection_prompt = f"""你是一位资深的技术评审专家。请对以下代码计划进行全面评估：
+                reflection_prompt = f"""Вы старший эксперт по технической экспертизе. Пожалуйста, проведите тщательную оценку следующих планов кода:
 
-## 原始需求
+## Исходные требования
 {input_text}
 
-## 当前代码计划
-{current_plan}
+## Текущий план кода
+{текущий_план}
 
-## 评审维度
-请从以下维度进行评估：
-1. 完整性：计划是否覆盖了所有核心需求？
-2. 可行性：技术方案是否可行？
-3. 架构合理性：模块划分是否合理？
-4. 可维护性：代码结构是否清晰？
-5. 性能考虑：是否考虑了性能优化？
-6. 安全性：是否存在安全风险？
-7. 测试覆盖：是否考虑了测试策略？
+## Просмотр размеров
+Пожалуйста, оцените по следующим параметрам:
+1. Полнота: охватывает ли план все основные требования?
+2. Осуществимость: осуществимо ли техническое решение?
+3. Рациональность архитектуры: разумно ли разделение модулей?
+4. Удобство сопровождения: понятна ли структура кода?
+5. Вопросы производительности. Рассматривалась ли оптимизация производительности?
+6. Безопасность: существуют ли риски безопасности?
+7. Тестовое покрытие: рассмотрена ли стратегия тестирования?
 
-请给出具体的改进建议。如果计划已经很好，请回答"无需改进"。"""
+Пожалуйста, дайте конкретные предложения по улучшению. Если план уже хорош, ответьте: «Улучшений не требуется»."""
 
                 reflection_messages = [{"role": "user", "content": reflection_prompt}]
 
@@ -544,31 +547,33 @@ class CodePlanAgent(Agent):
                     reflection=reflection
                 )
 
-                # 检查是否需要停止
-                if "无需改进" in reflection or "no need for improvement" in reflection.lower():
+                # Проверьте, нужно ли его остановить
+
+                if "Никаких улучшений не требуется" in reflection or "no need for improvement" in reflection.lower():
                     break
 
-                # 优化阶段
+                # Этап оптимизации
+
                 yield StreamEvent.create(
                     StreamEventType.STEP_START,
                     self.name,
                     phase="refinement",
                     iteration=iteration + 1,
-                    description=f"第 {iteration + 1} 次优化"
+                    description=f"{итерация + 1}-я оптимизация"
                 )
 
-                refinement_prompt = f"""请根据评审反馈优化以下代码计划：
+                refinement_prompt = f"""Пожалуйста, оптимизируйте следующий план кода на основе отзывов отзывов:
 
-## 原始需求
+## Исходные требования
 {input_text}
 
-## 当前代码计划
-{current_plan}
+## Текущий план кода
+{текущий_план}
 
-## 评审反馈
-{reflection}
+## Просмотрите отзыв
+{отражение}
 
-请输出优化后的完整代码计划。"""
+Пожалуйста, выведите полный оптимизированный план кода."""
 
                 refinement_messages = [{"role": "user", "content": refinement_prompt}]
 
@@ -593,7 +598,8 @@ class CodePlanAgent(Agent):
 
                 current_plan = refined_plan
 
-            # 发送完成事件
+            # Отправить событие завершения
+
             yield StreamEvent.create(
                 StreamEventType.AGENT_FINISH,
                 self.name,
@@ -601,12 +607,14 @@ class CodePlanAgent(Agent):
                 total_iterations=self.max_reflection_iterations
             )
 
-            # 保存到历史
+            # сохранить в историю
+
             self.add_message(Message(input_text, "user"))
             self.add_message(Message(current_plan, "assistant"))
 
         except Exception as e:
-            # 发送错误事件
+            # Отправить событие ошибки
+
             yield StreamEvent.create(
                 StreamEventType.ERROR,
                 self.name,
@@ -616,20 +624,18 @@ class CodePlanAgent(Agent):
             raise
 
     def get_plan_trajectory(self) -> str:
-        """获取完整的计划生成轨迹"""
+        """Получите полную информацию о создании плана"""
         return self.memory.get_trajectory()
 
 
 def create_code_plan_agent(llm: HelloAgentsLLM) -> CodePlanAgent:
-    """
-    创建CodePlanAgent实例的便捷工厂函数
+    """Удобная фабричная функция для создания экземпляров CodePlanAgent.
 
-    Args:
-        llm: LLM实例
+    Аргументы:
+        llm: экземпляр LLM
 
-    Returns:
-        CodePlanAgent实例
-    """
+    Возврат:
+        Экземпляр CodePlanAgent"""
     return CodePlanAgent(
         name="CodePlanAgent",
         llm=llm,

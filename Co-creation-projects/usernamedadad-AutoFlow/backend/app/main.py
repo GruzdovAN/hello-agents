@@ -15,7 +15,7 @@ if not origins:
 origin_regex = None
 app_env = (settings.app_env or "").strip().lower()
 if app_env not in {"prod", "production"}:
-    # 非生产环境放宽到 localhost/127.0.0.1 任意端口，避免端口/主机名切换触发预检 400
+    # В непроизводственной среде разрешаем localhost/127.0.0.1 на любом порту
     origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
 
 app.add_middleware(

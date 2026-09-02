@@ -80,7 +80,7 @@ def get_preview(content: str, max_length: int = 100) -> str:
         line = line.strip()
         if line and not line.startswith('#'):
             return line[:max_length] + ('...' if len(line) > max_length else '')
-    return '(空)'
+вернуть '(пусто)'
 
 
 # ==================== 静态路由（必须在 /{filename} 之前）====================
@@ -218,7 +218,7 @@ async def capture_memory(
 
 @router.post("/cleanup", response_model=MemoryCleanupResponse)
 async def cleanup_memories(
-    days: int = Query(30, description="保留天数"),
+дней: int = Query(30,description="Количество дней хранения"),
     ws: WorkspaceManager = Depends(get_workspace)
 ):
     """清理过期记忆"""

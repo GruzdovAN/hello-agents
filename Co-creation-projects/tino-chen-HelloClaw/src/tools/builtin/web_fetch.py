@@ -1,4 +1,4 @@
-"""网页抓取工具 - 抓取网页内容并转换为 Markdown"""
+"""Веб-сборщик — сканируйте веб-контент и конвертируйте его в Markdown."""
 
 import os
 import re
@@ -10,11 +10,10 @@ from hello_agents.tools import Tool, ToolParameter, ToolResponse, tool_action
 
 
 class WebFetchTool(Tool):
-    """网页抓取工具
+    """Инструменты парсинга веб-страниц
 
-    抓取网页内容并转换为 Markdown 格式。
-    支持提取主要内容、清理无关元素。
-    """
+    Сканируйте веб-контент и конвертируйте его в формат Markdown.
+    Поддерживает извлечение основного контента и очистку ненужных элементов."""
 
     def __init__(
         self,
@@ -22,16 +21,15 @@ class WebFetchTool(Tool):
         max_content_size: int = 50000,
         user_agent: str = None,
     ):
-        """初始化网页抓取工具
+        """Инициализировать веб-сканер
 
-        Args:
-            timeout: 请求超时时间（秒），默认 15
-            max_content_size: 最大内容大小（字符），默认 50000
-            user_agent: 自定义 User-Agent
-        """
+        Аргументы:
+            таймаут: таймаут запроса (секунды), по умолчанию 15
+            max_content_size: Максимальный размер контента (символов), по умолчанию 50 000.
+            user_agent: Пользовательский агент пользователя"""
         super().__init__(
             name="web_fetch",
-            description="抓取网页内容并转换为 Markdown 格式",
+            description="抓取веб-страницасодержимое并转换为 Markdown 格式",
             expandable=True
         )
 
@@ -40,7 +38,7 @@ class WebFetchTool(Tool):
         self.user_agent = user_agent or "Mozilla/5.0 (compatible; HelloClawBot/1.0)"
 
     def run(self, parameters: Dict[str, Any]) -> ToolResponse:
-        """执行抓取（默认行为）"""
+        """Выполнить сканирование (поведение по умолчанию)"""
         url = parameters.get("url", "")
         return self._fetch(url)
 
@@ -49,27 +47,27 @@ class WebFetchTool(Tool):
             ToolParameter(
                 name="url",
                 type="string",
-                description="要抓取的网页 URL",
+                description="要抓取的веб-страница URL",
                 required=True
             ),
         ]
 
     def _fetch(self, url: str) -> ToolResponse:
-        """抓取网页的核心实现
+        """Основная реализация сканирования веб-страниц
 
-        Args:
-            url: 网页 URL
+        Аргументы:
+            URL: URL веб-страницы
 
-        Returns:
-            ToolResponse: 抓取结果
-        """
+        Возврат:
+            ToolResponse: Получить результаты"""
         if not url:
             return ToolResponse.error(
                 code="INVALID_INPUT",
-                message="URL 不能为空"
+                message="URL не может быть пустым"
             )
 
-        # 验证 URL 格式
+        # Проверьте формат URL
+
         if not url.startswith(("http://", "https://")):
             return ToolResponse.error(
                 code="INVALID_URL",
@@ -77,30 +75,35 @@ class WebFetchTool(Tool):
             )
 
         try:
-            # 发送请求
+            # Отправить запрос
+
             request = Request(url)
             request.add_header("User-Agent", self.user_agent)
             request.add_header("Accept", "text/html,application/xhtml+xml")
             request.add_header("Accept-Language", "zh-CN,zh,en;q=0.9")
 
             with urlopen(request, timeout=self.timeout) as response:
-                # 检查内容类型
+                # Проверьте тип контента
+
                 content_type = response.headers.get("Content-Type", "")
                 if not content_type.startswith("text/html"):
                     return ToolResponse.error(
                         code="UNSUPPORTED_CONTENT",
-                        message=f"不支持的内容类型: {content_type}"
+message=f"не поддерживается的содержимое类型: {content_type}"
                     )
 
-                # 读取内容
+                # Читать контент
+
                 html = response.read().decode("utf-8", errors="ignore")
 
-            # 转换为 Markdown
+            # Конвертировать в Маркдаун
+
             markdown = self._html_to_markdown(html)
 
-            # 截断过长内容
+            # Обрезать слишком длинный контент
+
             if len(markdown) > self.max_content_size:
-                markdown = markdown[:self.max_content_size] + f"\n\n... (内容已截断，共 {len(markdown)} 字符)"
+markdown = markdown[:self.max_content_size] + f"\n\n... (содержимоеужеобрезан，共 {len(markdown)} символов)"
 
             return ToolResponse.success(
                 text=markdown,
@@ -114,53 +117,58 @@ class WebFetchTool(Tool):
         except HTTPError as e:
             return ToolResponse.error(
                 code="HTTP_ERROR",
-                message=f"抓取失败 (HTTP {e.code}): {e.reason}"
+                message=f"Ошибка загрузки (HTTP {e.code}): {e.reason}"
             )
         except URLError as e:
             return ToolResponse.error(
                 code="NETWORK_ERROR",
-                message=f"网络错误: {str(e)}"
+                message=f"Сетевая ошибка: {str(e)}"
             )
         except Exception as e:
             return ToolResponse.error(
                 code="FETCH_ERROR",
-                message=f"抓取失败: {str(e)}"
+                message=f"Ошибка загрузки: {str(e)}"
             )
 
     def _html_to_markdown(self, html: str) -> str:
-        """将 HTML 转换为 Markdown
+        """Конвертировать HTML в Markdown
 
-        简单的 HTML 到 Markdown 转换，提取主要内容。
+        Простое преобразование HTML в Markdown для извлечения основного контента.
 
-        Args:
-            html: HTML 内容
+        Аргументы:
+            html: HTML-содержимое
 
-        Returns:
-            Markdown 文本
-        """
-        # 移除 script 和 style 标签
+        Возврат:
+            Текст уценки"""
+        # Удаление тегов скриптов и стилей
+
         html = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
         html = re.sub(r'<style[^>]*>.*?</style>', '', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 移除注释
+        # Удалить комментарии
+
         html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
 
-        # 提取 title
+        # Извлечь заголовок
+
         title = ""
         title_match = re.search(r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
         if title_match:
             title = self._clean_text(title_match.group(1))
 
-        # 提取 body 内容（如果有）
+        # Извлечь содержимое тела (если есть)
+
         body_match = re.search(r'<body[^>]*>(.*?)</body>', html, re.IGNORECASE | re.DOTALL)
         if body_match:
             html = body_match.group(1)
 
-        # 移除导航、侧边栏、页脚等
+        # Удалите навигацию, боковые панели, нижние колонтитулы и т. д.
+
         for tag in ['nav', 'aside', 'footer', 'header']:
             html = re.sub(f'<{tag}[^>]*>.*?</{tag}>', '', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 转换标题
+        # Преобразовать заголовок
+
         for i in range(6, 0, -1):
             html = re.sub(
                 f'<h{i}[^>]*>(.*?)</h{i}>',
@@ -169,10 +177,12 @@ class WebFetchTool(Tool):
                 flags=re.DOTALL | re.IGNORECASE
             )
 
-        # 转换段落
+        # Преобразование абзацев
+
         html = re.sub(r'<p[^>]*>(.*?)</p>', r'\n\1\n', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 转换链接
+        # конверсионная ссылка
+
         html = re.sub(
             r'<a[^>]*href=["\']([^"\']*)["\'][^>]*>(.*?)</a>',
             r'[\2](\1)',
@@ -180,50 +190,60 @@ class WebFetchTool(Tool):
             flags=re.DOTALL | re.IGNORECASE
         )
 
-        # 转换粗体
+        # Преобразовать жирным шрифтом
+
         html = re.sub(r'<(strong|b)[^>]*>(.*?)</\1>', r'**\2**', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 转换斜体
+        # Преобразовать курсив
+
         html = re.sub(r'<(em|i)[^>]*>(.*?)</\1>', r'*\2*', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 转换代码块
+        # Преобразование блока кода
+
         html = re.sub(r'<pre[^>]*><code[^>]*>(.*?)</code></pre>', r'\n```\n\1\n```\n', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 转换行内代码
+        # Преобразование встроенного кода
+
         html = re.sub(r'<code[^>]*>(.*?)</code>', r'`\1`', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 转换列表
+        # список конверсий
+
         html = re.sub(r'<li[^>]*>(.*?)</li>', r'- \1\n', html, flags=re.DOTALL | re.IGNORECASE)
         html = re.sub(r'<[ou]l[^>]*>(.*?)</[ou]l>', r'\n\1\n', html, flags=re.DOTALL | re.IGNORECASE)
 
-        # 转换换行
+        # Преобразовать новую строку
+
         html = re.sub(r'<br\s*/?>', '\n', html, flags=re.IGNORECASE)
 
-        # 移除所有剩余的 HTML 标签
+        # Удалите все оставшиеся HTML-теги.
+
         html = re.sub(r'<[^>]+>', '', html)
 
-        # 清理文本
+        # Чистый текст
+
         markdown = self._clean_text(html)
 
-        # 添加标题
+        # Добавить заголовок
+
         if title:
             markdown = f"# {title}\n\n{markdown}"
 
-        # 清理多余空行
+        # Очистите лишние пустые строки
+
         markdown = re.sub(r'\n{3,}', '\n\n', markdown)
 
         return markdown.strip()
 
     def _clean_text(self, text: str) -> str:
-        """清理文本
+        """Чистый текст
 
-        Args:
-            text: 原始文本
+        Аргументы:
+            текст: исходный текст
 
-        Returns:
-            清理后的文本
-        """
-        # 解码 HTML 实体
+        Возврат:
+            Очищенный текст"""
+        # Декодировать объекты HTML
+
         text = text.replace("&nbsp;", " ")
         text = text.replace("&amp;", "&")
         text = text.replace("&lt;", "<")
@@ -231,18 +251,18 @@ class WebFetchTool(Tool):
         text = text.replace("&quot;", '"')
         text = text.replace("&#39;", "'")
 
-        # 移除多余的空白
+        # Удалить лишние пробелы
+
         text = re.sub(r'[ \t]+', ' ', text)
         text = re.sub(r'\n[ \t]+', '\n', text)
 
         return text.strip()
 
-    @tool_action("fetch_url", "抓取网页内容")
+    @tool_action("fetch_url", "抓取веб-страницасодержимое")
     def _fetch_action(self, url: str) -> str:
-        """抓取网页内容
+        """Сканирование веб-контента
 
-        Args:
-            url: 要抓取的网页 URL
-        """
+        Аргументы:
+            url: URL-адрес веб-страницы, которую нужно сканировать."""
         response = self._fetch(url)
         return response.text

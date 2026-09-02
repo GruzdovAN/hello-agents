@@ -16,9 +16,9 @@ def extract_optimized_text(text: str) -> str:
     if not text:
         return ""
 
-    marker_start = "【优化后规范描述】"
-    marker_start_alt = "【优化后描述】"
-    marker_code = "【Mermaid 流程图代码】"
+    marker_start = "【Нормативное описание после оптимизации】"
+    marker_start_alt = "【Описание после оптимизации】"
+    marker_code = "【Код блок-схемы Mermaid】"
 
     if marker_start in text and marker_code in text:
         return text.split(marker_start, 1)[1].split(marker_code, 1)[0].strip()

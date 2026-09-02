@@ -1,4 +1,4 @@
-"""维基百科开放 API：多语种条目检索与对照（无需密钥，需遵守使用规范）。"""
+"""Открытый API Википедии: многоязычный поиск и сопоставление статей."""
 
 from __future__ import annotations
 
@@ -23,18 +23,18 @@ def _get(lang: str, params: dict[str, Any]) -> dict[str, Any]:
 
 def wiki_search(params: str) -> str:
     """
-    在指定语言维基中按关键词搜索条目标题。
+Поиск заголовков записей по ключевому слову в вики на указанном языке.
 
-    参数格式：`语言代码###关键词`
-    示例：`zh###安史之乱`、`en###Fall of Constantinople`
+Формат параметра: `Код языка###Ключевые слова`
+Примеры: `zh###Anshi Rebellion`, `en###Падение Константинополя`
     """
     raw = (params or "").strip()
     if "###" not in raw:
-        return "错误：格式应为 语言代码###关键词，例如 zh###靖康之变"
+        return "ошибка：格式应为 语言代码###关键词，例如 zh###靖康之变"
     lang, _, q = raw.partition("###")
     lang, q = lang.strip().lower(), q.strip()
     if not lang or not q:
-        return "错误：语言和关键词均不能为空。"
+        return "ошибка：语言和关键词均не может быть пустым。"
 
     data = _get(
         lang,
@@ -48,7 +48,7 @@ def wiki_search(params: str) -> str:
     )
     # opensearch: [term, [titles], [desc], [urls]]
     if not isinstance(data, list) or len(data) < 2:
-        return f"[{lang}] 搜索无结果或接口异常。"
+return f"[{lang}] поиск не дал результатов, или интерфейс ненормальный."
     titles = data[1] if len(data) > 1 else []
     descs = data[2] if len(data) > 2 else []
     if not titles:
@@ -58,24 +58,24 @@ def wiki_search(params: str) -> str:
     for i, t in enumerate(titles):
         d = descs[i] if i < len(descs) else ""
         lines.append(f"  {i+1}. {t} — {d[:200]}")
-    lines.append("\n建议：用 wiki_article 拉取全文摘录，或 wiki_multiview 做中英日等多语种对照。")
+lines.append("\nПредложение: используйте wiki_article для получения полнотекстовых отрывков или wiki_multiview для сравнения китайского, английского, японского и других языков.")
     return "\n".join(lines)
 
 
 def wiki_article(params: str) -> str:
     """
-    获取维基条目纯文本摘录（非导语部分也会尽量多取字符）。
+Получите отрывок из статьи Wiki в виде простого текста (часть, не являющаяся вводной, также будет содержать как можно больше символов).
 
-    参数格式：`语言代码###条目名`（条目名需与站内标题一致或接近）
-    示例：`zh###岳飞`、`en###Qin Shi Huang`
+Формат параметра: `Код языка###имя записи` (имя записи должно соответствовать названию сайта или быть близким к нему)
+Пример: `zh###Юэ Фэй`, `en###Цинь Ши Хуан`
     """
     raw = (params or "").strip()
     if "###" not in raw:
-        return "错误：格式应为 语言代码###条目名，例如 zh###王安石"
+        return "ошибка：格式应为 语言代码###条目名，例如 zh###王安石"
     lang, _, title = raw.partition("###")
     lang, title = lang.strip().lower(), title.strip()
     if not lang or not title:
-        return "错误：语言或条目名为空。"
+return «ошибка: Имя языка или записи пусто».
 
     data = _get(
         lang,
@@ -92,7 +92,7 @@ def wiki_article(params: str) -> str:
     out: list[str] = []
     for _pid, page in pages.items():
         if int(_pid) < 0 or page.get("missing"):
-            out.append(f"[{lang}] 未找到条目「{title}」。请先用 wiki_search 查准确标题。")
+out.append(f"[{lang}] Запись "{title}" не найдена. Пожалуйста, воспользуйтесь wiki_search, чтобы сначала проверить точное название.")
             continue
         t = page.get("title", title)
         ex = (page.get("extract") or "").strip()
@@ -100,21 +100,21 @@ def wiki_article(params: str) -> str:
             out.append(f"[{lang}]「{t}」无正文摘录（可能是消歧义页）。")
             continue
         if len(ex) > 11000:
-            ex = ex[:11000] + "\n... [截断]"
+ex = ex[:11000] + "\n... [усечено]"
         url = f"https://{lang}.wikipedia.org/wiki/{title.replace(' ', '_')}"
         out.append(f"=== {lang}.wikipedia / {t} ===\n{url}\n\n{ex}")
-    return "\n\n".join(out) if out else "未获取到内容。"
+return "\n\n".join(out), если out else "Содержимое не получено".
 
 
 def wiki_langlinks(params: str) -> str:
     """
-    列出某条目在其他语言维基中的对应标题（便于横向对比域外叙述）。
+Перечислите соответствующие названия статей в других языковых вики (чтобы облегчить горизонтальное сравнение иностранных описаний).
 
     参数格式：`语言代码###条目名`
     """
     raw = (params or "").strip()
     if "###" not in raw:
-        return "错误：格式应为 语言代码###条目名"
+return "ошибка: Формат должен быть код языка###имя записи"
     lang, _, title = raw.partition("###")
     lang, title = lang.strip().lower(), title.strip()
 
@@ -130,15 +130,15 @@ def wiki_langlinks(params: str) -> str:
     )
     pages = data.get("query", {}).get("pages", {})
     if not pages:
-        return "未查询到页面。"
+вернуть «Страница не найдена».
     lines: list[str] = []
     for _pid, page in pages.items():
         if page.get("missing"):
-            return f"未找到「{title}」。"
+return f"未找到「{title}」。"
         resolved = page.get("title", title)
         links = page.get("langlinks") or []
         if not links:
-            return f"「{resolved}」暂无其他语言链接，可换 en/zh 起搜或直接用 search 找外国史籍研究。"
+return f"　{resolved}"нет данныхСсылки на другие языки, вы можете изменить en/zh, чтобы начать поиск, или напрямую использовать поиск для поиска иностранных исторических записей. "
         lines.append(f"条目「{resolved}」({lang}.wiki) 的部分语种对应：")
         for ll in links[:40]:
             lines.append(f"  - {ll.get('lang')}: {ll.get('*')}")
@@ -148,7 +148,7 @@ def wiki_langlinks(params: str) -> str:
 def _query_page_extract_and_links(
     lang: str, title: str
 ) -> tuple[str | None, str | None, dict[str, str]]:
-    """返回 (resolved_title, extract_plain, langlinks map lang_code->foreign_title)。"""
+"""返回 (resolved_title, extract_plain, карта langlinks lang_code->foreign_title)。"""
     data = _get(
         lang,
         {
@@ -179,12 +179,12 @@ def _looks_cjk(text: str) -> bool:
 
 def wiki_multiview(params: str) -> str:
     """
-    以关键词起搜：含汉字时优先中文维基；纯拉丁字母等则优先英文维基（避免误匹配）。
-    再拉取关联语种（如英/日/中与主站交叉）条目摘录并列。
+Начните поиск с ключевых слов: если они содержат китайские иероглифы, приоритет будет отдан китайской Wiki; если он содержит чисто латинские буквы, приоритет будет отдан английской Wiki (во избежание несоответствий).
+Затем вытащите выдержки из статей на родственных языках (например, английском/японском/китайском и пересекайтесь с основным сайтом) и сопоставьте их.
     """
     q = (params or "").strip()
     if not q:
-        return "错误：请提供历史事件或人物关键词。"
+return «ошибка: Пожалуйста, укажите исторические события или ключевые слова персонажей».
 
     blocks: list[str] = []
     targets: list[tuple[str, str]] = []
@@ -221,7 +221,7 @@ def wiki_multiview(params: str) -> str:
 
     if p_title:
         resolved, ex, links = _query_page_extract_and_links(primary, p_title)
-        if resolved and ex and "may refer to" not in ex.lower() and "消歧义" not in ex[:80]:
+если разрешено и ex и «может относиться» не в ex.lower() и «消歧义» не в ex[:80]:
             add_block(primary, resolved, "【主站维基】", ex)
             order = ["en", "ja", "ko", "zh", "fr", "de"] if primary == "zh" else ["zh", "ja", "ko", "en"]
             for code in order:
@@ -260,7 +260,7 @@ def wiki_multiview(params: str) -> str:
         if key in seen_titles:
             continue
         snippet = wiki_article(f"{lang}###{tit}")
-        if snippet.startswith("错误") or "未找到条目" in snippet:
+        if snippet.startswith("ошибка") or "未找到条目" in snippet:
             continue
         blocks.append(f"\n--- 对照语种 {lang} ---\n{snippet}")
 
@@ -271,8 +271,8 @@ def wiki_multiview(params: str) -> str:
         )
 
     header = (
-        f"多语种维基摘录对照（关键词：{q}）。注意：维基为二手综述，非原始档案；"
-        "不同语种条目由不同社群编写，立场与侧重可能不同。\n"
+f «Сравнение выдержек из многоязычной Wiki (ключевое слово: {q}). Примечание. Wiki представляет собой подержанный обзор, а не оригинальный архив;»
+"Статьи на разных языках написаны разными сообществами и могут иметь разные позиции и приоритеты.\n"
     )
     body = "\n\n".join(blocks)
     if len(header) + len(body) > 28000:

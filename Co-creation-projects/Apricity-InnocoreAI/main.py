@@ -1,5 +1,5 @@
 """
-研创·智核 - 主应用入口
+Yanchuang Intelligent Core — вход в главное приложение
 """
 
 import asyncio
@@ -18,27 +18,27 @@ from innocore_ai.core.exceptions import InnoCoreException
 from innocore_ai.api.routes import papers, users, tasks, analysis, writing
 from innocore_ai.agents.controller import AgentController
 
-# 配置日志
+#Журнал конфигурации
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# 全局智能体控制器
+# Глобальный контроллер агента
 agent_controller = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期管理"""
-    # 启动时执行
+"""Управление жизненным циклом приложения"""
+# Выполнить при запуске
     logger.info("Starting InnoCore AI application...")
     
-    # 创建数据库表
+#Создаем таблицу базы данных
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
     
-    # 初始化智能体控制器
+#Инициализируем контроллер агента
     global agent_controller
     agent_controller = AgentController()
     await agent_controller.initialize()
@@ -46,23 +46,23 @@ async def lifespan(app: FastAPI):
     
     yield
     
-    # 关闭时执行
+# Выполнить при закрытии
     logger.info("Shutting down InnoCore AI application...")
     if agent_controller:
         await agent_controller.shutdown()
     logger.info("Application shutdown complete")
 
-# 创建FastAPI应用
+#Создаем приложение FastAPI
 app = FastAPI(
-    title="研创·智核 API",
-    description="基于多智能体架构的智能科研助手平台",
+title="Яньчуанский интеллектуальный базовый API",
+description="Интеллектуальная платформа для научных исследований на основе мультиагентной архитектуры",
     version="1.0.0",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
     lifespan=lifespan
 )
 
-# 添加中间件
+# Добавляем промежуточное ПО
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_HOSTS,
@@ -76,24 +76,24 @@ app.add_middleware(
     allowed_hosts=settings.ALLOWED_HOSTS
 )
 
-# 挂载静态文件
+#монтируем статические файлы
 try:
     app.mount("/static", StaticFiles(directory="innocore_ai/frontend/static"), name="static")
 except Exception:
-    # 如果路径不存在，尝试相对路径
+# Если путь не существует, попробуйте относительный путь
     app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
-# 注册路由
+# Зарегистрировать маршрут
 app.include_router(users.router, prefix="/api/v1/auth", tags=["认证"])
-app.include_router(papers.router, prefix="/api/v1/papers", tags=["论文管理"])
-app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["任务管理"])
-app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["分析报告"])
-app.include_router(writing.router, prefix="/api/v1/writing", tags=["学术写作"])
+app.include_router(papers.router, prefix="/api/v1/papers", tags=["Управление бумагой"])
+app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Управление задачами"])
+app.include_router(anaанализ.router, prefix="/api/v1/anaанализ", tags=["Отчет об анализе"])
+app.include_router(writing.router, prefix="/api/v1/writing", tags=["Академическое письмо"])
 
-# 前端路由
+# Фронтальная маршрутизация
 @app.get("/")
 async def read_root():
-    """前端主页"""
+"""Главная страница интерфейса"""
     try:
         from fastapi.responses import FileResponse
         return FileResponse("innocore_ai/frontend/index.html")
@@ -102,7 +102,7 @@ async def read_root():
 
 @app.get("/dashboard")
 async def dashboard():
-    """仪表板页面"""
+"""Страница информационной панели"""
     try:
         from fastapi.responses import FileResponse
         return FileResponse("innocore_ai/frontend/templates/dashboard.html")
@@ -111,17 +111,17 @@ async def dashboard():
 
 @app.get("/login")
 async def login():
-    """登录页面"""
+"""Страница входа"""
     try:
         from fastapi.responses import FileResponse
         return FileResponse("innocore_ai/frontend/templates/login.html")
     except Exception:
         return FileResponse("frontend/templates/login.html")
 
-# 处理前端路由的通配符（用于SPA）
+# Обработка подстановочных знаков для внешней маршрутизации (для SPA)
 @app.get("/frontend/{path:path}")
 async def frontend_files(path: str):
-    """前端静态文件"""
+"""Статические файлы интерфейса"""
     try:
         from fastapi.responses import FileResponse
         file_path = f"innocore_ai/frontend/{path}"
@@ -132,7 +132,7 @@ async def frontend_files(path: str):
 
 @app.get("/health")
 async def health_check():
-    """健康检查"""
+"""Проверка здоровья"""
     return {
         "status": "healthy",
         "version": "1.0.0",
@@ -141,24 +141,24 @@ async def health_check():
 
 @app.get("/api/v1/dashboard/stats")
 async def get_dashboard_stats(request: Request):
-    """获取仪表板统计数据"""
-    # 这里应该从数据库获取真实数据
+"""Получить статистику панели мониторинга"""
+#Здесь мы должны получить реальные данные из базы данных
     return {
         "total_papers": 156,
         "total_tasks": 42,
         "total_analyses": 28,
         "total_writings": 15,
         "recent_activities": [
-            {"type": "paper_added", "title": "深度学习在医学图像分析中的应用", "time": "2小时前"},
-            {"type": "task_completed", "title": "文献搜索：机器学习", "time": "4小时前"},
-            {"type": "analysis_generated", "title": "10篇论文综合分析", "time": "1天前"}
+{"type": "paper_added", "title": "Применение глубокого обучения в анализе медицинских изображений", "time": "2 часа назад"},
+{"type": "task_completed", "title": "Поиск в литературе: машинное обучение", "time": "4 часа назад"},
+{"type": "anaанализ_generated", "title": "Комплексный анализ 10 статей", "time": "1 день назад"}
         ]
     }
 
-# 全局异常处理
+# Глобальная обработка исключений
 @app.exception_handler(InnoCoreException)
 async def innocore_exception_handler(request: Request, exc: InnoCoreException):
-    """处理自定义异常"""
+"""Обработка пользовательских исключений"""
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -170,42 +170,42 @@ async def innocore_exception_handler(request: Request, exc: InnoCoreException):
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    """处理通用异常"""
+"""Обработка типичных исключений"""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,
         content={
             "error": "INTERNAL_SERVER_ERROR",
-            "message": "服务器内部错误",
+"message": "Внутренняя ошибка сервера",
             "details": str(exc) if settings.DEBUG else None
         }
     )
 
-# 请求日志中间件
+# Запрос промежуточного программного обеспечения журнала
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """记录请求日志"""
+"""Запись журнала запросов"""
     start_time = asyncio.get_event_loop().time()
     
-    # 记录请求
+# Запрос журнала
     logger.info(f"Request: {request.method} {request.url}")
     
-    # 处理请求
+# Обрабатываем запрос
     response = await call_next(request)
     
-    # 计算处理时间
+# Рассчитать время обработки
     process_time = asyncio.get_event_loop().time() - start_time
     
-    # 记录响应
+# Запись ответа
     logger.info(f"Response: {response.status_code} - {process_time:.4f}s")
     
-    # 添加处理时间到响应头
+# Добавить время обработки в заголовок ответа
     response.headers["X-Process-Time"] = str(process_time)
     
     return response
 
 def create_app():
-    """创建应用实例"""
+"""Создать экземпляр приложения"""
     return app
 
 if __name__ == "__main__":

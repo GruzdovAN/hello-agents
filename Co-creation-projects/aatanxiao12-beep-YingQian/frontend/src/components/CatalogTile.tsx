@@ -35,7 +35,7 @@ export function CatalogTile({
         ) : (
           <div className="catalog-tile__fallback">{movie.title.slice(0, 1)}</div>
         )}
-        {seen && <span className="catalog-tile__badge">已看</span>}
+        {seen && <span className="catalog-tile__badge">Смотрел</span>}
       </div>
       <div className="catalog-tile__meta">
         <span className="catalog-tile__title">{movie.title}</span>

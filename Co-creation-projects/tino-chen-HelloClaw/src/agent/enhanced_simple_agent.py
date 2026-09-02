@@ -1,4 +1,4 @@
-"""增强版 SimpleAgent - 支持流式工具调用"""
+"""Расширенная версия SimpleAgent — поддерживает вызовы инструментов потоковой передачи."""
 
 import json
 import asyncio
@@ -11,7 +11,8 @@ from hello_agents.core.config import Config
 from hello_agents.core.message import Message
 from hello_agents.core.streaming import StreamEvent, StreamEventType
 
-# 导入 HelloClaw 专用 LLM（支持流式工具调用）
+# Импорт LLM HelloClaw (потоковые инструменты)
+
 from .enhanced_llm import EnhancedHelloAgentsLLM, StreamToolEventType
 
 if TYPE_CHECKING:
@@ -19,16 +20,15 @@ if TYPE_CHECKING:
 
 
 class EnhancedSimpleAgent(SimpleAgent):
-    """增强版 SimpleAgent，支持流式工具调用
+    """Расширенная версия SimpleAgent, поддерживает вызов инструмента потоковой передачи.
 
-    继承 hello_agents 的 SimpleAgent，增加：
-    - 真正的流式工具调用（使用 EnhancedHelloAgentsLLM）
-    - 工具调用状态的实时推送
+    Наследуйте SimpleAgent от hello_agents и добавьте:
+    - Истинный вызов инструмента потоковой передачи (с использованием EnhancedHelloAgentsLLM)
+    - Отправка статуса вызова инструмента в режиме реального времени
 
-    Note:
-        推荐使用 EnhancedHelloAgentsLLM 以获得完整的流式工具调用支持。
-        如果使用普通 HelloAgentsLLM，流式工具调用将回退到基类的非流式模式。
-    """
+    Примечание:
+        Рекомендуется использовать EnhancedHelloAgentsLLM для полной поддержки вызовов инструментов потоковой передачи.
+        При использовании простого HelloAgentsLLM вызовы инструментов потоковой передачи вернутся в непотоковый режим базового класса."""
 
     def __init__(
         self,
@@ -40,17 +40,16 @@ class EnhancedSimpleAgent(SimpleAgent):
         enable_tool_calling: bool = True,
         max_tool_iterations: int = 10,
     ):
-        """初始化 EnhancedSimpleAgent
+        """Инициализация EnhancedSimpleAgent
 
-        Args:
-            name: Agent 名称
-            llm: LLM 实例（推荐使用 EnhancedHelloAgentsLLM）
-            system_prompt: 系统提示词
-            config: 配置对象
-            tool_registry: 工具注册表（可选）
-            enable_tool_calling: 是否启用工具调用
-            max_tool_iterations: 最大工具调用迭代次数
-        """
+        Аргументы:
+            имя: Имя агента
+            llm: экземпляр LLM (рекомендуется EnhancedHelloAgentsLLM)
+            system_prompt: слово системной подсказки
+            конфигурация: объект конфигурации
+            tool_registry: реестр инструментов (необязательно)
+            Enable_tool_calling: Включить ли вызов инструмента
+            max_tool_iterations: Максимальное количество итераций вызова инструмента."""
         super().__init__(
             name=name,
             llm=llm,
@@ -61,7 +60,8 @@ class EnhancedSimpleAgent(SimpleAgent):
             max_tool_iterations=max_tool_iterations,
         )
 
-        # 检查是否支持流式工具调用
+        # Проверьте, поддерживаются ли вызовы инструментов потоковой передачи
+
         self._supports_streaming_tools = isinstance(llm, EnhancedHelloAgentsLLM)
 
     async def arun_stream_with_tools(
@@ -69,48 +69,53 @@ class EnhancedSimpleAgent(SimpleAgent):
         input_text: str,
         **kwargs
     ) -> AsyncGenerator[StreamEvent, None]:
-        """异步流式运行（支持工具调用）
+        """Асинхронная потоковая операция (поддерживает вызов инструментов)
 
-        使用 EnhancedHelloAgentsLLM 的 astream_invoke_with_tools 方法实现优雅的流式工具调用。
+        Используйте метод astream_invoke_with_tools класса EnhancedHelloAgentsLLM для реализации элегантного вызова инструмента потоковой передачи.
 
-        Args:
-            input_text: 用户输入
-            **kwargs: 其他参数
+        Аргументы:
+            input_text: ввод пользователя
+            **kwargs: другие параметры
 
-        Yields:
-            StreamEvent: 流式事件
-        """
+        Выход:
+            StreamEvent: событие потоковой передачи"""
         session_start_time = datetime.now()
 
-        # 发送开始事件
+        # Отправить стартовое событие
+
         yield StreamEvent.create(
             StreamEventType.AGENT_START,
             self.name,
             input_text=input_text
         )
 
-        print(f"\n🤖 {self.name} 开始处理问题（流式）: {input_text}")
+        print(f"\n🤖 {self.name} начало处理问题（потоковый）: {input_text}")
 
         try:
-            # 构建消息列表
+            # Создать список сообщений
+
             messages = self._build_messages(input_text)
 
-            # 检查是否有工具
+            # Проверьте, есть ли инструменты
+
             if not self.enable_tool_calling or not self.tool_registry:
-                # 纯对话模式，使用基类的方法
+                # Режим чистого диалога с использованием методов базового класса
+
                 async for event in self._stream_without_tools(messages, **kwargs):
                     yield event
                 return
 
-            # 检查 LLM 是否支持流式工具调用
+            # Проверьте, поддерживает ли LLM вызовы инструментов потоковой передачи.
+
             if not self._supports_streaming_tools:
                 import warnings
                 warnings.warn(
-                    "当前 LLM 不支持流式工具调用，将使用非流式模式。"
+«В настоящее время LLM не поддерживает вызовы инструментов потоковой передачи, он будет использовать режим без потоковой передачи».
                     "推荐使用 EnhancedHelloAgentsLLM 以获得更好的体验。",
                     UserWarning
                 )
-                # 回退到基类的非流式模式
+                # Возврат к непотоковому режиму базового класса
+
                 response = self.run(input_text, **kwargs)
                 yield StreamEvent.create(
                     StreamEventType.AGENT_FINISH,
@@ -119,19 +124,22 @@ class EnhancedSimpleAgent(SimpleAgent):
                 )
                 return
 
-            # === 流式工具调用模式 ===
+            # === Режим вызова инструмента потоковой передачи ===
+
             tool_schemas = self._build_tool_schemas()
-            print(f"🔧 已启用工具调用，可用工具: {list(self.tool_registry._tools.keys())}")
+print(f"🔧 ужевключитьинструмент调用，可用инструмент: {list(self.tool_registry._tools.keys())}")
 
             current_iteration = 0
             final_response = ""
-            # 收集工具调用记录（用于存入会话）
+            # Сбор записей вызовов инструментов (используется для хранения сеансов)
+
             tool_call_records: List[Dict[str, Any]] = []
 
             while current_iteration < self.max_tool_iterations:
                 current_iteration += 1
 
-                # 发送步骤开始事件
+                # Отправить событие начала шага
+
                 yield StreamEvent.create(
                     StreamEventType.STEP_START,
                     self.name,
@@ -140,9 +148,10 @@ class EnhancedSimpleAgent(SimpleAgent):
                 )
 
                 print(f"\n--- 第 {current_iteration} 轮 ---")
-                print("💭 LLM 输出: ", end="", flush=True)
+                print("💭 LLM вывод: ", end="", flush=True)
 
-                # 使用 LLM 的流式工具调用方法
+                # Вызов методов с использованием инструментов потоковой передачи LLM
+
                 try:
                     async for event in self.llm.astream_invoke_with_tools(
                         messages=messages,
@@ -150,7 +159,8 @@ class EnhancedSimpleAgent(SimpleAgent):
                         tool_choice="auto",
                         **kwargs
                     ):
-                        # 处理文本内容
+                        # Обрабатывать текстовый контент
+
                         if event.event_type == StreamToolEventType.CONTENT:
                             yield StreamEvent.create(
                                 StreamEventType.LLM_CHUNK,
@@ -160,14 +170,17 @@ class EnhancedSimpleAgent(SimpleAgent):
                             )
                             print(event.content, end="", flush=True)
 
-                        # 工具调用开始（打印信息，不发送事件）
-                        elif event.event_type == StreamToolEventType.TOOL_CALL_START:
-                            pass  # 等工具调用完成后再发送事件
+                        # Начинается вызов инструмента (печатает информацию, не отправляет события)
 
-                    print()  # 换行
+                        elif event.event_type == StreamToolEventType.TOOL_CALL_START:
+                            pass  # Прежде чем отправлять событие, дождитесь завершения вызова инструмента.
+
+
+                    print()  # новая строка
+
 
                 except Exception as e:
-                    error_msg = f"LLM 调用失败: {str(e)}"
+                    error_msg = f"LLM 调用ошибка: {str(e)}"
                     print(f"\n❌ {error_msg}")
                     yield StreamEvent.create(
                         StreamEventType.ERROR,
@@ -176,33 +189,40 @@ class EnhancedSimpleAgent(SimpleAgent):
                     )
                     break
 
-                # 获取累积结果
+                # Получите совокупные результаты
+
                 result = self.llm.get_last_stream_tool_result()
                 if result is None:
                     break
 
-                # 检查是否有工具调用
+                # Проверьте, есть ли вызов инструмента
+
                 complete_tool_calls = result.get_complete_tool_calls()
 
-                # 无论是否有工具调用，都保存本轮的文本内容
+                # Независимо от того, происходит ли вызов инструмента, текстовое содержимое этого раунда сохраняется.
+
                 if result.content:
                     final_response = result.content
 
                 if not complete_tool_calls:
-                    # 没有工具调用，直接返回
+                    # Без вызова инструмента, возврат напрямую
+
                     if not final_response:
-                        final_response = "抱歉，我无法回答这个问题。"
-                    # 显示内容预览
+                        final_response = "Извините, я не могу ответить на этот вопрос。"
+                    # Показать предварительный просмотр контента
+
                     preview = final_response[:100] + "..." if len(final_response) > 100 else final_response
-                    print(f"💬 直接回复: {preview}")
+print(f"💬 Прямой ответ: {preview}")
                     break
 
-                print(f"🔧 准备执行 {len(complete_tool_calls)} 个工具调用...")
+print(f"🔧 Подготовьте выбор {len(complete_tool_calls)} вызовов инструментов...")
 
-                # 将助手消息添加到历史
+                # Добавить сообщение помощника в историю
+
                 messages.append(result.to_assistant_message())
 
-                # 执行所有工具调用
+                # Выполнить все вызовы инструментов
+
                 for tc in complete_tool_calls:
                     tool_name = tc["name"]
                     tool_call_id = tc["id"]
@@ -210,17 +230,18 @@ class EnhancedSimpleAgent(SimpleAgent):
                     try:
                         arguments = json.loads(tc["arguments"])
                     except json.JSONDecodeError as e:
-                        print(f"❌ 工具参数解析失败: {e}")
+                        print(f"❌ инструмент参数解析ошибка: {e}")
                         messages.append({
                             "role": "tool",
                             "tool_call_id": tool_call_id,
-                            "content": f"错误：参数格式不正确 - {str(e)}"
+                            "content": f"Ошибка：参数格式不正确 - {str(e)}"
                         })
                         continue
 
-                    print(f"🎬 调用工具: {tool_name}({arguments})")
+                    print(f"🎬 Вызов инструмента: {tool_name}({arguments})")
 
-                    # 发送工具调用开始事件
+                    # Отправить событие начала вызова инструмента
+
                     yield StreamEvent.create(
                         StreamEventType.TOOL_CALL_START,
                         self.name,
@@ -229,20 +250,24 @@ class EnhancedSimpleAgent(SimpleAgent):
                         args=arguments
                     )
 
-                    # 让出控制权，确保 SSE 发送 tool_start 事件
+                    # Контролируйте доходность и убедитесь, что SSE отправляет событиеtool_start.
+
                     await asyncio.sleep(0)
 
-                    # 执行工具
+                    # Инструмент выполнения
+
                     exec_result = self._execute_tool_call(tool_name, arguments)
 
-                    # 截断显示
+                    # Усеченное отображение
+
                     result_preview = exec_result[:200] + "..." if len(exec_result) > 200 else exec_result
                     if exec_result.startswith("❌"):
-                        print(f"❌ 工具执行失败: {result_preview}")
+                        print(f"❌ инструментвыполнитьошибка: {result_preview}")
                     else:
                         print(f"👀 观察: {result_preview}")
 
-                    # 发送工具调用完成事件
+                    # Отправить событие завершения вызова инструмента
+
                     yield StreamEvent.create(
                         StreamEventType.TOOL_CALL_FINISH,
                         self.name,
@@ -251,7 +276,8 @@ class EnhancedSimpleAgent(SimpleAgent):
                         result=exec_result
                     )
 
-                    # 记录工具调用（用于存入会话）
+                    # Запись вызовов инструментов (для сохранения сеансов)
+
                     tool_call_records.append({
                         "name": tool_name,
                         "args": arguments,
@@ -259,23 +285,26 @@ class EnhancedSimpleAgent(SimpleAgent):
                         "status": "error" if exec_result.startswith("❌") else "done"
                     })
 
-                    # 添加工具结果到消息
+                    # Добавить результаты инструмента в сообщение
+
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call_id,
                         "content": exec_result
                     })
 
-                # 发送步骤完成事件
+                # Отправить событие завершения шага
+
                 yield StreamEvent.create(
                     StreamEventType.STEP_FINISH,
                     self.name,
                     step=current_iteration
                 )
 
-            # 如果超过最大迭代次数，获取最后一次回答
+            # Если максимальное количество итераций превышено, получить последний ответ
+
             if current_iteration >= self.max_tool_iterations and not final_response:
-                print("⏰ 已达到最大迭代次数，获取最终回答...")
+print("⏰ужедостигнуто максимальное количество итераций и получен окончательный ответ...")
 
                 try:
                     async for chunk in self.llm.astream_invoke(messages, **kwargs):
@@ -288,16 +317,19 @@ class EnhancedSimpleAgent(SimpleAgent):
                         print(chunk, end="", flush=True)
                     print()
                 except Exception as e:
-                    print(f"❌ 最终回答失败: {e}")
+print(f"❌ Окончательный ответошибка: {e}")
                     result = self.llm.get_last_stream_tool_result()
-                    final_response = result.content if result else "抱歉，我无法回答这个问题。"
+                    final_response = result.content if result else "Извините, я не могу ответить на этот вопрос。"
 
-            # 保存到历史记录（按照 OpenAI 规范格式）
+            # Сохранить в историю (в формате спецификации OpenAI)
+
             self.add_message(Message(input_text, "user"))
 
-            # 如果有工具调用，保存工具调用消息
+            # Если есть вызов инструмента, сохраните сообщение о вызове инструмента.
+
             if tool_call_records:
-                # 保存 assistant 消息（包含 tool_calls）
+                # Сохранять сообщения помощника (включаяtool_calls)
+
                 tool_calls_for_message = [
                     {
                         "id": f"call_{i}",
@@ -310,12 +342,14 @@ class EnhancedSimpleAgent(SimpleAgent):
                     for i, tc in enumerate(tool_call_records)
                 ]
                 self.add_message(Message(
-                    "",  # 工具调用时可能没有文本内容
+                    "",  # При вызове инструмента может отсутствовать текстовое содержимое.
+
                     "assistant",
                     metadata={"tool_calls": tool_calls_for_message}
                 ))
 
-                # 保存每个 tool 消息
+                # Сохраняйте каждое сообщение инструмента
+
                 for i, tc in enumerate(tool_call_records):
                     self.add_message(Message(
                         tc["result"],
@@ -323,14 +357,16 @@ class EnhancedSimpleAgent(SimpleAgent):
                         metadata={"tool_call_id": f"call_{i}"}
                     ))
 
-            # 保存最终 assistant 回答
+            # Сохранить окончательный ответ помощника
+
             if final_response:
                 self.add_message(Message(final_response, "assistant"))
 
             duration = (datetime.now() - session_start_time).total_seconds()
-            print(f"\n✅ 完成，耗时 {duration:.2f}s，共 {current_iteration} 轮")
+print(f"\nвещество завершено, потребовалось {duration:.2f} с, всего {current_iteration} раундов")
 
-            # 发送完成事件
+            # Отправить событие завершения
+
             yield StreamEvent.create(
                 StreamEventType.AGENT_FINISH,
                 self.name,
@@ -338,19 +374,22 @@ class EnhancedSimpleAgent(SimpleAgent):
             )
 
         except Exception as e:
-            print(f"❌ Agent 执行失败: {e}")
+            print(f"❌ Agent выполнитьошибка: {e}")
             yield StreamEvent.create(
                 StreamEventType.ERROR,
                 self.name,
                 error=str(e),
                 error_type=type(e).__name__
             )
-            # 不要 raise，确保流式响应正常结束
-            # 发送完成事件以优雅结束
+            # Не повышайте, убедитесь, что ответ потоковой передачи завершается нормально
+
+            # Отправьте событие завершения, чтобы оно завершилось корректно
+
             yield StreamEvent.create(
                 StreamEventType.AGENT_FINISH,
                 self.name,
-                result=""  # 空结果表示失败
+                result=""  # Пустой результат указывает на неудачу
+
             )
 
     async def _stream_without_tools(
@@ -358,8 +397,8 @@ class EnhancedSimpleAgent(SimpleAgent):
         messages: List[Dict],
         **kwargs
     ) -> AsyncGenerator[StreamEvent, None]:
-        """纯对话模式（无工具调用）"""
-        print("📝 纯对话模式（无工具调用）")
+        """Режим чистого разговора (без вызовов инструментов)"""
+print("📝 Режим чистого разговора (без вызова инструмента)")
 
         full_response = ""
         async for chunk in self.llm.astream_invoke(messages, **kwargs):
@@ -373,11 +412,12 @@ class EnhancedSimpleAgent(SimpleAgent):
 
         print()
 
-        # 保存历史
+        # сохранить историю
+
         self.add_message(Message(messages[-1]["content"], "user"))
         self.add_message(Message(full_response, "assistant"))
 
-        print(f"💬 回复完成")
+print(f"💬 回复завершено")
 
         yield StreamEvent.create(
             StreamEventType.AGENT_FINISH,

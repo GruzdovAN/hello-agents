@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# mx_data - 妙想金融数据查询 skill
-# 基于东方财富妙想API提供金融数据查询能力
-# 输出 Excel（多sheet）+ 描述 txt
+# mx_data — навык запроса финансовых данных Мяосян
+# Предоставление возможностей запроса финансовых данных на основе API Oriental Fortune Wonder.
+# Вывод Excel (несколько листов) + текст описания
 
 import os
 import sys
@@ -106,7 +106,7 @@ def table_to_rows(block: Dict[str, Any]) -> Tuple[List[Dict[str, str]], List[str
     if not isinstance(headers, list):
         headers = []
     order = ordered_keys(table, block.get("indicatorOrder") or [])
-    entity_name = flatten_value(block.get("entityName") or "") or "指标"
+имя_сущности = Flatten_value(block.get("имя_сущности") или "") или "指标"
     code_map = return_code_map(block)
 
     rows: List[Dict[str, str]] = []
@@ -150,7 +150,7 @@ def table_to_rows(block: Dict[str, Any]) -> Tuple[List[Dict[str, str]], List[str
             rows.append({fieldnames[0]: label, fieldnames[1]: flatten_value(value)})
         return rows, fieldnames
 
-    # headName 为空但各指标为等长数组：按索引展开成行（十大股东等无日期维度场景）
+# headName пусто, но каждый индикатор представляет собой массив равной длины: разверните его на строки по индексу (сцены без измерения даты, например, десять крупнейших акционеров)
     if len(headers) == 0 and data_key_count >= 1:
         col_labels: List[str] = []
         col_arrays: List[List[Any]] = []
@@ -180,28 +180,28 @@ def table_to_rows(block: Dict[str, Any]) -> Tuple[List[Dict[str, str]], List[str
     return [], []
 
 class MXData:
-    """妙想金融数据查询客户端"""
+"""Клиент запроса финансовых данных Miaoxiang"""
     
     BASE_URL = "https://mkapi2.dfcfs.com/finskillshub/api/claw/query"
     
     def __init__(self, api_key: Optional[str] = None):
         """
-        初始化客户端
+Инициализировать клиент
         :param api_key: MX API Key，如果不提供则从环境变量 MX_APIKEY 读取
         """
         self.api_key = api_key or os.getenv("MX_APIKEY")
         if not self.api_key:
             raise ValueError(
-                "MX_APIKEY 环境变量未设置，请先设置环境变量：\n"
+«Переменная среды MX_APIKEY не установлена, сначала установите переменную среды:\n»
                 "export MX_APIKEY=your_api_key_here\n"
-                "或者在初始化时传入 api_key 参数"
+«Или передайте параметр api_key во время инициализации»
             )
     
     def query(self, tool_query: str) -> Dict[str, Any]:
         """
-        查询金融数据
-        :param tool_query: 自然语言查询问句，如 "东方财富最新价"
-        :return: API 响应结果
+Запрос финансовых данных
+:paramtool_query: Запрос на естественном языке, например «Последние цены на Oriental Fortune».
+:return: Результат ответа API
         """
         headers = {
             "Content-Type": "application/json",
@@ -244,7 +244,7 @@ class MXData:
                 continue
             
             sheet_name = safe_filename(
-                dto.get("title") or dto.get("inputTitle") or dto.get("entityName") or f"表{i + 1}"
+dto.get("title") или dto.get("inputTitle") или dto.get("entityName") или f"表{i + 1}"
             )
             condition = dto.get("condition")
             if condition is not None and condition != "":
@@ -264,7 +264,7 @@ class MXData:
             total_rows += len(rows)
         
         if not tables:
-            return [], condition_parts, 0, "dataTableDTOList 中无有效 table 数据"
+return [], Condition_parts, 0, «В dataTableDTOList нет допустимых данных таблицы»
         return tables, condition_parts, total_rows, None
     
     @staticmethod
@@ -283,7 +283,7 @@ class MXData:
         entity_tags = search_result.get("entityTagDTOList", [])
         
         if entity_tags:
-            output.append("**查询证券**:")
+output.append("**Запрос ценных бумаг**:")
             entities = []
             for tag in entity_tags:
                 name = tag.get("fullName", "")
@@ -293,7 +293,7 @@ class MXData:
             output.append("\n".join(entities))
             output.append("")
         
-        output.append(f"**查询结果**: {len(tables)} 个表，共 {total_rows} 行数据\n")
+output.append(f"**результаты запроса**: {len(tables)} таблиц, всего {total_rows} строк данных\n")
         
         # Only preview first 20 rows of first table on terminal
         if tables:
@@ -313,7 +313,7 @@ class MXData:
         
         question_id = search_result.get("questionId", "")
         if question_id:
-            output.append(f"*查询ID: {question_id}*")
+output.append(f"*идентификатор запроса: {question_id}*")
         
         return "\n".join(output)
     
@@ -338,18 +338,18 @@ class MXData:
         
         # Write description file
         description_lines = [
-            "金融数据查询结果说明",
+«Пояснение результатов запроса финансовых данных»,
             "=" * 40,
-            f"查询内容: {query_text}",
-            f"数据文件路径: {file_path}",
-            f"描述文件路径: {desc_path}",
-            f"数据行数: {total_rows}",
-            f"表数量: {len(tables)}",
-            f"Sheet 列表: {', '.join([t['sheet_name'] for t in tables])}",
+f"Содержимое запроса: {query_text}",
+f"Путь к файлу данных: {file_path}",
+f"Путь к файлу описания: {desc_path}",
+f"Количество строк данных: {total_rows}",
+f"Количество столов: {len(tables)}",
+f"Sheet列表: {', '.join([t['sheet_name'] for t в таблицах])}",
         ]
         if condition_parts:
             description_lines.append("")
-            description_lines.append("筛选条件:")
+description_lines.append("Условия фильтра:")
             description_lines.extend(condition_parts)
         
         desc_path.write_text("\n".join(description_lines), encoding="utf-8")
@@ -381,7 +381,7 @@ def main():
         tables, condition_parts, total_rows, err = mx.parse_result(result)
         
         if err:
-            print(f"错误: {err}")
+print(f"Ошибка: {err}")
             sys.exit(1)
         
         # Terminal preview
@@ -389,18 +389,18 @@ def main():
         
         # Write Excel (multiple sheets) + description txt
         file_path, desc_path = mx.write_output_files(query, output_dir, tables, total_rows, condition_parts)
-        print(f"\n✅ Excel 文件: {file_path}")
-        print(f"📄 描述文件: {desc_path}")
+print(f"\n© файл Excel: {file_path}")
+print(f"📄 Файл описания: {desc_path}")
         print(f"📊 总行数: {total_rows}, 表数: {len(tables)}")
         
         # Save original JSON
         json_filename = output_dir / f"mx_data_{safe_filename(query)}_raw.json"
         with open(json_filename, "w", encoding="utf-8") as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
-        print(f"📄 原始JSON: {json_filename}")
+print(f"📄 Исходный JSON: {json_filename}")
             
     except Exception as e:
-        print(f"错误: {str(e)}", file=sys.stderr)
+print(f"Ошибка: {str(e)}", file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":

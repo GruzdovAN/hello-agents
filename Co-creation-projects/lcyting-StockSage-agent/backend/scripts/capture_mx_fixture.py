@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-将妙想接口返回的原始 JSON 保存到 backend/fixtures/mx_raw/，
-后续设置 MX_REPLAY_FIXTURES=1 即可本地回放同一 query，不再消耗额度。
+Сохраните исходный JSON, возвращенный интерфейсом Miaoxiang, в backend/fixtures/mx_raw/,
+Впоследствии установите MX_REPLAY_FIXTURES=1 для локального воспроизведения того же запроса без использования кредита.
 
 在项目根目录执行（需已配置 MX_APIKEY）:
 
   set PYTHONPATH=backend
   py backend/scripts/capture_mx_fixture.py mx_data "600519 最新价 涨跌幅"
-  py backend/scripts/capture_mx_fixture.py mx_search "今日A股市场热点 大盘动态 北向资金"
+py backend/scripts/capture_mx_fixture.py mx_search «Сегодняшние горячие точки рынка акций А, динамика рынка, фонды, ориентированные на север»
   py backend/scripts/capture_mx_fixture.py mx_xuangu "市盈率小于20"
 
-注意：回放时服务端生成的 query 必须与抓取时字符串完全一致（含空格）。
+Примечание. Запрос, сгенерированный сервером во время воспроизведения, должен быть точно таким же, как строка во время захвата (включая пробелы).
 """
 
 from __future__ import annotations
@@ -25,9 +25,9 @@ _ROOT = _BACKEND.parent
 sys.path.insert(0, str(_BACKEND))
 for p in (
     _ROOT / "agents",
-    _ROOT / "skills" / "金融数据" / "mx-data",
-    _ROOT / "skills" / "资讯搜索" / "mx-search",
-    _ROOT / "skills" / "智能选股" / "mx-xuangu",
+_ROOT/"навыки"/"Финансовые данные"/"mx-данные",
+_ROOT/"навыки"/"Поиск информации"/"mx-поиск",
+_ROOT/"навыки"/"Умный выбор акций"/"mx-xuangu",
     _ROOT,
 ):
     sp = str(p)
@@ -36,11 +36,11 @@ for p in (
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="保存妙想原始响应为本地 fixture")
+parser = argparse.ArgumentParser(description="Сохранить исходный ответ Wonderful Ideas как локальное приспособление")
     parser.add_argument(
         "channel",
         choices=("mx_data", "mx_search", "mx_xuangu"),
-        help="与路由使用的 skill 一致",
+help="То же, что и навык, используемый на маршруте",
     )
     parser.add_argument("query", help="自然语言查询（须与线上一致）")
     args = parser.parse_args()
@@ -66,9 +66,9 @@ def main() -> None:
         raw = _mx.MXSelectStock(api_key=settings.MX_APIKEY).search(args.query)
 
     path = save_raw_fixture(args.channel, args.query, raw)
-    print(f"已写入: {path}")
-    print(f"哈希文件名对应 query: {args.query!r}")
-    print("回放：环境变量 MX_REPLAY_FIXTURES=1（可选 MX_FIXTURE_DIR 指向目录），重启后端")
+print(f"Написано: {путь}")
+print(f"Имя хэш-файла соответствует запросу: {args.query!r}")
+print("Воспроизведение: переменная среды MX_REPLAY_FIXTURES=1 (необязательный MX_FIXTURE_DIR указывает на каталог), перезапустите серверную часть")
 
 
 if __name__ == "__main__":

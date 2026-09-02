@@ -1,4 +1,4 @@
-"""工作空间管理器"""
+"""Менеджер рабочего пространства"""
 
 import json
 import os
@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional, List, Set
 
 
-# 配置文件列表
+# Список конфигурационных файлов
 CONFIG_FILES = [
     "BOOTSTRAP",
     "IDENTITY",
@@ -19,12 +19,12 @@ CONFIG_FILES = [
     "HEARTBEAT",
 ]
 
-# 模板目录（相对于当前文件）
+# Каталог шаблонов (относительно текущего файла)
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 
 def get_default_global_config() -> dict:
-    """获取默认全局配置（从模板文件读取）"""
+    """Глобальная конфигурация по умолчанию (из шаблона)"""
     template_path = TEMPLATES_DIR / "config.json"
     if template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
@@ -33,32 +33,31 @@ def get_default_global_config() -> dict:
 
 
 class WorkspaceManager:
-    """工作空间管理器
+    """Менеджер рабочего пространства
 
-    负责：
-    - 创建和管理工作空间目录结构
-    - 加载和保存配置文件
-    - 管理记忆文件（每日记忆、长期记忆）
+    Отвечает за:
+    - Создание и управление структурой каталогов
+    - Загрузка и сохранение конфигурационных файлов
+    - Управление файлами памяти (ежедневная и долгосрочная)
     """
 
     def __init__(self, workspace_path: str):
-        """初始化工作空间管理器
+        """Инициализация менеджера рабочего пространства
 
         Args:
-            workspace_path: 工作空间根目录路径
+            workspace_path: Путь к корневому каталогу рабочего пространства
         """
         self.workspace_path = os.path.expanduser(workspace_path)
         self.memory_path = os.path.join(self.workspace_path, "memory")
         self.sessions_path = os.path.join(self.workspace_path, "sessions")
 
-    # ==================== 全局配置读取 ====================
+    # ==================== Чтение глобальной конфигурации ====================
 
     def load_global_config(self) -> dict:
-        """加载全局 config.json
+        """Загрузите глобальный config.json
 
-        Returns:
-            配置字典，如果文件不存在返回空字典
-        """
+        Возврат:
+            Словарь конфигурации; пустой, если файл не найден"""
         config_path = os.path.expanduser("~/.helloclaw/config.json")
         if os.path.exists(config_path):
             try:
@@ -69,13 +68,12 @@ class WorkspaceManager:
         return {}
 
     def get_llm_config(self) -> dict:
-        """获取 LLM 配置
+        """Получить конфигурацию LLM
 
-        优先级：config.json 非空值 > 环境变量 > 默认值
+        Приоритет: config.json > env > по умолчанию
 
-        Returns:
-            包含 model_id, api_key, base_url 的字典
-        """
+        Возврат:
+            Словарь, содержащий model_id, api_key, base_url"""
         global_config = self.load_global_config()
         llm_config = global_config.get("llm", {})
 
@@ -85,61 +83,62 @@ class WorkspaceManager:
             "base_url": llm_config.get("base_url") or os.getenv("LLM_BASE_URL"),
         }
 
-    # ==================== 入职状态检测 ====================
+    # ==================== Проверка онбординга ====================
 
     def is_onboarding_completed(self) -> bool:
-        """检查入职是否完成
+        """Проверка завершения онбординга
 
-        入职完成的标志：BOOTSTRAP.md 不存在。
-        同时会检查身份是否已确定，如果是则自动删除 BOOTSTRAP.md。
+        Завершён, когда BOOTSTRAP.md отсутствует.
+        При заданной личности BOOTSTRAP.md удаляется.
 
         Returns:
-            入职是否已完成
+            Завершён ли онбординг
         """
-        # 先检查是否需要删除 BOOTSTRAP（身份已确定但文件还在）
+        # Сначала проверьте, нужно ли удалять BOOTSTRAP (личность определена, но файл все еще существует)
+
         self._check_and_delete_bootstrap()
 
         return not os.path.exists(self.get_config_path("BOOTSTRAP"))
 
     def ensure_workspace_exists(self):
-        """确保工作空间存在
+        """Создать рабочее пространство при необходимости
 
-        如果工作空间不存在，创建默认目录和配置文件
+        Если нет — создать каталоги и конфигурацию
         """
-        # 创建目录
+        # Создание каталогов
         os.makedirs(self.workspace_path, exist_ok=True)
         os.makedirs(self.memory_path, exist_ok=True)
         os.makedirs(self.sessions_path, exist_ok=True)
 
-        # 创建默认配置文件
+        # Создать конфиг по умолчанию
         for config_name in CONFIG_FILES:
             config_path = self.get_config_path(config_name)
             if not os.path.exists(config_path):
                 self._create_default_config(config_name)
 
-        # 检查是否需要删除 BOOTSTRAP（遗留工作空间迁移）
+        # Проверьте, нужно ли удалить BOOTSTRAP (миграция устаревшей рабочей области).
+
         self._check_and_delete_bootstrap()
 
     def get_config_path(self, name: str) -> str:
-        """获取配置文件路径
+        """Путь к конфигурационному файлу
 
         Args:
-            name: 配置文件名称（不含扩展名）
+            name: Имя файла (без расширения)
 
         Returns:
-            配置文件完整路径
+            Полный путь к файлу
         """
         return os.path.join(self.workspace_path, f"{name}.md")
 
     def load_config(self, name: str) -> Optional[str]:
-        """加载配置文件内容
+        """Загрузить содержимое файла конфигурации
 
-        Args:
-            name: 配置文件名称
+        Аргументы:
+            имя: имя файла конфигурации
 
-        Returns:
-            配置文件内容，如果不存在返回 None
-        """
+        Возврат:
+            Содержимое; Нет, если нет"""
         config_path = self.get_config_path(name)
         if os.path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as f:
@@ -147,26 +146,24 @@ class WorkspaceManager:
         return None
 
     def save_config(self, name: str, content: str):
-        """保存配置文件
+        """Сохранить файл конфигурации
 
-        Args:
-            name: 配置文件名称
-            content: 配置文件内容
-        """
+        Аргументы:
+            имя: имя файла конфигурации
+            содержимое: содержимое файла конфигурации"""
         config_path = self.get_config_path(name)
         with open(config_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-        # 如果保存的是 IDENTITY，检查是否需要删除 BOOTSTRAP
+        # При сохранении IDENTITY — проверить BOOTSTRAP
         if name == "IDENTITY":
             self._check_and_delete_bootstrap()
 
     def list_configs(self) -> list:
-        """列出所有配置文件
+        """Список всех файлов конфигурации
 
-        Returns:
-            配置文件名称列表
-        """
+        Возврат:
+            Список имён конфигов"""
         configs = []
         for name in CONFIG_FILES:
             config_path = self.get_config_path(name)
@@ -175,24 +172,24 @@ class WorkspaceManager:
         return configs
 
     def get_daily_memory_path(self, date: datetime = None) -> str:
-        """获取每日记忆文件路径
+        """Путь к ежедневной памяти
 
         Args:
-            date: 日期，默认为今天
+            date: Дата (по умолчанию сегодня)
 
         Returns:
-            每日记忆文件路径
+            Путь к ежедневной памяти
         """
         date = date or datetime.now()
         filename = date.strftime("%Y-%m-%d.md")
         return os.path.join(self.memory_path, filename)
 
     def append_to_daily_memory(self, content: str, date: datetime = None):
-        """追加内容到每日记忆
+        """Добавить в ежедневную память
 
         Args:
-            content: 记忆内容
-            date: 日期，默认为今天
+            content: Содержимое записи
+            date: Дата (по умолчанию сегодня)
         """
         memory_path = self.get_daily_memory_path(date)
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -201,18 +198,18 @@ class WorkspaceManager:
             f.write(f"\n## {timestamp}\n\n{content}\n")
 
     def search_memory(self, keyword: str, include_daily: bool = True) -> list:
-        """搜索记忆
+        """Поиск в памяти
 
         Args:
-            keyword: 搜索关键词
-            include_daily: 是否包含每日记忆
+            keyword: Ключевое слово
+            include_daily: Включать ежедневную память
 
         Returns:
-            匹配的记忆片段列表
+            Совпавшие фрагменты
         """
         results = []
 
-        # 搜索长期记忆
+        # Поиск в долгосрочной памяти
         memory_content = self.load_config("MEMORY")
         if memory_content and keyword.lower() in memory_content.lower():
             results.append({
@@ -220,7 +217,7 @@ class WorkspaceManager:
                 "content": memory_content,
             })
 
-        # 搜索每日记忆
+        # Поиск в ежедневной памяти
         if include_daily:
             for filename in os.listdir(self.memory_path):
                 if filename.endswith(".md"):
@@ -241,19 +238,18 @@ class WorkspaceManager:
         include_daily: bool = True,
         context_lines: int = 3,
     ) -> list:
-        """增强版记忆搜索，返回带行号的上下文
+        """Расширенный поиск по номерам строк
 
-        Args:
-            keyword: 搜索关键词
-            include_daily: 是否包含每日记忆
-            context_lines: 上下文行数
+        Аргументы:
+            ключевое слово: Ключевое слово
+            include_daily: Включать ежедневную память
+            context_lines: Просмотреть контекст
 
-        Returns:
-            匹配的记忆片段列表，包含行号和上下文
-        """
+        Возврат:
+            Совпавшие фрагменты, включая номер строки и контекст"""
         results = []
 
-        # 搜索长期记忆
+        # Поиск в долгосрочной памяти
         memory_content = self.load_config("MEMORY")
         if memory_content:
             matches = self._find_matches_with_context(
@@ -265,7 +261,7 @@ class WorkspaceManager:
                     "matches": matches,
                 })
 
-        # 搜索每日记忆
+        # Поиск в ежедневной памяти
         if include_daily:
             for filename in sorted(os.listdir(self.memory_path)):
                 if filename.endswith(".md"):
@@ -289,24 +285,25 @@ class WorkspaceManager:
         keyword: str,
         context_lines: int = 3,
     ) -> list:
-        """在内容中查找匹配并返回带行号的上下文
+        """Поиск контекстоми номеров строк
 
-        Args:
-            content: 文件内容
-            keyword: 搜索关键词
-            context_lines: 上下文行数
+        Аргументы:
+            содержимое: содержимое файла
+            ключевое слово: Ключевое слово
+            context_lines: Просмотреть контекст
 
-        Returns:
-            匹配片段列表，每个包含 start_line, end_line, content
-        """
+        Возврат:
+            Список совпадающих фрагментов, каждый из которых содержит начальную_строку, конечную_строку и содержимое."""
         lines = content.split("\n")
         keyword_lower = keyword.lower()
 
-        # 找到所有匹配的行号
+        # Найти все совпадающие номера строк
+
         matched_lines = set()
         for i, line in enumerate(lines):
             if keyword_lower in line.lower():
-                # 添加匹配行及其上下文
+                # Добавьте совпадающие строки и их контекст
+
                 for j in range(
                     max(0, i - context_lines),
                     min(len(lines), i + context_lines + 1),
@@ -316,7 +313,8 @@ class WorkspaceManager:
         if not matched_lines:
             return []
 
-        # 合并相邻的行范围
+        # Объединить соседние диапазоны строк
+
         sorted_lines = sorted(matched_lines)
         ranges = []
         start = sorted_lines[0]
@@ -331,10 +329,12 @@ class WorkspaceManager:
                 end = line_num
         ranges.append((start, end))
 
-        # 构建结果
+        # Результаты сборки
+
         results = []
         for start_line, end_line in ranges:
-            # 行号从 1 开始
+            # Номера строк начинаются с 1
+
             context = "\n".join(
                 f"{i + 1:4d} | {lines[i]}"
                 for i in range(start_line, end_line + 1)
@@ -353,17 +353,17 @@ class WorkspaceManager:
         start_line: int = None,
         end_line: int = None,
     ) -> Optional[str]:
-        """读取记忆文件的指定行范围
+        """Чтение записанных строк
 
-        Args:
-            filename: 文件名（MEMORY.md 或 YYYY-MM-DD.md）
-            start_line: 起始行（从 1 开始），默认为 1
-            end_line: 结束行，默认为文件末尾
+        Аргументы:
+            имя_файла: имя файла (MEMORY.md или ГГГГ-ММ-ДД.md)
+            start_line: начальная строка (начиная с 1), по умолчанию — 1.
+            end_line: Конечная строка, по умолчанию — конец файла.
 
-        Returns:
-            带行号的内容，如果文件不存在返回 None
-        """
-        # 确定文件路径
+        Возврат:
+            Содержимое с номером строки, возвращает None, если файл не существует."""
+        # Определить путь к файлу
+
         if filename == "MEMORY.md":
             filepath = self.get_config_path("MEMORY")
         else:
@@ -378,30 +378,35 @@ class WorkspaceManager:
         if not lines:
             return ""
 
-        # 默认值
-        start = max(1, start_line or 1) - 1  # 转为 0-indexed
+        # значение по умолчанию
+
+        start = max(1, start_line or 1) - 1  # Преобразовать в 0-индексированный
+
         end = end_line or len(lines)
 
-        # 读取指定范围
+        # Прочитать указанный диапазон
+
         selected_lines = lines[start:end]
 
-        # 格式化输出（带行号）
+        # Форматированный вывод (с номерами строк)
+
         result_lines = []
         for i, line in enumerate(selected_lines, start=start + 1):
-            # 移除末尾换行符再添加行号
+            # Удалить конечную новую строку и добавить номер строки
+
             result_lines.append(f"{i:4d} | {line.rstrip()}")
 
         return "\n".join(result_lines)
 
     def list_memory_files(self) -> list:
-        """列出所有记忆文件
+        """Список файлов памяти
 
         Returns:
-            记忆文件信息列表
+            Сведения о файлах памяти
         """
         files = []
 
-        # 长期记忆
+        # Долгосрочная память
         memory_path = self.get_config_path("MEMORY")
         if os.path.exists(memory_path):
             stat = os.stat(memory_path)
@@ -412,7 +417,7 @@ class WorkspaceManager:
                 "updated_at": stat.st_mtime,
             })
 
-        # 每日记忆
+        # Ежедневная память
         if os.path.exists(self.memory_path):
             for filename in sorted(os.listdir(self.memory_path), reverse=True):
                 if filename.endswith(".md"):
@@ -428,89 +433,100 @@ class WorkspaceManager:
         return files
 
     def _check_and_delete_bootstrap(self):
-        """检查身份是否已确定，如果是则删除 BOOTSTRAP.md"""
+        """Удалить BOOTSTRAP при заданной личности"""
         bootstrap_path = self.get_config_path("BOOTSTRAP")
 
-        # BOOTSTRAP 不存在，无需处理
+        # BOOTSTRAP не существует, обрабатывать не нужно
+
         if not os.path.exists(bootstrap_path):
             return
 
-        # 检查身份是否已确定
+        # Проверить личность Задана ли
+
         if self._is_identity_established():
             os.remove(bootstrap_path)
 
     def _is_identity_established(self) -> bool:
-        """检查身份是否已确定（名称字段有实际内容）
+        """Личность задана (поле имени заполнено)
 
         Returns:
-            身份是否已确定
+            Задана ли личность
         """
         identity = self.load_config("IDENTITY")
         if not identity:
             return False
 
-        # 尝试匹配名称字段
-        # 格式: - **名称：** xxx 或 - **名称:** xxx
-        match = re.search(r'\*\*名称[：:]\*\*\s*(.+?)(?:\n|$)', identity)
+        # Попробуйте сопоставить поле имени
+
+        # Формат: - **Имя:** xxx или - **Имя:** xxx
+
+match = re.search(r'\*\*Name[::]\*\*\s*(.+?)(?:\n|$)', тождество)
         if match:
             name = match.group(1).strip()
-            # 如果名称不是占位符，则认为身份已确定
-            # 占位符特征：以下划线开头、包含"选一个"、包含"（"
-            if name and not name.startswith('_') and '选一个' not in name and '（' not in name:
+            # Если имя не является заполнителем, личность считается установленной.
+
+            # Характеристики заполнителя: начинается с подчеркивания, содержит «выберите один», содержит «(»
+
+if name, а не name.startswith('_') и '选一个' не по имени и '（' не по имени:
                 return True
 
         return False
 
     def _create_default_config(self, name: str):
-        """创建默认配置文件
+        """Создать конфиг по умолчанию
 
-        从模板文件读取内容，如果模板不存在则使用基础模板
+        Шаблон или базовый вариант
 
-        Args:
-            name: 配置文件名称
-        """
+        Аргументы:
+            имя: имя файла конфигурации"""
         template_path = TEMPLATES_DIR / f"{name}.md"
 
         if template_path.exists():
             with open(template_path, "r", encoding="utf-8") as f:
                 content = f.read()
         else:
-            # 回退到基础模板
-            content = f"# {name}\n\n（待配置）"
+            # Вернуться к базовому шаблону
 
-        # 替换日期占位符
+            content = f"# {name}\n\n(ожидает настройки)"
+
+        # Заменить заполнитель даты
+
         content = content.replace("{date}", datetime.now().strftime("%Y-%m-%d"))
 
         self.save_config(name, content)
 
     def reset_to_templates(self, reset_sessions: bool = False, reset_memory: bool = False, reset_global_config: bool = False):
-        """重置工作空间到初始模板
+        """Сброс к начальным шаблонам
 
         Args:
-            reset_sessions: 是否清除会话
-            reset_memory: 是否清除每日记忆
-            reset_global_config: 是否重置全局配置
+            reset_sessions: Очистить сессии
+            reset_memory: Очистить ежедневную память
+            reset_global_config: Сбросить глобальный конфиг
 
-        警告：这将覆盖所有配置文件！
+        Внимание: перезапись всех конфигов!
         """
-        # 重置配置文件（包括 BOOTSTRAP）
+        # Сброс файлов конфигурации (включая BOOTSTRAP)
+
         for config_name in CONFIG_FILES:
             self._create_default_config(config_name)
 
-        # 清除会话
+        # очистить сеанс
+
         if reset_sessions:
             self._clear_sessions()
 
-        # 清除每日记忆
+        # Очистить ежедневную память
+
         if reset_memory:
             self._clear_daily_memory()
 
-        # 重置全局配置
+        # Сбросить глобальную конфигурацию
+
         if reset_global_config:
             self._reset_global_config()
 
     def _clear_sessions(self):
-        """清除所有会话"""
+        """Очистить все разговоры"""
         if os.path.exists(self.sessions_path):
             for filename in os.listdir(self.sessions_path):
                 if filename.endswith(".json"):
@@ -518,7 +534,7 @@ class WorkspaceManager:
                     os.remove(filepath)
 
     def _clear_daily_memory(self):
-        """清除所有每日记忆"""
+        """Очистить все Ежедневная память"""
         if os.path.exists(self.memory_path):
             for filename in os.listdir(self.memory_path):
                 if filename.endswith(".md"):
@@ -526,32 +542,30 @@ class WorkspaceManager:
                     os.remove(filepath)
 
     def _reset_global_config(self):
-        """重置全局配置文件"""
+        """Сбросить файл глобальной конфигурации"""
         config_path = os.path.expanduser("~/.helloclaw/config.json")
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
 
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(get_default_global_config(), f, indent=2, ensure_ascii=False)
 
-    # ==================== 会话总结相关 ====================
+    # ==================== Сводки сессий ====================
 
     def save_session_summary(self, filename: str, content: str):
-        """保存会话总结到 memory 目录
+        """Сохранение сводки сеанса в каталог памяти
 
-        Args:
-            filename: 文件名（如 2026-02-26-project-discussion.md）
-            content: 总结内容
-        """
+        Аргументы:
+            имя_файла: имя файла (например, 2026-02-26-project-discussion.md)
+            содержание: обобщить содержание"""
         filepath = os.path.join(self.memory_path, filename)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
 
     def list_session_summaries(self) -> list:
-        """列出所有会话总结
+        """Список всех сводок сеансов
 
-        Returns:
-            会话总结文件列表
-        """
+        Возврат:
+            Список файлов сводки сеанса"""
         summaries = []
 
         if not os.path.exists(self.memory_path):
@@ -559,15 +573,18 @@ class WorkspaceManager:
 
         for filename in sorted(os.listdir(self.memory_path), reverse=True):
             if filename.endswith(".md") and "-" in filename:
-                # 排除纯日期格式（每日记忆）
+                # Исключить простой формат даты (Ежедневная память)
+
                 if re.match(r"\d{4}-\d{2}-\d{2}\.md$", filename):
                     continue
 
-                # 会话总结格式：YYYY-MM-DD-slug.md
+                # Формат сводки сеанса: ГГГГ-ММ-ДД-slug.md.
+
                 filepath = os.path.join(self.memory_path, filename)
                 stat = os.stat(filepath)
 
-                # 尝试提取 slug
+                # Попробуйте извлечь слизняк
+
                 match = re.match(r"(\d{4}-\d{2}-\d{2})-(.+)\.md$", filename)
                 if match:
                     date_str = match.group(1)
@@ -587,21 +604,20 @@ class WorkspaceManager:
         return summaries
 
     def load_session_summary(self, filename: str) -> Optional[str]:
-        """加载会话总结内容
+        """Загрузить сводный контент сеанса
 
-        Args:
-            filename: 文件名
+        Аргументы:
+            имя файла: имя файла
 
-        Returns:
-            总结内容，如果不存在返回 None
-        """
+        Возврат:
+            Обобщить содержимое, вернуть None, если оно не существует."""
         filepath = os.path.join(self.memory_path, filename)
         if os.path.exists(filepath):
             with open(filepath, "r", encoding="utf-8") as f:
                 return f.read()
         return None
 
-    # ==================== 记忆分类与去重 ====================
+    # ==================== Классификация и дедупликация памяти ====================
 
     def append_classified_memory(
         self,
@@ -609,44 +625,46 @@ class WorkspaceManager:
         category: str,
         date: datetime = None,
     ):
-        """追加带分类标签的记忆
+        """Добавьте памяти с помощью тегов категорий
 
-        Args:
-            content: 记忆内容
-            category: 分类标签（preference/decision/entity/fact）
-            date: 日期，默认为今天
-        """
+        Аргументы:
+            содержание: Содержимое записи
+            категория: классификационная метка (предпочтение/решение/субъект/факт)
+            дата: Дата (по сегодняшнему по умолчанию)"""
         memory_path = self.get_daily_memory_path(date)
         timestamp = datetime.now().strftime("%H:%M")
 
-        # 确保文件存在且有标题
+        # Убедитесь, что файл существует и имеет заголовок
+
         if not os.path.exists(memory_path):
             date_str = (date or datetime.now()).strftime("%Y-%m-%d")
             with open(memory_path, "w", encoding="utf-8") as f:
                 f.write(f"# {date_str}\n")
 
-        # 追加带分类标签的记忆
+        # Добавьте памяти с помощью тегов категорий
+
         with open(memory_path, "a", encoding="utf-8") as f:
-            f.write(f"\n## {timestamp} - 自动捕获\n\n- [{category}] {content}\n")
+            f.write(f"\n## {timestamp} - автозахват\n\n- [{category}] {content}\n")
 
     def check_duplicate_memory(self, content: str, threshold: float = 0.7) -> bool:
-        """检查记忆是否重复
+        """Проверьте память на наличие дубликатов
 
-        通过关键词重叠检测判断是否与已有记忆重复。
+        Определите, дублируется ли он с существующими воспоминаниями, с помощью обнаружения перекрытия ключевых слов.
 
-        Args:
-            content: 待检查的内容
-            threshold: 相似度阈值，默认 0.7
+        Аргументы:
+            контент: контент, который нужно проверить
+            порог: порог сходства, по умолчанию 0,7
 
-        Returns:
-            是否重复（True 表示重复，应跳过）
-        """
-        # 提取关键词
+        Возврат:
+            Повторять ли (True указывает на повторение и его следует пропустить)"""
+        # Извлечь ключевые слова
+
         keywords = self._extract_keywords(content)
         if not keywords:
             return False
 
-        # 检查今日记忆
+        # Проверьте сегодняшнюю память
+
         today_path = self.get_daily_memory_path()
         if os.path.exists(today_path):
             with open(today_path, "r", encoding="utf-8") as f:
@@ -654,13 +672,15 @@ class WorkspaceManager:
             if self._calculate_overlap(keywords, today_content) >= threshold:
                 return True
 
-        # 检查长期记忆
+        # Проверить Долгосрочную память
+
         longterm_content = self.load_config("MEMORY")
         if longterm_content:
             if self._calculate_overlap(keywords, longterm_content) >= threshold:
                 return True
 
-        # 检查最近的每日记忆
+        # Проверьте ближайшую ежедневную память
+
         recent_files = self.get_recent_memory_day(days=2)
         for filename in recent_files:
             filepath = os.path.join(self.memory_path, filename)
@@ -673,14 +693,13 @@ class WorkspaceManager:
         return False
 
     def cleanup_old_memories(self, days: int = 30) -> List[str]:
-        """清理过期的每日记忆
+        """Очистка истекла Ежедневная память
 
-        Args:
-            days: 保留天数，超过此天数将被清理
+        Аргументы:
+            дней: количество дней, в течение которых он будет храниться, после чего он будет очищен.
 
-        Returns:
-            被删除的文件名列表
-        """
+        Возврат:
+            Список имен удаленных файлов"""
         deleted = []
         cutoff_date = datetime.now() - timedelta(days=days)
 
@@ -691,31 +710,33 @@ class WorkspaceManager:
             if not filename.endswith(".md"):
                 continue
 
-            # 尝试解析日期
+            # Попробуйте разобрать дату
+
             try:
                 date_str = filename.replace(".md", "")
                 file_date = datetime.strptime(date_str, "%Y-%m-%d")
 
-                # 检查是否过期
+                # Проверьте, истек ли срок действия
+
                 if file_date < cutoff_date:
                     filepath = os.path.join(self.memory_path, filename)
                     os.remove(filepath)
                     deleted.append(filename)
             except ValueError:
-                # 文件名不是日期格式，跳过
+                # Имя файла не в формате даты, пропустите
+
                 continue
 
         return deleted
 
     def get_recent_memory_day(self, days: int = 2) -> List[str]:
-        """获取最近 N 天的记忆文件名列表
+        """Получить список имен файлов памяти за последние N дней.
 
-        Args:
-            days: 天数
+        Аргументы:
+            дни: количество дней
 
-        Returns:
-            记忆文件名列表（YYYY-MM-DD.md 格式）
-        """
+        Возврат:
+            Список имен файлов памяти (формат ГГГГ-ММ-ДД.md)"""
         files = []
         for i in range(days):
             date = datetime.now() - timedelta(days=i)
@@ -726,55 +747,53 @@ class WorkspaceManager:
         return files
 
     def _extract_keywords(self, text: str) -> Set[str]:
-        """提取关键词（过滤中文停用词）
+        """Ключевые слова (фильтр китайских стоп-слов)
 
-        Args:
-            text: 输入文本
+        Аргументы:
+            текст: введите текст
 
-        Returns:
-            关键词集合
-        """
-        # 中文停用词表
+        Возврат:
+            коллекция ключевых слов"""
+        # Таблица китайских стоп-слов
         stopwords = {
             "的", "了", "是", "在", "我", "有", "和", "就", "不", "人",
             "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去",
             "你", "会", "着", "没有", "看", "好", "自己", "这", "那",
             "什么", "这个", "那个", "可以", "就是", "这样", "然后",
             "还是", "但是", "因为", "所以", "如果", "虽然", "可能",
-            "需要", "应该", "或者", "而且", "已经", "还有", "一直",
+            "需要", "应该", "或者", "而且", "уже经", "还有", "一直",
             "的话", "一下", "一些", "一点", "东西", "知道", "觉得",
-            "喜欢", "偏好", "用户", "记住", "记下", "决定", "选定",
+            "喜欢", "偏好", "пользователь", "记住", "记下", "决定", "选定",
         }
 
-        # 使用正则提取中文词和英文单词
-        # 中文：2 字及以上
-        # 英文：3 字母及以上
+        # Regex для китайских и английских слов
+        # Китайский: 2+ иероглифа
+        # Английский: 3+ буквы
         chinese_words = re.findall(r'[\u4e00-\u9fff]{2,}', text)
         english_words = re.findall(r'[a-zA-Z]{3,}', text)
 
         keywords = set()
 
-        # 添加中文词（过滤停用词）
+        # Китайские слова без стоп-слов
         for word in chinese_words:
             if word not in stopwords:
                 keywords.add(word.lower())
 
-        # 添加英文词（转小写）
+        # Английские слова в нижнем регистре
         for word in english_words:
             keywords.add(word.lower())
 
         return keywords
 
     def _calculate_overlap(self, keywords: Set[str], text: str) -> float:
-        """计算关键词在文本中的匹配率
+        """Доля совпадений ключевых слов
 
-        Args:
-            keywords: 关键词集合
-            text: 目标文本
+        Аргументы:
+            ключевые слова: коллекция ключевых слов
+            текст: целевой текст
 
-        Returns:
-            匹配率（0.0 - 1.0）
-        """
+        Возврат:
+            Коэффициент совпадения (0,0 – 1,0)"""
         if not keywords:
             return 0.0
 

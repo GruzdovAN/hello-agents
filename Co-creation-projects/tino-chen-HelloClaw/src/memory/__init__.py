@@ -1,4 +1,4 @@
-"""记忆系统模块"""
+"""системный модуль памяти"""
 
 from .session_summarizer import SessionSummarizer
 from .memory_flush import MemoryFlushManager

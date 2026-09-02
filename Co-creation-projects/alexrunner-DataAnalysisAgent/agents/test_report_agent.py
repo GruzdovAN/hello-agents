@@ -16,27 +16,27 @@ if __name__ == "__main__":
 
     task_result = [
         {
-            'task': '分析不同年龄段用户的偏好',
+            'task': 'Анализ предпочтений пользователей разных возрастных групп',
             'result': {
-                'text': '各年龄段平均消费金额相近，均在58-61之间。商品类别偏好显示，所有年龄段均最偏好服装（Clothing），占比约44%-46%；其次是配饰（Accessories），占比约29%-34%；鞋类（Footwear）和外套（Outerwear）偏好相对较低。其中，20-30岁用户更偏好配饰，40-50岁用户更偏好鞋类，青少年（<20）和老年人（60+）对外套的偏好相对较高。',
+                'text': 'Средняя сумма покупок по возрастным группам близка и составляет 58–61. По категориям товаров все возрастные группы чаще всего выбирают одежду (Clothing) — около 44–46%; на втором месте аксессуары (Accessories) — около 29–34%; обувь (Footwear) и верхняя одежда (Outerwear) встречаются реже. Пользователи 20–30 лет чаще выбирают аксессуары, 40–50 лет — обувь, подростки (<20) и пожилые (60+) относительно чаще выбирают верхнюю одежду.',
                 'visualization_url': ['figures/age_group_distribution.png', 'figures/average_spending_by_age_group.png', 'figures/category_preference_by_age_group.png']
             }
         }
     ]
 
-    print(f"\n任务结果: {task_result}")
+    print(f"\nРезультат задачи: {task_result}")
 
     final_result = report_agent.run(json.dumps(task_result, ensure_ascii=False))
 
-    # 清理报告内容，确保以"# 执行摘要"开头
-    if "# 执行摘要" in final_result:
-        # 找到"# 执行摘要"的位置
-        start_idx = final_result.find("# 执行摘要")
+    # Очистка отчёта: начинать с "# Резюме"
+    if "# Резюме" in final_result:
+        # Поиск позиции "# Резюме"
+        start_idx = final_result.find("# Резюме")
         final_result = final_result[start_idx:]
 
-    print(f"\n最终分析报告: \n{final_result}")
+    print(f"\nИтоговый аналитический отчёт: \n{final_result}")
 
-    # 保存报告到文件
+    # Сохранение отчёта в файл
     os.makedirs("out", exist_ok=True)
     with open("out/analysis_report.md", "w", encoding="utf-8") as f:
         f.write(final_result)

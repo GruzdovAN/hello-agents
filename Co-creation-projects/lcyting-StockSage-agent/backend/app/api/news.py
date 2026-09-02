@@ -1,7 +1,7 @@
 """
-智能股票分析助手 — 资讯搜索API路由
+Интеллектуальный помощник по анализу запасов — маршрутизация API поиска информации
 
-提供金融资讯搜索、个股舆情分析、热门资讯查询接口。
+Обеспечивает поиск финансовой информации, анализ общественного мнения по отдельным акциям и популярные интерфейсы запроса информации.
 """
 
 from fastapi import APIRouter, Query
@@ -9,14 +9,14 @@ from app.services import news_service
 from app.utils.mx_http import mx_result_to_http
 from app.utils.response import error_response
 
-router = APIRouter(prefix="/news", tags=["资讯搜索"])
+router = APIRouter(prefix="/news", tags=["поиск информации"])
 
 
 @router.get("/search")
 async def search_news(
     query: str = Query(..., description="自然语言搜索问句"),
 ):
-    """搜索金融资讯
+"""Поиск финансовой информации
 
     - **query**: 自然语言搜索问句，如 "人工智能板块近期新闻"、"贵州茅台最新研报"
     """
@@ -29,9 +29,9 @@ async def search_news(
 
 @router.get("/sentiment/{code}")
 async def get_stock_sentiment(code: str):
-    """获取个股舆情分析
+"""Получить анализ общественного мнения по отдельным акциям
 
-    根据股票代码搜索该股票相关的新闻、研报、公告，并进行分类整理。
+Ищите новости, отчеты об исследованиях и объявления, связанные с акциями, по коду акции и сортируйте их по категориям.
 
     - **code**: 6位股票代码，如 600519（贵州茅台）、000001（平安银行）
     """
@@ -44,9 +44,9 @@ async def get_stock_sentiment(code: str):
 
 @router.get("/hot")
 async def get_hot_news():
-    """获取当前市场热门资讯
+"""Получите актуальную рыночную информацию
 
-    返回今日A股市场热点动态、北向资金流向等资讯摘要。
+Вернитесь к обзору сегодняшних горячих тем рынка акций А, потоков капитала на север и другой информации.
     """
     result = news_service.search_market_news()
     return mx_result_to_http(result)

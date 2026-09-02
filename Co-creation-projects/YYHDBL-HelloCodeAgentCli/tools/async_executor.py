@@ -1,4 +1,4 @@
-"""异步工具执行器 - HelloAgents异步工具执行支持"""
+"""Асинхронный исполнитель инструментов — поддержка параллельного выполнения HelloAgents"""
 
 import asyncio
 import concurrent.futures
@@ -7,14 +7,14 @@ from .registry import ToolRegistry
 
 
 class AsyncToolExecutor:
-    """异步工具执行器"""
+    """Асинхронный исполнитель инструментов"""
 
     def __init__(self, registry: ToolRegistry, max_workers: int = 4):
         self.registry = registry
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
 
     async def execute_tool_async(self, tool_name: str, input_data: str) -> str:
-        """异步执行单个工具"""
+        """Асинхронно выполняет один инструмент"""
         loop = asyncio.get_event_loop()
         
         def _execute():
@@ -24,21 +24,20 @@ class AsyncToolExecutor:
             result = await loop.run_in_executor(self.executor, _execute)
             return result
         except Exception as e:
-            return f"❌ 工具 '{tool_name}' 异步执行失败: {e}"
+            return f"❌ Асинхронное выполнение инструмента '{tool_name}' не удалось: {e}"
 
     async def execute_tools_parallel(self, tasks: List[Dict[str, str]]) -> List[Dict[str, Any]]:
         """
-        并行执行多个工具
+        Параллельно выполняет несколько инструментов
         
         Args:
-            tasks: 任务列表，每个任务包含 tool_name 和 input_data
+            tasks: список задач с tool_name и input_data
             
         Returns:
-            执行结果列表，包含任务信息和结果
+            Список результатов с информацией о задаче
         """
-        print(f"🚀 开始并行执行 {len(tasks)} 个工具任务")
+        print(f"🚀 Параллельный запуск {len(tasks)} задач инструментов")
         
-        # 创建异步任务
         async_tasks = []
         for i, task in enumerate(tasks):
             tool_name = task.get("tool_name")
@@ -47,11 +46,10 @@ class AsyncToolExecutor:
             if not tool_name:
                 continue
                 
-            print(f"📝 创建任务 {i+1}: {tool_name}")
+            print(f"📝 Создана задача {i+1}: {tool_name}")
             async_task = self.execute_tool_async(tool_name, input_data)
             async_tasks.append((i, task, async_task))
         
-        # 等待所有任务完成
         results = []
         for i, task, async_task in async_tasks:
             try:
@@ -63,7 +61,7 @@ class AsyncToolExecutor:
                     "result": result,
                     "status": "success"
                 })
-                print(f"✅ 任务 {i+1} 完成: {task['tool_name']}")
+                print(f"✅ Задача {i+1} завершена: {task['tool_name']}")
             except Exception as e:
                 results.append({
                     "task_id": i,
@@ -72,21 +70,21 @@ class AsyncToolExecutor:
                     "result": str(e),
                     "status": "error"
                 })
-                print(f"❌ 任务 {i+1} 失败: {task['tool_name']} - {e}")
+                print(f"❌ Задача {i+1} не удалась: {task['tool_name']} - {e}")
         
-        print(f"🎉 并行执行完成，成功: {sum(1 for r in results if r['status'] == 'success')}/{len(results)}")
+        print(f"🎉 Параллельное выполнение завершено, успешно: {sum(1 for r in results if r['status'] == 'success')}/{len(results)}")
         return results
 
     async def execute_tools_batch(self, tool_name: str, input_list: List[str]) -> List[Dict[str, Any]]:
         """
-        批量执行同一个工具
+        Пакетно выполняет один и тот же инструмент
         
         Args:
-            tool_name: 工具名称
-            input_list: 输入数据列表
+            tool_name: имя инструмента
+            input_list: список входных данных
             
         Returns:
-            执行结果列表
+            Список результатов
         """
         tasks = [
             {"tool_name": tool_name, "input_data": input_data}
@@ -95,9 +93,9 @@ class AsyncToolExecutor:
         return await self.execute_tools_parallel(tasks)
 
     def close(self):
-        """关闭执行器"""
+        """Закрывает исполнитель"""
         self.executor.shutdown(wait=True)
-        print("🔒 异步工具执行器已关闭")
+        print("🔒 Асинхронный исполнитель инструментов закрыт")
 
     def __enter__(self):
         return self
@@ -106,18 +104,17 @@ class AsyncToolExecutor:
         self.close()
 
 
-# 便捷函数
 async def run_parallel_tools(registry: ToolRegistry, tasks: List[Dict[str, str]], max_workers: int = 4) -> List[Dict[str, Any]]:
     """
-    便捷函数：并行执行多个工具
+    Удобная функция: параллельное выполнение нескольких инструментов
     
     Args:
-        registry: 工具注册表
-        tasks: 任务列表
-        max_workers: 最大工作线程数
+        registry: реестр инструментов
+        tasks: список задач
+        max_workers: максимум рабочих потоков
         
     Returns:
-        执行结果列表
+        Список результатов
     """
     async with AsyncToolExecutor(registry, max_workers) as executor:
         return await executor.execute_tools_parallel(tasks)
@@ -125,41 +122,37 @@ async def run_parallel_tools(registry: ToolRegistry, tasks: List[Dict[str, str]]
 
 async def run_batch_tool(registry: ToolRegistry, tool_name: str, input_list: List[str], max_workers: int = 4) -> List[Dict[str, Any]]:
     """
-    便捷函数：批量执行同一个工具
+    Удобная функция: пакетное выполнение одного инструмента
     
     Args:
-        registry: 工具注册表
-        tool_name: 工具名称
-        input_list: 输入数据列表
-        max_workers: 最大工作线程数
+        registry: реестр инструментов
+        tool_name: имя инструмента
+        input_list: список входных данных
+        max_workers: максимум рабочих потоков
         
     Returns:
-        执行结果列表
+        Список результатов
     """
     async with AsyncToolExecutor(registry, max_workers) as executor:
         return await executor.execute_tools_batch(tool_name, input_list)
 
 
-# 同步包装函数（为了兼容性）
 def run_parallel_tools_sync(registry: ToolRegistry, tasks: List[Dict[str, str]], max_workers: int = 4) -> List[Dict[str, Any]]:
-    """同步版本的并行工具执行"""
+    """Синхронная обёртка параллельного выполнения инструментов"""
     return asyncio.run(run_parallel_tools(registry, tasks, max_workers))
 
 
 def run_batch_tool_sync(registry: ToolRegistry, tool_name: str, input_list: List[str], max_workers: int = 4) -> List[Dict[str, Any]]:
-    """同步版本的批量工具执行"""
+    """Синхронная обёртка пакетного выполнения инструмента"""
     return asyncio.run(run_batch_tool(registry, tool_name, input_list, max_workers))
 
 
-# 示例函数
 async def demo_parallel_execution():
-    """演示并行执行的示例"""
+    """Демонстрация параллельного выполнения"""
     from .registry import ToolRegistry
     
-    # 创建注册表（这里假设已经注册了工具）
     registry = ToolRegistry()
     
-    # 定义并行任务
     tasks = [
         {"tool_name": "my_calculator", "input_data": "2 + 2"},
         {"tool_name": "my_calculator", "input_data": "3 * 4"},
@@ -167,11 +160,9 @@ async def demo_parallel_execution():
         {"tool_name": "my_calculator", "input_data": "10 / 2"},
     ]
     
-    # 并行执行
     results = await run_parallel_tools(registry, tasks)
     
-    # 显示结果
-    print("\n📊 并行执行结果:")
+    print("\n📊 Результаты параллельного выполнения:")
     for result in results:
         status_icon = "✅" if result["status"] == "success" else "❌"
         print(f"{status_icon} {result['tool_name']}({result['input_data']}) = {result['result']}")
@@ -180,5 +171,4 @@ async def demo_parallel_execution():
 
 
 if __name__ == "__main__":
-    # 运行演示
     asyncio.run(demo_parallel_execution())

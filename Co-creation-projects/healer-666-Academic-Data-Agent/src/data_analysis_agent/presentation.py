@@ -10,20 +10,20 @@ from .agent_runner import AgentStepTrace, AnalysisRunResult
 
 def _tool_label(tool_name: str | None) -> str:
     if tool_name == "PythonInterpreterTool":
-        return "本地 Python 分析"
+        return "Локальный анализ Python"
     if tool_name == "TavilySearchTool":
-        return "联网背景检索"
+        return "Поиск фоновой информации"
     if tool_name:
         return tool_name
-    return "报告收敛"
+    return "Согласование отчёта"
 
 
 def _status_label(status: str) -> str:
     mapping = {
-        "success": "成功",
-        "partial": "部分完成",
-        "error": "失败",
-        "unknown": "未知",
+        "success": "успех",
+        "partial": "частично",
+        "error": "ошибка",
+        "unknown": "неизвестно",
     }
     return mapping.get(status, status)
 
@@ -59,7 +59,7 @@ def render_trace_table(result: AnalysisRunResult):
         if trace.action == "call_tool":
             stage = f"{_tool_label(trace.tool_name)} ({trace.tool_name})"
         else:
-            stage = "最终报告"
+            stage = "Финальный отчёт"
         rows.append(
             """
             <tr>
@@ -75,13 +75,13 @@ def render_trace_table(result: AnalysisRunResult):
                 stage=_escape(stage),
                 decision=_escape(trace.decision or trace.action),
                 status=_escape(_status_label(trace.tool_status)),
-                observation=_escape(_trace_short_observation(trace) or "无"),
-                notes=_escape(trace.summary or trace.parse_error or "无"),
+                observation=_escape(_trace_short_observation(trace) or "нет"),
+                notes=_escape(trace.summary or trace.parse_error or "нет"),
             )
         )
 
     html_content = """
-    <h2>Agent 推理轨迹表</h2>
+    <h2>Таблица трасс рассуждений агента</h2>
     <table style="width:100%; border-collapse:collapse; font-size:14px;">
       <thead>
         <tr style="background:#f3f4f6;">
@@ -106,7 +106,7 @@ def render_full_report(result: AnalysisRunResult):
 
     from IPython.display import Markdown
 
-    return Markdown("## 完整报告正文\n\n" + result.report_markdown)
+    return Markdown("## Полный текст отчёта\n\n" + result.report_markdown)
 
 
 def render_diagnostics(result: AnalysisRunResult):
@@ -116,7 +116,7 @@ def render_diagnostics(result: AnalysisRunResult):
 
     failed_traces = _iter_failed_traces(result.step_traces)
     if not failed_traces:
-        return HTML("<h2>错误与诊断详情</h2><p>本次运行无工具级异常。</p>")
+        return HTML("<h2>Ошибки и диагностика</h2><p>Исключений инструментов в этом запуске нет.</p>")
 
     details_blocks = []
     for trace in failed_traces:
@@ -131,4 +131,4 @@ def render_diagnostics(result: AnalysisRunResult):
             """
         )
 
-    return HTML("<h2>错误与诊断详情</h2>" + "".join(details_blocks))
+    return HTML("<h2>Ошибки и диагностика</h2>" + "".join(details_blocks))

@@ -1,8 +1,8 @@
 """
 智能股票分析助手 — 分析报告服务层
 
-协调多数据源（行情、财务、资讯），生成个股深度分析报告。
-支持报告持久化存储与历史查询。
+Координируйте несколько источников данных (рынки, финансы, информация) для создания отчетов об углубленном анализе отдельных акций.
+Поддерживает постоянное хранение отчетов и исторические запросы.
 """
 
 import sys
@@ -28,21 +28,21 @@ async def generate_analysis_report(
     user_id: str = "default",
     report_type: str = "full",
 ) -> dict:
-    """生成个股深度分析报告
+"""Создание отчета об углубленном анализе отдельных акций
 
-    收集行情数据、财务数据、公司概况、舆情信息，整合为结构化分析报告。
+Собирайте рыночные данные, финансовые данные, профили компаний и информацию общественного мнения и интегрируйте их в структурированные аналитические отчеты.
 
     Args:
-        stock_code: 6位股票代码
-        user_id: 用户标识
-        report_type: 报告类型 full/quick
+stock_code: 6-значный код акции
+user_id: идентификатор пользователя
+report_type: тип отчета полный/быстрый
 
     Returns:
         {
             "success": True/False,
             "report": { ... } or None,
             "error": str or None,
-            "data_collected": dict  # 各数据源的收集状态
+"data_collected": dict # Статус сбора каждого источника данных
         }
     """
     result = {
@@ -53,7 +53,7 @@ async def generate_analysis_report(
     }
 
     try:
-        # 阶段1: 收集行情数据
+# Этап 1: Сбор рыночных данных
         quote_data = get_stock_quote(stock_code)
         result["data_collected"]["quote"] = quote_data["success"]
 
@@ -61,15 +61,15 @@ async def generate_analysis_report(
         financial_data = get_stock_financial(stock_code)
         result["data_collected"]["financial"] = financial_data["success"]
 
-        # 阶段3: 收集公司概况
+# Этап 3: Соберите профиль компании
         profile_data = get_stock_profile(stock_code)
         result["data_collected"]["profile"] = profile_data["success"]
 
-        # 阶段4: 收集舆情数据（异步）
+# Этап 4: Сбор данных общественного мнения (асинхронный)
         sentiment_data = analyze_sentiment(stock_code)
         result["data_collected"]["sentiment"] = sentiment_data["success"]
 
-        # 阶段5: 构建报告内容
+# Этап 5: Создание содержания отчета
         stock_name = _extract_stock_name(profile_data)
         report_content = _build_report_content(
             stock_code, stock_name, report_type,
@@ -77,7 +77,7 @@ async def generate_analysis_report(
         )
         report_summary = _generate_summary(report_content)
 
-        # 阶段6: 持久化报告
+# Этап 6: Отчеты о постоянстве
         async with async_session_factory() as db:
             data_snapshot = json.dumps({
                 "quote": {"success": quote_data["success"], "tables": quote_data.get("tables", [])},
@@ -112,10 +112,10 @@ async def generate_analysis_report(
 
 
 async def get_report(report_id: int) -> dict:
-    """获取指定报告
+"""Получить указанный отчет
 
     Args:
-        report_id: 报告ID
+report_id: идентификатор отчета
 
     Returns:
         {"success": True/False, "report": {...} or None, "error": str or None}
@@ -146,8 +146,8 @@ async def get_user_reports(user_id: str = "default", limit: int = 20) -> dict:
     """获取用户的历史分析报告列表
 
     Args:
-        user_id: 用户标识
-        limit: 最大返回数量
+user_id: идентификатор пользователя
+лимит: максимальное возвращаемое количество
 
     Returns:
         {"success": True/False, "reports": [...], "total": int, "error": str or None}
@@ -158,14 +158,14 @@ async def get_user_reports(user_id: str = "default", limit: int = 20) -> dict:
         async with async_session_factory() as db:
             from sqlalchemy import select, func
 
-            # 查询总数
+#Общее количество запросов
             count_stmt = select(func.count(AnalysisReport.id)).where(
                 AnalysisReport.user_id == user_id
             )
             db_result = await db.execute(count_stmt)
             total = db_result.scalar() or 0
 
-            # 查询列表
+# Список запросов
             stmt = (
                 select(AnalysisReport)
                 .where(AnalysisReport.user_id == user_id)
@@ -186,14 +186,14 @@ async def get_user_reports(user_id: str = "default", limit: int = 20) -> dict:
 
 
 def _extract_stock_name(profile_data: dict) -> str:
-    """从公司概况数据中提取股票名称"""
+"""Извлечение названий акций из данных профиля компании"""
     try:
         tables = profile_data.get("tables", [])
         for table in tables:
             rows = table.get("rows", [])
             for row in rows:
                 for key in row:
-                    if "名称" in key or "简称" in key:
+если в ключе «имя» или «короткое имя»:
                         return str(row[key])
         return ""
     except Exception:
@@ -209,20 +209,20 @@ def _build_report_content(
     profile_data: dict,
     sentiment_data: dict,
 ) -> str:
-    """构建报告Markdown内容"""
+"""Создание содержимого Markdown отчета"""
     title = stock_name or stock_code
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     lines = []
-    lines.append(f"# {title}（{stock_code}）深度分析报告")
-    lines.append(f"**生成时间**: {now}")
-    lines.append(f"**报告类型**: {'完整分析' if report_type == 'full' else '快速概览'}")
+lines.append(f"# {title}（{stock_code}）отчет о глубинном анализе")
+lines.append(f"**Время генерации**: {сейчас}")
+lines.append(f"**Тип отчета**: {'Полный анализ' if report_type == 'полный' else 'Краткий обзор'}")
     lines.append("")
     lines.append("---")
     lines.append("")
 
-    # 1. 行情概览
-    lines.append("## 一、行情概览")
+# 1. Обзор рынка
+lines.append("## 1. Обзор рынка")
     if quote_data.get("success"):
         lines.append(_format_data_section(quote_data))
     else:
@@ -231,8 +231,8 @@ def _build_report_content(
             lines.append(f"> 原因: {quote_data['error']}")
     lines.append("")
 
-    # 2. 财务分析
-    lines.append("## 二、财务分析")
+№ 2. Финансовый анализ
+lines.append("## 2. Финансовый анализ")
     if financial_data.get("success"):
         lines.append(_format_data_section(financial_data))
     else:
@@ -241,8 +241,8 @@ def _build_report_content(
             lines.append(f"> 原因: {financial_data['error']}")
     lines.append("")
 
-    # 3. 公司概况
-    lines.append("## 三、公司概况")
+№ 3. Профиль компании
+lines.append("## 3. Профиль компании")
     if profile_data.get("success"):
         lines.append(_format_data_section(profile_data))
     else:
@@ -251,21 +251,21 @@ def _build_report_content(
             lines.append(f"> 原因: {profile_data['error']}")
     lines.append("")
 
-    # 4. 舆情分析
-    lines.append("## 四、舆情分析")
+№ 4. Анализ общественного мнения
+lines.append("## 4. Анализ общественного мнения")
     if sentiment_data.get("success"):
         total = sentiment_data.get("total_count", 0)
         news_count = len(sentiment_data.get("news_items", []))
         report_count = len(sentiment_data.get("report_items", []))
         ann_count = len(sentiment_data.get("announce_items", []))
-        lines.append(f"- 相关资讯总数: {total} 条")
-        lines.append(f"  - 新闻: {news_count} 条")
+lines.append(f"-Общее количество связанной информации: {total} штук")
+lines.append(f" - Новости: {news_count} строк")
         lines.append(f"  - 研报: {report_count} 条")
-        lines.append(f"  - 公告: {ann_count} 条")
+lines.append(f" - Объявления: {ann_count} строк")
 
         if news_count > 0:
             lines.append("")
-            lines.append("### 近期新闻")
+lines.append("### Последние новости")
             for item in sentiment_data.get("news_items", [])[:5]:
                 title = item.get("title", "")
                 date = item.get("date", "").split()[0] if item.get("date") else ""
@@ -278,9 +278,9 @@ def _build_report_content(
             lines.append(f"> 原因: {sentiment_data['error']}")
     lines.append("")
 
-    # 5. 综合评估
-    lines.append("## 五、综合评估")
-    lines.append("> 基于以上数据的综合评估分析如下：")
+№ 5. Комплексная оценка
+lines.append("## 5. Комплексная оценка")
+lines.append("> Комплексный оценочный анализ на основе приведенных выше данных выглядит следующим образом: ")
     lines.append("")
     collected_count = sum(1 for v in [
         quote_data.get("success"),
@@ -292,14 +292,14 @@ def _build_report_content(
     if collected_count >= 3:
         lines.append(f"数据收集完成度: {collected_count}/4，综合分析可用。")
         lines.append("")
-        lines.append("### 估值参考（需结合AI Agent深度分析）")
-        lines.append("- 请参考【行情概览】部分的实时估值数据")
-        lines.append("- 请参考【财务分析】部分的ROE、净利润等核心指标")
+lines.append("### Справочник по оценке (необходимо объединить с углубленным анализом AI Agent)")
+lines.append("- См. данные оценки в реальном времени в разделе [Обзор рынка]")
+lines.append("- См. основные показатели, такие как рентабельность собственного капитала и чистая прибыль, в разделе [Финансовый анализ]")
         lines.append("")
     else:
         lines.append(f"⚠️ 数据收集不完整（{collected_count}/4），建议检查API Key配置后重试。")
 
-    lines.append("### 投资建议")
+lines.append("### Инвестиционный совет")
     lines.append("> ⚠️ **免责声明**: 本报告由智能股票分析助手自动生成，所有数据来源于东方财富妙想API。")
     lines.append("> 分析结果仅供参考和学习，不构成任何投资建议。投资有风险，入市需谨慎。")
     lines.append("")
@@ -308,13 +308,13 @@ def _build_report_content(
 
 
 def _format_data_section(data: dict) -> str:
-    """将数据表格格式化为Markdown"""
+"""Отформатируйте таблицу данных в Markdown"""
     lines = []
     tables = data.get("tables", [])
     if not tables:
         return "(暂无数据)"
 
-    for table in tables[:3]:  # 最多显示3个表
+for table in table[:3]: # Отобразить до 3 таблиц
         sheet_name = table.get("sheet_name", "")
         rows = table.get("rows", [])
         fieldnames = table.get("fieldnames", [])
@@ -323,14 +323,14 @@ def _format_data_section(data: dict) -> str:
             lines.append(f"### {sheet_name}")
 
         if not rows:
-            lines.append("(无数据)")
+lines.append("(Нет данных)")
             continue
 
-        # 限制行数
+# Ограничиваем количество строк
         display_rows = rows[:10]
         display_fields = fieldnames[:8]
 
-        # 表头
+# Заголовок
         header = " | ".join(display_fields)
         lines.append(f"| {header} |")
         lines.append(f"|{'|'.join(['---'] * len(display_fields))}|")
@@ -347,15 +347,15 @@ def _format_data_section(data: dict) -> str:
 
 
 def _generate_summary(report_content: str) -> str:
-    """从报告内容中生成简短摘要"""
-    # 从报告内容提取关键信息生成摘要
+"""Создать краткую сводку из содержимого отчета"""
+# Извлеките ключевую информацию из содержимого отчета для создания сводки
     try:
         lines = report_content.split("\n")
         data_status = ""
         for line in lines:
-            if "数据收集完成度" in line:
+если в строке «завершение сбора данных»:
                 data_status = line.strip()
                 break
         return f"[智能股票分析助手] 分析报告已生成。{data_status}详见完整报告。"
     except Exception:
-        return "分析报告已生成，请查看完整内容。"
+return «Отчет об анализе создан, просмотрите его полное содержимое».

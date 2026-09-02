@@ -1,11 +1,12 @@
-"""HelloClaw Agent - 基于 HelloAgents SimpleAgent 的个性化 AI 助手"""
+"""HelloClaw Agent - Персонализированный AI на HelloAgents SimpleAgent"""
 
 import os
 from typing import List
 
 from hello_agents import Config
 from .enhanced_simple_agent import EnhancedSimpleAgent
-from .enhanced_llm import EnhancedHelloAgentsLLM  # HelloClaw 专用 LLM（支持流式工具调用）
+from .enhanced_llm import EnhancedHelloAgentsLLM  # Специальный LLM HelloClaw (поддерживает вызов инструментов потоковой передачи)
+
 from ..memory.memory_flush import MemoryFlushManager
 from ..memory.capture import MemoryCaptureManager
 from hello_agents.tools import (
@@ -21,13 +22,12 @@ from ..tools import MemoryTool, ExecuteCommandTool, WebSearchTool, WebFetchTool
 
 
 class HelloClawAgent:
-    """HelloClaw Agent - 个性化 AI 助手
+    """HelloClaw Agent - Персонализированный AI-ассистент
 
-    基于 HelloAgents SimpleAgent，增加了：
-    - 工作空间管理（配置文件、记忆文件）
-    - 从 AGENTS.md 读取系统提示词
-    - HelloClaw 专属工具集
-    """
+    На основе HelloAgents SimpleAgent добавлено:
+    - Управление рабочим пространством (файлы конфигурации, файлы памяти)
+    - Читать системные подсказки с AGENTS.md
+    - Эксклюзивный набор инструментов HelloClaw"""
 
     def __init__(
         self,
@@ -38,40 +38,45 @@ class HelloClawAgent:
         base_url: str = None,
         max_tool_iterations: int = 10,
     ):
-        """初始化 HelloClaw Agent
+        """Инициализация агента HelloClaw
 
-        Args:
-            workspace_path: 工作空间路径，默认 ~/.helloclaw/workspace
-            name: Agent 名称（从 IDENTITY.md 读取，无需手动指定）
-            model_id: LLM 模型 ID
-            api_key: API Key
-            base_url: API Base URL
-            max_tool_iterations: 最大工具调用迭代次数
-        """
-        # 确保 workspace_path 正确展开 ~/
+        Аргументы:
+            workspace_path: путь к рабочей области, по умолчанию ~/.helloclaw/workspace
+            name: Имя агента (читается из IDENTITY.md, вручную указывать не нужно)
+            model_id: идентификатор модели LLM
+            api_key: Ключ API
+            base_url: Базовый URL-адрес API
+            max_tool_iterations: Максимальное количество итераций вызова инструмента."""
+        # Убедитесь, что путь к рабочей области_рабочей области правильно расширен ~/
+
         self.workspace_path = os.path.expanduser(workspace_path or "~/.helloclaw/workspace")
 
-        # 初始化工作空间管理器
+        # Инициализация менеджера рабочего пространства
         self.workspace = WorkspaceManager(self.workspace_path)
 
-        # 确保工作空间存在
+        # Создать рабочее пространство при необходимости
         self.workspace.ensure_workspace_exists()
 
-        # 从 IDENTITY.md 读取名称，如果没有则使用默认值
+        # Прочитайте имя из IDENTITY.md, используйте значение по умолчанию, если его нет.
+
         self.name = name or self._read_identity_name() or "HelloClaw"
 
-        # 保存传入的参数（用于热加载时的优先级判断）
+        # Сохраните входящие параметры (используются для определения приоритета во время горячей загрузки)
+
         self._override_model_id = model_id
         self._override_api_key = api_key
         self._override_base_url = base_url
 
-        # 构建系统提示词（从 AGENTS.md 读取）
+        # Создайте слова-подсказки для системы (читать из AGENTS.md)
+
         system_prompt = self._build_system_prompt()
 
-        # 初始化 LLM（从 config.json 读取配置）
+        # Инициализировать LLM (прочитать конфигурацию из config.json)
+
         self._init_llm()
 
-        # 初始化配置
+        # Начальная конфигурация
+
         self.config = Config(
             session_enabled=True,
             session_dir=os.path.join(self.workspace_path, "sessions"),
@@ -83,15 +88,19 @@ class HelloClawAgent:
             skills_enabled=False,
             todowrite_enabled=False,
             devlog_enabled=False,
-            subagent_enabled=True,  # 启用子 Agent 支持
+            subagent_enabled=True,  # Включить поддержку дочернего агента
+
         )
 
-        # 初始化工具注册表
+        # Реестр инструмента инициализации
+
         self.tool_registry = self._setup_tools()
 
-        # 初始化底层 EnhancedSimpleAgent
+        # Инициализируйте базовый EnhancedSimpleAgent.
+
         self._agent = EnhancedSimpleAgent(
-            name=self.name,  # 使用已读取的名字
+            name=self.name,  # Использовать прочитанное имя
+
             llm=self._llm,
             tool_registry=self.tool_registry,
             system_prompt=system_prompt,
@@ -100,7 +109,8 @@ class HelloClawAgent:
             max_tool_iterations=max_tool_iterations,
         )
 
-        # 初始化 Memory Flush 管理器
+        # Инициализируйте диспетчер очистки памяти
+
         self._memory_flush_manager = MemoryFlushManager(
             context_window=self.config.context_window,
             compression_threshold=self.config.compression_threshold,
@@ -108,35 +118,37 @@ class HelloClawAgent:
             enabled=True,
         )
 
-        # 初始化 Memory Capture 管理器
+        # Инициализируйте диспетчер захвата памяти
+
         self._memory_capture_manager = MemoryCaptureManager(self.workspace)
 
     def _read_identity_name(self) -> str:
-        """从 IDENTITY.md 读取助手名称
+        """Прочитать имя помощника из IDENTITY.md
 
-        Returns:
-            助手名称，如果未设置则返回 None
-        """
+        Возврат:
+            Имя помощника или «Нет», если не установлено."""
         import re
         identity = self.workspace.load_config("IDENTITY")
         if not identity:
             return None
 
-        # 尝试匹配名称字段
-        # 格式: - **名称：** xxx 或 - **名称:** xxx
-        match = re.search(r'\*\*名称[：:]\*\*\s*(.+?)(?:\n|$)', identity)
+        # Попробуйте сопоставить поле имени
+
+        # Формат: - **Имя:** xxx или - **Имя:** xxx
+
+match = re.search(r'\*\*Name[::]\*\*\s*(.+?)(?:\n|$)', тождество)
         if match:
             name = match.group(1).strip()
-            # 检查是否是占位符文本（包含下划线或"选一个"等）
-            if name and not name.startswith('_') and '选一个' not in name and '（' not in name:
+            # Проверьте, является ли это текстом-заполнителем (содержит подчеркивание или «выберите один» и т. д.)
+
+if name, а не name.startswith('_') и '选一个' не по имени и '（' не по имени:
                 return name
         return None
 
     def _init_llm(self):
-        """初始化 LLM（从 config.json 读取配置）
+        """Инициализировать LLM (прочитать конфигурацию из config.json)
 
-        配置优先级：构造函数参数 > config.json > 环境变量 > 默认值
-        """
+        Приоритет конфигурации: параметры конструктора > config.json > переменные среды > значение по умолчанию."""
         llm_config = self.workspace.get_llm_config()
 
         self._model_id = self._override_model_id or llm_config.get("model_id") or "glm-4"
@@ -150,13 +162,12 @@ class HelloClawAgent:
         )
 
     def _reload_llm_if_changed(self) -> bool:
-        """检查配置变化并重新加载 LLM
+        """Проверьте изменения конфигурации и перезагрузите LLM.
 
-        如果 config.json 中的配置发生变化，重新创建 LLM 实例。
+        Если конфигурация в config.json изменится, создайте заново экземпляр LLM.
 
-        Returns:
-            是否发生了重新加载
-        """
+        Возврат:
+            произошла ли перезагрузка"""
         llm_config = self.workspace.get_llm_config()
 
         new_model_id = self._override_model_id or llm_config.get("model_id") or "glm-4"
@@ -167,7 +178,7 @@ class HelloClawAgent:
             new_api_key != self._api_key or
             new_base_url != self._base_url):
 
-            print(f"🔄 检测到配置变化，重新加载 LLM: {self._model_id} -> {new_model_id}")
+            print(f"🔄 Обнаружено изменение конфигурации, перезагрузка LLM: {self._model_id} -> {new_model_id}")
 
             self._model_id = new_model_id
             self._api_key = new_api_key
@@ -179,7 +190,8 @@ class HelloClawAgent:
                 base_url=self._base_url,
             )
 
-            # 更新 Agent 的 LLM 引用
+            # Обновите ссылку LLM агента
+
             if hasattr(self, '_agent'):
                 self._agent.llm = self._llm
 
@@ -187,49 +199,53 @@ class HelloClawAgent:
         return False
 
     def _build_system_prompt(self) -> str:
-        """构建系统提示词
+        """Создание подсказок для системы
 
-        从 AGENTS.md 读取主要内容，附加其他配置文件作为上下文。
-        如果入职未完成，注入 BOOTSTRAP.md 引导内容。
+        Прочтите основной контент из AGENTS.md, добавив другие файлы конфигурации в качестве контекста.
+        Если подключение не завершено, внедрите загрузочное содержимое BOOTSTRAP.md.
 
-        Raises:
-            RuntimeError: 如果 AGENTS.md 不存在
-        """
-        # 从 AGENTS.md 读取（必须存在）
+        Поднимает:
+            RuntimeError: если AGENTS.md не существует"""
+        # Читать с AGENTS.md (должен существовать)
+
         agents_content = self.workspace.load_config("AGENTS")
         if not agents_content:
-            raise RuntimeError("AGENTS.md 配置文件不存在，请检查工作空间初始化")
+            raise RuntimeError("Файл конфигурации AGENTS.md не найден, проверьте инициализацию workspace")
 
         base_prompt = agents_content
 
-        # 加载其他配置文件作为上下文
+        # Загрузите другие файлы конфигурации в качестве контекста.
+
         context_parts = []
 
-        # 检查入职是否完成
+        # Проверка завершения онбординга
         if not self.workspace.is_onboarding_completed():
             bootstrap = self.workspace.load_config("BOOTSTRAP")
             if bootstrap:
-                context_parts.append(f"\n## 初始化引导\n\n{bootstrap}")
+                context_parts.append(f"\n## Онбординг\n\n{bootstrap}")
 
-        # 身份信息
+        # Идентификационная информация
+
         identity = self.workspace.load_config("IDENTITY")
         if identity:
-            context_parts.append(f"\n## 你的身份信息\n{identity}")
+            context_parts.append(f"\n## Ваша личность\n{identity}")
 
-        # 用户信息
+        # Информация о пользователе
+
         user_info = self.workspace.load_config("USER")
         if user_info:
-            context_parts.append(f"\n## 用户信息\n{user_info}")
+            context_parts.append(f"\n## Информация о пользователе\n{user_info}")
 
-        # 人格模板
+        # шаблон личности
+
         soul = self.workspace.load_config("SOUL")
         if soul:
-            context_parts.append(f"\n## 人格模板\n{soul}")
+            context_parts.append(f"\n## Шаблон личности\n{soul}")
 
-        # 长期记忆
+        # Долгосрочная память
         memory = self.workspace.load_config("MEMORY")
         if memory:
-            context_parts.append(f"\n## 长期记忆\n{memory}")
+            context_parts.append(f"\n## Долгосрочная память\n{memory}")
 
         if context_parts:
             return base_prompt + "\n" + "\n".join(context_parts)
@@ -237,34 +253,42 @@ class HelloClawAgent:
         return base_prompt
 
     def _setup_tools(self) -> ToolRegistry:
-        """设置工具集"""
+        """Набор инструментов настройки"""
         registry = ToolRegistry()
 
-        # HelloAgents 内置工具
+        # Встроенные инструменты HelloAgents
+
         registry.register_tool(ReadTool(project_root=self.workspace_path))
         registry.register_tool(WriteTool(project_root=self.workspace_path))
         registry.register_tool(EditTool(project_root=self.workspace_path))
         registry.register_tool(CalculatorTool())
 
-        # HelloClaw 自定义工具
+        # Пользовательские инструменты HelloClaw
+
         registry.register_tool(MemoryTool(self.workspace))
         registry.register_tool(ExecuteCommandTool(
-            allowed_directories=[self.workspace_path]  # 限制在工作空间目录
+            allowed_directories=[self.workspace_path]  # Ограничено каталогом рабочей области
+
         ))
-        registry.register_tool(WebSearchTool())  # 网页搜索工具（需要配置 BRAVE_API_KEY）
-        registry.register_tool(WebFetchTool())   # 网页抓取工具
+        registry.register_tool(WebSearchTool())  # Инструмент веб-поиска (требуется настройка BRAVE_API_KEY)
+
+        registry.register_tool(WebFetchTool())   # Инструменты парсинга веб-страниц
+
 
         return registry
 
     def chat(self, message: str, session_id: str = None) -> str:
-        """同步聊天"""
-        # 热加载配置（检测 config.json 变化）
+        """синхронный чат"""
+        # Конфигурация горячей перезагрузки (обнаружение изменений config.json)
+
         self._reload_llm_if_changed()
 
-        # 动态更新系统提示词（检查 BOOTSTRAP 状态、读取最新配置）
+        # Динамическое обновление слов системных подсказок (проверьте состояние BOOTSTRAP, прочитайте последнюю конфигурацию)
+
         self._agent.system_prompt = self._build_system_prompt()
 
-        # 如果有 session_id，检查是否需要加载或清除历史
+        # Если есть session_id, проверьте, нужно ли загружать или очищать историю.
+
         if session_id:
             session_file = os.path.join(self.workspace_path, "sessions", f"{session_id}.json")
             if os.path.exists(session_file):
@@ -274,52 +298,60 @@ class HelloClawAgent:
         else:
             self._agent.clear_history()
 
-        # LLM 调用参数（防止重复循环）
+        # Параметры вызова LLM (для предотвращения повторных циклов)
+
         llm_kwargs = {
-            "frequency_penalty": 0.5,  # 降低重复相同内容的概率
-            "presence_penalty": 0.3,   # 鼓励谈论新话题
+            "frequency_penalty": 0.5,  # Уменьшите вероятность повторения одного и того же контента.
+
+            "presence_penalty": 0.3,   # Поощряйте разговор на новые темы
+
         }
 
-        # 运行 Agent
+        # Запустить агент
+
         response = self._agent.run(message, **llm_kwargs)
 
-        # 保存会话
+        # сохранить сеанс
+
         save_id = session_id or self.create_session()
         try:
             self._agent.save_session(save_id)
         except Exception as e:
-            print(f"⚠️ 保存会话失败: {e}")
+            print(f"⚠️ Ошибка сохранения сессии: {e}")
 
         return response
 
     async def achat(self, message: str, session_id: str = None):
-        """异步聊天（支持流式输出）
+        """Асинхронный чат (поддерживает потоковую передачу)
 
-        Args:
-            message: 用户消息
-            session_id: 会话 ID，如果为 None 则创建新会话
+        Аргументы:
+            сообщение: сообщение пользователя
+            session_id: идентификатор сеанса, если None создает новый сеанс.
 
-        Yields:
-            StreamEvent: 流式事件
-        """
+        Выход:
+            StreamEvent: событие потоковой передачи"""
         import uuid
         import time
 
         t0 = time.time()
-        print(f"[⏱️ {t0:.3f}] achat 开始")
+        print(f"[⏱️ {t0:.3f}] achat начат")
 
-        # 热加载配置（检测 config.json 变化）
+        # Конфигурация горячей перезагрузки (обнаружение изменений config.json)
+
         self._reload_llm_if_changed()
 
-        # 动态更新系统提示词（检查 BOOTSTRAP 状态、读取最新配置）
-        self._agent.system_prompt = self._build_system_prompt()
-        print(f"[⏱️ {time.time():.3f}] 系统提示词构建完成 (+{time.time()-t0:.3f}s)")
+        # Динамическое обновление слов системных подсказок (проверьте состояние BOOTSTRAP, прочитайте последнюю конфигурацию)
 
-        # 如果没有 session_id，创建新的
+        self._agent.system_prompt = self._build_system_prompt()
+        print(f"[⏱️ {time.time():.3f}] Системный промпт собран (+{time.time()-t0:.3f}s)")
+
+        # Если session_id нет, создайте новый
+
         if not session_id:
             session_id = str(uuid.uuid4())[:8]
             self._agent.clear_history()
-            # 重置 Memory Flush 状态（新会话）
+            # Сбросить состояние очистки памяти (новый сеанс)
+
             self._memory_flush_manager.reset()
         else:
             session_file = os.path.join(self.workspace_path, "sessions", f"{session_id}.json")
@@ -328,122 +360,134 @@ class HelloClawAgent:
             else:
                 self._agent.clear_history()
                 self._memory_flush_manager.reset()
-        print(f"[⏱️ {time.time():.3f}] 会话加载完成 (+{time.time()-t0:.3f}s)")
+        print(f"[⏱️ {time.time():.3f}] Сессия загружена (+{time.time()-t0:.3f}s)")
 
-        # 保存 session_id 供后续保存使用
+        # Сохраните session_id для последующего сохранения.
+
         self._current_session_id = session_id
 
-        # LLM 调用参数（防止重复循环）
+        # Параметры вызова LLM (для предотвращения повторных циклов)
+
         llm_kwargs = {
-            "frequency_penalty": 0.5,  # 降低重复相同内容的概率
-            "presence_penalty": 0.3,   # 鼓励谈论新话题
+            "frequency_penalty": 0.5,  # Уменьшите вероятность повторения одного и того же контента.
+
+            "presence_penalty": 0.3,   # Поощряйте разговор на новые темы
+
         }
 
         t_llm = time.time()
-        print(f"[⏱️ {t_llm:.3f}] 开始调用 LLM ({self._model_id})...")
+        print(f"[⏱️ {t_llm:.3f}] начало调用 LLM ({self._model_id})...")
         first_chunk = True
 
         async for event in self._agent.arun_stream_with_tools(message, **llm_kwargs):
             if first_chunk and event.type.value == "llm_chunk":
-                print(f"[⏱️ {time.time():.3f}] 首个 token 到达 (LLM 延迟: {time.time()-t_llm:.3f}s)")
+                print(f"[⏱️ {time.time():.3f}] Первый token (задержка LLM: {time.time()-t_llm:.3f}s)")
                 first_chunk = False
             yield event
 
-        print(f"[⏱️ {time.time():.3f}] LLM 调用完成 (总耗时: {time.time()-t0:.3f}s)")
+        print(f"[⏱️ {time.time():.3f}] LLM завершён (всего: {time.time()-t0:.3f}s)")
 
-        # 对话结束后自动捕获记忆（异步执行，不阻塞用户）
+        # Автоматически захватывать память после завершения разговора (выполняется асинхронно, без блокировки пользователя)
+
         await self._capture_memories(message)
 
-        # 对话结束后检查是否需要触发 Memory Flush（异步执行，不阻塞用户）
+        # После окончания разговора проверьте, нужно ли запускать Memory Flush (асинхронное выполнение, без блокировки пользователя)
+
         await self._check_and_run_memory_flush()
 
     async def _capture_memories(self, user_message: str):
-        """自动捕获对话中的记忆
+        """Автоматически сохранять воспоминания из разговоров
 
-        Args:
-            user_message: 用户消息
-        """
+        Аргументы:
+            user_message: сообщение пользователя"""
         try:
-            # 使用 MemoryCaptureManager 分析并存储记忆
+            # Анализируйте и сохраняйте воспоминания с помощью MemoryCaptureManager.
+
             memories = await self._memory_capture_manager.acapture_and_store(user_message)
 
             if memories:
-                print(f"📝 自动捕获 {len(memories)} 条记忆")
+                print(f"📝 Автозахват {len(memories)} записей памяти")
                 for m in memories:
                     print(f"   - [{m['category']}] {m['content'][:50]}...")
         except Exception as e:
-            print(f"⚠️ 记忆捕获失败: {e}")
+            print(f"⚠️ Ошибка захвата памяти: {e}")
 
     async def _check_and_run_memory_flush(self):
-        """检查并执行 Memory Flush
+        """Проверьте и выполните очистку памяти.
 
-        如果当前 token 数接近压缩阈值，触发一个静默回合提醒 Agent 保存记忆。
-        """
-        # 估算当前 token 数（简单估算：字符数 / 4）
+        Если текущее количество токенов близко к порогу сжатия, запускается тихий раунд, напоминающий агенту о необходимости сохранить свою память."""
+        # Оцените текущее количество токенов (простая оценка: количество символов / 4)
+
         estimated_tokens = self._estimate_tokens()
 
         if self._memory_flush_manager.should_trigger_flush(estimated_tokens):
-            print(f"\n🔄 触发 Memory Flush（估算 token: {estimated_tokens}）")
+            print(f"\n🔄 Запуск Memory Flush (оценка token: {estimated_tokens})")
 
-            # 获取 flush 提示词
+            # Получить слово подсказки для сброса
+
             flush_prompt = self._memory_flush_manager.get_flush_prompt()
 
-            # 执行静默回合
+            # Выполнить тихий раунд
+
             try:
-                # 使用同步方法执行（不返回给用户）
+                # Выполнить с использованием синхронного метода (не возвращается пользователю)
+
                 response = self._agent.run(flush_prompt)
 
-                # 检查是否是静默响应
+                # Проверьте, не является ли это молчаливым ответом
+
                 if self._memory_flush_manager.is_silent_response(response):
-                    print("📝 Agent 选择不保存记忆")
+                    print("📝 Агент решил не сохранять память")
                 else:
-                    print(f"📝 Agent 已保存记忆")
+                    print(f"📝 Агент сохранил память")
 
             except Exception as e:
-                print(f"⚠️ Memory Flush 失败: {e}")
+                print(f"⚠️ Ошибка Memory Flush: {e}")
 
     def _estimate_tokens(self) -> int:
-        """估算当前上下文的 token 数
+        """Оцените количество токенов в текущем контексте
 
-        使用简单的字符估算方法。
-        对于中文，大约 1.5 字符/token；对于英文，大约 4 字符/token。
-        这里使用保守估算：字符数 / 3。
+        Используйте простые методы оценки характера.
+        Для китайского языка около 1,5 символов/токен; для английского языка — около 4 символов на токен.
+        Здесь используется консервативная оценка: символов/3.
 
-        Returns:
-            估算的 token 数
-        """
+        Возврат:
+            Предполагаемое количество токенов"""
         total_chars = 0
 
-        # 系统提示词
+        # Слово системной подсказки
+
         if self._agent.system_prompt:
             total_chars += len(self._agent.system_prompt)
 
-        # 历史消息
+        # исторические новости
+
         for msg in self._agent._history:
             if msg.content:
                 total_chars += len(msg.content)
 
-        # 保守估算：字符数 / 3
+        # Консервативная оценка: количество символов / 3.
+
         return total_chars // 3
 
     def save_current_session(self):
-        """保存当前会话"""
+        """Сохранить текущий сеанс"""
         if hasattr(self, '_current_session_id') and self._current_session_id:
             try:
                 self._agent.save_session(self._current_session_id)
                 return self._current_session_id
             except Exception as e:
-                print(f"⚠️ 保存会话失败: {e}")
+                print(f"⚠️ Ошибка сохранения сессии: {e}")
         return None
 
     def create_session(self) -> str:
-        """创建新会话"""
+        """Создать новый сеанс"""
         import uuid
         session_id = str(uuid.uuid4())[:8]
         return session_id
 
     def list_sessions(self) -> List[dict]:
-        """列出所有会话"""
+        """Список всех сессий"""
         sessions_dir = os.path.join(self.workspace_path, "sessions")
         if not os.path.exists(sessions_dir):
             return []
@@ -462,7 +506,7 @@ class HelloClawAgent:
         return sorted(sessions, key=lambda x: x["updated_at"], reverse=True)
 
     def delete_session(self, session_id: str) -> bool:
-        """删除会话"""
+        """Удалить сеанс"""
         filepath = os.path.join(self.workspace_path, "sessions", f"{session_id}.json")
         if os.path.exists(filepath):
             os.remove(filepath)
@@ -470,7 +514,7 @@ class HelloClawAgent:
         return False
 
     def get_session_history(self, session_id: str) -> List[dict]:
-        """获取会话历史消息"""
+        """Получить сообщения истории сеансов"""
         import json
         filepath = os.path.join(self.workspace_path, "sessions", f"{session_id}.json")
         if not os.path.exists(filepath):
@@ -484,7 +528,8 @@ class HelloClawAgent:
             raw_history = data.get("history", [])
             for msg in raw_history:
                 role = msg.get("role", "")
-                # 支持 user, assistant, tool 三种角色
+                # Поддерживает три роли: пользователь, помощник, инструмент.
+
                 if role in ("user", "assistant", "tool"):
                     content = msg.get("content", "")
                     if isinstance(content, list):
@@ -496,9 +541,11 @@ class HelloClawAgent:
                                 text_parts.append(part)
                         content = "\n".join(text_parts)
 
-                    # 构建消息对象，包含 metadata
+                    # Создайте объект сообщения, включая метаданные.
+
                     message_obj: dict = {"role": role, "content": content}
-                    # 保留 metadata（包含 tool_calls 或 tool_call_id）
+                    # Сохранять метаданные (содержитtool_calls илиtool_call_id)
+
                     if "metadata" in msg:
                         message_obj["metadata"] = msg["metadata"]
 
@@ -510,16 +557,17 @@ class HelloClawAgent:
             return []
 
     def clear_all_history(self):
-        """清除 Agent 内存中的所有历史记录
+        """Очистить всю историю в памяти агента
 
-        用于初始化时重置 Agent 状态。
-        """
+        Используется для сброса состояния агента во время инициализации."""
         self._agent.clear_history()
         self._current_session_id = None
 
-        # 重置 MemoryFlushManager 状态
+        # Сбросить состояние MemoryFlushManager
+
         if hasattr(self, '_memory_flush_manager'):
             self._memory_flush_manager.reset()
 
-        # 重新读取 name（因为 IDENTITY.md 可能已被重置）
+        # Перечитать имя (потому что IDENTITY.md мог быть сброшен)
+
         self.name = self._read_identity_name() or "HelloClaw"

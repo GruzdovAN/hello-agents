@@ -1,4 +1,4 @@
-"""协调深度研究工作流的编排器。"""
+"""Оркестровщик, координирующий глубокие исследовательские процессы."""
 
 from __future__ import annotations
 
@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 
 
 class DeepResearchAgent:
-    """使用 HelloAgents 协调基于 TODO 的研究工作流的协调器。"""
+"""Координатор по координации рабочих процессов исследований на основе TODO с использованием HelloAgents."""
 
     def __init__(self, config: Configuration | None = None) -> None:
-        """使用配置和共享工具初始化协调器。"""
+"""Инициализируйте координатор, используя инструменты настройки и общего доступа."""
         self.config = config or Configuration.from_env()
         self.default_llm = self._init_llm(self.config.llm_model_id)
         self.smart_llm = self._init_llm(self.config.smart_llm_model)
@@ -58,21 +58,21 @@ class DeepResearchAgent:
         )
         self._tool_event_sink_enabled = False
         self._state_lock = Lock()
-        self._cancel_event = Event()  # 取消信号
+self._cancel_event = Event() # Отменить сигнал
 
         self.todo_agent = self._create_tool_aware_agent(
-            name="研究规划专家",
+name="Эксперт по планированию исследований",
             system_prompt=todo_planner_system_prompt.strip(),
             llm=self.smart_llm,
         )
         self.report_agent = self._create_tool_aware_agent(
-            name="报告撰写专家",
+name="Эксперт по написанию отчетов",
             system_prompt=report_writer_instructions.strip(),
             llm=self.smart_llm,
         )
 
         self._summarizer_factory: Callable[[], ToolAwareSimpleAgent] = lambda: self._create_tool_aware_agent(  # noqa: E501
-            name="任务总结专家",
+name="Эксперт сводки задач",
             system_prompt=task_summarizer_system_prompt.strip(),
             llm=self.fast_llm,
         )
@@ -86,19 +86,19 @@ class DeepResearchAgent:
         self.podcast_synthesizer = PodcastSynthesisService(self.config)
 
     def cancel(self) -> None:
-        """请求取消当前正在执行的研究任务。"""
+"""Запрос на отмену выполняемой в данный момент исследовательской задачи."""
         logger.info("Cancel requested for research agent")
         self._cancel_event.set()
 
     def is_cancelled(self) -> bool:
-        """检查当前任务是否已被取消。"""
+"""Проверьте, не была ли отменена текущая задача."""
         return self._cancel_event.is_set()
 
     # ------------------------------------------------------------------
-    # 公共 API
+# Публичный API
     # ------------------------------------------------------------------
     def _init_llm(self, model_id_override: str | None = None) -> HelloAgentsLLM:
-        """根据配置偏好实例化 HelloAgentsLLM。"""
+"""Создать экземпляр HelloAgentsLLM в соответствии с настройками конфигурации."""
         llm_kwargs: dict[str, Any] = {"temperature": 0.0}
 
         model_id = model_id_override or self.config.llm_model_id
@@ -117,7 +117,7 @@ class DeepResearchAgent:
         return HelloAgentsLLM(**llm_kwargs)
 
     def _create_tool_aware_agent(self, *, name: str, system_prompt: str, llm: HelloAgentsLLM) -> ToolAwareSimpleAgent:
-        """实例化共享工具注册表和跟踪器的 ToolAwareSimpleAgent。"""
+"""ToolAwareSimpleAgent, который создает экземпляры общих реестров инструментов и средств отслеживания."""
         return ToolAwareSimpleAgent(
             name=name,
             llm=llm,
@@ -128,20 +128,20 @@ class DeepResearchAgent:
         )
 
     def _set_tool_event_sink(self, sink: Callable[[dict[str, Any]], None] | None) -> None:
-        """启用或禁用立即工具事件回调。"""
+"""Включить или отключить немедленные обратные вызовы событий инструмента."""
         self._tool_event_sink_enabled = sink is not None
         self._tool_tracker.set_event_sink(sink)
 
     def run(self, topic: str) -> SummaryStateOutput:
         """
-        执行研究工作流并返回最终报告（同步模式）。
+Выполните рабочий процесс исследования и верните окончательный отчет (синхронный режим).
         
-        此方法按顺序执行以下步骤：
+Этот метод последовательно выполняет следующие шаги:
         1. 初始化状态和规划任务。
-        2. 串行执行每个任务（搜索 + 总结）。
-        3. 生成最终报告。
-        4. 生成播客脚本。
-        5. 生成音频文件并合成播客。
+2. Выполнять каждую задачу последовательно (поиск + суммирование).
+3. Создайте окончательный отчет.
+4. Создайте сценарий подкаста.
+5. Создавайте аудиофайлы и синтезируйте подкасты.
         """
         state = SummaryState(research_topic=topic)
         state.todo_items = self.planner.plan_todo_list(state)
@@ -165,11 +165,11 @@ class DeepResearchAgent:
         self._drain_tool_events(state)
         state.podcast_script = script
 
-        # 为脚本生成音频
+# Генерируем звук для скрипта
         task_id = f"task_{state.report_note_id}" if state.report_note_id else "task_default"
         audio_files = self.audio_generator.generate_audio(script, task_id)
 
-        # 合成播客
+#синтезподкаст
         self.podcast_synthesizer.synthesize_podcast(audio_files, task_id)
         
         return SummaryStateOutput(
@@ -181,19 +181,19 @@ class DeepResearchAgent:
 
     def run_stream(self, topic: str) -> Iterator[dict[str, Any]]:
         """
-        执行研究工作流并产生增量进度事件（流式模式）。
+Выполняйте рабочие процессы исследований и генерируйте дополнительные события прогресса (режим потоковой передачи).
 
-        此方法使用多线程并行执行研究任务，并通过生成器实时返回进度。
-        主要步骤：
-        1. 初始化并规划任务。
-        2. 为每个任务启动一个工作线程进行并行处理。
-        3. 实时流式传输任务状态、搜索结果和部分总结。
-        4. 所有任务完成后，生成并流式传输最终报告。
-        5. 生成并流式传输播客脚本和音频合成进度。
+Этот метод использует несколько потоков для параллельного выполнения исследовательских задач и возвращает прогресс в реальном времени через генератор.
+Основные шаги:
+1. Инициализируйте и планируйте задачи.
+2. Запустите рабочий поток для каждой задачи для параллельной обработки.
+3. Потоковая передача в режиме реального времени статуса задачи, результатов поиска и сводок разделов.
+4. После выполнения всех задач формируется и передается итоговый отчет.
+5. Создавайте и транслируйте сценарии подкастов и прогресс синтеза звука.
 
-        支持通过 cancel() 方法取消执行。
+Поддерживает отмену выполнения с помощью метода cancel().
         """
-        # 重置取消状态
+#Сбросить статус отмены
         self._cancel_event.clear()
 
         state = SummaryState(research_topic=topic)
@@ -204,19 +204,19 @@ class DeepResearchAgent:
             yield {"type": "cancelled", "message": "研究任务已取消"}
             return
 
-        # Phase 1: 规划 + 并行研究
+# Этап 1: Планирование + параллельные исследования
         yield from self._stream_research_phase(state)
         if self.is_cancelled():
             yield {"type": "cancelled", "message": "研究任务已取消"}
             return
 
-        # Phase 2: 报告生成
+# Этап 2: Создание отчета
         yield from self._stream_report_phase(state)
         if self.is_cancelled():
             yield {"type": "cancelled", "message": "研究任务已取消"}
             return
 
-        # Phase 3: 播客脚本
+# Этап 3: Сценарий подкаста
         script_turns = yield from self._stream_script_phase(state)
         if self.is_cancelled():
             yield {"type": "cancelled", "message": "研究任务已取消"}
@@ -225,17 +225,17 @@ class DeepResearchAgent:
             yield {"type": "done"}
             return
 
-        # Phase 4: 音频生成 + 合成
+# Фаза 4: Генерация звука + синтез
         yield from self._stream_audio_phase(state, script_turns)
 
         yield {"type": "done"}
 
     # ------------------------------------------------------------------
-    # 流式阶段方法
+# Метод этапа потоковой передачи
     # ------------------------------------------------------------------
 
     def _stream_research_phase(self, state: SummaryState) -> Iterator[dict[str, Any]]:
-        """Phase 1: 规划任务并行执行搜索 + 总结。"""
+"""Этап 1: Планирование задач для параллельного выполнения поиска и сводки."""
         if self.is_cancelled():
             return
         state.todo_items = self.planner.plan_todo_list(state)
@@ -345,7 +345,7 @@ class DeepResearchAgent:
                 except Empty:
                     if self.is_cancelled():
                         logger.info("Research cancelled during task execution")
-                        yield {"type": "cancelled", "message": "研究任务已取消"}
+выход {"type": "отменено", "message": "Исследовательская задача была отменена"}
                         return
                     continue
                 if event.get("type") == "__task_done__":
@@ -366,13 +366,13 @@ class DeepResearchAgent:
                 thread.join(timeout=1.0)
 
     def _stream_report_phase(self, state: SummaryState) -> Iterator[dict[str, Any]]:
-        """Phase 2: 生成深度研究报告。"""
+"""Этап 2: Создание отчета об углубленном исследовании."""
         yield {
             "type": "stage_change",
             "stage": "report",
             "message": "所有研究任务已完成，正在撰写深度研究报告...",
         }
-        yield {"type": "log", "message": f"🧠 正在调用 {self.config.smart_llm_model} 模型撰写深度报告..."}
+выход {"type": "log", "message": f"🧠 Вызов модели {self.config.smart_llm_model} для написания подробного отчета..."}
 
         if self.is_cancelled():
             return
@@ -384,7 +384,7 @@ class DeepResearchAgent:
             yield event
         state.structured_report = report
         state.running_summary = report
-        yield {"type": "log", "message": f"✓ 报告撰写完成，共 {len(report)} 字符"}
+доходность {"type": "log", "message": f"✓ Написание отчета завершено, всего {len(report)} символов"}
 
         if self.is_cancelled():
             return
@@ -402,18 +402,18 @@ class DeepResearchAgent:
 
     def _stream_script_phase(self, state: SummaryState) -> Iterator[dict[str, Any] | int]:
         """
-        Phase 3: 将报告转化为播客脚本。
+Этап 3: Преобразуйте отчет в сценарий подкаста.
 
-        Yields 流式事件，最终 return 脚本轮次数 (int)。
-        调用方通过 ``script_turns = yield from self._stream_script_phase(state)`` 获取。
+Выдает потоковые события и в конечном итоге возвращает количество раундов сценария (int).
+Вызывающая сторона получает его через ``script_turns = выход из self._stream_script_phase(state)``.
         """
         yield {
             "type": "stage_change",
             "stage": "script",
-            "message": "正在将研究报告转化为双人对谈播客脚本...",
+"message": "Преобразование исследовательского отчета в сценарий подкаста для бесед...",
         }
-        yield {"type": "log", "message": f"🧠 正在调用 {self.config.fast_llm_model} 模型生成播客脚本..."}
-        yield {"type": "log", "message": "脚本策划专家正在创作 Host (Xiayu) 与 Guest (Liwa) 的对话..."}
+выход {"type": "log", "message": f"🧠 Вызов {self.config.fast_llm_model} скрипта подкаста генерации модели..."}
+урожай {"type": "log", "message": "Эксперты по планированию сценариев создают диалог между хостом (Сяюй) и гостем (Лива)..."}
 
         if self.is_cancelled():
             return
@@ -425,7 +425,7 @@ class DeepResearchAgent:
         state.podcast_script = script
 
         script_turns = len(script) if script else 0
-        yield {"type": "log", "message": f"✓ 脚本生成完成，共 {script_turns} 轮对话"}
+доходность {"type": "log", "message": f"✓ Генерация сценария завершена, всего раундов диалога: {script_turns}"}
         yield {
             "type": "podcast_script",
             "script": script,
@@ -438,25 +438,25 @@ class DeepResearchAgent:
         return script_turns  # type: ignore[return-value]
 
     def _stream_audio_phase(self, state: SummaryState, script_turns: int) -> Iterator[dict[str, Any]]:
-        """Phase 4: TTS 音频生成 + FFmpeg 合成。"""
+"""Этап 4: генерация звука TTS + синтез FFmpeg."""
         script = state.podcast_script
 
         yield {
             "type": "stage_change",
             "stage": "audio",
-            "message": "正在调用 TTS 语音引擎生成音频...",
+"message": "Вызов речевого движка TTS для генерации звука...",
         }
 
         task_id = f"task_{state.report_note_id}" if state.report_note_id else "task_default"
 
-        # 使用队列实现实时流式音频进度
+# Используйте очереди для реализации потокового аудио в реальном времени.
         audio_event_queue: Queue[dict[str, Any]] = Queue()
         audio_result: list = []
         audio_error: list = []
         cancel_audio = Event()
 
         def audio_progress_callback(current: int, total: int, role: str, preview: str) -> bool:
-            """将进度事件放入队列以实现实时更新。"""
+"""Помещать события прогресса в очередь для обновлений в реальном времени."""
             if self.is_cancelled() or cancel_audio.is_set():
                 return False
             audio_event_queue.put({
@@ -470,7 +470,7 @@ class DeepResearchAgent:
             return True
 
         def run_audio_generation() -> None:
-            """在单独线程中运行音频生成。"""
+"""Запустить генерацию звука в отдельном потоке."""
             try:
                 files = self.audio_generator.generate_audio(
                     script, task_id, audio_progress_callback,
@@ -483,7 +483,7 @@ class DeepResearchAgent:
             finally:
                 audio_event_queue.put({"type": "_audio_done"})
 
-        yield {"type": "log", "message": f"准备为 {script_turns} 段对话生成语音..."}
+выход {"type": "log", "message": f"Приготовьтесь генерировать речь для диалога {script_turns}..."}
         yield {
             "type": "audio_start",
             "total": script_turns,
@@ -493,7 +493,7 @@ class DeepResearchAgent:
         audio_thread = Thread(target=run_audio_generation, daemon=True)
         audio_thread.start()
 
-        # 实时流式传输进度事件
+# События прямой трансляции
         while True:
             if self.is_cancelled():
                 cancel_audio.set()
@@ -508,7 +508,7 @@ class DeepResearchAgent:
                 if event.get("type") == "audio_progress":
                     yield {
                         "type": "log",
-                        "message": f"[TTS {event['current']}/{event['total']}] ✓ {event['role']} 语音已完成",
+"message": f"[TTS {event['current']}/{event['total']}] ✓ {event['role']} Голос завершен",
                     }
             except Empty:
                 continue
@@ -523,20 +523,20 @@ class DeepResearchAgent:
         audio_count = len(audio_files) if audio_files else 0
 
         if audio_error:
-            yield {"type": "log", "message": f"⚠️ 音频生成出错: {audio_error[0]}"}
+выход {"тип": "журнал", "сообщение": f"⚠️ Ошибка создания аудио: {audio_error[0]}"}
 
-        yield {"type": "log", "message": f"语音生成完成，成功 {audio_count}/{script_turns} 段"}
+выход {"type": "log", "message": f"Генерация голоса завершена, сегменты {audio_count}/{script_turns} успешны"}
         yield {
             "type": "audio_generated",
             "files": audio_files,
             "count": audio_count,
         }
 
-        # 合成播客
+#синтезподкаст
         yield {
             "type": "stage_change",
             "stage": "synthesis",
-            "message": "正在合成完整播客音频文件...",
+"message": "Составление полного аудиофайла подкаста...",
         }
 
         if self.is_cancelled():
@@ -549,12 +549,12 @@ class DeepResearchAgent:
         )
         if podcast_file:
             yield {"type": "podcast_ready", "file": podcast_file}
-            yield {"type": "log", "message": f"🎉 播客文件生成成功: {podcast_file}"}
+выход {"тип": "журнал", "сообщение": f"🎉 Файл подкаста успешно сгенерирован: {podcast_file}"}
         else:
-            yield {"type": "log", "message": "⚠️ 播客合成失败，请检查 FFmpeg 配置"}
+выход {"type": "log", "message": "⚠️ Не удалось синтезировать подкаст, проверьте конфигурацию FFmpeg"}
 
     # ------------------------------------------------------------------
-    # 执行助手
+#Помощник по исполнению
     # ------------------------------------------------------------------
     def _execute_task(
         self,
@@ -565,13 +565,13 @@ class DeepResearchAgent:
         step: int | None = None,
     ) -> Iterator[dict[str, Any]]:
         """
-        对单个任务运行搜索 + 总结逻辑。
+Запускайте логику поиска и сводки для одной задачи.
         
         Args:
-            state: 全局研究状态。
-            task: 当前要执行的任务项。
+состояние: статус глобального исследования.
+задача: элемент задачи, который должен быть выполнен в данный момент.
             emit_stream: 是否产生流式事件（True 用于 run_stream，False 用于 run）。
-            step: 当前步骤编号（仅用于流式事件）。
+шаг: номер текущего шага (только для потоковой передачи событий).
             
         Returns:
             事件字典的迭代器（即使 emit_stream=False，也可能产生少量内部事件，通常被忽略）。
@@ -673,7 +673,7 @@ class DeepResearchAgent:
             summary_text = self.summarizer.summarize_task(state, task, context)
             self._drain_tool_events(state)
 
-        task.summary = summary_text.strip() if summary_text else "暂无可用信息"
+Task.summary = summary_text.strip() if summary_text else «Информация пока отсутствует»
         task.status = "completed"
 
         if emit_stream:
@@ -700,14 +700,14 @@ class DeepResearchAgent:
         *,
         step: int | None = None,
     ) -> list[dict[str, Any]]:
-        """共享工具调用跟踪器的代理。"""
+"""Инструмент обмена вызывает прокси-сервер трекера."""
         events = self._tool_tracker.drain(state, step=step)
         if self._tool_event_sink_enabled:
             return []
         return events
 
     def _serialize_task(self, task: TodoItem) -> dict[str, Any]:
-        """将任务数据类转换为前端可序列化的字典。"""
+"""Преобразуйте класс данных задачи во интерфейсный сериализуемый словарь."""
         return {
             "id": task.id,
             "title": task.title,
@@ -781,16 +781,16 @@ class DeepResearchAgent:
 
     def _find_existing_report_note_id(self, state: SummaryState) -> str | None:
         """
-        查找与研究主题相关的现有报告笔记 ID。
+Найдите существующие идентификаторы заметок к отчету, связанные с темой исследования.
         
-        此方法检查当前状态是否已关联报告笔记 ID。如果没有，它会遍历已记录的工具事件，
-        查找最近创建或更新的结论类型笔记，标题中包含研究主题的报告。
+Этот метод проверяет, имеет ли текущее состояние связанный с ним идентификатор заметки отчета. В противном случае он циклически перебирает зарегистрированные события инструмента,
+Найдите недавно созданные или обновленные заметки типа заключения с отчетом, в заголовке которого указана тема исследования.
         
         Args:
-            state: 当前研究状态，包含研究主题和已记录的工具事件。
+состояние: Текущий статус исследования, включая темы исследований и записанные события инструмента.
             
         Returns:
-            与研究主题相关的现有报告笔记 ID（如果存在），否则为 None。
+Идентификатор существующей заметки к отчету, связанной с темой исследования, если таковая существует, в противном случае — «Нет».
         """
         if state.report_note_id:
             return state.report_note_id
@@ -810,7 +810,7 @@ class DeepResearchAgent:
             note_type = parameters.get("note_type")
             if note_type != "conclusion":
                 title = parameters.get("title")
-                if not (isinstance(title, str) and title.startswith("研究报告")):
+если нет (isinstance(title, str) и title.startswith("Отчет об исследовании")):
                     continue
 
             note_id = parameters.get("note_id")

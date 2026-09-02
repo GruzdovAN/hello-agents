@@ -1,5 +1,5 @@
 """
-任务相关API路由
+Маршрутизация API, связанная с задачей
 """
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
@@ -10,14 +10,14 @@ import json
 import asyncio
 
 # from ...agents.controller import agent_controller, TaskType
-# 临时注释，避免相对导入错误
+# Временные комментарии, чтобы избежать относительных ошибок импорта.
 agent_controller = None
 TaskType = None
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Pydantic模型
+# Пидантическая модель
 class TaskSubmitRequest(BaseModel):
     task_type: str
     input_data: Dict[str, Any]
@@ -32,7 +32,7 @@ class TaskResponse(BaseModel):
     completed_at: Optional[str]
     priority: int
 
-# WebSocket连接管理
+# Управление соединением WebSocket
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -52,22 +52,22 @@ class ConnectionManager:
             try:
                 await connection.send_text(message)
             except:
-                # 连接已断开，移除
+# Соединение прервано, удалите
                 self.active_connections.remove(connection)
 
 manager = ConnectionManager()
 
 @router.post("/submit", response_model=Dict[str, Any])
 async def submit_task(request: TaskSubmitRequest):
-    """提交任务"""
+"""Отправить задачу"""
     try:
-        # 验证任务类型
+# Проверьте тип задачи
         try:
             task_type = TaskType(request.task_type)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"不支持的任务类型: {request.task_type}")
+поднять HTTPException(status_code=400, Detail=f"Неподдерживаемый тип задачи: {request.task_type}")
         
-        # 提交任务
+# Отправить задачу
         task_id = await agent_controller.submit_task(
             task_type=task_type,
             input_data=request.input_data,
@@ -77,18 +77,18 @@ async def submit_task(request: TaskSubmitRequest):
         return {
             "success": True,
             "task_id": task_id,
-            "message": "任务已提交"
+"message": "Задание отправлено"
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"提交任务失败: {str(e)}")
+logger.error(f «Не удалось отправить задачу: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{task_id}/execute", response_model=Dict[str, Any])
 async def execute_task(task_id: str):
-    """执行任务"""
+"""Выполнять задания"""
     try:
         result = await agent_controller.execute_task(task_id)
         
@@ -99,12 +99,12 @@ async def execute_task(task_id: str):
         }
         
     except Exception as e:
-        logger.error(f"执行任务失败: {str(e)}")
+logger.error(f «Не удалось выполнить задачу: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{task_id}/status", response_model=TaskResponse)
 async def get_task_status(task_id: str):
-    """获取任务状态"""
+"""Получить статус задачи"""
     try:
         status = await agent_controller.get_task_status(task_id)
         if not status:
@@ -115,12 +115,12 @@ async def get_task_status(task_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"获取任务状态失败: {str(e)}")
+logger.error(f «Не удалось получить статус задачи: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/{task_id}", response_model=Dict[str, Any])
 async def cancel_task(task_id: str):
-    """取消任务"""
+"""Отменить задачу"""
     try:
         success = await agent_controller.cancel_task(task_id)
         
@@ -130,14 +130,14 @@ async def cancel_task(task_id: str):
             return {"success": False, "message": "任务无法取消（可能正在执行或已完成）"}
         
     except Exception as e:
-        logger.error(f"取消任务失败: {str(e)}")
+logger.error(f «Не удалось отменить задачу: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=List[TaskResponse])
 async def list_tasks():
-    """获取任务列表"""
+"""Получить список задач"""
     try:
-        # 获取活跃任务
+# Получайте активные задачи
         active_tasks = []
         for task_id, task in agent_controller.active_tasks.items():
             active_tasks.append(TaskResponse(
@@ -150,7 +150,7 @@ async def list_tasks():
                 priority=task["priority"]
             ))
         
-        # 获取历史任务（最近50个）
+# Получите исторические задания (последние 50)
         history_tasks = []
         for task in agent_controller.task_history[-50:]:
             history_tasks.append(TaskResponse(
@@ -166,12 +166,12 @@ async def list_tasks():
         return active_tasks + history_tasks
         
     except Exception as e:
-        logger.error(f"获取任务列表失败: {str(e)}")
+logger.error(f «Не удалось получить список задач: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/agents/status", response_model=Dict[str, Any])
 async def get_agents_status():
-    """获取智能体状态"""
+"""Получить статус агента"""
     try:
         status = await agent_controller.get_agent_status()
         return {
@@ -180,21 +180,21 @@ async def get_agents_status():
         }
         
     except Exception as e:
-        logger.error(f"获取智能体状态失败: {str(e)}")
+logger.error(f «Не удалось получить статус агента: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/workflow/full", response_model=Dict[str, Any])
 async def run_full_workflow(input_data: Dict[str, Any]):
-    """运行完整工作流"""
+"""Запустите весь рабочий процесс"""
     try:
-        # 提交完整工作流任务
+# Отправьте полную задачу рабочего процесса
         task_id = await agent_controller.submit_task(
             task_type=TaskType.FULL_WORKFLOW,
             input_data=input_data,
-            priority=1  # 高优先级
+Priority=1 # высокий приоритет
         )
         
-        # 执行任务
+# Выполняем задачи
         result = await agent_controller.execute_task(task_id)
         
         return {
@@ -204,15 +204,15 @@ async def run_full_workflow(input_data: Dict[str, Any]):
         }
         
     except Exception as e:
-        logger.error(f"运行完整工作流失败: {str(e)}")
+logger.error(f «Не удалось запустить весь рабочий процесс: {str(e)}»)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.websocket("/ws/{task_id}")
 async def websocket_task_updates(websocket: WebSocket, task_id: str):
-    """WebSocket任务更新"""
+"""Обновление задачи WebSocket"""
     await manager.connect(websocket)
     try:
-        # 发送初始状态
+# Отправляем начальный статус
         status = await agent_controller.get_task_status(task_id)
         if status:
             await manager.send_personal_message(
@@ -220,9 +220,9 @@ async def websocket_task_updates(websocket: WebSocket, task_id: str):
                 websocket
             )
         
-        # 监听任务状态变化
+# Отслеживать изменения статуса задачи
         while True:
-            await asyncio.sleep(1)  # 每秒检查一次
+await asyncio.sleep(1) # Проверяем каждую секунду
             
             status = await agent_controller.get_task_status(task_id)
             if status:
@@ -231,29 +231,29 @@ async def websocket_task_updates(websocket: WebSocket, task_id: str):
                     websocket
                 )
                 
-                # 如果任务完成，断开连接
+# Если задача выполнена, отключите
                 if status["status"] in ["completed", "failed", "cancelled"]:
                     break
     
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
-        logger.error(f"WebSocket连接异常: {str(e)}")
+logger.error(f"Исключение соединения WebSocket: {str(e)}")
         manager.disconnect(websocket)
 
 @router.websocket("/ws/stream")
 async def websocket_stream(websocket: WebSocket):
-    """WebSocket流式通信（用于写作助教等实时交互）"""
+"""Потоковая связь через WebSocket (для взаимодействия в реальном времени, например, помощников по написанию)"""
     await manager.connect(websocket)
     try:
         while True:
-            # 接收消息
+#Получить сообщения
             data = await websocket.receive_text()
             message = json.loads(data)
             
-            # 处理不同类型的消息
+# Обработка различных типов сообщений
             if message.get("type") == "writing_assistance":
-                # 处理写作辅助请求
+# Обрабатывать запросы на помощь в написании
                 await handle_writing_assistance(websocket, message.get("data", {}))
             elif message.get("type") == "ping":
                 # 心跳检测
@@ -269,24 +269,24 @@ async def websocket_stream(websocket: WebSocket):
         manager.disconnect(websocket)
 
 async def handle_writing_assistance(websocket: WebSocket, data: Dict[str, Any]):
-    """处理写作辅助请求"""
+"""Обработка запросов на помощь в написании"""
     try:
-        # 提交写作辅助任务
+# Отправляйте задания по помощи в написании
         task_id = await agent_controller.submit_task(
             task_type=TaskType.WRITING_ASSISTANCE,
             input_data=data
         )
         
-        # 发送任务ID
+# Отправить идентификатор задачи
         await manager.send_personal_message(
             json.dumps({"type": "task_started", "task_id": task_id}),
             websocket
         )
         
-        # 执行任务
+# Выполняем задачи
         result = await agent_controller.execute_task(task_id)
         
-        # 发送结果
+# Отправить результаты
         await manager.send_personal_message(
             json.dumps({"type": "task_completed", "result": result}),
             websocket

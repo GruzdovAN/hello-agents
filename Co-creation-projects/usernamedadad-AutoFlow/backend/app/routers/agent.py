@@ -18,7 +18,7 @@ async def stream_agent_chat(payload: AgentChatRequest):
                 yield f"event: {event.get('type', 'message')}\n"
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except Exception as exc:
-            error_event = {"type": "error", "message": f"流式服务异常: {str(exc)}"}
+            error_event = {"type": "error", "message": f"Ошибка потокового сервиса: {str(exc)}"}
             yield "event: error\n"
             yield f"data: {json.dumps(error_event, ensure_ascii=False)}\n\n"
             yield "event: done\n"

@@ -83,7 +83,7 @@ def _extract_background_context(full_text: str, *, limit: int = 2000) -> str:
         return ""
 
     abstract_match = re.search(
-        r"(?:^|\b)(abstract|摘要)\b[:：\s-]*(.+?)(?:\b(?:keywords|introduction|背景|方法|materials?|results?)\b|$)",
+        r"(?:^|\b)(abstract|резюме|аннотация)\b[:：\s-]*(.+?)(?:\b(?:keywords|introduction|background|метод|materials?|results?)\b|$)",
         normalized,
         flags=re.IGNORECASE,
     )
@@ -268,9 +268,9 @@ def preview_pdf_tables(
     default_record = _select_primary_table(records)
     warnings: list[str] = []
     if records:
-        warnings.append("系统将以主表做定量分析，并结合其他候选表与文献背景生成综合报告。")
+        warnings.append("Система выполнит квантитативный анализ основной таблицы и объединит другие кандидаты с литературным контекстом.")
     else:
-        warnings.append("当前 PDF 未提取到可用结构化表格。")
+        warnings.append("Из PDF не извлечены структурированные таблицы.")
 
     return PdfPreviewResult(
         source_pdf=source_path,
@@ -305,7 +305,7 @@ def ingest_input_document(
         result = IngestionResult(
             input_kind="tabular",
             status="not_needed",
-            summary="输入文件已经是结构化表格，跳过文档解析阶段。",
+            summary="Вход — уже структурированная таблица; парсинг документа пропущен.",
             normalized_data_path=source_path,
             duration_ms=_elapsed_ms(started_at),
             log_path=log_path,
@@ -330,7 +330,7 @@ def ingest_input_document(
         raise ValueError(f"Unsupported input file format: {source_path.suffix}")
 
     if normalized_mode == "vision_fallback":
-        raise ValueError("V1 暂不支持 vision_fallback，请先使用文本型 PDF 或手动裁剪目标表格。")
+        raise ValueError("V1 не поддерживает vision_fallback; используйте текстовый PDF или вручную вырежите таблицу.")
 
     extracted_tables_dir = data_dir / "extracted_tables"
     cleaned_data_path = (data_dir / "cleaned_data.csv").resolve()
@@ -360,8 +360,8 @@ def ingest_input_document(
 
     if primary_record is None:
         summary = (
-            "PDF 解析失败：未提取到满足主表路由规则的结构化表格。"
-            "V1 暂不支持复杂多表路由或扫描件恢复，请手动裁剪 PDF 或改上传目标表格。"
+            "Парсинг PDF не удался: не найдена таблица по правилам основной таблицы."
+            "V1 не поддерживает сложную мульти-табличную маршрутизацию или сканы; обрежьте PDF или загрузите целевую таблицу."
         )
         parsed_payload = _serialize_parsed_document(
             source_pdf=source_path,
@@ -439,11 +439,11 @@ def ingest_input_document(
     parsed_document_path.write_text(json.dumps(parsed_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
     summary = (
-        f"PDF 文档解析完成：共提取 {len(records)} 张候选表，"
-        f"已选择 {primary_record.table_id} 作为主表写入 cleaned_data.csv，"
-        "其余候选表会与文献背景一起作为综合解释上下文。"
+        f"Парсинг PDF завершён: извлечено {len(records)} кандидатов таблиц,"
+        f"выбрана {primary_record.table_id} как основная таблица в cleaned_data.csv,"
+        "остальные кандидаты — контекст для интерпретации с литературным фоном."
     )
-    warnings.append("V1 暂不支持多表联合定量分析；若主表选错，请手动裁剪 PDF 或在前端改选主表。")
+    warnings.append("V1 не поддерживает совместный квантитативный анализ нескольких таблиц; при ошибке выбора обрежьте PDF или смените основную таблицу во фронтенде.")
     result = IngestionResult(
         input_kind="pdf",
         status="completed",

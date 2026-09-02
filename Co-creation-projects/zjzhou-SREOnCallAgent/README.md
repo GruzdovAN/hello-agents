@@ -2,7 +2,7 @@
 
 > AI-powered incident triage, root cause investigation, and post-mortem generation
 
-> **中文简介**：本项目构建了一个 AI 驱动的 SRE 值班助手，自动完成告警分诊、根因调查和故障复盘报告生成。通过三阶段智能体流水线（Plan-and-Solve → ReAct → Reflection）演示了第四章三种经典范式在真实运维场景下的串联应用，是社区首个 SRE/运维领域项目。
+> **Краткое описание**: AI-ассистент дежурного SRE: триаж алертов, расследование первопричины и post-mortem. Трёхэтапный конвейер агентов (Plan-and-Solve → ReAct → Reflection) показывает три парадигмы из главы 4 в реальной эксплуатации; первый проект сообщества в домене SRE/ops.
 
 ## 📝 Project Introduction
 

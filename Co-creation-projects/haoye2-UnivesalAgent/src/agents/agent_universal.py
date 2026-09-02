@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-# 添加项目根目录到路径，以便导入其他模块
+# Добавляем корень проекта в путь для импорта других модулей
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -13,7 +13,7 @@ from src.agents.config import (TERMINAL_SECURITY_MODE, AGENT_NAME, AGENT_SYSTEM_
 
 class UniversalAgent(SimpleAgent):
     def __init__(self):
-        # 从环境变量读取 LLM 配置
+        # Читаем конфигурацию LLM из переменных окружения
         llm = HelloAgentsLLM(
             provider=os.getenv('LLM_PROVIDER', 'modelscope'),
             model=os.getenv('LLM_MODEL', 'Qwen/Qwen3-VL-8B-Instruct'),
@@ -21,12 +21,12 @@ class UniversalAgent(SimpleAgent):
             base_url=os.getenv('LLM_API_BASE')
         )
         
-        # 创建工具注册表并注册工具
+        # Создаём реестр инструментов и регистрируем инструменты
         tool_registry = ToolRegistry()
         tool_registry.register_tool(BrowserTool())
         tool_registry.register_tool(TerminalTool(security_mode=TERMINAL_SECURITY_MODE))
         
-        # 将工具注册表传递给父类
+        # Передаём реестр инструментов родительскому классу
         super().__init__(
             name=AGENT_NAME,
             llm=llm,
@@ -34,18 +34,18 @@ class UniversalAgent(SimpleAgent):
             tool_registry=tool_registry
         )
         
-        # 存储会话上下文
+        # Храним контекст сессии
         self.current_session_context = []
         self.last_query = None
         self.last_response = None
     
     def run(self, input_text: str, **kwargs) -> str:
-        """运行Agent处理用户输入"""
+        """Запускает агента для обработки пользовательского ввода"""
         
-        # 调用父类方法
+        # Вызываем метод родительского класса
         response = super().run(input_text, **kwargs)
         
-        # 更新会话状态
+        # Обновляем состояние сессии
         self.last_query = input_text
         self.last_response = response
         

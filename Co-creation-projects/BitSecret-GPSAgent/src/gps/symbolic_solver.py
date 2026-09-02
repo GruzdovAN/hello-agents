@@ -575,7 +575,7 @@ class SymbolicSolver:
         return operation_id
 
     def _adjust_expr(self, expr):
-        """添加代数型的fact或goal时，都要先调整expr，替换统一的符号表示，并调整为首项不为负号."""
+        """При добавлении алгебраического fact/goal: нормализовать expr и убрать отрицательный первый член."""
         for sym in list(expr.free_symbols):
             if sym in self.sym_to_sym:
                 replace_sym = self.sym_to_sym[sym]
@@ -616,7 +616,7 @@ class SymbolicSolver:
             fact = (predicate, replace_paras(paras, replace))
             # print(f"check {str(fact)} {str(fact in self.fact_id)}")
             if fact not in self.fact_id:
-                return False, f"前提'{_anti_parse_fact(fact)}'不满足。", None
+                return False, f"Предпосылка '{_anti_parse_fact(fact)}' не выполнена.", None
             premise_ids.add(self.fact_id[fact])
 
         # check algebraic constraint of dependent entity
@@ -625,7 +625,7 @@ class SymbolicSolver:
             # print(f"check {str(expr)} {str(_satisfy_algebraic[algebraic_relation](expr, self.points))}")
             if not _satisfy_algebraic[algebraic_relation](expr, self.points):
                 expr = str(expr).replace(' ', '')
-                return False, f"代数约束'{expr}'不满足。", None
+                return False, f"Алгебраическое ограничение '{expr}' не выполнено.", None
 
         # check algebraic premises
         for expr in algebraic_premises:
@@ -635,11 +635,11 @@ class SymbolicSolver:
             # print(f"check {str(expr)} {str(status == 1)}")
             if status != 1:
                 fact = ('Eq', expr)
-                return False, f"前提'{_anti_parse_fact(fact)}'不满足。", None
+                return False, f"Предпосылка '{_anti_parse_fact(fact)}' не выполнена.", None
 
             premise_ids.update(algebraic_premise_ids)
 
-        return True, "通过约束", premise_ids
+        return True, "Ограничения выполнены", premise_ids
 
     def _pass_algebraic_premise(self, expr):
         """return status, premise_ids
@@ -821,14 +821,14 @@ class SymbolicSolver:
                     ee_check_instance = tuple(replace_paras(ee_check_paras, replace))
                     if (ee_check_predicate, ee_check_instance) not in self.fact_id:
                         entity = _anti_parse_fact((ee_check_predicate, ee_check_instance))
-                        return False, f"目标{goal}实体存在性检查未通过，不存在依赖实体{entity}。"
+                        return False, f"Проверка существования для цели {goal} не пройдена: сущность {entity} отсутствует."
 
         elif predicate in self.parsed_gdl["Presets"]:  # Presets
             if (predicate, instance) in self.fact_id:
                 return True, 'pass'
             else:
                 entity = _anti_parse_fact((predicate, instance))
-                return False, f"目标{goal}实体存在性检查未通过，不存在依赖实体{entity}。"
+                return False, f"Проверка существования для цели {goal} не пройдена: сущность {entity} отсутствует."
 
         else:  # relation
             relation_gdl = self.parsed_gdl["Relations"][predicate]
@@ -837,7 +837,7 @@ class SymbolicSolver:
                 ee_check_instance = replace_paras(ee_check_paras, replace)
                 if (ee_check_predicate, ee_check_instance) not in self.fact_id:
                     entity = _anti_parse_fact((ee_check_predicate, ee_check_instance))
-                    return False, f"目标{goal}实体存在性检查未通过，不存在依赖实体{entity}。"
+                    return False, f"Проверка существования для цели {goal} не пройдена: сущность {entity} отсутствует."
         return True, 'pass'
 
     def _pass_algebraic_constraints(self, theorem_gdl, replace):
@@ -846,8 +846,8 @@ class SymbolicSolver:
                 expr = replace_expr(expr, replace)
                 if not _satisfy_algebraic[algebraic_relation](expr, self.points):
                     expr = str(expr).replace(' ', '')
-                    return False, f"代数约束'{expr}'不满足。",
-        return True, "约束通过"
+                    return False, f"Алгебраическое ограничение '{expr}' не выполнено.",
+        return True, "Ограничения выполнены"
 
     def _find_father_ids(self, predicate, instance):
         # print('goal:', predicate, instance)
@@ -877,14 +877,14 @@ class SymbolicSolver:
             instance = tuple(replace_paras(paras, replace))
             passed, result = self._pass_geometric_constraints(predicate, instance)
             if not passed:
-                return None, "构造子目标失败，" + result
+                return None, "Не удалось построить подцель: " + result
             sub_goals.append((predicate, instance))
 
             for predicate, paras in gpl_one_term['geometric_premises']:
                 instance = tuple(replace_paras(paras, replace))
                 passed, result = self._pass_geometric_constraints(predicate, instance)
                 if not passed:
-                    return None, "构造子目标失败，" + result
+                    return None, "Не удалось построить подцель: " + result
                 sub_goals.append((predicate, instance))
 
             for expr in gpl_one_term['algebraic_premises']:
@@ -892,18 +892,18 @@ class SymbolicSolver:
                 fact = _anti_parse_fact(('Eq', instance))
                 instance = self._adjust_expr(instance)
                 if instance is None:  # not ask len(instance.free_symbols) > 0
-                    return None, f"构造子目标失败，子目标{fact}非法。"
+                    return None, f"Не удалось построить подцель: {fact} недопустима."
                 passed, result = self._pass_geometric_constraints('Eq', instance)
                 if not passed:
-                    return None, "构造子目标失败，" + result
+                    return None, "Не удалось построить подцель: " + result
                 sub_goals.append(('Eq', instance))
 
         return sub_goals, 'passed'
 
     def _set_status(self, goal_id, status):
         """
-        1: 向下传递给所有children-1，同时向上检查一层，如果所有兄弟都是 1，就应用定理
-        -1:横向传递给所有兄弟、向下传递给所有children
+        1: передать вниз ко всем children-1; вверх один уровень — если все siblings=1, применить теорему
+        -1: горизонтально ко siblings, вниз ко children
         """
         all_sub_goal_solved = False
         if self.status_of_goal[goal_id] == 0:
@@ -1218,18 +1218,18 @@ class SymbolicSolver:
 
         new_fact_ids = [i for i in range(old_fact_id, len(self.facts))]
         if len(new_fact_ids) > 0:
-            result.append('新推导出的条件：')
+            result.append('Новые выведенные условия:')
             for fact_id in new_fact_ids:
                 result.append(_anti_parse_fact((self.facts[fact_id][0], self.facts[fact_id][1])))
 
         new_goal_ids = [i for i in range(old_goal_id, len(self.goals))]
         if len(new_goal_ids) > 0:
             result.append(
-                '新分解得到的子目标及其原目标为（括号内数字表示目标状态，0表示此目标待求解，1表示此目标已求解，-1表示此目标不可能实现）：'
+                'Новые подцели и родительские (0=ожидает, 1=решена, -1=невозможна):'
             )
             for goal_id in new_goal_ids:
                 goal = _anti_parse_fact((self.goals[goal_id][0], self.goals[goal_id][1]))
-                goal = goal + f'({self.status_of_goal[goal_id]}), 父目标为'
+                goal = goal + f'({self.status_of_goal[goal_id]}), родительская цель'
                 father_goal_id = self.goals[goal_id][2]
                 father_goal = _anti_parse_fact((self.goals[father_goal_id][0], self.goals[father_goal_id][1]))
                 father_goal = father_goal + f'({self.status_of_goal[father_goal_id]})'
@@ -1239,7 +1239,7 @@ class SymbolicSolver:
                             if old_goal_status[goal_id] != self.status_of_goal[goal_id]]
         if len(updated_goal_ids) > 0:
             result.append(
-                '部分目标的状态更新为（括号内数字表示目标状态，0表示此目标待求解，1表示此目标已求解，-1表示此目标不可能实现）：'
+                'Обновление статуса части целей (0=ожидает, 1=решена, -1=невозможна):'
             )
             for goal_id in updated_goal_ids:
                 goal = _anti_parse_fact((self.goals[goal_id][0], self.goals[goal_id][1]))
@@ -1294,7 +1294,7 @@ class SymbolicSolver:
                 predicate = product[0]
                 instance = replace_paras(product[1], replace)
                 if (predicate, instance) not in self.fact_id:  # verification mode, not cartesian product
-                    result = f"定理'{theorem}'应用失败，前提'{_anti_parse_fact((predicate, instance))}'不满足。"
+                    result = f"Теорема '{theorem}' не применена: предпосылка '{_anti_parse_fact((predicate, instance))}' не выполнена."
                     return result
 
                 premise_ids.add(self.fact_id[(predicate, instance)])
@@ -1303,7 +1303,7 @@ class SymbolicSolver:
                 passed, result, constraints_premise_ids = self._pass_constraints(
                     geometric_premises, algebraic_premises, algebraic_constraints, replace)
                 if not passed:
-                    return f"定理'{theorem}'应用失败，" + result
+                    return f"Теорема '{theorem}' не применена: " + result
                 premise_ids.update(constraints_premise_ids)
 
             # add operation
@@ -1312,11 +1312,11 @@ class SymbolicSolver:
             # add conclusions
             fact_id, goal_ids = self._add_conclusion(theorem_gdl, replace, premise_ids, operation_id)
             if fact_id is None:
-                return f"定理'{theorem}'所有前提已满足，但添加结论失败。结论可能已经存在，或者结论未通过合法性检查。"
+                return f"Теорема '{theorem}': все предпосылки выполнены, но вывод не добавлен (уже есть или не прошёл проверку)."
 
             self._check_goals(goal_ids)
 
-            result = f"定理'{theorem}'执行成功，以下为问题的状态更新。\n"
+            result = f"Теорема '{theorem}' применена успешно. Обновление состояния задачи.\n"
             return result + self._get_update(old_fact_id, old_goal_id, old_goal_status)
 
         else:
@@ -1347,9 +1347,9 @@ class SymbolicSolver:
             self._check_goals(all_goal_ids)
 
             if len(all_goal_ids) == 0:
-                return f"定理'{theorem_name}'执行成功，但没有推导出新的结论。"
+                return f"Теорема '{theorem_name}' применена, новых выводов нет."
 
-            result = f"定理'{theorem_name}'执行成功，以下为问题的状态更新。\n"
+            result = f"Теорема '{theorem_name}' применена успешно. Обновление состояния.\n"
             return result + self._get_update(old_fact_id, old_goal_id, old_goal_status)
 
     def decompose(self, theorem):
@@ -1367,26 +1367,26 @@ class SymbolicSolver:
         if predicate == "Eq":
             instance = self._adjust_expr(replace_expr(instance, replace))
             if instance is None or len(instance.free_symbols) == 0:
-                return f"使用定理'{theorem}'分解目标{_anti_parse_fact((predicate, instance))}失败，目标无需分解或非法。"
+                return f"Декомпозиция цели {_anti_parse_fact((predicate, instance))} теоремой '{theorem}' не удалась: не требуется или недопустима."
         else:
             instance = tuple(replace_paras(instance, replace))
         goal = _anti_parse_fact((predicate, instance))
 
         passed, result = self._pass_algebraic_constraints(theorem_gdl, replace)  # ac checks
         if not passed:
-            return f"使用定理'{theorem}'分解目标{goal}失败，" + result
+            return f"Декомпозиция цели {goal} теоремой '{theorem}' не удалась: " + result
 
         passed, result = self._pass_geometric_constraints(predicate, instance)  # ee checks
         if not passed:
-            return f"使用定理'{theorem}'分解目标{goal}失败，" + result
+            return f"Декомпозиция цели {goal} теоремой '{theorem}' не удалась: " + result
 
         father_ids = self._find_father_ids(predicate, instance)  # find father nodes
         if len(father_ids) == 0:
-            return f"使用定理'{theorem}'分解目标{goal}失败，待分解目标不存在。"
+            return f"Декомпозиция цели {goal} теоремой '{theorem}' не удалась: цель не существует."
 
         sub_goals, result = self._generate_sub_goals(theorem_gdl, replace)  # generate sub_goals
         if sub_goals is None:
-            return f"使用定理'{theorem}'分解目标{goal}失败，" + result
+            return f"Декомпозиция цели {goal} теоремой '{theorem}' не удалась: " + result
 
         all_goal_ids = set()
         for father_id in father_ids:  # add sub_goals
@@ -1396,11 +1396,11 @@ class SymbolicSolver:
                 all_goal_ids.update(goal_ids)
 
         if len(all_goal_ids) == 0:
-            return f"使用定理'{theorem}'分解目标{goal}失败，新分解的子目标不能是原目标的父目标。"
+            return f"Декомпозиция цели {goal} теоремой '{theorem}' не удалась: подцель не может быть родителем."
 
         self._check_goals(all_goal_ids)
 
-        result = f"使用定理'{theorem}'分解目标{goal}成功，以下为问题的状态更新。\n"
+        result = f"Декомпозиция цели {goal} теоремой '{theorem}' успешна. Обновление состояния.\n"
         return result + self._get_update(old_fact_id, old_goal_id, old_goal_status)
 
     def find_fact(self, relation):
@@ -1409,17 +1409,17 @@ class SymbolicSolver:
             raise Exception(msg)
 
         if len(self.predicate_to_fact_instances) == 0:
-            return relation + f"类型的关系列表为空，当前问题暂时未推导出{relation}关系。"
+            return relation + f": список отношений пуст; отношение {relation} ещё не выведено."
 
         if relation == 'Eq':
             result = []
             if len(self.equations) > 0:
-                result.append("按照方程变量是否相交来分组，得到的代数方程组（所有方程省略'=0'、组序号可能不连续）：")
+                result.append("Алгебраические системы по пересечению переменных (уравнения без '=0', номера групп могут быть не непрерывны):")
                 for group_id in self.equations:
                     eqs = [str(eq).replace(' ', '') for eq in self.equations[group_id][0]]
                     result.append(f'Group {group_id}: ' + ', '.join(eqs))
             if len(self.sym_to_value) > 0:
-                result.append("以下是所有已经求解出值的变量：")
+                result.append("Переменные с найденными значениями:")
                 result.append(str(self.sym_to_value))
             return '\n'.join(result)
         else:
@@ -1435,25 +1435,25 @@ class SymbolicSolver:
             raise Exception(msg)
 
         if len(self.predicate_to_goal_instances) == 0:
-            return relation + f"类型的目标列表为空，当前问题暂时未分解出{relation}目标。"
+            return relation + f": список целей пуст; цели типа {relation} ещё не декомпозированы."
 
         results = [
-            f"以下为{relation}类型目标和状态（括号内数字表示目标状态，0表示此目标待求解，1表示此目标已求解，-1表示此目标不可能实现）："
+            f"Цели типа {relation} и статусы (0=ожидает, 1=решена, -1=невозможна):"
         ]
         for instance in self.predicate_to_goal_instances[relation]:
             goal = _anti_parse_fact((relation, instance))
             for goal_id in self.goal_ids[(relation, instance)]:
                 _, _, father_id, _ = self.goals[goal_id]
                 if father_id is None:
-                    results.append(goal + f'({self.status_of_goal[goal_id]})' + ', 初始目标')
+                    results.append(goal + f'({self.status_of_goal[goal_id]})' + ', начальная цель')
                 else:
                     father_goal = _anti_parse_fact((self.goals[father_id][0], self.goals[father_id][1]))
                     father_goal = father_goal + f'({self.status_of_goal[father_id]})'
-                    results.append(goal + f'({self.status_of_goal[goal_id]})' + ', 父目标为' + father_goal)
+                    results.append(goal + f'({self.status_of_goal[goal_id]})' + ', родитель: ' + father_goal)
         return '\n'.join(results)
 
     def state(self):
-        result = ["当前问题的状态描述如下所示：", "几何图形的结构信息描述："]
+        result = ["Текущее состояние задачи:", "Структура геометрической фигуры:"]
         for predicate in self.predicate_to_fact_instances:
             if predicate not in {'Shape', 'Collinear', 'Cocircular'}:
                 continue
@@ -1464,7 +1464,7 @@ class SymbolicSolver:
                 instances.append(_anti_parse_fact((predicate, instance)))
             result.append(', '.join(instances))
 
-        result.append("几何问题的初始已知条件：")
+        result.append("Начальные известные условия:")
         instances = []
         for fact_id in range(len(self.facts)):
             predicate, instance, premise_ids, operation_id = self.facts[fact_id]
@@ -1476,12 +1476,12 @@ class SymbolicSolver:
         result.append(', '.join(instances))
 
         result.append(
-            "几何问题的求解目标和状态（括号内数字表示目标状态，0表示此目标待求解，1表示此目标已求解，-1表示此目标不可能实现）："
+            "Цели и статусы (0=ожидает, 1=решена, -1=невозможна):"
         )
         predicate, instance, _, _ = self.goals[0]
         result.append(_anti_parse_fact((predicate, instance)) + f'({self.status_of_goal[0]})')
 
-        result.append("解析几何图形的结构信息得到的实体：")
+        result.append("Сущности из структуры фигуры:")
         for predicate in self.predicate_to_fact_instances:
             if predicate not in self.parsed_gdl['Presets'] or predicate in {'Shape', 'Collinear', 'Cocircular', 'Eq'}:
                 continue
@@ -1492,7 +1492,7 @@ class SymbolicSolver:
                 instances.append('(' + ','.join(instance) + ')')
             result.append(predicate + ': ' + ', '.join(instances))
 
-        result.append("按条件类型列出的所有已知条件：")
+        result.append("Все известные условия по типу:")
         for predicate in self.predicate_to_fact_instances:
             if predicate in self.parsed_gdl['Presets']:
                 continue
@@ -1507,10 +1507,10 @@ class SymbolicSolver:
                     instances.append('(' + ','.join(instance) + ')')
             result.append(predicate + ': ' + ', '.join(instances))
 
-        result.append(self.find_fact('Eq'))  # 代数关系
+        result.append(self.find_fact('Eq'))  # алгебраические отношения
 
         result.append(
-            "初始目标和所有分解得到的目标（括号内数字表示目标状态，0表示此目标待求解，1表示此目标已求解，-1表示此目标不可能实现）："
+            "Начальные и декомпозированные цели (0=ожидает, 1=решена, -1=невозможна):"
         )
         goal_group = {}  # {(father_id, operation_id): [goal_id]}
 
@@ -1529,16 +1529,16 @@ class SymbolicSolver:
             goal = '&'.join(goals)
 
             if father_id is None:
-                result.append(goal + ', 初始目标')
+                result.append(goal + ', начальная цель')
             else:
                 father_goal = _anti_parse_fact((self.goals[father_id][0], self.goals[father_id][1]))
                 father_goal = father_goal + f'({self.status_of_goal[father_id]})'
-                result.append(goal + ', 父目标为' + father_goal)
+                result.append(goal + ', родитель: ' + father_goal)
 
         return '\n'.join(result)
 
     def check(self):
         goal = _anti_parse_fact((self.goals[0][0], self.goals[0][1]))
         if self.status_of_goal[0] == 1:
-            return f'问题初始目标{goal}已完成，求解成功，你需要调用finish()工具结束解题过程。'
-        return f'问题初始目标{goal}未完成，请继续求解。'
+            return f'Начальная цель {goal} достигнута. Вызовите finish() для завершения.'
+        return f'Начальная цель {goal} не достигнута. Продолжите решение.'

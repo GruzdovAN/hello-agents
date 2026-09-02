@@ -1,4 +1,4 @@
-"""HelloAgents 官方类集成测试。"""
+"""Официальный тест интеграции класса HelloAgents."""
 
 from hello_agents import Config, SimpleAgent
 
@@ -31,17 +31,17 @@ def test_official_simple_agent_runs_with_offline_fake_llm() -> None:
     class FakeLLM:
         def invoke(self, messages, **kwargs) -> str:
             assert messages[-1]["content"] == "请澄清这个需求"
-            return "待确认：目标用户和验收标准。"
+return «Подлежит подтверждению: целевые пользователи и критерии приемки».
 
     agent = SimpleAgent(
-        name="离线框架集成测试",
+name="Тест интеграции автономной среды",
         llm=FakeLLM(),  # type: ignore[arg-type]
         config=Config(debug=False),
     )
 
-    result = agent.run("请澄清这个需求")
+result = Agent.run("Пожалуйста, уточните это требование")
 
-    assert result == "待确认：目标用户和验收标准。"
+Assert result == «Подлежит подтверждению: целевые пользователи и критерии приемки».
 
 
 def test_official_simple_agent_can_call_requirement_tool_with_plain_text() -> None:
@@ -49,8 +49,8 @@ def test_official_simple_agent_can_call_requirement_tool_with_plain_text() -> No
         def __init__(self) -> None:
             self.responses = iter(
                 [
-                    "[TOOL_CALL:requirement_audit:面向居民做一个活动报名小程序]",
-                    "需求初检已经完成。",
+«[TOOL_CALL:requirement_audit: Создайте апплет регистрации активности для жителей]»,
+«Первоначальная проверка требований завершена.»,
                 ]
             )
             self.calls = []
@@ -61,13 +61,13 @@ def test_official_simple_agent_can_call_requirement_tool_with_plain_text() -> No
 
     fake_llm = ToolCallingFakeLLM()
     agent = SimpleAgent(
-        name="工具调用集成测试",
+name="Инструмент вызывает интеграционный тест",
         llm=fake_llm,  # type: ignore[arg-type]
         config=Config(debug=False),
         tool_registry=create_tool_registry(),
     )
 
-    result = agent.run("请检查需求完整度")
+result = Agent.run("Пожалуйста, проверьте полноту требований")
 
-    assert result == "需求初检已经完成。"
+Assert result == «Первоначальная проверка требований завершена».
     assert '"ok": true' in fake_llm.calls[1][-1]["content"]

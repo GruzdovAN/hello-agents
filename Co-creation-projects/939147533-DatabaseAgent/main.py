@@ -1,6 +1,6 @@
 """
-数据库Agent助手 - 主程序
-演示如何使用DatabaseAgent进行自然语言查询
+Агент-помощник для базы данных — главная программа
+Демонстрация использования DatabaseAgent для запросов на естественном языке
 """
 import os
 from dotenv import load_dotenv
@@ -12,7 +12,7 @@ load_dotenv()
 
 def main():
     print("=" * 60)
-    print("🤖 数据库Agent助手")
+    print("🤖 Агент-помощник для базы данных")
     print("=" * 60)
     
     llm = HelloAgentsLLM()
@@ -20,8 +20,8 @@ def main():
     db_config = DatabaseConfig()
     
     if not db_config.validate():
-        print("❌ 数据库配置不完整，请检查.env文件")
-        print("需要配置: DB_HOST, DB_PORT, DB_SERVICE_NAME, DB_USERNAME, DB_PASSWORD")
+        print("❌ Конфигурация базы данных неполная, проверьте файл .env")
+        print("Необходимо настроить: DB_HOST, DB_PORT, DB_SERVICE_NAME, DB_USERNAME, DB_PASSWORD")
         return
     
     agent = DatabaseAgent(
@@ -31,33 +31,33 @@ def main():
         max_steps=5
     )
     
-    print("\n📝 示例查询:")
-    print("1. 查询所有员工信息")
-    print("2. 查询工资大于5000的员工")
-    print("3. 统计各部门的员工数量")
-    print("4. 查询最近入职的5名员工")
-    print("5. 退出")
+    print("\n📝 Примеры запросов:")
+    print("1. Получить информацию обо всех сотрудниках")
+    print("2. Найти сотрудников с зарплатой больше 5000")
+    print("3. Подсчитать количество сотрудников по отделам")
+    print("4. Получить 5 последних принятых на работу сотрудников")
+    print("5. Выход")
     
     while True:
         print("\n" + "=" * 60)
-        user_input = input("请输入您的查询 (或输入 '5' 退出): ").strip()
+        user_input = input("Введите запрос (или '5' для выхода): ").strip()
         
-        if user_input.lower() in ['5', 'exit', 'quit', '退出']:
-            print("👋 感谢使用数据库Agent助手！")
+        if user_input.lower() in ['5', 'exit', 'quit', 'выход']:
+            print("👋 Спасибо за использование агента-помощника для базы данных!")
             break
 
         if not user_input:
-            print("⚠️ 请输入有效的查询")
+            print("⚠️ Введите корректный запрос")
             continue
         
         try:
             result = agent.run(user_input)
             print("\n" + "=" * 60)
-            print("📊 查询结果:")
+            print("📊 Результат запроса:")
             print("=" * 60)
             print(result)
         except Exception as e:
-            print(f"❌ 执行查询时出错: {e}")
+            print(f"❌ Ошибка при выполнении запроса: {e}")
 
 
 if __name__ == "__main__":

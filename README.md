@@ -23,7 +23,7 @@
 
 &emsp;&emsp;Hello-Agents — **систематический курс по агентам** сообщества Datawhale. Сегодня разработку агентов условно делят на два направления: инженерные агенты вроде Dify, Coze и n8n (по сути процесс-ориентированная разработка, где LLM — бэкенд обработки данных) и AI-native агенты, по-настоящему управляемые ИИ. Этот курс ведёт к глубокому пониманию и построению вторых — настоящих AI Native Agents. Вы пройдёте сквозь оболочку фреймворков: от принципов агентов, архитектуры и классических парадигм — до собственных мультиагентных приложений. Лучший способ учиться — практика. Надеемся, курс станет точкой входа в мир агентов и поможет превратиться из «пользователя» LLM в «строителя» агентных систем.
 
-> **Локальная русская редакция:** ядро курса (главы, предисловие, код) и приоритетные Extra (собеседования, контекст, Skills, FAQ, грабли, self-evolution) — на русском. Extra03/06/07/11–13, Additional-Chapter и Co-creation-projects не переводились (см. [`RU_LOCALIZATION.md`](./RU_LOCALIZATION.md)).
+> **Локальная русская редакция:** ядро курса (главы, предисловие, код), приоритетные Extra и [`Co-creation-projects/`](./Co-creation-projects/) — на русском. Extra03/06/07/11–13 и Additional-Chapter не переводились (см. [`RU_LOCALIZATION.md`](./RU_LOCALIZATION.md)).
 
 ## Быстрый старт
 
@@ -75,7 +75,7 @@
 
 | Материал | Кратко |
 | -------- | ------ |
-| [00 — Совместные выпускные проекты](https://github.com/datawhalechina/hello-agents/blob/main/Co-creation-projects) | Co-creation (без перевода) |
+| [00 — Совместные выпускные проекты](https://github.com/datawhalechina/hello-agents/blob/main/Co-creation-projects) | Co-creation (RU) |
 | [01 — Вопросы на собеседования](./Extra-Chapter/Extra01-Interview-Questions.md) | Интервью (RU) |
 | [01 — Опорные ответы](./Extra-Chapter/Extra01-Reference-Answers.md) | Ответы к собеседованиям (RU) |
 | [02 — Инженерия контекста](./Extra-Chapter/Extra02-Context-Engineering-Supplement.md) | Дополнение к гл. 9 (RU) |

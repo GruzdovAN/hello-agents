@@ -1,8 +1,8 @@
 """
-智能股票分析助手 — 行情数据服务层
+Интеллектуальный помощник по анализу акций — уровень сервиса рыночных данных
 
-封装金融数据查询、解析和格式化逻辑，供API路由层调用。
-含妙想 mx_data 计时缓存与额度用尽时的缓存降级。
+Инкапсулирует логику запроса, анализа и форматирования финансовых данных для вызовов уровня маршрутизации API.
+Содержит кэш синхронизации mx_data и ухудшение состояния кэша при исчерпании квоты.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
-# 确保skills路径可导入
+# Убедитесь, что путь навыков можно импортировать
 _PROJECT_ROOT = Path(__file__).parent.parent.parent.parent  # backend/app/services -> project root
 _AGENTS_DIR = _PROJECT_ROOT / "agents"
 _SKILLS_DATA = _PROJECT_ROOT / "skills" / "金融数据" / "mx-data"
@@ -28,7 +28,7 @@ from app.services.mx_timed_cache import get_mx_timed_cache, mx_cache_ttl_seconds
 from app.utils.mx_fixture import try_load_raw_fixture
 from app.utils.mx_quota import MX_QUOTA_HINT, is_mx_quota_exhausted, quota_exhausted_no_cache_message
 
-# 仪表盘指数卡片：从 mx tables 中解析列名（妙想返回的表头差异较大）
+# Карточка приборной панели: анализ имен столбцов из таблиц mx (заголовки, возвращаемые Miaoxiang, совершенно разные)
 _PRICE_HDR = re.compile(
     r"点位|最新点|收盘点|指数点位|收盘价|最新价|现价|收盘|价格|数值|行情|昨收|今开|当前价|最新报价|报价",
     re.I,
@@ -37,7 +37,7 @@ _CHANGE_HDR = re.compile(
     r"涨跌幅|涨跌幅度|当日涨幅|日涨跌幅|涨跌|涨幅|变动率",
     re.I,
 )
-_DATE_HDR = re.compile(r"日期|时间|^date$", re.I)
+_DATE_HDR = re.compile(r"Дата|Время|^дата$", re.I)
 _LONG_PRICE_LABEL = re.compile(
     r"点位|最新点|收盘点|指数点位|收盘价|最新价|现价|收盘|价格|最新|上证|深证|成指|沪深300|创业板指",
 )
@@ -45,7 +45,7 @@ _LONG_CHANGE_LABEL = re.compile(r"涨跌幅|涨跌幅度|当日涨幅|涨跌|涨
 
 
 def _parse_pct_cell(val: Any) -> Optional[float]:
-    """解析涨跌幅单元格为浮点数（百分比数值，不带 % 也可）"""
+"""Разобрать ячейки увеличения и уменьшения как числа с плавающей запятой (процентные значения, без %)"""
     if val is None:
         return None
     if isinstance(val, (int, float)):
@@ -75,7 +75,7 @@ def _cell_at(names: list, row: dict, idx: int) -> Any:
 
 
 def _heuristic_index_from_row(row: dict, names: list[str]) -> tuple[Optional[str], Optional[float]]:
-    """列名无法识别时，按数值量级与 % 符号兜底"""
+"""Если имя столбца не может быть распознано, используйте числовое значение и символ %, чтобы узнать """
     change: Optional[float] = None
     price_disp: Optional[str] = None
     best: float = -1.0
@@ -97,7 +97,7 @@ def _heuristic_index_from_row(row: dict, names: list[str]) -> tuple[Optional[str
         p = _parse_pct_cell(sv)
         if p is None:
             continue
-        # A 股主要指数点位多在数百～数万之间
+# Пункты основных индексов акций A варьируются от сотен до десятков тысяч.
         if 500 <= abs(p) <= 50000:
             if abs(p) > best:
                 best = abs(p)
@@ -112,7 +112,7 @@ def _extract_index_card_one_table(t0: dict) -> tuple[Optional[str], Optional[flo
     if not rows:
         return None, None
 
-    # 长表：恰两列，每行一个指标
+# Длинная таблица: ровно два столбца, по одному показателю в каждой строке
     if len(names) == 2:
         lk, vk = names[0], names[1]
         price_s: Optional[str] = None
@@ -268,11 +268,11 @@ def _fetch_mx_data_live(query: str) -> dict:
 
 
 def query_financial_data(query: str) -> dict:
-    """执行金融数据查询并返回结构化结果（带计时缓存与额度降级）
+"""Выполнение запроса финансовых данных и возврат структурированных результатов (с кэшем времени и понижением квоты)
 
-    缓存键为规范化后的自然语言 query：
-    - 相同查询串在 TTL 内不会重复请求妙想；
-    - 股票代码 / 财务指标不同会得到不同 query，从而自动区分。
+Ключ кэша — это нормализованный запрос на естественном языке:
+— Одна и та же строка запроса не будет запрашиваться повторно в течение срока жизни;
+- Разные коды акций/финансовые индикаторы будут получать разные запросы, что автоматически различает их.
     """
     result = {
         "success": False,
@@ -326,10 +326,10 @@ def query_financial_data(query: str) -> dict:
 
 
 def get_stock_quote(code: str) -> dict:
-    """查询个股实时行情
+"""Запрос котировок отдельных акций в реальном времени
 
     一并请求 OHLC/昨收，供前端「当日价位快照」图使用；仅查最新价时五价合一易变成一条平线。
-    优先从文件缓存读取，未命中或过期才调用接口。
+Сначала прочитайте из файлового кэша и вызывайте интерфейс только в том случае, если он пропущен или срок его действия истек.
     """
     from app.services.stock_file_cache import get_stock_file_cache
     fc = get_stock_file_cache()
@@ -340,7 +340,7 @@ def get_stock_quote(code: str) -> dict:
         if cached_data.get("success"):
             return cached_data
 
-    extra = "今开 开盘 最高 最低 昨收 昨收盘价"
+extra = «Сегодняшнее открытие, открытие, самая высокая, самая низкая, вчерашняя цена закрытия, вчерашняя цена закрытия»
     if code.startswith(("6", "5", "9")):
         query = f"{code} 最新价 涨跌幅 涨跌额 {extra} 成交量 成交额 换手率"
     else:
@@ -352,8 +352,8 @@ def get_stock_quote(code: str) -> dict:
     return result
 
 
-def get_stock_financial(code: str, indicators: str = "净利润 营业收入 净资产收益率 每股收益") -> dict:
-    """查询个股财务指标（文件缓存优先）"""
+def get_stock_financial(code: str, Indicators: str = «Чистая прибыль, операционный доход, рентабельность собственного капитала на акцию») -> dict:
+"""Запрос финансовых показателей отдельных акций (приоритет файлового кэша)"""
     from app.services.stock_file_cache import get_stock_file_cache
     fc = get_stock_file_cache()
 
@@ -369,7 +369,7 @@ def get_stock_financial(code: str, indicators: str = "净利润 营业收入 净
 
 
 def get_stock_profile(code: str) -> dict:
-    """查询公司概况（文件缓存优先）"""
+"""Запросить профиль компании (приоритет файлового кэша)"""
     from app.services.stock_file_cache import get_stock_file_cache
     fc = get_stock_file_cache()
 
@@ -377,7 +377,7 @@ def get_stock_profile(code: str) -> dict:
     if cached and cached.get("data") and cached["data"].get("success"):
         return cached["data"]
 
-    query = f"{code} 公司简介 主营业务 成立时间 董事长 总股本"
+query = f"{code} Профиль компании Основной вид деятельности Дата основания Председатель Общий акционерный капитал"
     result = query_financial_data(query)
     if result.get("success"):
         fc.set(code, "profile", result)
@@ -385,7 +385,7 @@ def get_stock_profile(code: str) -> dict:
 
 
 def get_stock_holders(code: str) -> dict:
-    """查询十大股东（文件缓存优先）"""
+"""Опрос десяти крупнейших акционеров (приоритет файлового кэша)"""
     from app.services.stock_file_cache import get_stock_file_cache
     fc = get_stock_file_cache()
 
@@ -393,7 +393,7 @@ def get_stock_holders(code: str) -> dict:
     if cached and cached.get("data") and cached["data"].get("success"):
         return cached["data"]
 
-    query = f"{code} 十大股东"
+query = f"{code}Десять крупнейших акционеров"
     result = query_financial_data(query)
     if result.get("success"):
         fc.set(code, "holders", result)
@@ -402,13 +402,13 @@ def get_stock_holders(code: str) -> dict:
 
 def get_index_quote(index_name: str = "沪深300") -> dict:
     """查询指数行情（附带 display_price / display_change_pct 供仪表盘稳定展示）"""
-    # 避免「上证指数指数」重复；自然语言尽量简短明确
-    query = f"{index_name} 最新点位 涨跌幅"
+# Избегайте дублирования «Индекса Шанхайского композитного индекса»; сохраняйте естественный язык как можно более коротким и ясным
+query = f"Последнее увеличение или уменьшение точки {index_name}"
     base = query_financial_data(query)
     return _enrich_index_quote_result(base)
 
 
 def get_sector_quote(sector_name: str) -> dict:
-    """查询板块行情"""
-    query = f"{sector_name}板块最新行情"
+"""Запросить рыночные условия в секторе"""
+query = f"Последние рыночные цены в {sector_name}"
     return query_financial_data(query)

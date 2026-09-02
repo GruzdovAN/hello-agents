@@ -3,32 +3,32 @@ import { buildPlan, streamAgentChat } from "./services/api";
 import { renderMermaid } from "./services/mermaid";
 
 const MODES = [
-  { key: "inspire", label: "灵感模式" },
-  { key: "standard", label: "标准模式" },
-  { key: "plan", label: "计划模式" },
-  { key: "code", label: "Mermaid 代码模式" },
+  { key: "inspire", label: "Режим вдохновения" },
+  { key: "standard", label: "Стандартный режим" },
+  { key: "plan", label: "Режим плана" },
+  { key: "code", label: "Режим кода Mermaid" },
 ];
 
 const DIRECTION_OPTIONS = [
-  { key: "TD", label: "上到下" },
-  { key: "LR", label: "左到右" },
+  { key: "TD", label: "Сверху вниз" },
+  { key: "LR", label: "Слева направо" },
 ];
 
 const MODE_PLACEHOLDER = {
-  plan: "按行输入流程步骤，例如:\n开始\n数据清洗\n模型训练\n结束",
-  code: "直接输入 Mermaid 代码",
-  standard: "请开始输入...",
-  inspire: "请开始输入...",
+  plan: "Введите шаги построчно, например:\nНачало\nОчистка данных\nОбучение модели\nКонец",
+  code: "Введите код Mermaid напрямую",
+  standard: "Начните ввод...",
+  inspire: "Начните ввод...",
 };
 
 const CHAT_EMPTY_TEXT = {
-  standard: "告诉我你的需求，我来帮你优化提示词并生成流程图。",
-  inspire: "告诉我你的灵感或想法，我来帮你完善并生成流程图。",
+  standard: "Опишите задачу — я помогу улучшить промпт и сгенерировать диаграмму.",
+  inspire: "Расскажите идею — я помогу доработать и сгенерировать диаграмму.",
 };
 
 const ASSISTANT_PREFIX = {
-  standard: "根据你的需求生成的流程图代码：",
-  inspire: "根据你的灵感生成的流程图代码：",
+  standard: "Код диаграммы по вашему запросу:",
+  inspire: "Код диаграммы по вашей идее:",
 };
 
 function downloadText(filename, content) {
@@ -46,10 +46,10 @@ export default function App() {
   const [direction, setDirection] = useState("TD");
   const [input, setInput] = useState("");
   const [chatInput, setChatInput] = useState("");
-  const [mermaidCode, setMermaidCode] = useState("flowchart TD\n    A[AutoFlow] --> B[就绪]");
+  const [mermaidCode, setMermaidCode] = useState("flowchart TD\n    A[AutoFlow] --> B[Готово]");
   const [svg, setSvg] = useState("");
   const [error, setError] = useState("");
-  const [statusText, setStatusText] = useState("等待生成");
+  const [statusText, setStatusText] = useState("Ожидание генерации");
   const [loading, setLoading] = useState(false);
   const [chatMap, setChatMap] = useState({ standard: [], inspire: [] });
   const [thinkingMap, setThinkingMap] = useState({ standard: false, inspire: false });
@@ -171,7 +171,7 @@ export default function App() {
         setSvg(result.svg);
         setError("");
       } catch (e) {
-        setError(`渲染错误: ${e.message}`);
+        setError(`Ошибка рендеринга: ${e.message}`);
       }
     }
     draw();
@@ -181,11 +181,11 @@ export default function App() {
     const data = await buildPlan(input, "TD");
     setMermaidCode(data.mermaid_code || "");
     setZoom(1);
-    setStatusText("计划模式: 已生成流程图，可在预览区切换方向");
+    setStatusText("Режим плана: диаграмма готова — смените направление в превью");
   };
 
   const runCodeMode = async () => {
-    setStatusText("代码模式: 使用当前编辑器代码渲染");
+    setStatusText("Режим кода: рендер из текущего редактора");
   };
 
   const runAgentMode = async () => {
@@ -215,13 +215,13 @@ export default function App() {
             settled = true;
             setMermaidCode(data.mermaid_code || "");
             setZoom(1);
-            setStatusText(`完成: valid=${data.valid}, attempts=${data.attempts}`);
+            setStatusText(`Готово: valid=${data.valid}, attempts=${data.attempts}`);
             if (modeKey === "standard" && data.optimized_text) {
               pushChatMessage(modeKey, {
                 role: "assistant",
                 content: data.optimized_text,
                 kind: "text",
-                title: "优化后的提示词：",
+                title: "Улучшенный промпт:",
               });
             }
             pushChatMessage(modeKey, {
@@ -234,13 +234,13 @@ export default function App() {
 
           if (data.type === "error") {
             settled = true;
-            setError(data.message || "智能体执行失败");
+            setError(data.message || "Ошибка выполнения агента");
           }
         }
       );
 
       if (!settled) {
-        throw new Error("服务响应中断，请重试");
+        throw new Error("Ответ сервера прерван — повторите");
       }
     } finally {
       setThinkingMap((prev) => ({ ...prev, [modeKey]: false }));
@@ -250,7 +250,7 @@ export default function App() {
   const handleGenerate = async () => {
     setLoading(true);
     setError("");
-    setStatusText("请求处理中...");
+    setStatusText("Обработка запроса...");
 
     try {
       if (mode === "plan") {
@@ -261,7 +261,7 @@ export default function App() {
         await runAgentMode();
       }
     } catch (e) {
-      setError(e.message || "请求失败");
+      setError(e.message || "Ошибка запроса");
     } finally {
       setLoading(false);
     }
@@ -271,7 +271,7 @@ export default function App() {
     <div className="page">
       <header className="topbar">
         <h1>AutoFlow</h1>
-        <p>计划到流程图，一键生成与实时预览</p>
+        <p>От плана к диаграмме — генерация и превью в реальном времени</p>
       </header>
 
       <main className="workspace">
@@ -294,7 +294,7 @@ export default function App() {
                 {currentChat.length === 0 && !isThinking ? (
                   <div className="chat-empty-wrap">
                     <div className="chat-empty">{CHAT_EMPTY_TEXT[mode]}</div>
-                    {mode === "inspire" ? <div className="chat-empty-sub">例如："我想开发一个电商平台"。</div> : null}
+                    {mode === "inspire" ? <div className="chat-empty-sub">Например: «Хочу создать e-commerce платформу».</div> : null}
                   </div>
                 ) : (
                   currentChat.map((msg, idx) => (
@@ -312,7 +312,7 @@ export default function App() {
                 {isThinking ? (
                   <div className="chat-msg assistant thinking">
                     <div className="thinking-bubble">
-                      正在思考
+                      Думаю
                       <span className="dots">...</span>
                     </div>
                   </div>
@@ -333,7 +333,7 @@ export default function App() {
                   rows={3}
                 />
                 <button className="primary" disabled={!canGenerate || loading} onClick={handleGenerate}>
-                  {loading ? "生成中" : "发送"}
+                  {loading ? "Генерация" : "Отправить"}
                 </button>
               </div>
             </>
@@ -354,14 +354,14 @@ export default function App() {
 
               <div className="actions">
                 <button className="primary" disabled={!canGenerate || loading} onClick={handleGenerate}>
-                  {loading ? "生成中..." : "生成/更新"}
+                  {loading ? "Генерация..." : "Сгенерировать/обновить"}
                 </button>
               </div>
             </>
           )}
 
           <div className="log-box">
-            <strong>当前状态</strong>
+            <strong>Текущий статус</strong>
             {loading && <div className="loader" aria-label="loading" />}
             <p>{statusText}</p>
           </div>
@@ -369,21 +369,21 @@ export default function App() {
 
         <section className="right-panel">
           <div className="panel-header">
-            <h2>实时预览</h2>
+            <h2>Превью в реальном времени</h2>
             <div className="panel-tools">
               <div className="preview-controls">
                 <button className="ghost" onClick={zoomOut} disabled={!svg}>
-                  缩小
+                  Уменьшить
                 </button>
                 <span className="zoom-label">{zoomLabel}</span>
                 <button className="ghost" onClick={zoomIn} disabled={!svg}>
-                  放大
+                  Увеличить
                 </button>
                 <button className="ghost" onClick={resetZoom} disabled={!svg}>
                   100%
                 </button>
                 <button className="ghost" onClick={fitToView} disabled={!svg}>
-                  适应窗口
+                  По размеру окна
                 </button>
               </div>
               <div className="direction-switch">
@@ -400,10 +400,10 @@ export default function App() {
               </div>
               <div className="export-actions">
               <button className="ghost" onClick={() => downloadText("autoflow.mmd", previewMermaidCode)}>
-                导出 .mmd
+                Экспорт .mmd
               </button>
               <button className="ghost" onClick={() => downloadText("autoflow.svg", svg)} disabled={!svg}>
-                导出 SVG
+                Экспорт SVG
               </button>
               </div>
             </div>
@@ -422,7 +422,7 @@ export default function App() {
                 <div className="preview-inner" dangerouslySetInnerHTML={{ __html: svg }} />
               </div>
             ) : (
-              <div className="preview-empty">暂无图表...</div>
+              <div className="preview-empty">Диаграммы пока нет...</div>
             )}
           </div>
         </section>

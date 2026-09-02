@@ -1,4 +1,4 @@
-"""AI 舆情分析流式 API — 实现方案约定路径"""
+"""API потоковой передачи анализа общественного мнения AI — согласованный план реализации"""
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse

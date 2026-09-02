@@ -10,13 +10,13 @@ filename_log_pssr = '../../outputs/log/log_pssr_agent.json'
 
 
 def load_json(filename):
-    """打开json文件并解析成dict"""
+    """Открыть JSON и распарсить в dict"""
     with open(filename, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def save_json(data, filename):
-    """将dict存储为json文件"""
+    """Сохранить dict как JSON"""
     filename_bk = filename + '.bk'
     with open(filename_bk, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -26,7 +26,7 @@ def save_json(data, filename):
 
 
 def get_problem_level():
-    """返回问题problem_id到问题难度的映射"""
+    """Маппинг problem_id → сложность"""
     map_pid_to_level = {}
     for problem_id in load_json(filename_log_pssr)['total']:
         theorem_length = len(load_json(f'../../datasets/problems/{problem_id}.json')['theorem_seqs'])
@@ -40,8 +40,8 @@ def get_problem_level():
 
 def get_avg_context_len():
     """
-    按照问题难度，统计平均上下文长度。每个问题的上下文长度是 solving_history_pid.json 文件中，所有content长度的和; len(content)
-    此外，还要分为 已求解的问题 和 其他问题
+    По сложности: средняя длина контекста — сумма len(content) в solving_history_pid.json
+    Разделение: решённые и остальные
     """
     log = load_json(filename_log_pssr)
     map_pid_to_level = get_problem_level()
@@ -66,12 +66,12 @@ def get_avg_context_len():
         accum[level][0] += ctx_len
         accum[level][1] += 1
 
-    # dict: key 为 problem_level; value 为 avg_context_length
+    # dict: problem_level → avg_context_length
     avg_context_len_solved = {
         l: (solved_accum[l][0] / solved_accum[l][1] if solved_accum[l][1] > 0 else None)
         for l in range(1, 7)
     }
-    # unsolved + timeout + error; 如果当前等级的问题没有，则key 为 None
+    # unsolved + timeout + error; None если нет задач уровня
     avg_context_length_others = {
         l: (others_accum[l][0] / others_accum[l][1] if others_accum[l][1] > 0 else None)
         for l in range(1, 7)
@@ -82,8 +82,8 @@ def get_avg_context_len():
 
 def get_avg_epoch():
     """
-        按照问题难度，统计平均交互次数。每个问题的交互次数存储在 solving_history_pid.json 文件中。
-        此外，还要分为 已求解的问题 和 其他问题
+        По сложности: среднее число взаимодействий из solving_history_pid.json.
+        Разделение: решённые и остальные
     """
     log = load_json(filename_log_pssr)
     map_pid_to_level = get_problem_level()
@@ -100,12 +100,12 @@ def get_avg_epoch():
                 continue
             accum[level][0] += info['epoch']
             accum[level][1] += 1
-    # dict: key 为 problem_level; value 为 avg_epoch
+    # dict: problem_level → avg_epoch
     avg_epoch_solved = {
         l: (solved_accum[l][0] / solved_accum[l][1] if solved_accum[l][1] > 0 else None)
         for l in range(1, 7)
     }
-    # unsolved + timeout + error; 如果当前等级的问题没有，则key 为 None
+    # unsolved + timeout + error; None если нет задач уровня
     avg_epoch_others = {
         l: (others_accum[l][0] / others_accum[l][1] if others_accum[l][1] > 0 else None)
         for l in range(1, 7)
@@ -116,8 +116,8 @@ def get_avg_epoch():
 
 def get_tool_call():
     """
-    按照问题难度，统计所有工具的平均调用次数。需要解析每个问题solving_history_pid.json 文件中 role 为 assistance 的消息
-    当json解析出错时，记为error
+    По сложности: среднее число вызовов инструментов из сообщений role=assistance
+    При ошибке парсинга JSON — error
     """
     tool_keys = ['apply', 'decompose', 'find', 'check', 'error']
     log = load_json(filename_log_pssr)
@@ -161,12 +161,12 @@ def get_tool_call():
         else:
             others_n[level] += 1
 
-    # dict: key 为 problem_level; value 为 平均tool_call次数
+    # dict: problem_level → среднее tool_call
     avg_tool_call_solved = {
         l: ({t: solved_count[l][t] / solved_n[l] for t in tool_keys} if solved_n[l] > 0 else None)
         for l in range(1, 7)
     }
-    # unsolved + timeout + error; 如果当前等级的问题没有，则key 为 None
+    # unsolved + timeout + error; None если нет задач уровня
     avg_tool_call_others = {
         l: ({t: others_count[l][t] / others_n[l] for t in tool_keys} if others_n[l] > 0 else None)
         for l in range(1, 7)
@@ -177,7 +177,7 @@ def get_tool_call():
 
 def draw_figure():
     """
-    结合上述三个数据画图
+Постройте график на основе трех приведенных выше данных.
     """
     avg_context_len_solved, avg_context_length_others = get_avg_context_len()
     avg_epoch_solved, avg_epoch_others = get_avg_epoch()
@@ -187,7 +187,7 @@ def draw_figure():
     tool_keys = ['apply', 'decompose', 'find', 'check', 'error']
     n_tools = len(tool_keys)
 
-    # 全局设置
+# Глобальные настройки
     plt.rcParams.update({
         'font.family': 'serif',
         'font.size': 10,
@@ -199,7 +199,7 @@ def draw_figure():
         'figure.dpi': 150,
     })
 
-    # 柱状图色板
+# Цветовая палитра гистограммы
     tool_colors = [
         '#55A868', '#5DA5DA', '#9970AB', '#E6AB02', '#E7298A',
     ]
@@ -216,12 +216,12 @@ def draw_figure():
     ax_ctx.yaxis.tick_left()
     ax_bar.yaxis.set_visible(False)
 
-    # 顶部封边
+# Уплотнение верхнего края
     ax_bar.spines['top'].set_visible(True)
     ax_ctx.spines['top'].set_visible(False)
     ax_epoch.spines['top'].set_visible(False)
 
-    # --- 发散柱状图 ---
+    # --- diverging bar chart ---
     for i, tool in enumerate(tool_keys):
         sv = [avg_tool_call_solved[l][tool] if avg_tool_call_solved[l] is not None else 0 for l in levels]
         ov = [avg_tool_call_others[l][tool] if avg_tool_call_others[l] is not None else 0 for l in levels]
@@ -233,7 +233,7 @@ def draw_figure():
                             color=tool_colors[i], edgecolor='white', linewidth=0.3,
                             hatch='////', alpha=0.75, zorder=2)
 
-        # 柱子向下 (Solved) 的文本
+        # текст столбцов вниз (Solved)
         for bar, val in zip(bars_s, sv):
             ax_epoch.text(bar.get_x() + bar.get_width() / 2, -val - 0.05,
                           f'{val:.1f}', ha='center', va='top', fontsize=6,
@@ -242,7 +242,7 @@ def draw_figure():
                           zorder=10,
                           transform=ax_bar.transData)
 
-        # 柱子向上 (Failed / Others) 的文本
+        # текст столбцов вверх (Failed/Others)
         for bar, val in zip(bars_o, ov):
             ax_epoch.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.05,
                           f'{val:.1f}', ha='center', va='bottom', fontsize=6,
@@ -255,7 +255,7 @@ def draw_figure():
     ax_bar.set_xticks(x_centers)
     ax_bar.set_xticklabels([f'Level {l}' for l in levels], fontsize=10, fontweight='bold')
 
-    # --- 折线 ---
+# --- Полилиния ---
     def plot_line(ax, solved_dict, others_dict, color, label_s, label_o,
                   marker_s='o', marker_o='s'):
         s_pts = [(x_centers[j], v)
@@ -295,7 +295,7 @@ def draw_figure():
     ax_epoch.tick_params(axis='y', colors='black', labelsize=9)
     ax_epoch.spines['right'].set_edgecolor('black')
 
-    # --- 图例 ---
+# --- Легенда ---
     tool_patches = [mpatches.Patch(facecolor=tool_colors[i], edgecolor='#555555',
                                    linewidth=0.5, label=tool_keys[i])
                     for i in range(n_tools)]
@@ -320,7 +320,7 @@ def draw_figure():
     for text in legend.get_texts():
         text.set_fontweight('bold')
 
-    # 如果图例有标题，也加粗
+# Если у легенды есть заголовок, сделайте его жирным.
     if legend.get_title():
         legend.get_title().set_fontweight('bold')
 
@@ -406,7 +406,7 @@ def draw_table(level=6, span=2, latex=True, show_complete=False):
         else:
             pssr_log = load_json(f"../../outputs/log/{filenames[method]}")
 
-            GT = (len(pssr_log["solved"]) + len(pssr_log["unsolved"]) +  # 事实求解成功率，分母为已求解的题目
+            GT = (len(pssr_log["solved"]) + len(pssr_log["unsolved"]) +  # фактический PSSR
                   len(pssr_log["timeout"]) + len(pssr_log["error"]))
             lines.append(str(round(GT / len(pssr_log["total"]) * 100, 2)))
             lines[-1] = lines[-1] + ' ' * (5 - len(lines[-1]))

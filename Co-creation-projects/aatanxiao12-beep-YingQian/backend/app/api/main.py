@@ -16,21 +16,21 @@ logger = get_logger("app.api")
 OPENAPI_TAGS = [
     {"name": "System", "description": "健康检查与服务信息"},
     {"name": "Movies", "description": "确定性 TMDB 搜片 / 发现（不经 LLM）"},
-    {"name": "Recommend", "description": "多智能体智能推荐（HelloAgents + TMDB Tool）"},
+{"name": "Рекомендовать", "description": "Мультиагентная интеллектуальная рекомендация (HelloAgents + TMDB Tool)"},
 ]
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
-    logger.info("%s v%s 启动中", settings.app_name, settings.app_version)
+logger.info("Запуск %s v%s", settings.app_name, settings.app_version)
     print_config()
     validate_config()
     # 0.0.0.0 仅表示监听所有网卡，浏览器请用 localhost / 127.0.0.1
     docs_host = "127.0.0.1" if settings.host in ("0.0.0.0", "::") else settings.host
     logger.info("Swagger: http://%s:%s/docs", docs_host, settings.port)
     yield
-    logger.info("应用关闭")
+logger.info("Приложение закрыто")
 
 
 app = FastAPI(
@@ -38,9 +38,9 @@ app = FastAPI(
     version=settings.app_version,
     description=(
         "HelloAgents + TMDB 的 LLM 电影推荐 Demo API。\n\n"
-        "- **Movies**：确定性片库通道（search / discover）\n"
-        "- **Recommend**：多智能体推荐（画像 → 检索 → 推荐）\n\n"
-        "密钥仅通过环境变量配置，详见 `.env.example`。"
+"- **Фильмы**: детерминированный канал библиотеки фильмов (поиск/обнаружение)\n"
+"- **Рекомендовать**: Мультиагентная рекомендация (портрет → извлечение → рекомендация)\n\n"
+«Ключи настраиваются только через переменные среды, подробности см. в `.env.example`».
     ),
     docs_url="/docs",
     redoc_url="/redoc",
@@ -68,7 +68,7 @@ app.include_router(movies.router, prefix="/api")
 app.include_router(recommend.router, prefix="/api")
 
 
-@app.get("/", tags=["System"], summary="服务根信息")
+@app.get("/", tags=["System"], summary="Информация о корне службы")
 async def root():
     return {
         "name": settings.app_name,

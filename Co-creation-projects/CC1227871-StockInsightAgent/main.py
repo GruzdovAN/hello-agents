@@ -1,10 +1,10 @@
-"""StockInsightAgent — 智能股票分析助手
+"""StockInsightAgent — Интеллектуальный помощник по биржевому анализу
 
-用法:
-  python main.py             交互菜单
-  python main.py "问题"       快速分析 (框架 ReAct)
-  python main.py -d "问题"    深度分析 (框架 PlanSolve)
-  python main.py -r "问题"    批判分析 (框架 Reflection)
+использование:
+интерактивное меню main.py Python
+быстрый анализ «проблемы» python main.py (фреймворк ReAct)
+python main.py -d Углубленный анализ «Проблемы» (фреймворк PlanSolve)
+python main.py -r Критический анализ «проблемы» (отражение структуры)
 """
 import sys
 from llm_client import HelloAgentsLLM
@@ -20,7 +20,7 @@ def show_banner():
     print()
     print("  ╔═════════════════════════════════════════════════════════════╗")
     print("  ║                                                             ║")
-    print("  ║         StockInsightAgent v2.0   智能股票分析助手             ║")
+print(" ║ StockInsightAgent v2.0 Интеллектуальный помощник по анализу акций ║")
     print("  ║                                                             ║")
     print("  ║   数据: akshare 实时行情 + 财务 + 新闻                        ║")
     print("  ║   记忆: 关注列表 | 分析历史 | 用户偏好                         ║")
@@ -58,62 +58,62 @@ MENU = """
 """
 
 EXAMPLES = """
-  直接输入问题即可开始分析，例如:
-    Stock> 分析贵州茅台600519当前估值
-    Stock> 对比五粮液和茅台的估值
+Просто введите вопрос, чтобы начать анализ, например:
+Акции> Анализ текущей оценки Kweichow Moutai 600519
+Акции> Сравните оценки Wuliangye и Moutai
 
-  先选模式，再输入问题:
-    Stock> 2                (切换到深度分析)
-    Stock> 全面评估比亚迪002594
+Сначала выберите режим, затем введите вопрос:
+Акции > 2 (перейти к углубленному анализу)
+Акции> Комплексная оценка BYD 002594
 """
 
 
 def main():
-    # ── 命令行参数快捷模式 ──
+# ── Режим быстрого доступа к параметрам командной строки ──
     if len(sys.argv) > 1:
         a = FrameworkStockAgent()
         if "-d" in sys.argv:
             sys.argv.remove("-d")
-            q = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else input("问题: ").strip()
+q = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else input("问题: ").strip()
             print(a.plan_solve(q))
         elif "-r" in sys.argv:
             sys.argv.remove("-r")
-            q = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else input("问题: ").strip()
+q = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else input("问题: ").strip()
             print(a.reflect(q))
         else:
             q = " ".join(sys.argv[1:])
             print(a.react(q))
         return
 
-    # ── 交互菜单模式 ──
+# ── Режим интерактивного меню ──
     show_banner()
     print(MENU)
     print(EXAMPLES)
 
     fw = FrameworkStockAgent()
-    mode = "react"  # 当前模式
+mode = "реагировать" #Текущий режим
 
     while True:
         try:
             q = input("\nStock> ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\n再见")
+print("\nДо свидания")
             break
 
         if not q:
             continue
 
-        # 菜单选择
+# Выбор меню
         if q in ("1", "2", "3", "4", "5", "6", "w", "h", "k", "m", "0"):
             if q == "1":
                 mode = "react"
                 print("  >> 切换到 [快速分析] 模式。输入你的问题:")
             elif q == "2":
                 mode = "plan"
-                print("  >> 切换到 [深度分析] 模式。输入你的问题:")
+print(" >> Переключитесь в режим [Глубокий анализ]. Введите свой вопрос:")
             elif q == "3":
                 mode = "reflect"
-                print("  >> 切换到 [批判分析] 模式。输入你的问题:")
+print(" >> Перейдите в режим [критического анализа]. Введите свой вопрос:")
             elif q == "4":
                 mode = "raw-react"
                 print("  >> 切换到 [教学版 ReAct] 模式。输入你的问题:")
@@ -129,17 +129,17 @@ def main():
                 code = input("  股票代码 (回车看全部): ").strip()
                 print(memory_get_history(code))
             elif q == "k":
-                path = input("  文档路径: ").strip()
+path = input("Путь к документу: ").strip()
                 print(rag_import(path))
                 print(rag_stats())
             elif q == "m":
                 print(MENU)
             elif q == "0":
-                print("再见")
+печать("До свидания")
                 break
             continue
 
-        # 执行分析
+# Выполнить анализ
         print()
         if mode == "react":
             print(fw.react(q))

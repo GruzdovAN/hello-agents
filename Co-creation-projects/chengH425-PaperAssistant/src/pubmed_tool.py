@@ -1,8 +1,8 @@
 """
-PubMed 生物医学文献检索工具
+Инструмент поиска биомедицинской литературы PubMed
 
 通过 NCBI Entrez API (E-utilities) 检索 PubMed 数据库中的生物医学论文。
-覆盖 3600 万+ 论文，是生物医学领域最权威的数据库。
+Это самая авторитетная база данных в области биомедицины, охватывающая более 36 миллионов статей.
 
 API 文档: https://www.ncbi.nlm.nih.gov/books/NBK25501/
 """
@@ -15,17 +15,17 @@ from typing import Dict, Any, List
 
 from hello_agents.tools import Tool, ToolParameter, ToolResponse, ToolStatus
 
-# Windows SSL 兼容
+# Совместимость с Windows SSL
 _ssl_ctx = ssl.create_default_context()
 _ssl_ctx.check_hostname = False
 _ssl_ctx.verify_mode = ssl.CERT_NONE
 
 
 class PubMedSearchTool(Tool):
-    """PubMed 生物医学文献检索工具
+"""Инструмент для поиска биомедицинской литературы PubMed
 
-    通过 NCBI Entrez API 检索 PubMed/PMC 数据库。
-    覆盖医学、生物学、药学、护理学、公共卫生等生物医学全领域。
+Поиск в базе данных PubMed/PMC через API NCBI Entrez.
+Охватывает все области биомедицины, такие как медицина, биология, фармация, сестринское дело и общественное здравоохранение.
     """
 
     SEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -37,15 +37,15 @@ class PubMedSearchTool(Tool):
             name="pubmed_search",
             description="在 PubMed 数据库中检索生物医学论文。"
                         "覆盖 3600 万+ 论文，涵盖医学、生物学、药学、护理学、"
-                        "公共卫生等所有生物医学领域。"
+«Общественное здравоохранение и все области биомедицины».
                         "支持 MeSH 主题词搜索、作者、期刊、年份等筛选。"
-                        "适合医学研究、药物研发、临床实践等场景。"
+«Подходит для медицинских исследований, разработки лекарств, клинической практики и других сценариев».
         )
 
     def _search_pmids(self, query: str, max_results: int = 5,
                        year_from: str = "", year_to: str = "") -> List[str]:
-        """搜索返回 PMID 列表"""
-        # 构建查询条件
+"""Поиск возвращает список PMID"""
+# Создаем условия запроса
         search_terms = [query.strip()]
         if year_from or year_to:
             from_year = year_from or "1900"
@@ -73,7 +73,7 @@ class PubMedSearchTool(Tool):
             return [elem.text for elem in id_list.findall("Id")]
 
     def _fetch_summaries(self, pmids: List[str]) -> List[Dict[str, Any]]:
-        """获取论文摘要信息"""
+"""Получить реферативную информацию"""
         if not pmids:
             return []
 
@@ -131,7 +131,7 @@ class PubMedSearchTool(Tool):
                 message="请至少提供关键词（keyword）或作者（author）"
             )
 
-        # 构建查询
+# Построить запрос
         query_parts = []
         if keyword:
             query_parts.append(keyword.strip())
@@ -146,13 +146,13 @@ class PubMedSearchTool(Tool):
                 return ToolResponse.success(
                     text=f"在 PubMed 中未找到匹配的论文。\n"
                          f"建议：尝试更简短的关键词、使用 MeSH 主题词、"
-                         f"或检查拼写。查询: {query}",
+f" или проверьте правописание. Запрос: {query}",
                     data={"count": 0, "papers": []}
                 )
 
             papers = self._fetch_summaries(pmids)
 
-            # 格式化输出
+# Форматирование вывода
             lines = [f"在 PubMed 中找到 {len(papers)} 篇论文：\n"]
             for i, p in enumerate(papers, 1):
                 authors_str = ", ".join(p["authors"][:3])
@@ -161,7 +161,7 @@ class PubMedSearchTool(Tool):
                 lines.append(f"### {i}. {p['title']}")
                 if authors_str:
                     lines.append(f"> 作者: {authors_str}")
-                lines.append(f"> PMID: {p['pmid']} | 发表: {p['pubdate']} | {p['source']}")
+lines.append(f"> PMID: {p['pmid']} | Опубликовано: {p['pubdate']} | {p['source']}")
                 if p.get("doi"):
                     lines.append(f"> [DOI](https://doi.org/{p['doi']}) | "
                                 f"[PubMed](https://pubmed.ncbi.nlm.nih.gov/{p['pmid']}/)")
@@ -189,7 +189,7 @@ class PubMedSearchTool(Tool):
     def get_parameters(self) -> List[ToolParameter]:
         return [
             ToolParameter(name="keyword", type="string",
-                         description="搜索关键词，支持 MeSH 主题词，如 'diabetes treatment metformin'",
+описание="Поиск ключевых слов, поддержка ключевых слов MeSH, таких как "метформин для лечения диабета"",
                          required=False),
             ToolParameter(name="author", type="string",
                          description="作者姓名，如 'Anthony Fauci'",
@@ -199,5 +199,5 @@ class PubMedSearchTool(Tool):
             ToolParameter(name="year_to", type="string",
                          description="截止年份", required=False),
             ToolParameter(name="max_results", type="integer",
-                         description="最大返回结果数（默认5，最大20）", required=False),
+описание="Максимальное количество возвращаемых результатов (по умолчанию 5, максимум 20)", требуется=False),
         ]

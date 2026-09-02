@@ -29,9 +29,9 @@ class Agent:
         self.timing = time.time()
 
     def run(self, time_sleep=15, max_epoch=6):
-        dprint(f'⏳ 正在调用{self.model_name}...\n')
+        dprint(f'⏳ Вызов {self.model_name}...\n')
         epoch = 0
-        response = '{' + f'"thinking":"尝试调用{max_epoch}次模型，均发生异常。","action":"finish()"' + '}'
+        response = '{' + f'"thinking":"{max_epoch} попыток вызова модели — все с ошибкой.","action":"finish()"' + '}'
         while epoch < max_epoch:
             epoch += 1
             try:
@@ -41,14 +41,14 @@ class Agent:
                 ).content
                 if len(response) == 0:
                     max_epoch += 1
-                    raise Exception('模型输出内容为空，服务器负载过大，不计入调用次数。')
+                    raise Exception('Пустой ответ модели; перегрузка сервера, не считается попыткой.')
             except Exception as e:
                 if epoch < max_epoch:
-                    dprint(f'❌ 第({epoch}/{max_epoch})次调用模型时发生异常：{repr(e)}。{time_sleep}s后重试...')
+                    dprint(f'❌ Ошибка вызова модели ({epoch}/{max_epoch}): {repr(e)}. Повтор через {time_sleep}s...')
                     time.sleep(time_sleep)
                 else:
-                    response = '{' + f'"thinking":"尝试调用{max_epoch}次模型，均发生异常。","action":"finish()"' + '}'
-                    dprint(f'❌ 第({epoch}/{max_epoch})次调用模型时发生异常：{repr(e)}。')
+                    response = '{' + f'"thinking":"{max_epoch} попыток вызова модели — все с ошибкой.","action":"finish()"' + '}'
+                    dprint(f'❌ Ошибка вызова модели ({epoch}/{max_epoch}): {repr(e)}.')
             else:
                 break
 
@@ -63,10 +63,10 @@ class Agent:
             dprint(f'📋 System (contex={self.context_length}, timing={round(time.time() - self.timing, 3)}s):')
             dprint(content + '\n')
         elif role == 'user':
-            if content.startswith('调用工具时发生错误'):
+            if content.startswith('Ошибка при вызове инструмента'):
                 dprint(f'❌ Tool (contex={self.context_length}, timing={round(time.time() - self.timing, 3)}s):')
                 dprint(content + '\n')
-            elif content.startswith('工具执行结果'):
+            elif content.startswith('Результат инструмента'):
                 dprint(f'🛠️ Tool (contex={self.context_length}, timing={round(time.time() - self.timing, 3)}s):')
                 dprint(content + '\n')
             else:
@@ -80,7 +80,7 @@ class Agent:
 
     def summarize(self, user_prompt, summary):
         self.history.append(self.memory)
-        self.memory = self.memory[:1]  # 清空记忆
+        self.memory = self.memory[:1]  # очистка памяти
         self.context_length = len(self.memory[0]['content'])
         dprint('----------------------------------------------------------------------------------------------------\n')
         self.add_memory('user', user_prompt)
@@ -149,7 +149,7 @@ def solve(api_key, base_url, model_name, max_epoch, max_context, problem_id, deb
         global debug
         debug = True
 
-    dprint(f"📋 调用'{model_name}'求解问题 {problem_id} (max_epoch={max_epoch}, max_context={max_context}) ...\n")
+    dprint(f"📋 Вызов '{model_name}' для задачи {problem_id} (max_epoch={max_epoch}, max_context={max_context}) ...\n")
     timing = time.time()
     epoch_count = 0
     agent = Agent(api_key=api_key, base_url=base_url, model_name=model_name)
@@ -171,51 +171,51 @@ def solve(api_key, base_url, model_name, max_epoch, max_context, problem_id, deb
                 try:  # tool calls
                     tool_name, args = parse_response(response)
                     if tool_name == 'apply':
-                        tool_call = '工具执行结果：\n' + solver.apply(args)
+                        tool_call = 'Результат инструмента:\n' + solver.apply(args)
                     elif tool_name == 'decompose':
-                        tool_call = '工具执行结果：\n' + solver.decompose(args)
+                        tool_call = 'Результат инструмента:\n' + solver.decompose(args)
                     elif tool_name == 'find_fact':
-                        tool_call = '工具执行结果：\n' + solver.find_fact(args)
+                        tool_call = 'Результат инструмента:\n' + solver.find_fact(args)
                     elif tool_name == 'find_goal':
-                        tool_call = '工具执行结果：\n' + solver.find_goal(args)
+                        tool_call = 'Результат инструмента:\n' + solver.find_goal(args)
                     elif tool_name == 'check':
-                        tool_call = '工具执行结果：\n' + solver.check()
+                        tool_call = 'Результат инструмента:\n' + solver.check()
                     elif tool_name == 'summarize':
                         agent.summarize(solver.state(), args)
                         continue
                     elif tool_name == 'finish':
                         break
                     else:
-                        raise Exception(f'工具未定义: {tool_name}.')
+                        raise Exception(f'Инструмент не определён: {tool_name}.')
                 except Exception as e:
-                    tool_call = f"调用工具时发生错误：{repr(e)}"
+                    tool_call = f"Ошибка при вызове инструмента: {repr(e)}"
 
                 agent.add_memory(role='user', content=tool_call)
 
                 if solver.status_of_goal[0] == 1:
-                    agent.add_memory(role='user', content='检测到问题已求解，自动结束。')
+                    agent.add_memory(role='user', content='Задача решена — автоматическое завершение.')
                     break
 
                 if agent.context_length > max_context:
                     agent.add_memory(role='user', content=get_summarize_prompt())
 
         except KeyboardInterrupt:
-            agent.add_memory(role='user', content="用户主动介入中断（KeyboardInterrupt）。")
+            agent.add_memory(role='user', content="Прерывание пользователя (KeyboardInterrupt).")
 
         if solver.status_of_goal[0] == 1:
             result = 'solved'
-            agent.add_memory(role='user', content="求解结束：成功✅")
+            agent.add_memory(role='user', content="Решение завершено: успех ✅")
         elif epoch_count >= max_epoch:
             result = 'timeout'
-            agent.add_memory(role='user', content="求解结束：超时❌")
+            agent.add_memory(role='user', content="Решение завершено: таймаут ❌")
         else:
             result = 'unsolved'
-            agent.add_memory(role='user', content="求解结束：失败❌")
+            agent.add_memory(role='user', content="Решение завершено: неудача ❌")
 
     except Exception as e:
         result = 'error'
-        agent.add_memory(role='user', content=f"智能体执行期间发生异常：{repr(e)}")
-        agent.add_memory(role='user', content="求解结束：异常❌")
+        agent.add_memory(role='user', content=f"Исключение при выполнении агента: {repr(e)}")
+        agent.add_memory(role='user', content="Решение завершено: исключение ❌")
 
     agent.save_history(f'../../outputs/agent/solving_history_{problem_id}.json')
 
@@ -291,12 +291,12 @@ def main(test_pids, log_path, model_names, max_epoch, max_context, solve_again, 
                             f"result='{result}', epoch={epoch_count}, timing={round(timing, 3)}s.")
                 print(output_format.format(process_id, flag, log_time, info))
         except BaseException as e:
-            print(f"多线程求解过程中发生异常'{repr(e)}'，关闭所有子进程({len(all_process)})后结束。")
+            print(f"Исключение в многопоточном решении '{repr(e)}'; завершение после закрытия подпроцессов ({len(all_process)}).")
             for process in all_process:
                 if process.is_alive():
                     process.kill()
                     process.join(timeout=0.5)
-                print(f'已关闭子进程 {process.pid}')
+                print(f'Подпроцесс закрыт {process.pid}')
             exit(0)
 
 

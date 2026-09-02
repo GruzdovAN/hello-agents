@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-智能邮件助手 - 演示版本
+Умный почтовый ассистент — демонстрационная версия
 EmailSmartAssistant - Demo Version
 
-无需配置真实邮箱，直接体验所有功能
+Не требует настройки реального почтового ящика — можно сразу опробовать все функции
 """
 
 import json
@@ -17,38 +17,38 @@ class EmailDemo:
         self.demo_emails = [
             {
                 'id': '1',
-                'subject': '紧急：项目进度汇报会议安排',
+                'subject': 'Срочно: планирование совещания по ходу проекта',
                 'sender': 'manager@company.com',
                 'date': '2024-01-15 09:00:00',
-                'body': '各位同事，请准备明天下午2点的项目进度汇报会议。需要准备本周工作总结和下周计划。截止时间：2024-01-16 14:00。请确认参会。'
+                'body': 'Коллеги, подготовьтесь к совещанию по ходу проекта завтра в 14:00. Необходимо подготовить итоги работы за неделю и план на следующую. Крайний срок: 2024-01-16 14:00. Пожалуйста, подтвердите участие.'
             },
             {
                 'id': '2', 
-                'subject': '客户咨询：产品功能详情',
+                'subject': 'Запрос клиента: подробности о функциях продукта',
                 'sender': 'customer@client.com',
                 'date': '2024-01-15 10:30:00',
-                'body': '您好，我对贵公司的产品很感兴趣，希望了解更多功能详情。请问可以安排一次产品演示吗？我的联系方式：13800138000。期待您的回复。'
+                'body': 'Здравствуйте, меня очень интересует продукция вашей компании, хочу узнать больше о функциях. Можно ли назначить демонстрацию продукта? Мой контакт: 13800138000. Жду вашего ответа.'
             },
             {
                 'id': '3',
-                'subject': '系统维护通知',
+                'subject': 'Уведомление о техническом обслуживании системы',
                 'sender': 'noreply@system.com', 
                 'date': '2024-01-15 11:00:00',
-                'body': '系统将于2024-01-20 02:00-04:00进行维护升级，期间服务可能中断。请提前做好准备工作。如有疑问请联系技术支持。'
+                'body': 'Система будет обновляться 2024-01-20 с 02:00 до 04:00, в это время сервис может быть недоступен. Пожалуйста, заранее подготовьтесь. При вопросах обращайтесь в техническую поддержку.'
             },
             {
                 'id': '4',
-                'subject': '限时优惠！立即购买享受8折优惠',
+                'subject': 'Ограниченное предложение! Купите сейчас со скидкой 20%',
                 'sender': 'promotion@ads.com',
                 'date': '2024-01-15 12:00:00',
-                'body': '亲爱的用户，我们的产品正在进行限时促销活动！现在购买可享受8折优惠，机会难得，不要错过！点击链接立即购买。'
+                'body': 'Уважаемый пользователь, у нас акция! Купите сейчас со скидкой 20%, такой шанс нельзя упускать! Перейдите по ссылке, чтобы купить.'
             },
             {
                 'id': '5',
-                'subject': '个人：周末聚餐安排',
+                'subject': 'Личное: план встречи на выходные',
                 'sender': 'friend@personal.com',
                 'date': '2024-01-15 13:00:00',
-                'body': '嗨！这个周末我们一起聚餐吧，时间定在周六晚上7点，地点在市中心的那家川菜馆。请确认是否能参加，我好提前订位。'
+                'body': 'Привет! Давайте встретимся на ужин в эти выходные, в субботу в 19:00, в ресторане в центре города. Подтверди, пожалуйста, сможешь ли ты прийти, чтобы я забронировал столик.'
             },
             {
                 'id': '6',
@@ -60,63 +60,63 @@ class EmailDemo:
         ]
         
         self.classification_rules = {
-            'work_keywords': ['会议', '项目', '工作', '任务', '汇报', 'meeting', 'project', 'work', 'task', 'urgent'],
-            'customer_keywords': ['客户', '咨询', '购买', '服务', 'customer', 'inquiry', 'purchase', 'service'],
-            'personal_keywords': ['个人', '家庭', '朋友', 'personal', 'family', 'friend', '聚餐'],
-            'spam_keywords': ['广告', '推广', '营销', '优惠', 'advertisement', 'promotion', 'marketing', '折扣']
+            'work_keywords': ['совещание', 'проект', 'работа', 'задача', 'отчёт', 'meeting', 'project', 'work', 'task', 'urgent'],
+            'customer_keywords': ['клиент', 'запрос', 'покупка', 'услуга', 'customer', 'inquiry', 'purchase', 'service'],
+            'personal_keywords': ['личное', 'семья', 'друг', 'personal', 'family', 'friend', 'ужин', 'встреча'],
+            'spam_keywords': ['реклама', 'продвижение', 'маркетинг', 'скидка', 'advertisement', 'promotion', 'marketing', 'акция']
         }
         
         self.reply_templates = {
             'work': {
-                'zh': '感谢您的邮件。关于{subject}，我已收到您的信息。我将在24小时内回复您详细的反馈。如有紧急事项，请随时联系我。\n\n此致\n敬礼',
+                'ru': 'Спасибо за ваше письмо. По теме {subject} я получил(а) вашу информацию. Отвечу подробно в течение 24 часов. При срочных вопросах свяжитесь со мной.\n\nС уважением',
                 'en': 'Thank you for your email regarding {subject}. I have received your information and will provide detailed feedback within 24 hours. Please feel free to contact me if there are any urgent matters.\n\nBest regards'
             },
             'customer': {
-                'zh': '尊敬的客户，\n\n感谢您对我们产品/服务的关注。关于您咨询的{subject}，我们将安排专业人员在24小时内为您提供详细解答。\n\n如有其他问题，欢迎随时联系我们。\n\n此致\n敬礼',
+                'ru': 'Уважаемый клиент,\n\nСпасибо за интерес к нашей продукции/услугам. По вашему запросу {subject} мы назначим специалиста, который даст подробный ответ в течение 24 часов.\n\nПри других вопросах обращайтесь к нам.\n\nС уважением',
                 'en': 'Dear Valued Customer,\n\nThank you for your interest in our products/services. Regarding your inquiry about {subject}, we will arrange for a professional to provide you with detailed answers within 24 hours.\n\nPlease feel free to contact us if you have any other questions.\n\nBest regards'
             },
             'general': {
-                'zh': '您好，\n\n已收到您的邮件，我将仔细阅读并在24小时内回复。\n\n谢谢！',
+                'ru': 'Здравствуйте,\n\nЯ получил(а) ваше письмо, внимательно прочитаю и отвечу в течение 24 часов.\n\nСпасибо!',
                 'en': 'Hello,\n\nI have received your email and will read it carefully and reply within 24 hours.\n\nThank you!'
             }
         }
 
     def classify_email(self, email):
-        """邮件分类"""
+        """Классификация писем"""
         subject = email['subject'].lower()
         body = email['body'].lower()
         sender = email['sender'].lower()
         
         text_content = f"{subject} {body}"
         
-        # 检查垃圾邮件
+        # Проверка на спам
         spam_score = sum(1 for keyword in self.classification_rules['spam_keywords'] 
                         if keyword in text_content)
         if spam_score >= 2:
             return {'type': 'spam', 'priority': 'low', 'sender_type': 'external'}
         
-        # 检查工作邮件
+        # Проверка рабочих писем
         work_score = sum(1 for keyword in self.classification_rules['work_keywords'] 
                         if keyword in text_content)
         
-        # 检查客户邮件
+        # Проверка клиентских писем
         customer_score = sum(1 for keyword in self.classification_rules['customer_keywords'] 
                            if keyword in text_content)
         
-        # 检查个人邮件
+        # Проверка личных писем
         personal_score = sum(1 for keyword in self.classification_rules['personal_keywords'] 
                            if keyword in text_content)
         
-        # 确定类型
+        # Определение типа
         scores = {'work': work_score, 'customer': customer_score, 'personal': personal_score}
         email_type = max(scores, key=scores.get) if max(scores.values()) > 0 else 'other'
         
-        # 确定优先级
-        priority = 'high' if any(word in text_content for word in ['紧急', 'urgent', 'asap', '重要']) else 'medium'
+        # Определение приоритета
+        priority = 'high' if any(word in text_content for word in ['срочно', 'urgent', 'asap', 'важн']) else 'medium'
         if email_type == 'spam':
             priority = 'low'
         
-        # 确定发件人类型
+        # Определение типа отправителя
         if 'company.com' in sender:
             sender_type = 'colleague'
         elif 'noreply' in sender or 'no-reply' in sender:
@@ -133,13 +133,13 @@ class EmailDemo:
         }
 
     def extract_info(self, email):
-        """提取关键信息"""
+        """Извлечение ключевой информации"""
         body = email['body']
         
-        # 提取日期
+        # Извлечение дат
         date_patterns = [
             r'\d{4}-\d{1,2}-\d{1,2}',
-            r'\d{1,2}月\d{1,2}日',
+            r'\d{1,2}\.\d{1,2}\.\d{4}',
             r'\d{1,2}/\d{1,2}'
         ]
         
@@ -147,10 +147,10 @@ class EmailDemo:
         for pattern in date_patterns:
             dates.extend(re.findall(pattern, body))
         
-        # 提取时间
+        # Извлечение времени
         time_patterns = [
             r'\d{1,2}:\d{2}',
-            r'\d{1,2}点',
+            r'\d{1,2}\s*ч',
             r'\d{1,2} PM',
             r'\d{1,2} AM'
         ]
@@ -159,13 +159,13 @@ class EmailDemo:
         for pattern in time_patterns:
             times.extend(re.findall(pattern, body))
         
-        # 提取联系方式
+        # Извлечение контактов
         phones = re.findall(r'1[3-9]\d{9}', body)
         emails = re.findall(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', body)
         
-        # 提取待办事项（包含关键词的句子）
-        todo_keywords = ['需要', '请', '准备', 'need', 'please', 'prepare', '确认']
-        sentences = body.replace('。', '.').split('.')
+        # Извлечение задач (предложения с ключевыми словами)
+        todo_keywords = ['нужно', 'пожалуйста', 'подготов', 'need', 'please', 'prepare', 'подтверд']
+        sentences = body.split('.')
         todos = []
         for sentence in sentences:
             if any(keyword in sentence for keyword in todo_keywords):
@@ -178,23 +178,23 @@ class EmailDemo:
             'times': times,
             'phones': phones,
             'emails': emails,
-            'todos': todos[:3]  # 最多3个
+            'todos': todos[:3]  # не более 3
         }
 
     def generate_reply(self, email, classification):
-        """生成回复草稿"""
+        """Генерация черновика ответа"""
         if classification['type'] == 'spam':
             return None
         
-        # 检测语言
-        is_chinese = any('\u4e00' <= char <= '\u9fff' for char in email['body'])
-        lang = 'zh' if is_chinese else 'en'
+        # Определение языка
+        is_russian = any('\u0400' <= char <= '\u04FF' for char in email['body'])
+        lang = 'ru' if is_russian else 'en'
         
-        # 选择模板
+        # Выбор шаблона
         template_type = classification['type'] if classification['type'] in ['work', 'customer'] else 'general'
         template = self.reply_templates[template_type][lang]
         
-        # 生成回复
+        # Генерация ответа
         reply_content = template.format(subject=email['subject'])
         
         return {
@@ -206,31 +206,31 @@ class EmailDemo:
         }
 
     def run_demo(self):
-        """运行演示"""
-        print("🤖 智能邮件助手 - 演示版本")
+        """Запуск демонстрации"""
+        print("🤖 Умный почтовый ассистент — демонстрационная версия")
         print("=" * 50)
-        print(f"📧 演示邮件数量: {len(self.demo_emails)}")
+        print(f"📧 Количество демо-писем: {len(self.demo_emails)}")
         print()
         
         results = []
         stats = {'total': 0, 'classified': 0, 'replies': 0, 'reminders': 0}
         
         for i, email in enumerate(self.demo_emails, 1):
-            print(f"处理邮件 {i}/{len(self.demo_emails)}: {email['subject'][:30]}...")
+            print(f"Обработка письма {i}/{len(self.demo_emails)}: {email['subject'][:30]}...")
             
-            # 分类
+            # Классификация
             classification = self.classify_email(email)
             stats['classified'] += 1
             
-            # 信息提取
+            # Извлечение информации
             extracted_info = self.extract_info(email)
             
-            # 生成回复
+            # Генерация ответа
             reply = self.generate_reply(email, classification)
             if reply:
                 stats['replies'] += 1
             
-            # 创建提醒
+            # Создание напоминаний
             reminders = len(extracted_info['dates']) + len(extracted_info['todos'])
             stats['reminders'] += reminders
             
@@ -244,62 +244,62 @@ class EmailDemo:
         
         stats['total'] = len(self.demo_emails)
         
-        print("\n✅ 处理完成！")
+        print("\n✅ Обработка завершена!")
         self.display_results(results, stats)
 
     def display_results(self, results, stats):
-        """显示结果"""
-        print("\n📊 处理统计:")
-        print(f"  总邮件数: {stats['total']}")
-        print(f"  已分类: {stats['classified']}")
-        print(f"  生成回复: {stats['replies']}")
-        print(f"  创建提醒: {stats['reminders']}")
+        """Отображение результатов"""
+        print("\n📊 Статистика обработки:")
+        print(f"  Всего писем: {stats['total']}")
+        print(f"  Классифицировано: {stats['classified']}")
+        print(f"  Сгенерировано ответов: {stats['replies']}")
+        print(f"  Создано напоминаний: {stats['reminders']}")
         
-        # 分类统计
+        # Статистика по категориям
         types = [r['classification']['type'] for r in results]
         priorities = [r['classification']['priority'] for r in results]
         
-        print("\n📋 分类统计:")
+        print("\n📋 Статистика классификации:")
         type_counts = Counter(types)
         for email_type, count in type_counts.items():
             print(f"  {email_type}: {count}")
         
-        print("\n⚡ 优先级统计:")
+        print("\n⚡ Статистика приоритетов:")
         priority_counts = Counter(priorities)
         for priority, count in priority_counts.items():
             print(f"  {priority}: {count}")
         
-        print("\n📝 处理结果样例:")
+        print("\n📝 Примеры результатов обработки:")
         print("-" * 50)
         
-        for i, result in enumerate(results[:3], 1):  # 显示前3个
+        for i, result in enumerate(results[:3], 1):  # показать первые 3
             email = result['email']
             classification = result['classification']
             extracted = result['extracted_info']
             reply = result['reply']
             
-            print(f"\n邮件 {i}:")
-            print(f"  主题: {email['subject']}")
-            print(f"  发件人: {email['sender']}")
-            print(f"  分类: {classification['type']} | 优先级: {classification['priority']}")
+            print(f"\nПисьмо {i}:")
+            print(f"  Тема: {email['subject']}")
+            print(f"  Отправитель: {email['sender']}")
+            print(f"  Классификация: {classification['type']} | Приоритет: {classification['priority']}")
             
             if extracted['dates']:
-                print(f"  关键日期: {', '.join(extracted['dates'])}")
+                print(f"  Ключевые даты: {', '.join(extracted['dates'])}")
             if extracted['times']:
-                print(f"  时间: {', '.join(extracted['times'])}")
+                print(f"  Время: {', '.join(extracted['times'])}")
             if extracted['todos']:
-                print(f"  待办: {extracted['todos'][0][:50]}...")
+                print(f"  Задачи: {extracted['todos'][0][:50]}...")
             
             if reply:
-                print(f"  回复草稿 ({reply['language']}): {reply['content'][:80]}...")
+                print(f"  Черновик ответа ({reply['language']}): {reply['content'][:80]}...")
             
-            print(f"  提醒数量: {result['reminders_count']}")
+            print(f"  Количество напоминаний: {result['reminders_count']}")
         
-        print("\n🎉 演示完成！")
-        print("\n💡 下一步:")
-        print("1. 查看完整功能请运行: jupyter notebook EmailSmartAssistant.ipynb")
-        print("2. 配置真实邮箱请编辑: config/email_config.json")
-        print("3. 安装完整依赖请运行: pip install -r requirements.txt")
+        print("\n🎉 Демонстрация завершена!")
+        print("\n💡 Следующие шаги:")
+        print("1. Для полного функционала запустите: jupyter notebook EmailSmartAssistant.ipynb")
+        print("2. Для настройки реального почтового ящика отредактируйте: config/email_config.json")
+        print("3. Для установки всех зависимостей выполните: pip install -r requirements.txt")
 
 if __name__ == "__main__":
     demo = EmailDemo()

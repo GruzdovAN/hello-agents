@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 InnoCore AI - Installation Script
-研创·智核 - 安装脚本
+Yanchuang Intelligent Core — сценарий установки
 """
 
 import subprocess

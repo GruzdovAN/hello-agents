@@ -1,5 +1,5 @@
 """
-LLM 适配器 - 基于 HelloAgent 框架
+Адаптер LLM — на основе платформы HelloAgent.
 """
 
 import logging
@@ -9,20 +9,20 @@ from core.config import get_config
 logger = logging.getLogger(__name__)
 
 class LLMAdapter:
-    """LLM 适配器，基于 HelloAgent 框架"""
+"""Адаптер LLM на основе платформы HelloAgent"""
     
     def __init__(self):
-        """初始化 LLM 适配器"""
+"""Инициализировать адаптер LLM"""
         self.config = get_config()
         self.llm = None
         self._initialize_llm()
     
     def _initialize_llm(self):
-        """初始化 HelloAgent LLM"""
+"""Инициализировать HelloAgent LLM"""
         try:
             from hello_agents import HelloAgentsLLM
             
-            # 根据文档，HelloAgentsLLM 的初始化参数
+# Согласно документации, параметры инициализации HelloAgentsLLM
             self.llm = HelloAgentsLLM(
                 model=self.config.llm.model_name,
                 api_key=self.config.llm.api_key,
@@ -31,20 +31,20 @@ class LLMAdapter:
                 max_tokens=self.config.llm.max_tokens,
                 timeout=self.config.llm.timeout
             )
-            logger.info(f"HelloAgent LLM 初始化成功: {self.config.llm.model_name}")
+logger.info(f"Инициализация HelloAgent LLM успешна: {self.config.llm.model_name}")
         except ImportError as e:
             logger.error(f"hello-agents 未安装: {str(e)}")
-            raise ImportError("请安装 hello-agents: pip install 'hello-agents[all]>=0.2.7'")
+поднять ImportError("Пожалуйста, установите hello-агенты: pip install 'hello-agents[all]>=0.2.7'")
         except Exception as e:
             logger.error(f"HelloAgent LLM 初始化失败: {str(e)}")
             raise
     
     def _format_messages(self, prompt: str) -> list:
         """
-        将提示词格式化为消息列表
+Форматирование слов подсказки в списке сообщений
         
         Args:
-            prompt: 提示词字符串
+подсказка: строка подсказки
             
         Returns:
             消息列表，格式为 [{"role": "user", "content": "..."}]
@@ -58,24 +58,24 @@ class LLMAdapter:
     
     async def ainvoke(self, prompt: str, **kwargs) -> str:
         """
-        异步调用 LLM
+Вызов LLM асинхронно
         
         Args:
-            prompt: 提示词（字符串或消息列表）
-            **kwargs: 额外参数
+подсказка: слово подсказки (строка или список сообщений)
+**kwargs: дополнительные параметры
             
         Returns:
-            LLM 响应文本
+Текст ответа LLM
         """
         try:
-            # 格式化消息
+# Форматируем сообщение
             messages = self._format_messages(prompt)
             
-            # HelloAgent 使用同步 invoke，在异步上下文中调用
+# HelloAgent использует синхронный вызов и вызывается в асинхронном контексте
             import asyncio
             response = await asyncio.to_thread(self.llm.invoke, messages, **kwargs)
             
-            # 提取文本内容
+#Извлечение текстового содержимого
             if isinstance(response, str):
                 return response
             elif hasattr(response, 'content'):
@@ -85,28 +85,28 @@ class LLMAdapter:
             else:
                 return str(response)
         except Exception as e:
-            logger.error(f"LLM 异步调用失败: {str(e)}")
+logger.error(f"Ошибка асинхронного вызова LLM: {str(e)}")
             raise
     
     def invoke(self, prompt: str, **kwargs) -> str:
         """
-        同步调用 LLM
+Синхронный вызов LLM
         
         Args:
-            prompt: 提示词（字符串或消息列表）
-            **kwargs: 额外参数
+подсказка: слово подсказки (строка или список сообщений)
+**kwargs: дополнительные параметры
             
         Returns:
-            LLM 响应文本
+Текст ответа LLM
         """
         try:
-            # 格式化消息
+# Форматируем сообщение
             messages = self._format_messages(prompt)
             
-            # HelloAgent 的同步调用
+# Синхронный вызов HelloAgent
             response = self.llm.invoke(messages, **kwargs)
             
-            # 提取文本内容
+#Извлечение текстового содержимого
             if isinstance(response, str):
                 return response
             elif hasattr(response, 'content'):
@@ -119,11 +119,11 @@ class LLMAdapter:
             logger.error(f"LLM 同步调用失败: {str(e)}")
             raise
 
-# 全局 LLM 适配器实例
+# Экземпляр глобального адаптера LLM
 _llm_adapter = None
 
 def get_llm_adapter() -> LLMAdapter:
-    """获取全局 LLM 适配器实例"""
+"""Получить экземпляр глобального адаптера LLM"""
     global _llm_adapter
     if _llm_adapter is None:
         _llm_adapter = LLMAdapter()

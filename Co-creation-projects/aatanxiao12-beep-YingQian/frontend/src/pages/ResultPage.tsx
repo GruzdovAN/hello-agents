@@ -46,14 +46,14 @@ export function ResultPage() {
       ({
         summary:
           session.result.profile_summary ||
-          `${session.request.mood}/${session.request.party_type} 观影`,
+          `${session.request.mood}/${session.request.party_type} — просмотр`,
         genre_hints: [...session.request.genres],
         language_hints: [] as string[],
         avoid: [] as string[],
         discover_notes: session.request.free_text || '',
       })
 
-    // 换一批已跳过画像：假进度从「检索片库」起
+    // Другие варианты已跳过画像：假进度从「Поиск в каталоге」起
     setStageIndex(1)
     const timers: number[] = []
     PROGRESS_STAGES.forEach((_, i) => {
@@ -72,7 +72,7 @@ export function ResultPage() {
     try {
       const res = await postRecommend(request)
       if (!res.success || !res.data) {
-        throw new ApiError(res.message || '换一批失败')
+        throw new ApiError(res.message || 'Не удалось обновить подборку')
       }
       const next: SessionPayload = {
         request: {
@@ -89,7 +89,7 @@ export function ResultPage() {
       setSession(next)
       setStageIndex(PROGRESS_STAGES.length - 1)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '换一批失败')
+      setError(err instanceof Error ? err.message : 'Не удалось обновить подборку')
     } finally {
       timers.forEach((id) => window.clearTimeout(id))
       setLoading(false)
@@ -103,14 +103,14 @@ export function ResultPage() {
       await navigator.clipboard.writeText(text)
       setCopied(true)
     } catch {
-      setError('复制失败，请手动选择文本')
+      setError('Не удалось скопировать — выделите текст вручную')
     }
   }
 
   if (!session) {
     return (
       <div className="page page--result">
-        <p className="muted">正在载入结果…</p>
+        <p className="muted">Загрузка результатов…</p>
       </div>
     )
   }
@@ -122,8 +122,8 @@ export function ResultPage() {
       <SiteNav active="result" />
 
       <header className="result-header">
-        <p className="result-kicker">今晚片单</p>
-        <h1 className="result-title">{result.playlist_name || '推荐结果'}</h1>
+        <p className="result-kicker">Список на вечер</p>
+        <h1 className="result-title">{result.playlist_name || 'Рекомендации'}</h1>
         {result.profile_summary && (
           <p className="result-summary">{result.profile_summary}</p>
         )}
@@ -131,10 +131,10 @@ export function ResultPage() {
 
       <div className="result-actions">
         <Link to="/" className="btn btn--ghost">
-          调整偏好
+          Изменить предпочтения
         </Link>
         <Link to="/browse" className="btn btn--ghost">
-          片库
+          Каталог
         </Link>
         <button
           type="button"
@@ -142,7 +142,7 @@ export function ResultPage() {
           onClick={() => void handleRefresh()}
           disabled={loading}
         >
-          换一批
+          Другие варианты
         </button>
         <button
           type="button"
@@ -150,7 +150,7 @@ export function ResultPage() {
           onClick={() => void handleCopy()}
           disabled={loading || result.movies.length === 0}
         >
-          {copied ? '已复制' : '复制片单'}
+          {copied ? 'Скопировано' : 'Копировать список'}
         </button>
       </div>
 
@@ -161,9 +161,9 @@ export function ResultPage() {
         </p>
       )}
 
-      <section className="movie-grid" aria-label="推荐影片">
+      <section className="movie-grid" aria-label="Рекомендованные фильмы">
         {result.movies.length === 0 ? (
-          <p className="muted">暂无推荐影片，请返回首页调整偏好后再试。</p>
+          <p className="muted">Нет рекомендаций — вернитесь и измените предпочтения.</p>
         ) : (
           result.movies.map((movie, i) => (
             <MovieCardView key={movie.id} movie={movie} index={i} />

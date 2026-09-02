@@ -1,4 +1,4 @@
-"""负责将研究主题转换为可操作任务的服务。"""
+"""Службы, отвечающие за преобразование тем исследований в практические задачи."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ TOOL_CALL_PATTERN = re.compile(
 )
 
 class PlanningService:
-    """包装规划器代理以生成结构化 TODO 项目。"""
+"""Оберните агент планировщика для создания структурированных проектов TODO."""
 
     def __init__(self, planner_agent: ToolAwareSimpleAgent, config: Configuration) -> None:
         self._agent = planner_agent
@@ -30,13 +30,13 @@ class PlanningService:
 
     def plan_todo_list(self, state: SummaryState) -> list[TodoItem]:
         """
-        要求规划器代理将主题分解为可操作的任务。
+Попросите агента по планированию разбить темы на практические задачи.
         
         Args:
-            state: 当前研究状态，包含主题。
+состояние: Текущий статус исследования, включая темы.
             
         Returns:
-            规划出的 TodoItem 列表。
+Планируемый список TodoItems.
         """
         prompt = todo_planner_instructions.format(
             current_date=get_current_date(),
@@ -76,25 +76,25 @@ class PlanningService:
     @staticmethod
     def create_fallback_task(state: SummaryState) -> TodoItem:
         """
-        规划失败时创建一个最小的回退任务。
+Создайте минимальную резервную задачу, если планирование не удастся.
         
-        当 LLM 无法生成有效的 JSON 任务列表时调用。
+Вызывается, когда LLM не может создать действительный список задач JSON.
         """
         return TodoItem(
             id=1,
-            title="基础背景梳理",
-            intent="收集主题的核心背景与最新动态",
-            query=f"{state.research_topic} 最新进展" if state.research_topic else "基础背景梳理",
+title="Базовое расчесывание фона",
+Intent="Соберите основную информацию и последние события по теме",
+query=f"{state.research_topic} последний прогресс", if state.research_topic else "базовый обзор биографических данных",
         )
 
     # ------------------------------------------------------------------
-    # 解析助手
+# Помощник по парсингу
     # ------------------------------------------------------------------
     def _extract_tasks(self, raw_response: str) -> list[dict[str, Any]]:
         """
-        将规划器输出解析为任务字典列表。
+Разберите выходные данные планировщика в список словарей задач.
         
-        支持纯 JSON 格式或嵌入在工具调用中的 JSON。
+Поддерживает простой формат JSON или JSON, встроенный в вызовы инструментов.
         """
         text = raw_response.strip()
         if self._config.strip_thinking_tokens:
@@ -124,7 +124,7 @@ class PlanningService:
         return tasks
 
     def _extract_json_payload(self, text: str) -> dict[str, Any] | list | None:
-        """尝试从文本中定位并解析 JSON 对象或数组。"""
+"""Попытка найти и проанализировать объект или массив JSON из текста."""
         start = text.find("{")
         end = text.rfind("}")
         if start != -1 and end != -1 and end > start:
@@ -146,7 +146,7 @@ class PlanningService:
         return None
 
     def _extract_tool_payload(self, text: str) -> dict[str, Any] | None:
-        """解析输出中的第一个 TOOL_CALL 表达式。"""
+"""Проанализируйте первое выражение TOOL_CALL в выходных данных."""
         match = TOOL_CALL_PATTERN.search(text)
         if not match:
             return None

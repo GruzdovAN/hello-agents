@@ -1,79 +1,79 @@
-"""Pydantic 契约（D4）— 前后端对齐的请求/响应模型。"""
+"""Pydantic Contract (D4) — модель запроса/ответа, согласованная с интерфейсной и серверной частью."""
 
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
 
-# ============ 枚举字面量（与前端表单对齐） ============
+# ============ Литерал перечисления (согласован с формой внешнего интерфейса) ============
 
 Mood = Literal["放松", "欢乐", "虐心", "烧脑", "紧张刺激", "温馨"]
-PartyType = Literal["独自", "情侣", "家庭", "朋友"]
+PartyType = Literal["Один", "Пара", "Семья", "Друзья"]
 RegionPreference = Literal["华语", "好莱坞", "日韩", "欧洲", "不限"]
 YearPreference = Literal["不限", "近5年", "近10年", "经典"]
 
 
-# ============ 请求模型 ============
+# ============ Модель запроса ============
 
 
 class RecommendRequest(BaseModel):
-    """观影偏好 / 智能推荐请求（F1）"""
+"""Просмотр предпочтений/умных запросов рекомендаций (F1)"""
 
-    mood: Mood = Field(..., description="当前心情")
+настроение: Настроение = Поле(..., описание="текущее настроение")
     party_type: PartyType = Field(..., description="观影人群")
-    genres: List[str] = Field(default_factory=list, description="偏好类型标签")
+жанры: List[str] = Field(default_factory=list,description="Тег предпочтительного типа")
     max_runtime_minutes: Optional[int] = Field(
         default=None,
-        description="最大时长（分钟）；null=不限",
+описание="Максимальная продолжительность (минуты); null=без ограничений",
         examples=[120],
     )
-    region_preference: RegionPreference = Field(default="不限", description="地区偏好")
-    year_preference: YearPreference = Field(default="不限", description="年代偏好")
-    exclude_titles: List[str] = Field(default_factory=list, description="已看过片名")
+Region_preference: RegionPreference = Поле (по умолчанию = «без ограничений», описание = «Предпочтение региона»)
+Year_preference: YearPreference = Поле (по умолчанию = «Без ограничений», описание = «Предпочтение года»)
+ignore_titles: List[str] = Field(default_factory=list,description="Уже посмотрел заголовок")
     spoilers_ok: bool = Field(default=False, description="是否允许剧透")
     free_text: str = Field(default="", description="额外自由文本要求")
     exclude_ids: List[int] = Field(
         default_factory=list,
-        description="换一批时排除的 TMDB 电影 id",
+описание="Идентификаторы фильмов TMDB исключаются при изменении пакетов",
     )
     taste_profile: Optional["TasteProfile"] = Field(
         default=None,
-        description="若传入则跳过画像 Agent（换一批复用）",
+описание="Если передано, пропустите портрет Агента (повторное использование в другом пакете)",
     )
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "mood": "放松",
-                "party_type": "独自",
-                "genres": ["剧情", "喜剧"],
+«настроение»: «расслабиться»,
+"party_type": "уникальный",
+"жанры": ["Драма", "Комедия"],
                 "max_runtime_minutes": 120,
-                "region_preference": "不限",
-                "year_preference": "近10年",
+"region_preference": "Без ограничений",
+"year_preference": "Почти 10 лет",
                 "exclude_titles": [],
                 "spoilers_ok": False,
-                "free_text": "不要太沉重",
+"free_text": "Не будь слишком тяжелым",
                 "exclude_ids": [],
             }
         }
     }
 
 
-# ============ 领域子模型 ============
+# ============ Подмодель домена ============
 
 
 class TasteProfile(BaseModel):
-    """画像 Agent 结构化输出（内部契约，后续 Agent 使用）"""
+"""Структурированный вывод портретного агента (внутренний контракт, последующее использование агента)"""
 
     summary: str = Field(default="", description="口味摘要")
-    genre_hints: List[str] = Field(default_factory=list, description="类型倾向")
-    language_hints: List[str] = Field(default_factory=list, description="语言/地区倾向")
-    avoid: List[str] = Field(default_factory=list, description="禁忌/规避项")
-    discover_notes: str = Field(default="", description="discover 友好检索条件说明")
+жанр_хинты: Список[стр] = Поле(default_factory=list,description="Тип тенденции")
+Language_hints: List[str] = Field(default_factory=list,description="Язык/региональные предпочтения")
+избегать: List[str] = Field(default_factory=list,description="Предметы табу/избегания")
+Discover_notes: str = Field(default="",description="найдите описание удобных условий поиска")
 
 
 class CandidateMovie(BaseModel):
-    """检索 Agent / MovieService 候选片"""
+"""Получить фильмы-кандидаты агента/MovieService"""
 
     id: int = Field(..., description="TMDB movie id")
     title: str
@@ -86,7 +86,7 @@ class CandidateMovie(BaseModel):
 
 
 class MovieDetail(CandidateMovie):
-    """电影详情（TMDB /movie/{id} + credits）"""
+"""Информация о фильме (TMDB /movie/{id} + авторы)"""
 
     tagline: Optional[str] = None
     original_title: Optional[str] = None
@@ -99,7 +99,7 @@ class MovieDetail(CandidateMovie):
 
 
 class MovieCard(BaseModel):
-    """推荐结果卡片（F2 / F3）"""
+"""Рекомендуемая карта результатов (F2 / F3)"""
 
     id: int = Field(..., description="TMDB movie id")
     title: str
@@ -111,11 +111,11 @@ class MovieCard(BaseModel):
     why: str = Field(default="", description="推荐理由")
     vibe_tags: List[str] = Field(default_factory=list)
     caution: Optional[str] = Field(default=None, description="适看提示")
-    overview_safe: str = Field(default="", description="安全简介（遵守 spoilers_ok）")
+overview_safe: str = Field(default="",description="Обзор безопасности (соблюдайте правила_spoilers_ok)")
 
 
 class RecommendResult(BaseModel):
-    """推荐结果主体"""
+"""Рекомендуемый предмет результата"""
 
     playlist_name: str = ""
     profile_summary: str = ""
@@ -126,7 +126,7 @@ class RecommendResult(BaseModel):
         description="本次使用的画像；换一批时可原样回传以跳过画像 Agent",
     )
 
-# ============ 响应包装 ============
+# ============ Обертка ответа ============
 
 
 class RecommendResponse(BaseModel):
@@ -136,7 +136,7 @@ class RecommendResponse(BaseModel):
 
 
 class MovieListResponse(BaseModel):
-    """确定性搜片列表响应（search / discover）"""
+"""Ответ детерминированного списка поиска (поиск/обнаружение)"""
 
     success: bool
     message: str = ""
@@ -144,7 +144,7 @@ class MovieListResponse(BaseModel):
 
 
 class MovieDetailResponse(BaseModel):
-    """电影详情响应"""
+"""Ответ о фильме"""
 
     success: bool
     message: str = ""

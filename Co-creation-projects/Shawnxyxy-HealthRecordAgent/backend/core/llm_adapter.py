@@ -1,5 +1,5 @@
 """
-LLM 适配器 - 基于 HelloAgent 框架
+Адаптер LLM — на основе платформы HelloAgent.
 """
 
 import asyncio
@@ -18,7 +18,7 @@ class LLMAdapter:
         self._init_llm()
 
     def _init_llm(self):
-        """初始化 HelloAgent LLM"""
+"""Инициализировать HelloAgent LLM"""
         try:
             from hello_agents import HelloAgentsLLM
 
@@ -31,10 +31,10 @@ class LLMAdapter:
                 timeout=self.config.llm.timeout
             )
 
-            logger.info(f"HelloAgent LLM 初始化成功: {self.config.llm.model_name}")
+logger.info(f"Инициализация HelloAgent LLM успешна: {self.config.llm.model_name}")
         except ImportError as e:
             logger.error(f"hello-agents 未安装: {str(e)}")
-            raise ImportError("请安装 hello-agents: pip install 'hello-agents[all]>=0.2.7'")
+поднять ImportError("Пожалуйста, установите hello-агенты: pip install 'hello-agents[all]>=0.2.7'")
         except Exception as e:
             logger.error(f"HelloAgent LLM 初始化失败: {str(e)}")
             raise
@@ -52,7 +52,7 @@ class LLMAdapter:
             response = await asyncio.to_thread(self.llm.invoke, messages, **kwargs)
             return self._extract_text(response)
         except Exception as e:
-            raise LLMException(f"LLM 调用失败: {e}")
+поднять LLMException(f"Ошибка вызова LLM: {e}")
 
     def invoke(self, prompt: Union[str, List[dict]], **kwargs) -> str:
         try:
@@ -60,7 +60,7 @@ class LLMAdapter:
             response = self.llm.invoke(messages, **kwargs)
             return self._extract_text(response)
         except Exception as e:
-            raise LLMException(f"LLM 调用失败: {e}")
+поднять LLMException(f"Ошибка вызова LLM: {e}")
 
     def _extract_text(self, response: Any) -> str:
         if isinstance(response, str):
@@ -72,7 +72,7 @@ class LLMAdapter:
         return str(response)
 
 
-# 全局实例
+# Глобальный экземпляр
 _llm_adapter: LLMAdapter | None = None
 
 

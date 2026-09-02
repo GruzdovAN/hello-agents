@@ -1,7 +1,7 @@
 """
-Agent分析流式 API — 舆情分析、数据分析流式接口
+API потокового анализа агента — анализ общественного мнения, API потокового анализа данных
 
-实现方案路径别名见 sentiment.py、data_analysis.py（/sentiment/analyze/stream 等）。
+Псевдонимы путей реализации см. в файле Sentiment.py, data_anaанализ.py (/sentiment/analyze/stream и т. д.).
 """
 
 import json
@@ -17,12 +17,12 @@ router = APIRouter(prefix="/agent", tags=["Agent分析"])
 
 
 class AnalysisRequest(BaseModel):
-    stock_code: str = Field(..., description="股票代码", min_length=6, max_length=6)
+stock_code: str = Field(...,description="код акции", min_length=6, max_length=6)
     stock_name: str = Field("", description="股票名称")
 
 
 def _save_to_history(analysis_type, content, stock_code, stock_name, title):
-    """在后台线程中保存分析历史"""
+"""Сохранить историю анализа в фоновом потоке"""
     import asyncio
 
     try:
@@ -47,7 +47,7 @@ def _delta_text(ev: dict) -> str:
 
 
 def iter_sentiment_analysis_ndjson(stock_code: str, stock_name: str):
-    """生成舆情分析 NDJSON 行（字符串迭代器，含尾部换行）。"""
+"""Сгенерировать строки NDJSON анализа общественного мнения (строковый итератор, включая завершающую новую строку)."""
     collected_content = []
     try:
         from agents.agent_system import get_agent_system
@@ -76,7 +76,7 @@ def iter_sentiment_analysis_ndjson(stock_code: str, stock_name: str):
 
 
 def iter_data_analysis_ndjson(stock_code: str, stock_name: str):
-    """生成数据分析 NDJSON 行。"""
+"""Создать строки NDJSON для анализа данных."""
     collected_content = []
     try:
         from agents.agent_system import get_agent_system
@@ -106,7 +106,7 @@ def iter_data_analysis_ndjson(stock_code: str, stock_name: str):
 
 @router.post("/sentiment/stream")
 async def sentiment_stream(body: AnalysisRequest):
-    """AI舆情分析流式接口（兼容路径）"""
+"""Интерфейс потоковой передачи анализа общественного мнения AI (совместимый путь)"""
     return StreamingResponse(
         iter_sentiment_analysis_ndjson(body.stock_code, body.stock_name),
         media_type="application/x-ndjson",
@@ -116,7 +116,7 @@ async def sentiment_stream(body: AnalysisRequest):
 
 @router.post("/data-analysis/stream")
 async def data_analysis_stream(body: AnalysisRequest):
-    """AI数据分析流式接口（兼容路径）"""
+"""Потоковый интерфейс анализа данных AI (совместимый путь)"""
     return StreamingResponse(
         iter_data_analysis_ndjson(body.stock_code, body.stock_name),
         media_type="application/x-ndjson",

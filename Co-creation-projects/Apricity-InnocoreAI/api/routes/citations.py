@@ -1,5 +1,5 @@
 """
-引用校验API路由
+Маршрутизация API проверки ссылок
 """
 
 from fastapi import APIRouter, HTTPException
@@ -12,7 +12,7 @@ import re
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Pydantic模型
+# Пидантическая модель
 class CitationValidationRequest(BaseModel):
     citation: str
     format: str = "bibtex"  # bibtex, apa, ieee, mla
@@ -27,7 +27,7 @@ class CitationGenerateRequest(BaseModel):
 
 @router.post("/validate", response_model=Dict[str, Any])
 async def validate_citation(request: CitationValidationRequest):
-    """校验引用格式 - 支持 ArXiv、DOI 和 AI 辅助验证"""
+"""Проверка формата цитирования - поддерживает ArXiv, DOI и проверку с помощью AI"""
     try:
         logger.info(f"校验引用: {request.citation[:100]}...")
         
@@ -35,7 +35,7 @@ async def validate_citation(request: CitationValidationRequest):
         verified = False
         doi = None
         
-        # 1. 尝试识别 ArXiv URL 或 ID
+# 1. Попробуйте определить URL-адрес или идентификатор ArXiv.
         arxiv_pattern = r'(?:arxiv\.org/abs/|arXiv:)(\d+\.\d+)'
         arxiv_match = re.search(arxiv_pattern, request.citation, re.IGNORECASE)
         
@@ -58,23 +58,23 @@ async def validate_citation(request: CitationValidationRequest):
                         'url': paper.entry_id
                     }
                     verified = True
-                    logger.info(f"ArXiv 论文信息获取成功: {metadata['title'][:50]}...")
+logger.info(f"Информация о документе ArXiv успешно получена: {metadata['title'][:50]}...")
                     logger.info(f"作者数量: {len(metadata['authors'])}")
                 else:
                     logger.warning(f"未找到 ArXiv ID: {arxiv_id}")
             except Exception as e:
                 logger.error(f"ArXiv 查询失败: {str(e)}", exc_info=True)
         
-        # 2. 尝试从引用中提取 DOI
+# 2. Попробуйте извлечь DOI из ссылки
         if not verified:
             doi_pattern = r'10\.\d{4,9}/[-._;()/:A-Z0-9]+'
             doi_match = re.search(doi_pattern, request.citation, re.IGNORECASE)
             
             if doi_match:
                 doi = doi_match.group(0)
-                logger.info(f"找到 DOI: {doi}")
+logger.info(f"Найдено DOI: {doi}")
                 
-                # 使用 Crossref API 验证 DOI
+# Проверьте DOI с помощью Crossref API
                 async with httpx.AsyncClient() as client:
                     try:
                         response = await client.get(
@@ -99,9 +99,9 @@ async def validate_citation(request: CitationValidationRequest):
                     except Exception as e:
                         logger.warning(f"DOI 验证失败: {str(e)}")
         
-        # 3. 如果仍未验证，尝试使用 AI 解析引用信息
+# 3. Если это все еще не проверено, попробуйте использовать ИИ для анализа справочной информации.
         if not verified:
-            logger.info("尝试使用 AI 解析引用信息...")
+logger.info("Попробуйте использовать ИИ для обработки справочной информации...")
             try:
                 from core.config import get_config
                 from core.llm_adapter import get_llm_adapter
@@ -112,31 +112,31 @@ async def validate_citation(request: CitationValidationRequest):
                     
                     prompt = f"""请从以下引用信息中提取关键元数据，并以 JSON 格式返回。
 
-引用信息：
+Информация для цитирования:
 {request.citation}
 
-请提取以下信息（如果有的话）：
-- title: 论文标题
-- authors: 作者列表（字符串数组，例如 ["Zhang San", "Li Si"]）
-- year: 发表年份（数字）
-- journal: 期刊或会议名称
-- volume: 卷号
-- issue: 期号
-- pages: 页码
-- doi: DOI（如果有）
-- arxiv_id: ArXiv ID（如果有）
+Пожалуйста, извлеките следующую информацию (если таковая имеется):
+- title: название статьи
+- авторы: список авторов (массив строк, например ["Чжан Сан", "Ли Си"])
+- год: год публикации (число)
+- журнал: название журнала или конференции.
+- том: номер тома
+- выпуск: номер выпуска
+- страницы: номер страницы.
+- doi: DOI (если есть)
+- arxiv_id: идентификатор ArXiv (если есть)
 
-只返回纯 JSON 格式，不要任何其他文字说明。如果某个字段不存在，请省略该字段。
+Возвращается только чистый формат JSON без какого-либо текстового описания. Если поле не существует, опустите его.
 
-示例输出：
-{{"title": "论文标题", "authors": ["作者1", "作者2"], "year": 2024, "journal": "期刊名"}}"""
+Пример вывода:
+{{"title": "Название статьи", "authors": ["Автор 1", "Автор 2"], "year": 2024, "journal": "Название журнала"}}"""
                     
                     response = await llm.ainvoke(prompt)
                     ai_result = response.content if hasattr(response, 'content') else str(response)
                     
-                    # 尝试解析 AI 返回的 JSON
+# Попробуйте проанализировать JSON, возвращенный ИИ
                     import json
-                    # 提取 JSON 部分（支持代码块格式）
+# Извлечь часть JSON (поддерживает формат блока кода)
                     json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', ai_result)
                     if json_match:
                         metadata = json.loads(json_match.group(1))
@@ -147,11 +147,11 @@ async def validate_citation(request: CitationValidationRequest):
                         if json_match:
                             metadata = json.loads(json_match.group(0))
                             verified = True
-                            logger.info("AI 解析成功")
+logger.info("Разбор ИИ успешен")
             except Exception as e:
                 logger.warning(f"AI 解析失败: {str(e)}")
         
-        # 生成标准格式的引用
+# Генерируем ссылки на стандартный формат
         if metadata and verified:
             title = metadata.get('title', 'Unknown Title')
             authors = metadata.get('authors', []) if isinstance(metadata.get('authors'), list) else [metadata.get('authors', 'Unknown Author')]
@@ -163,7 +163,7 @@ async def validate_citation(request: CitationValidationRequest):
             doi = metadata.get('doi', doi)
             arxiv_id = metadata.get('arxiv_id', '')
             
-            # 处理作者列表
+# Список авторов процесса
             if isinstance(authors, list):
                 if len(authors) > 3:
                     author_str = ', '.join(authors[:3]) + ' et al.'
@@ -172,8 +172,8 @@ async def validate_citation(request: CitationValidationRequest):
             else:
                 author_str = str(authors)
             
-            # 生成不同格式的引用
-            # BibTeX 格式
+# Генерация ссылок в разных форматах
+# формат BibTeX
             bibtex_parts = [
                 f"@article{{key{year},",
                 f"  title={{{title}}},",
@@ -195,7 +195,7 @@ async def validate_citation(request: CitationValidationRequest):
             
             bibtex_citation = ',\n'.join(bibtex_parts) + '\n}'
             
-            # APA 格式
+# формат APA
             vol_str = f', {volume}' if volume else ''
             issue_str = f'({issue})' if issue else ''
             pages_str = f', {pages}' if pages else ''
@@ -234,7 +234,7 @@ async def validate_citation(request: CitationValidationRequest):
             
             formatted_citation = citations.get(request.format, citations["bibtex"])
         else:
-            # 如果无法验证，返回原始引用和警告
+# Если проверка не может быть выполнена, верните исходную ссылку и предупредите
             formatted_citation = request.citation
             verified = False
         
@@ -245,24 +245,24 @@ async def validate_citation(request: CitationValidationRequest):
             "format": request.format,
             "verified": verified,
             "metadata": metadata if verified else None,
-            "warnings": [] if verified else ["无法自动验证引用，已返回原始格式。建议提供包含 DOI 的引用信息以获得更准确的结果。"]
+"предупреждения": [] если проверено else ["Невозможно автоматически проверить цитаты, был возвращен исходный формат. Рекомендуется предоставить информацию о цитатах, включая DOI, для более точных результатов."]
         }
         
-        logger.info(f"返回结果 - verified: {verified}, metadata: {metadata is not None}")
+logger.info(f"Результат возврата — проверено: {проверено}, метаданные: {метаданные не отсутствуют}")
         if metadata:
             logger.info(f"Metadata keys: {list(metadata.keys())}")
         
         return result
         
     except Exception as e:
-        logger.error(f"引用校验失败: {str(e)}")
+logger.error(f «Проверка ссылки не удалась: {str(e)}»)
         raise HTTPException(status_code=500, detail=f"校验失败: {str(e)}")
 
 @router.post("/generate", response_model=Dict[str, Any])
 async def generate_citation(request: CitationGenerateRequest):
-    """生成引用格式"""
+"""Создать формат цитирования"""
     try:
-        # 模拟引用生成
+# Имитировать генерацию ссылок
         newline = "\n"
         quote = '"'
         citation_formats = {
@@ -289,22 +289,22 @@ async def generate_citation(request: CitationGenerateRequest):
         }
         
     except Exception as e:
-        logger.error(f"引用生成失败: {str(e)}")
+logger.error(f «Не удалось создать ссылку: {str(e)}»)
         raise HTTPException(status_code=500, detail=f"生成失败: {str(e)}")
 
 @router.get("/formats", response_model=Dict[str, Any])
 async def get_citation_formats():
-    """获取支持的引用格式"""
+"""Получить поддерживаемые форматы цитирования"""
     try:
         formats = {
             "bibtex": {
                 "name": "BibTeX",
-                "description": "常用于LaTeX文档的引用格式",
+"description": "Формат цитирования, обычно используемый в документах LaTeX",
                 "example": "@article{key, title={Title}, author={Author}, year={2024}}"
             },
             "apa": {
                 "name": "APA",
-                "description": "美国心理学会格式，常用于社会科学",
+"description": "Формат Американской психологической ассоциации, часто используемый в социальных науках",
                 "example": "Author, A. (2024). Title. *Journal*, 1(1), 1-10."
             },
             "ieee": {
@@ -326,5 +326,5 @@ async def get_citation_formats():
         }
         
     except Exception as e:
-        logger.error(f"获取引用格式失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"获取失败: {str(e)}")
+logger.error(f «Не удалось получить ссылочный формат: {str(e)}»)
+поднять HTTPException(status_code=500, Detail=f «Не удалось получить: {str(e)}»)

@@ -25,7 +25,7 @@ app.include_router(diet_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 开发阶段允许全部
+allow_origins=["*"], # Разрешить все на этапе разработки
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

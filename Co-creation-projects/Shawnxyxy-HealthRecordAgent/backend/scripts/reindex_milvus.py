@@ -1,6 +1,6 @@
 """
-将 SQLite 历史文本记忆回填到 Milvus。
-运行：
+Заполнение исторической текстовой памяти SQLite в Milvus.
+бегать:
   cd backend && .venv/bin/python scripts/reindex_milvus.py
 """
 

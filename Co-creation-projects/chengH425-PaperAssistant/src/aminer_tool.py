@@ -1,10 +1,10 @@
 """
-AMiner 中文学术检索工具
+AMiner — китайский академический поисковый инструмент
 
-通过 AMiner API 检索中文学术论文，补充知网/万方无法免费接入的缺口。
-AMiner 由清华大学开发，覆盖 3.2 亿+ 论文和 1.3 亿+ 学者。
+Получайте китайские научные статьи через AMiner API, чтобы восполнить пробел, к которому CNKI/Wanfang не может получить бесплатный доступ.
+AMiner был разработан Университетом Цинхуа и охватывает более 320 миллионов статей и более 130 миллионов ученых.
 
-注册地址: https://open.aminer.cn/
+Адрес регистрации: https://open.aminer.cn/
 """
 import urllib.request
 import urllib.parse
@@ -17,10 +17,10 @@ from hello_agents.tools import Tool, ToolParameter, ToolResponse, ToolStatus
 
 
 class AminerSearchTool(Tool):
-    """AMiner 中文学术检索工具
+"""AMiner Китайский инструмент академического поиска
 
-    通过 AMiner API 检索学术论文，特别擅长中文文献和中文作者。
-    覆盖 3.2 亿+ 论文，是 Semantic Scholar 的中文补充。
+Поиск научных статей через AMiner API, особенно хорош для китайских документов и китайских авторов.
+Это китайское приложение к Semantic Scholar, охватывающее более 320 миллионов статей.
     """
 
     SEARCH_URL = "https://datacenter.aminer.cn/gateway/open_platform/api/paper/search"
@@ -28,18 +28,18 @@ class AminerSearchTool(Tool):
     def __init__(self):
         super().__init__(
             name="aminer_search",
-            description="通过 AMiner API 检索中英文学术论文。"
+описание="Получайте научные статьи на китайском и английском языках через AMiner API."
                         "覆盖 3.2 亿+ 论文，擅长中文文献和中文作者搜索。"
                         "当需要检索中文学术论文或中国学者的英文论文时使用此工具。"
                         "需要先注册获取 API Key: https://open.aminer.cn/"
         )
 
     def _get_api_key(self) -> str:
-        """获取 AMiner API Key"""
+"""Получить API-ключ AMiner"""
         key = os.getenv("AMINER_API_KEY", "")
         if not key:
             raise RuntimeError(
-                "未配置 AMiner API Key。请前往 https://open.aminer.cn/ 注册获取，"
+«Ключ AMiner API не настроен. Пожалуйста, перейдите на https://open.aminer.cn/, чтобы зарегистрироваться и получить его»,
                 "然后在 .env 中设置: AMINER_API_KEY=你的key"
             )
         return key
@@ -55,7 +55,7 @@ class AminerSearchTool(Tool):
                 message="请至少提供关键词（keyword）或作者（author）"
             )
 
-        # AMiner 用 title 参数做关键词搜索
+# AMiner использует параметр title для поиска по ключевым словам
         query = keyword or author
         params = {
             "title": query.strip(),
@@ -96,15 +96,15 @@ class AminerSearchTool(Tool):
                     data={"count": 0, "total": total, "papers": []}
                 )
 
-            # 格式化输出
-            lines = [f"在 AMiner 中找到 {len(papers)} 篇论文（共 {total} 条结果）：\n"]
+# Форматирование вывода
+lines = [f"{len(papers)} статей, найденных в AMiner ({total} результатов):\n"]
             for i, paper in enumerate(papers, 1):
                 title = paper.get("title") or paper.get("name") or "N/A"
                 paper_id = paper.get("id") or paper.get("paper_id") or ""
                 doi = paper.get("doi") or ""
                 year = paper.get("year") or paper.get("pub_year") or "N/A"
 
-                # 作者
+# автор
                 authors_raw = paper.get("authors") or paper.get("author") or []
                 if isinstance(authors_raw, list):
                     author_names = []
@@ -121,12 +121,12 @@ class AminerSearchTool(Tool):
                 else:
                     authors_str = "N/A"
 
-                # 期刊/会议
+#Журнал/Конференция
                 venue = paper.get("venue") or paper.get("journal") or ""
                 if isinstance(venue, dict):
                     venue = venue.get("name", "") or venue.get("raw", "")
 
-                # 引用次数
+# Количество цитирований
                 citations = paper.get("n_citation") or paper.get("citation_count") or 0
 
                 lines.append(f"### {i}. {title}")
@@ -163,7 +163,7 @@ class AminerSearchTool(Tool):
             if e.code == 401:
                 return ToolResponse.error(
                     code="ACCESS_DENIED",
-                    message="AMiner API Key 无效或已过期。请检查 .env 中的 AMINER_API_KEY。"
+message="Ключ AMiner API недействителен или срок его действия истек. Проверьте AMINER_API_KEY в .env."
                 )
             return ToolResponse.error(
                 code="NETWORK_ERROR",

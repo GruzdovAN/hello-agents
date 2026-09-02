@@ -1,6 +1,6 @@
-"""智能推荐 API：多智能体流水线（画像 → 检索 → 推荐）。
+"""Интеллектуальный рекомендательный API: мультиагентный конвейер (портрет → извлечение → рекомендация).
 
-同步 Agent/LLM 通过 asyncio.to_thread 执行，避免阻塞事件循环。
+Синхронный агент/LLM выполняется через asyncio.to_thread, чтобы избежать блокировки цикла событий.
 """
 
 from __future__ import annotations
@@ -21,28 +21,28 @@ logger = get_logger("app.recommend")
 @router.post(
     "",
     response_model=RecommendResponse,
-    summary="智能电影推荐",
+summary="Интеллектуальная рекомендация фильмов",
     description=(
         "串行多智能体：画像（无工具）→ 检索（TMDB Tool）→ 推荐（候选内决策）。"
-        "耗时可能较长（视 LLM），建议客户端超时 ≥ 120s。"
+«Это может занять много времени (в зависимости от LLM), рекомендуется, чтобы время ожидания клиента составляло ≥ 120 с».
     ),
 )
 async def recommend_movies(request: RecommendRequest) -> RecommendResponse:
     logger.info(
-        "recommend 请求 mood=%s party=%s genres=%s",
+"рекомендовать запрос настроение=%s вечеринка=%s жанры=%s",
         request.mood,
         request.party_type,
         request.genres,
     )
     agent = get_movie_recommender()
-    # recommend() 内含多次同步 LLM/HTTP，放到线程池
+#рекомендовать() содержит несколько синхронизаций LLM/HTTP и помещает их в пул потоков
     result, message = await asyncio.to_thread(agent.recommend, request)
     return RecommendResponse(success=True, message=message, data=result)
 
 
 @router.get(
     "/health",
-    summary="推荐服务健康检查",
+summary="Рекомендуемая проверка работоспособности службы",
     description="返回各 Agent 名称与工具数量；初始化失败时 503。",
 )
 async def recommend_health():
@@ -55,9 +55,9 @@ async def recommend_health():
             **snap,
         }
     except Exception as e:
-        logger.exception("recommend health 失败")
+logger.Exception («рекомендовать работоспособность не удалась»)
         raise AppError(
-            f"推荐服务不可用: {e}",
+f"Рекомендуемая услуга недоступна: {e}",
             code="RECOMMEND_UNAVAILABLE",
             status_code=503,
         ) from e

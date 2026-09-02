@@ -1,11 +1,11 @@
 """多智能体电影推荐编排（串行流水线）。
 
-范式：Pipeline + Tool-use
-  ① 画像 Agent（无工具）→ TasteProfile
-  ② 检索 Agent（挂 MovieTool）→ 真片候选
-  ③ 推荐 Agent（无工具）→ 仅在候选 id 内产出 RecommendResult
+Парадигма: конвейер + использование инструментов
+① Portrait Agent (без инструмента) → TasteProfile
+② Поисковый агент (повесить MovieTool) → Реальные кандидаты в фильмы
+③ Рекомендовать агента (без инструмента) → генерировать RecommendResult только в пределах идентификатора кандидата.
 
-本模块只提供编排器；HTTP 路由后续再接。
+Этот модуль предоставляет только оркестратор; HTTP-маршрутизация будет подключена позже.
 """
 
 from __future__ import annotations
@@ -37,29 +37,29 @@ logger = get_logger("app.agents")
 
 PROFILE_AGENT_PROMPT = """你是观影口味画像专家。根据用户偏好输出结构化 JSON，不要推荐具体片名。
 
-只返回如下 JSON（不要 Markdown 代码块外的解释）:
+Возвращайте только следующий JSON (без пояснений за пределами блока кода Markdown):
 {
-  "summary": "一句话口味摘要",
-  "genre_hints": ["类型1", "类型2"],
+"summary": "Одно предложение о вкусе",
+"genre_hints": ["type1", "type2"],
   "language_hints": ["仅填 ISO 码：zh / en / ja / ko，可空；禁止写好莱坞、英语等中文"],
-  "avoid": ["需规避的内容"],
-  "discover_notes": "给 TMDB discover 用的简短检索说明"
+"avoid": ["Содержимое, которого следует избегать"],
+"discover_notes": "Краткие заметки по поиску для обнаружения TMDB"
 }
 """
 
 SEARCH_AGENT_PROMPT = """你是电影检索专家。必须调用工具从 TMDB 取真实影片，禁止编造片名。
 
-可用工具:
-- movies_discover: 主路径，按类型/年份/时长/语言发现（本轮只允许调用 1 次）
-- movies_search: 仅当需要解析「已看片名」时再用（可选，最多 1~2 次）
+Доступные инструменты:
+- Movies_discover: основной путь, обнаруженный по типу/году/длительности/языку (разрешено вызывать только один раз в этом раунде)
+- Movies_search: используйте только тогда, когда вам нужно проанализировать «просмотренные названия фильмов» (необязательно, до 1–2 раз)
 
-硬规则:
+Жесткие правила:
 1. movies_discover 只调用一次：用建议参数一次取够候选，禁止换参反复 discover
 2. with_original_language 只能是 zh/en/ja/ko；不要传「好莱坞」「英语」等中文
-3. 拿到工具结果后立即输出最终 JSON，不要再调工具「精炼」
-4. 最终 movies 必须从工具结果原样抄写关键字段（含 poster_url）
+3. Немедленно выведите окончательный JSON после получения результатов инструмента и больше не настраивайте «уточнение» инструмента.
+4. В окончательных фильмах ключевые поля (включая poster_url) должны быть скопированы из результатов инструмента в том виде, в котором они есть.
 
-取数后，最终回复必须是 JSON（不要多余解释）:
+После получения номера окончательный ответ должен быть в формате JSON (без лишних объяснений):
 {
   "movies": [
     {
@@ -74,25 +74,25 @@ SEARCH_AGENT_PROMPT = """你是电影检索专家。必须调用工具从 TMDB �
   ]
 }
 
-要求:
-1. 尽量返回 15~25 部
+Требовать:
+1. Попробуйте вернуть 15–25 деталей.
 2. id / title / poster_url 等必须来自工具结果，禁止省略 poster_url
-3. 排除用户已给出的 exclude_ids
+3. Исключите ignore_ids, указанные пользователем.
 """
 
 RECOMMEND_AGENT_PROMPT = """你是电影推荐专家。你没有外部工具，只能从「候选列表」中挑选 3~5 部。
 
-硬约束:
-1. 每部电影的 id 必须出现在候选列表中
-2. 禁止编造候选之外的片名或 id
-3. 遵守 spoilers_ok：若为 false，overview_safe 不要写结局剧透
-4. why 要贴合用户心情与人群
+Жесткие ограничения:
+1. Идентификатор каждого фильма должен присутствовать в списке кандидатов.
+2. Запрещается придумывать названия и идентификаторы фильмов, не являющихся кандидатами.
+3. Соблюдать спойлеры_ок: если false, то обзор_безопасно не писать конечные спойлеры
+4. почему оно должно соответствовать настроению пользователя и толпе
 5. title / year / genres / rating / poster_url 尽量原样沿用候选列表（勿改写为空）
 
-只返回 JSON:
+Возвращать только JSON:
 {
-  "playlist_name": "片单主题名",
-  "profile_summary": "对用户口味的一句话总结",
+"playlist_name": "Название темы плейлиста",
+"profile_summary": "Сводка вкусов пользователей в одно предложение",
   "movies": [
     {
       "id": 123,
@@ -102,10 +102,10 @@ RECOMMEND_AGENT_PROMPT = """你是电影推荐专家。你没有外部工具，�
       "runtime": null,
       "rating": 7.5,
       "poster_url": "https://image.tmdb.org/t/p/w500/...",
-      "why": "推荐理由",
-      "vibe_tags": ["标签"],
+"Why": "Причина рекомендации",
+"vibe_tags": ["теги"],
       "caution": null,
-      "overview_safe": "安全简介"
+"overview_safe": "Обзор безопасности"
     }
   ],
   "is_fallback": false
@@ -114,11 +114,11 @@ RECOMMEND_AGENT_PROMPT = """你是电影推荐专家。你没有外部工具，�
 
 
 REGION_LANGUAGE = {
-    "华语": "zh",
-    "好莱坞": "en",
+"华语": "чж",
+"Голливуд": "ru",
     "日韩": "ja",  # 简化：先按日语；韩语可由画像 language_hints 覆盖
-    "欧洲": "",
-    "不限": "",
+"Европа": "",
+"Без ограничений": "",
 }
 
 
@@ -130,15 +130,15 @@ class MultiAgentMovieRecommender:
         self.llm = get_llm()
         self.movie_tool = get_movie_tool()
         settings = get_settings()
-        # Trace 开关来自 .env：TRACE_ENABLED / TRACE_DIR
+# Трассировка переключателей из .env: TRACE_ENABLED/TRACE_DIR
         agent_config = Config(
             trace_enabled=settings.trace_enabled,
             trace_dir=settings.trace_dir,
         )
 
-        # 画像：只做偏好结构化，禁止挂工具（避免这步就去搜片/编片名）
+# Портрет: структурируйте только предпочтения, запрещайте подвешивание инструментов (избегайте этого шага и просто ищите фильмы/редактируйте названия)
         self.profile_agent = SimpleAgent(
-            name="画像专家",
+name="Изображение дома",
             llm=self.llm,
             system_prompt=PROFILE_AGENT_PROMPT,
             config=agent_config,
@@ -147,7 +147,7 @@ class MultiAgentMovieRecommender:
         # 检索：唯一允许碰 TMDB 的 Agent；工具展开为 discover / search
         # max_tool_iterations=2：1 轮工具 + 1 轮收尾文本；再高容易反复换参 discover
         self.search_agent = SimpleAgent(
-            name="检索专家",
+name="Эксперт поиска",
             llm=self.llm,
             system_prompt=SEARCH_AGENT_PROMPT,
             config=agent_config,
@@ -155,9 +155,9 @@ class MultiAgentMovieRecommender:
         )
         self.search_agent.add_tool(self.movie_tool)
 
-        # 推荐：无工具，只能在上游候选里选择与说理（防幻觉核心）
+# Рекомендация: нет инструментов, можно выбирать и рассуждать только среди вышестоящих кандидатов (ядро против галлюцинаций)
         self.recommend_agent = SimpleAgent(
-            name="推荐专家",
+name="Рекомендуемый эксперт",
             llm=self.llm,
             system_prompt=RECOMMEND_AGENT_PROMPT,
             config=agent_config,
@@ -170,26 +170,26 @@ class MultiAgentMovieRecommender:
         )
 
     def recommend(self, request: RecommendRequest) -> Tuple[RecommendResult, str]:
-        """跑完整推荐流水线。
+"""Запустите полный конвейер рекомендаций.
 
         Returns:
             (RecommendResult, message)：业务结果 + 给人看的状态说明（含降级提示）。
         """
         pipeline_t0 = time.perf_counter()
         try:
-            logger.info("推荐开始 mood=%s party=%s", request.mood, request.party_type)
+logger.info("Рекомендуемое начало настроения=%s party=%s", request.mood, request.party_type)
 
             # ① 偏好 → TasteProfile；换一批可携带 taste_profile 跳过画像 LLM
             t0 = time.perf_counter()
             profile, profile_reused = self._resolve_profile(request)
             logger.info(
-                "阶段完成 stage=profile elapsed=%.2fs reused=%s summary=%s",
+"Этап завершен этап=профиль истек=%.2fs повторно использован=%s сводка=%s",
                 time.perf_counter() - t0,
                 profile_reused,
                 profile.summary,
             )
 
-            # ② 真片候选；失败则降级，避免在空列表上瞎荐
+# ② Кандидаты в реальные фильмы; в случае неудачи их рейтинг будет понижен, чтобы избежать слепых рекомендаций по пустому списку.
             t0 = time.perf_counter()
             candidates = self._run_search(request, profile)
             logger.info(
@@ -198,10 +198,10 @@ class MultiAgentMovieRecommender:
                 len(candidates),
             )
             if not candidates:
-                result = self._fallback_result(request, profile, [], "未取得候选片")
-                return result, "检索无结果，已返回降级片单"
+result = self._fallback_result(request, Profile, [], «Фильм-кандидат не получен»)
+результат возврата: «Результаты не найдены, возвращен пониженный список фильмов»
 
-            # ③ 候选内推荐 + 代码层 id 白名单（不信任模型自觉）
+# ③ Рекомендация среди кандидатов + белый список идентификаторов уровня кода (бессознательное недоверие к модели)
             t0 = time.perf_counter()
             result = self._run_recommend(request, profile, candidates)
             logger.info(
@@ -212,7 +212,7 @@ class MultiAgentMovieRecommender:
             result = self._enforce_candidate_ids(result, candidates, profile)
             result = self._attach_taste_profile(result, profile)
             logger.info(
-                "阶段完成 stage=enforce elapsed=%.2fs movies=%d fallback=%s total=%.2fs",
+"этап завершен этап=принудительное завершение=%.2fs фильмы=%d запасной вариант=%s всего=%.2fs",
                 time.perf_counter() - t0,
                 len(result.movies),
                 result.is_fallback,
@@ -220,14 +220,14 @@ class MultiAgentMovieRecommender:
             )
             msg = "推荐生成成功" if not result.is_fallback else "推荐已做 id 校正/降级"
             if profile_reused:
-                msg = f"{msg}（已跳过画像）"
+msg = f"{msg}(изображение пропущено)"
             return result, msg
 
         except Exception as e:
-            # 未捕获异常也返回完整结构，前端不白屏
-            logger.exception("推荐流水线异常")
+# Неперехваченные исключения также возвращают полную структуру, и во внешнем интерфейсе нет белого экрана
+logger.Exception("Рекомендуемое исключение конвейера")
             result = self._fallback_result(request, None, [], str(e))
-            return result, f"推荐异常，已降级: {e}"
+возвращаемый результат, f «Рекомендуемое исключение, пониженная версия: {e}»
 
     # ----- stages -----
 
@@ -248,7 +248,7 @@ class MultiAgentMovieRecommender:
         profile: TasteProfile,
         request: RecommendRequest,
     ) -> TasteProfile:
-        """规范化 language_hints 为 ISO 码；非法项丢弃。"""
+"""Нормализация языковых_хинтов в соответствии с кодом ISO; недопустимые записи отбрасываются."""
         cleaned: List[str] = []
         for hint in profile.language_hints or []:
             code = normalize_tmdb_language(hint)
@@ -274,7 +274,7 @@ class MultiAgentMovieRecommender:
         request: RecommendRequest,
         profile: TasteProfile,
     ) -> Optional[str]:
-        """解析最终用于 discover 的语言码。"""
+"""Проанализируйте код языка, который в конечном итоге использовался для обнаружения."""
         if profile.language_hints:
             code = normalize_tmdb_language(profile.language_hints[0])
             if code:
@@ -288,7 +288,7 @@ class MultiAgentMovieRecommender:
         result: RecommendResult,
         profile: TasteProfile,
     ) -> RecommendResult:
-        """把本次画像挂到结果上，供换一批回传。"""
+"""Прикрепите этот портрет к результату для новой партии возвратов."""
         result.taste_profile = profile
         if not result.profile_summary:
             result.profile_summary = profile.summary
@@ -344,7 +344,7 @@ class MultiAgentMovieRecommender:
         t0 = time.perf_counter()
         fallback = self._discover_by_profile(request, profile)
         logger.info(
-            "阶段完成 stage=search_fallback_discover elapsed=%.2fs count=%d",
+"Этап завершен stage=search_fallback_discover elapsed=%.2fs count=%d",
             time.perf_counter() - t0,
             len(fallback),
         )
@@ -363,49 +363,49 @@ class MultiAgentMovieRecommender:
         )
         data = self._extract_json(raw)
         if not data:
-            return self._fallback_result(request, profile, candidates, "推荐 JSON 解析失败")
+return self._fallback_result(запрос, профиль, кандидаты, «Не удалось выполнить рекомендуемый анализ JSON»)
         try:
             data.setdefault("is_fallback", False)
-            # 画像由编排器挂载，不采信模型自带的 taste_profile 字段
+# Портрет монтируется оркестратором, а поле вкуса_профиля, поставляемое с моделью, не используется.
             data.pop("taste_profile", None)
             return RecommendResult(**data)
         except Exception:
-            return self._fallback_result(request, profile, candidates, "推荐结构校验失败")
+return self._fallback_result(запрос, профиль, кандидаты, «Проверка рекомендуемой структуры не удалась»)
 
     # ----- queries -----
 
     def _build_profile_query(self, request: RecommendRequest) -> str:
         """把 RecommendRequest 拼成画像 Agent 的用户输入文本。"""
         return (
-            f"心情: {request.mood}\n"
-            f"人群: {request.party_type}\n"
+f"Чувство: {request.mood}\n"
+f"Толпа: {request.party_type}\n"
             f"类型偏好: {', '.join(request.genres) or '无'}\n"
             f"时长上限(分钟): {request.max_runtime_minutes}\n"
-            f"地区: {request.region_preference}\n"
-            f"年代: {request.year_preference}\n"
+f"Регион: {request.region_preference}\n"
+f"Год: {request.year_preference}\n"
             f"已看过: {', '.join(request.exclude_titles) or '无'}\n"
-            f"允许剧透: {request.spoilers_ok}\n"
-            f"额外要求: {request.free_text or '无'}\n"
-            "请输出 TasteProfile JSON。"
+f"Разрешены спойлеры: {request.spoilers_ok}\n"
+f"Дополнительные требования: {request.free_text или 'None'}\n"
+«Пожалуйста, выведите TasteProfile JSON».
         )
 
     def _build_search_query(self, request: RecommendRequest, profile: TasteProfile) -> str:
         """把画像 + 表单约束拼成检索 Agent 输入（含建议的 discover 参数）。"""
-        # 预先算好 discover 参数提示，降低模型乱填工具参数的概率
+# Предварительный расчет подсказок параметров обнаружения, чтобы уменьшить вероятность случайного заполнения моделью параметров инструмента.
         year_gte, year_lte = self._year_bounds(request.year_preference)
         lang = self._resolve_language(request, profile) or ""
 
         genres = ",".join(profile.genre_hints or request.genres)
         parts = [
-            "请只调用一次 movies_discover（用下列建议参数），取到结果后立刻输出 JSON；不要反复换参 discover。",
-            f"画像摘要: {profile.summary}",
-            f"建议 with_genres: {genres or '不限'}",
-            f"建议 year_gte: {year_gte or 0}, year_lte: {year_lte or 0}",
+«Пожалуйста, вызывайте Movies_discover только один раз (используя следующие рекомендуемые параметры) и выводите JSON сразу после получения результата; не изменяйте параметры Discover повторно.»,
+f"Описание изображения: {profile.summary}",
+f"Рекомендовать with_genres: {жанры или «без ограничений»}»,
+f"建议year_gte: {year_gte или 0},year_lte: {year_lte или 0}",
             f"建议 max_runtime: {request.max_runtime_minutes or 0}",
-            f"建议 with_original_language: {lang or '不限'}（仅 zh/en/ja/ko）",
+f"Рекомендовать with_original_language: {lang или 'no limit'} (только zh/en/ja/ko)",
             f"discover_notes: {profile.discover_notes}",
             f"exclude_ids: {request.exclude_ids}",
-            f"已看片名(仅必要时用 movies_search 辅助排除): {request.exclude_titles}",
+f"Названия фильмов, которые были просмотрены (используйте Movies_search только для исключения при необходимости): {request.exclude_titles}",
             "最终只输出含 movies 数组的 JSON，且每部必须带工具返回的 poster_url。",
         ]
         return "\n".join(parts)
@@ -416,8 +416,8 @@ class MultiAgentMovieRecommender:
         profile: TasteProfile,
         candidates: List[CandidateMovie],
     ) -> str:
-        """把用户偏好 + 精简候选列表拼成推荐 Agent 输入。"""
-        # 只塞精简字段进 prompt；片名/海报等最终以候选元数据为准
+"""Предпочтения пользователя + сокращенный список кандидатов объединяются в рекомендуемые данные агента."""
+# Добавляйте в приглашение только упрощенные поля; названия фильмов/постеры и т. д. в конечном итоге подлежат метаданным кандидата.
         slim = [
             {
                 "id": c.id,
@@ -432,11 +432,11 @@ class MultiAgentMovieRecommender:
         ]
         return (
             f"用户心情: {request.mood}; 人群: {request.party_type}; "
-            f"剧透允许: {request.spoilers_ok}\n"
-            f"画像: {profile.summary}\n"
-            f"额外要求: {request.free_text or '无'}\n"
+f"Разрешены спойлеры: {request.spoilers_ok}\n"
+f"Изображение: {profile.summary}\n"
+f"Дополнительные требования: {request.free_text или 'None'}\n"
             f"候选列表(只能从中选):\n{json.dumps(slim, ensure_ascii=False)}\n"
-            "请输出 RecommendResult JSON（3~5 部）。"
+«Пожалуйста, выведите RecommendResult JSON (3–5 частей)».
         )
 
     # ----- helpers -----
@@ -445,11 +445,11 @@ class MultiAgentMovieRecommender:
     def _year_bounds(year_preference: str) -> Tuple[Optional[int], Optional[int]]:
         """表单年代偏好 → TMDB discover 的 (year_gte, year_lte)。"""
         year = datetime.now().year
-        if year_preference == "近5年":
+ifyear_preference == "последние 5 лет":
             return year - 5, None
-        if year_preference == "近10年":
+ifyear_preference == "около 10 лет":
             return year - 10, None
-        if year_preference == "经典":
+если год_преференция == "классический":
             return None, 2000
         return None, None
 
@@ -458,7 +458,7 @@ class MultiAgentMovieRecommender:
         request: RecommendRequest,
         profile: TasteProfile,
     ) -> List[CandidateMovie]:
-        """不经 LLM，按画像字段确定性 discover；空结果自动放宽条件。"""
+"""Без LLM осуществляйте детерминированные открытия в соответствии с полем портрета; пустые результаты автоматически смягчают условия."""
         year_gte, year_lte = self._year_bounds(request.year_preference)
         lang = self._resolve_language(request, profile)
         genres = ",".join(profile.genre_hints or request.genres) or None
@@ -580,7 +580,7 @@ class MultiAgentMovieRecommender:
             result.movies = kept
             return result
 
-        # 合法片不足 3 部：按评分从候选补齐，并标记降级
+# Легальных фильмов меньше 3-х: заполните кандидатов по рейтингу и отметьте их для понижения.
         result.is_fallback = True
         have = {m.id for m in kept}
         ranked = sorted(
@@ -594,7 +594,7 @@ class MultiAgentMovieRecommender:
             kept.append(
                 self._card_from_candidate(
                     c,
-                    why="系统按候选热度补齐",
+Why="Система дополняет список на основании популярности кандидата",
                     overview_safe=(c.overview or "")[:200],
                 )
             )
@@ -604,7 +604,7 @@ class MultiAgentMovieRecommender:
         if not result.profile_summary and profile:
             result.profile_summary = profile.summary
         if not result.playlist_name:
-            result.playlist_name = "今日候选速选"
+result.playlist_name = "Быстрый выбор сегодняшнего кандидата"
         return result
 
     def _fallback_result(
@@ -633,12 +633,12 @@ class MultiAgentMovieRecommender:
             movies.append(
                 self._card_from_candidate(
                     c,
-                    why=f"降级推荐（{reason}）",
+Why=f"Рекомендация по понижению версии ({reason})",
                     overview_safe=(c.overview or "")[:200],
                 )
             )
         return RecommendResult(
-            playlist_name="降级片单",
+playlist_name="Понизить плейлист",
             profile_summary=(profile.summary if profile else reason),
             movies=movies,
             is_fallback=True,
@@ -690,7 +690,7 @@ _recommender: Optional[MultiAgentMovieRecommender] = None
 
 
 def get_movie_recommender() -> MultiAgentMovieRecommender:
-    """获取进程内编排器单例（懒加载，避免重复初始化 LLM/Agent）。"""
+"""Получить синглтон внутрипроцессного оркестратора (ленивая загрузка, чтобы избежать повторной инициализации LLM/агента)."""
     global _recommender
     if _recommender is None:
         _recommender = MultiAgentMovieRecommender()

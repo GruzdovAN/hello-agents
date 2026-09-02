@@ -1,5 +1,5 @@
 """
-InnoCore AI 数据库管理模块
+Модуль управления базами данных InnoCore AI
 """
 
 import asyncio
@@ -14,14 +14,14 @@ from .config import get_config
 from .exceptions import DatabaseException
 
 class DatabaseManager:
-    """数据库管理器"""
+"""Менеджер базы данных"""
     
     def __init__(self):
         self.config = get_config().database
         self.pool = None
     
     async def initialize(self):
-        """初始化数据库连接池"""
+"""Инициализировать пул соединений с базой данных"""
         try:
             self.pool = await asyncpg.create_pool(
                 host=self.config.host,
@@ -37,9 +37,9 @@ class DatabaseManager:
             raise DatabaseException(f"数据库初始化失败: {str(e)}")
     
     async def _create_tables(self):
-        """创建数据库表"""
+"""Создать таблицу базы данных"""
         create_tables_sql = """
-        -- 用户表
+--Пользовательская таблица
         CREATE TABLE IF NOT EXISTS users (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             email VARCHAR(255) UNIQUE NOT NULL,
@@ -47,7 +47,7 @@ class DatabaseManager:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
-        -- 论文表
+-- Бумажный стол
         CREATE TABLE IF NOT EXISTS papers (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             title TEXT NOT NULL,
@@ -60,7 +60,7 @@ class DatabaseManager:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
-        -- 用户论文关系表
+-- Таблица взаимосвязей между бумагами пользователей
         CREATE TABLE IF NOT EXISTS user_paper_relations (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -72,7 +72,7 @@ class DatabaseManager:
             UNIQUE(user_id, paper_id)
         );
         
-        -- 分析报告表
+--Форма аналитического отчета
         CREATE TABLE IF NOT EXISTS analysis_reports (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             paper_id UUID REFERENCES papers(id) ON DELETE CASCADE,
@@ -85,7 +85,7 @@ class DatabaseManager:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
-        -- 引用缓存表
+-- Таблица ссылочного кэша
         CREATE TABLE IF NOT EXISTS reference_cache (
             doi VARCHAR(255) PRIMARY KEY,
             bibtex_std TEXT,
@@ -93,7 +93,7 @@ class DatabaseManager:
             last_check TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
-        -- 创建索引
+--Создать индекс
         CREATE INDEX IF NOT EXISTS idx_papers_content_hash ON papers(content_hash);
         CREATE INDEX IF NOT EXISTS idx_papers_doi ON papers(doi);
         CREATE INDEX IF NOT EXISTS idx_user_paper_relations_user_id ON user_paper_relations(user_id);
@@ -107,7 +107,7 @@ class DatabaseManager:
     
     @asynccontextmanager
     async def get_connection(self):
-        """获取数据库连接"""
+"""Получить соединение с базой данных"""
         if not self.pool:
             await self.initialize()
         
@@ -117,9 +117,9 @@ class DatabaseManager:
             except Exception as e:
                 raise DatabaseException(f"数据库操作失败: {str(e)}")
     
-    # 用户相关操作
+# Операции, связанные с пользователем
     async def create_user(self, email: str, profile: Dict = None) -> str:
-        """创建用户"""
+"""Создать пользователя"""
         async with self.get_connection() as conn:
             user_id = await conn.fetchval(
                 "INSERT INTO users (email, profile) VALUES ($1, $2) RETURNING id",
@@ -128,7 +128,7 @@ class DatabaseManager:
             return str(user_id)
     
     async def get_user(self, user_id: str) -> Optional[Dict]:
-        """获取用户信息"""
+"""Получить информацию о пользователе"""
         async with self.get_connection() as conn:
             row = await conn.fetchrow(
                 "SELECT * FROM users WHERE id = $1", user_id
@@ -136,7 +136,7 @@ class DatabaseManager:
             return dict(row) if row else None
     
     async def update_user_profile(self, user_id: str, profile: Dict) -> bool:
-        """更新用户配置"""
+"""Обновить конфигурацию пользователя"""
         async with self.get_connection() as conn:
             result = await conn.execute(
                 "UPDATE users SET profile = $1 WHERE id = $2",
@@ -144,12 +144,12 @@ class DatabaseManager:
             )
             return result == "UPDATE 1"
     
-    # 论文相关操作
+# Операции, связанные с бумагой
     async def create_paper(self, title: str, authors: List[str], 
                           abstract: str = None, doi: str = None,
                           file_path: str = None, content_hash: str = None,
                           is_preset: bool = False) -> str:
-        """创建论文记录"""
+"""Создать бумажную запись"""
         async with self.get_connection() as conn:
             paper_id = await conn.fetchval(
                 """
@@ -162,7 +162,7 @@ class DatabaseManager:
             return str(paper_id)
     
     async def get_paper(self, paper_id: str) -> Optional[Dict]:
-        """获取论文信息"""
+"""Получить бумажную информацию"""
         async with self.get_connection() as conn:
             row = await conn.fetchrow(
                 "SELECT * FROM papers WHERE id = $1", paper_id
@@ -170,7 +170,7 @@ class DatabaseManager:
             return dict(row) if row else None
     
     async def get_paper_by_hash(self, content_hash: str) -> Optional[Dict]:
-        """根据内容哈希获取论文"""
+"""Получить статьи на основе хэша контента"""
         async with self.get_connection() as conn:
             row = await conn.fetchrow(
                 "SELECT * FROM papers WHERE content_hash = $1", content_hash
@@ -178,7 +178,7 @@ class DatabaseManager:
             return dict(row) if row else None
     
     async def search_papers(self, query: str, limit: int = 10, offset: int = 0) -> List[Dict]:
-        """搜索论文"""
+"""Поиск документов"""
         async with self.get_connection() as conn:
             rows = await conn.fetch(
                 """
@@ -191,10 +191,10 @@ class DatabaseManager:
             )
             return [dict(row) for row in rows]
     
-    # 用户论文关系操作
+# Операции с пользовательскими документами
     async def add_paper_to_user(self, user_id: str, paper_id: str, 
                                tags: List[str] = None, rating: int = 0) -> bool:
-        """将论文添加到用户库"""
+"""Добавить статью в библиотеку пользователя"""
         async with self.get_connection() as conn:
             try:
                 await conn.execute(
@@ -213,7 +213,7 @@ class DatabaseManager:
                 return False
     
     async def get_user_papers(self, user_id: str, limit: int = 50, offset: int = 0) -> List[Dict]:
-        """获取用户的论文列表"""
+"""Получить список бумаг пользователя"""
         async with self.get_connection() as conn:
             rows = await conn.fetch(
                 """
@@ -228,7 +228,7 @@ class DatabaseManager:
             )
             return [dict(row) for row in rows]
     
-    # 分析报告操作
+# Работа с аналитическим отчетом
     async def create_analysis_report(self, paper_id: str, summary: str,
                                    innovation_point: str, limitation: str,
                                    future_idea: str, vector_ids: Dict = None,
@@ -248,7 +248,7 @@ class DatabaseManager:
             return str(report_id)
     
     async def get_analysis_report(self, paper_id: str, user_id: str = None) -> Optional[Dict]:
-        """获取分析报告"""
+"""Получить отчет об анализе"""
         async with self.get_connection() as conn:
             if user_id:
                 row = await conn.fetchrow(
@@ -270,9 +270,9 @@ class DatabaseManager:
                 )
             return dict(row) if row else None
     
-    # 引用缓存操作
+# Операция ссылочного кэша
     async def cache_reference(self, doi: str, bibtex: str, is_verified: bool = False):
-        """缓存引用信息"""
+"""Кэшировать справочную информацию"""
         async with self.get_connection() as conn:
             await conn.execute(
                 """
@@ -287,7 +287,7 @@ class DatabaseManager:
             )
     
     async def get_cached_reference(self, doi: str) -> Optional[Dict]:
-        """获取缓存的引用信息"""
+"""Получить кэшированную справочную информацию"""
         async with self.get_connection() as conn:
             row = await conn.fetchrow(
                 "SELECT * FROM reference_cache WHERE doi = $1", doi
@@ -295,9 +295,9 @@ class DatabaseManager:
             return dict(row) if row else None
     
     async def close(self):
-        """关闭数据库连接池"""
+"""Закройте пул соединений с базой данных"""
         if self.pool:
             await self.pool.close()
 
-# 全局数据库管理器实例
+# Экземпляр глобального менеджера баз данных
 db_manager = DatabaseManager()

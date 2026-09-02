@@ -22,7 +22,7 @@ class InnoCoreApp {
             }
         });
 
-        // 表单提交
+        // 表单Отправить
         document.addEventListener('submit', (e) => {
             if (e.target.matches('.ajax-form')) {
                 e.preventDefault();
@@ -30,7 +30,7 @@ class InnoCoreApp {
             }
         });
 
-        // 模态框关闭
+        // 模态框Закрыть
         document.addEventListener('click', (e) => {
             if (e.target.matches('.modal') || e.target.matches('.modal-close')) {
                 this.closeModal(e.target.closest('.modal'));
@@ -39,7 +39,7 @@ class InnoCoreApp {
     }
 
     setupRouter() {
-        // 路由配置
+        // 路由Настройки
         this.router.addRoute('/', () => this.showDashboard());
         this.router.addRoute('/papers', () => this.showPapers());
         this.router.addRoute('/papers/new', () => this.showNewPaper());
@@ -102,7 +102,7 @@ class InnoCoreApp {
         const content = document.getElementById('content');
         content.innerHTML = await this.loadTemplate('new-paper');
         
-        // 初始化表单
+        // Инициализация表单
         this.initPaperForm();
     }
 
@@ -132,7 +132,7 @@ class InnoCoreApp {
         const task = await this.api.get(`/tasks/${taskId}`);
         this.renderTaskDetail(task);
         
-        // 如果任务正在运行，开始轮询状态
+        // 如果任务正在运行，开始轮询Статус
         if (task.status === 'running') {
             this.startTaskPolling(taskId);
         }
@@ -142,7 +142,7 @@ class InnoCoreApp {
         const content = document.getElementById('content');
         content.innerHTML = await this.loadTemplate('analysis');
         
-        // 加载分析列表
+        // 加载Анализ列表
         const analyses = await this.api.get('/analysis');
         this.renderAnalysisList(analyses);
     }
@@ -160,7 +160,7 @@ class InnoCoreApp {
         const content = document.getElementById('content');
         content.innerHTML = await this.loadTemplate('profile');
         
-        // 加载用户信息
+        // 加载Данные пользователя
         const user = await this.api.get('/auth/me');
         this.renderProfile(user);
     }
@@ -169,7 +169,7 @@ class InnoCoreApp {
         const content = document.getElementById('content');
         content.innerHTML = await this.loadTemplate('login');
         
-        // 初始化登录表单
+        // Инициализация登录表单
         this.initLoginForm();
     }
 
@@ -220,9 +220,9 @@ class InnoCoreApp {
                 result = await this.api.put(endpoint, data);
             }
             
-            this.showSuccess('操作成功！');
+            this.showSuccess('ДействиеУспешно！');
             
-            // 根据结果跳转
+            // 根据Результат跳转
             if (form.dataset.redirect) {
                 this.router.navigate(form.dataset.redirect);
             } else if (result.id) {
@@ -239,7 +239,7 @@ class InnoCoreApp {
     // API调用方法
     async createLiteratureSearchTask(query, options = {}) {
         const data = {
-            title: `文献搜索: ${query}`,
+            title: `Поиск литературы: ${query}`,
             task_type: 'literature_search',
             parameters: {
                 query,
@@ -256,7 +256,7 @@ class InnoCoreApp {
 
     async createAnalysisTask(paperIds, analysisType) {
         const data = {
-            title: `论文分析: ${analysisType}`,
+            title: `Анализ статьи: ${analysisType}`,
             task_type: 'analysis',
             parameters: {
                 paper_ids: paperIds,
@@ -271,7 +271,7 @@ class InnoCoreApp {
 
     async createWritingTask(paperIds, writingType, outline) {
         const data = {
-            title: `学术写作: ${writingType}`,
+            title: `Академическое письмо: ${writingType}`,
             task_type: 'writing',
             parameters: {
                 paper_ids: paperIds,
@@ -292,19 +292,19 @@ class InnoCoreApp {
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>${stats.total_papers}</h3>
-                    <p>论文总数</p>
+                    <p>Всего статей</p>
                 </div>
                 <div class="stat-card">
                     <h3>${stats.total_tasks}</h3>
-                    <p>任务总数</p>
+                    <p>Всего задач</p>
                 </div>
                 <div class="stat-card">
                     <h3>${stats.total_analyses}</h3>
-                    <p>分析报告</p>
+                    <p>Отчёты анализа</p>
                 </div>
                 <div class="stat-card">
                     <h3>${stats.total_writings}</h3>
-                    <p>写作文档</p>
+                    <p>Тексты</p>
                 </div>
             </div>
         `;
@@ -316,15 +316,15 @@ class InnoCoreApp {
             <div class="paper-card" data-id="${paper.id}">
                 <h3>${paper.title}</h3>
                 <p class="authors">${paper.authors.join(', ')}</p>
-                <p class="abstract">${paper.abstract || '暂无摘要'}</p>
+                <p class="abstract">${paper.abstract || 'Описание отсутствует'}</p>
                 <div class="paper-meta">
-                    <span class="badge badge-primary">${paper.publication_year || '未知年份'}</span>
-                    <span class="badge badge-secondary">${paper.journal || '未知期刊'}</span>
+                    <span class="badge badge-primary">${paper.publication_year || 'год неизвестен'}</span>
+                    <span class="badge badge-secondary">${paper.journal || 'журнал неизвестен'}</span>
                 </div>
                 <div class="paper-actions">
-                    <button class="btn btn-sm btn-primary" data-action="view-paper" data-id="${paper.id}">查看</button>
-                    <button class="btn btn-sm btn-outline" data-action="export-paper" data-id="${paper.id}">导出</button>
-                    <button class="btn btn-sm btn-danger" data-action="delete-paper" data-id="${paper.id}">删除</button>
+                    <button class="btn btn-sm btn-primary" data-action="view-paper" data-id="${paper.id}">Открыть</button>
+                    <button class="btn btn-sm btn-outline" data-action="export-paper" data-id="${paper.id}">Экспорт</button>
+                    <button class="btn btn-sm btn-danger" data-action="delete-paper" data-id="${paper.id}">Удалить</button>
                 </div>
             </div>
         `).join('');
@@ -335,7 +335,7 @@ class InnoCoreApp {
         container.innerHTML = tasks.map(task => `
             <div class="task-card" data-id="${task.id}">
                 <h3>${task.title}</h3>
-                <p class="task-description">${task.description || '暂无描述'}</p>
+                <p class="task-description">${task.description || 'Описание отсутствует'}</p>
                 <div class="task-meta">
                     <span class="badge badge-${this.getStatusClass(task.status)}">${this.getStatusText(task.status)}</span>
                     <span class="task-type">${this.getTaskTypeText(task.task_type)}</span>
@@ -347,15 +347,15 @@ class InnoCoreApp {
                     <span class="progress-text">${task.progress}%</span>
                 </div>
                 <div class="task-actions">
-                    <button class="btn btn-sm btn-primary" data-action="view-task" data-id="${task.id}">查看</button>
-                    ${task.status === 'running' ? `<button class="btn btn-sm btn-warning" data-action="cancel-task" data-id="${task.id}">取消</button>` : ''}
-                    ${task.status === 'failed' ? `<button class="btn btn-sm btn-secondary" data-action="retry-task" data-id="${task.id}">重试</button>` : ''}
+                    <button class="btn btn-sm btn-primary" data-action="view-task" data-id="${task.id}">Открыть</button>
+                    ${task.status === 'running' ? `<button class="btn btn-sm btn-warning" data-action="cancel-task" data-id="${task.id}">Отмена</button>` : ''}
+                    ${task.status === 'failed' ? `<button class="btn btn-sm btn-secondary" data-action="retry-task" data-id="${task.id}">Повторить</button>` : ''}
                 </div>
             </div>
         `).join('');
     }
 
-    // 工具方法
+    // Инструмент方法
     getStatusClass(status) {
         const classes = {
             'pending': 'warning',
@@ -368,19 +368,19 @@ class InnoCoreApp {
 
     getStatusText(status) {
         const texts = {
-            'pending': '等待中',
-            'running': '运行中',
-            'completed': '已完成',
-            'failed': '失败'
+            'pending': 'Ожидание',
+            'running': 'Выполняется',
+            'completed': 'Завершено',
+            'failed': 'Ошибка'
         };
         return texts[status] || status;
     }
 
     getTaskTypeText(type) {
         const texts = {
-            'literature_search': '文献搜索',
-            'analysis': '论文分析',
-            'writing': '学术写作'
+            'literature_search': 'Поиск литературы',
+            'analysis': 'Анализ статьи',
+            'writing': 'Академическое письмо'
         };
         return texts[type] || type;
     }
@@ -391,7 +391,7 @@ class InnoCoreApp {
             return await response.text();
         } catch (error) {
             console.error('Failed to load template:', error);
-            return '<div>模板加载失败</div>';
+            return '<div>Ошибка загрузки шаблона</div>';
         }
     }
 
@@ -410,7 +410,7 @@ class InnoCoreApp {
 
     showLoading(element) {
         element.disabled = true;
-        element.innerHTML = '<span class="spinner"></span> 处理中...';
+        element.innerHTML = '<span class="spinner"></span> Обработка...';
     }
 
     hideLoading(element) {
@@ -498,7 +498,7 @@ class API {
         
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || '请求失败');
+            throw new Error(error.message || 'Ошибка запроса');
         }
 
         return await response.json();
@@ -594,11 +594,11 @@ class Router {
     }
 
     show404() {
-        document.getElementById('content').innerHTML = '<h1>页面未找到</h1>';
+        document.getElementById('content').innerHTML = '<h1>Страница не найдена</h1>';
     }
 }
 
-// 状态管理类
+// Статус管理类
 class StateManager {
     constructor() {
         this.state = {
@@ -637,7 +637,7 @@ class StateManager {
     }
 }
 
-// 初始化应用
+// Инициализация应用
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new InnoCoreApp();
 });

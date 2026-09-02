@@ -1,6 +1,4 @@
-"""
-数据模型定义
-"""
+"""Определение модели данных"""
 
 from .user import User
 from .paper import Paper

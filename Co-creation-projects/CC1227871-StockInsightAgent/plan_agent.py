@@ -1,7 +1,7 @@
-"""Step 3: Plan-and-Solve 股票多维度分析
-来自 hello-agents 教程第4章 Plan-and-Solve 范式:
-  Planner: 将复杂分析问题分解为有序步骤
-  Executor: 逐步执行，积累上下文，最终综合生成报告
+"""Шаг 3: Многомерный анализ запасов «Планируй и решай»
+Из главы 4 учебника hello-agents Парадигма Plan-and-Solve:
+Планировщик: разбейте сложные задачи анализа на упорядоченные шаги.
+Исполнитель: выполнять шаг за шагом, накапливать контекст и, наконец, создавать подробный отчет.
 """
 import ast
 from llm_client import HelloAgentsLLM
@@ -10,53 +10,53 @@ from tools import (
     calc_indicators, get_news
 )
 
-PLANNER_PROMPT = """你是一个顶级的股票分析规划专家。用户会提出一个股票分析请求，你的任务是将它分解成一个由多个独立步骤组成的分析计划。
+PLANNER_PROMPT = """Вы — ведущий эксперт по планированию анализа запасов. Пользователь сделает запрос на анализ запасов, и ваша задача — разбить его на план анализа, состоящий из нескольких независимых шагов.
 
-每个步骤应该聚焦一个分析维度，按从数据收集到综合分析的逻辑顺序排列。
+Каждый шаг должен быть сосредоточен на одном аспекте анализа и выстроен в логической последовательности от сбора данных до комплексного анализа.
 可用数据维度: 实时行情、历史K线、技术指标(MA/MACD/RSI/布林带)、财务数据、新闻舆情。
 
-问题: {question}
+Вопрос: {question}
 
-请严格按照以下格式输出计划，```python与```作为前后缀是必要的:
+Для вывода плана строго следуйте следующему формату. ```python и ``` необходимы в качестве префиксов и суффиксов:
 ```python
-["步骤1: 具体行动描述", "步骤2: 具体行动描述", ...]
+["Шаг 1: Описание конкретных действий", "Шаг 2: Описание конкретных действий", ...]
 ```
 
-示例:
+Пример:
 ```python
-["获取600519的实时行情和60天历史K线", "计算技术指标评估趋势和动能", "获取财务数据评估估值", "获取新闻舆情评估市场情绪", "综合所有数据输出完整分析报告"]
+[«Получите рыночную информацию 600519 в реальном времени и 60-дневную историческую K-линию», «Рассчитайте технические индикаторы для оценки тенденций и динамики», «Получите финансовые данные для оценки стоимости», «Получите новости и общественное мнение для оценки настроений рынка», «Соберите все данные и выведите полный аналитический отчет»]
 ```
 """
 
-EXECUTOR_PROMPT = """你是一位专业的股票分析师。你正在按预定计划逐步分析一只股票。
+EXECUTOR_PROMPT = """Вы профессиональный биржевой аналитик. Вы анализируете акции шаг за шагом по заранее заданному плану.
 
-## 完整计划:
+## Полный план:
 {plan}
 
-## 已完成步骤的结果:
+## Результаты выполненных шагов:
 {history}
 
-## 当前步骤:
+## Текущие шаги:
 {current_step}
 
-## 可用工具
-- GetRealtimeQuote: 获取实时行情。输入: 股票代码
-- GetHistoricalData: 获取历史K线。输入格式: "代码|daily|天数"
-- CalcIndicators: 计算技术指标。输入格式: "代码|daily|天数"
-- GetFinancialData: 获取财务数据。输入: 股票代码
-- GetNews: 获取新闻舆情。输入: 股票代码
+## Доступные инструменты
+- GetRealtimeQuote: получайте котировки в реальном времени. Ввод: биржевой код
+- GetHistoricalData: получить историческую K-линию. Формат ввода: «код|ежедневно|количество дней»
+- CalcIndicators: расчет технических индикаторов. Формат ввода: «код|ежедневно|количество дней»
+- GetFinancialData: получение финансовых данных. Ввод: биржевой код
+- GetNews: узнавайте новости и общественное мнение. Ввод: биржевой код
 
-请执行当前步骤。如果需要获取数据，请在回复中明确指定要调用的工具和参数，格式为:
-[[TOOL:工具名:参数]]
+Пожалуйста, следуйте текущим шагам. Если вам необходимо получить данные, в ответе четко укажите инструмент и параметры, которые будут вызываться, в формате:
+[[ИНСТРУМЕНТ:Имя инструмента:Параметры]]
 
-示例:
+Пример:
 [[TOOL:GetRealtimeQuote:600519]]
 [[TOOL:GetHistoricalData:600519|daily|60]]
 
-如果当前步骤是综合分析（不需要获取新数据），请直接基于已有结果给出分析。
+Если текущий шаг представляет собой комплексный анализ (нет необходимости получать новые данные), предоставьте анализ, основанный непосредственно на существующих результатах.
 如果这是最后一步，请输出完整的综合分析报告，包含: 基本概况、技术面、基本面、消息面、风险提示、投资建议。
 
-现在请执行当前步骤。"""
+Пожалуйста, выполните текущие шаги сейчас. """
 
 
 class Planner:
@@ -67,7 +67,7 @@ class Planner:
         prompt = PLANNER_PROMPT.format(question=question)
         messages = [{"role": "user", "content": prompt}]
 
-        print("\n  [规划中...]")
+print("\n [Планирование...]")
         response = self.llm_client.think(messages=messages) or ""
 
         try:
@@ -76,22 +76,22 @@ class Planner:
             if isinstance(plan, list) and len(plan) > 0:
                 return plan
         except (ValueError, SyntaxError, IndexError) as e:
-            print(f"  [规划解析失败: {e}]")
+print(f" [Ошибка анализа плана: {e}]")
 
-        # 回退：默认分析计划
+# Резервный вариант: план анализа по умолчанию
         return [
-            "获取实时行情和60天历史K线数据",
-            "计算技术指标(MACD/RSI/布林带/均线)",
-            "获取财务数据评估基本面和估值",
-            "获取新闻舆情了解市场情绪",
-            "综合所有数据生成完整分析报告"
+«Получите рыночные условия в реальном времени и исторические данные K-line за 60 дней»,
+«Расчет технических индикаторов (MACD/RSI/Полосы Боллинджера/Скользящее среднее)»,
+«Получить финансовые данные для оценки фундаментальных показателей и оценок»,
+«Получите новости и общественное мнение, чтобы понять настроения рынка»,
+«Синтезируйте все данные для создания полного аналитического отчета»
         ]
 
 
 class Executor:
     def __init__(self, llm_client: HelloAgentsLLM):
         self.llm_client = llm_client
-        # 工具映射
+# Сопоставление инструментов
         self.tools = {
             "GetRealtimeQuote": get_realtime_quote,
             "GetHistoricalData": get_historical_data,
@@ -105,7 +105,7 @@ class Executor:
         history = ""
         final_result = ""
 
-        print(f"\n  [计划共 {len(plan)} 步]")
+print(f"\n [В плане {len(plan)} шагов]")
         for i, step in enumerate(plan, 1):
             print(f"\n{'='*50}")
             print(f"  步骤 {i}/{len(plan)}: {step}")
@@ -118,9 +118,9 @@ class Executor:
             )
             messages = [{"role": "user", "content": prompt}]
             response = self.llm_client.think(messages=messages) or ""
-            print(f"  [LLM 响应]\n{response[:500]}{'...' if len(response)>500 else ''}")
+print(f" [LLM 响应]\n{response[:500]}{'...' if len(response)>500 else ''}")
 
-            # 解析工具调用 [[TOOL:Name:args]]
+# Вызов инструмента синтаксического анализа [[TOOL:Name:args]]
             tool_pattern = re.findall(r"\[\[TOOL:(\w+):(.*?)\]\]", response)
             tool_results = []
 
@@ -131,9 +131,9 @@ class Executor:
                     tool_results.append(f"[{tool_name}结果]\n{result}")
                     print(f"  [工具] {tool_name} 执行完成")
 
-            # 如果有工具调用，让 LLM 基于工具结果再回答一次
+# Если есть вызов инструмента, позвольте LLM ответить еще раз на основе результатов инструмента.
             if tool_results:
-                followup = f"工具执行结果:\n\n" + "\n\n".join(tool_results)
+Followup = f"Результаты выполнения инструмента:\n\n" + "\n\n".join(tool_results)
                 followup += f"\n\n请基于以上数据完成当前步骤: {step}"
                 messages.append({"role": "assistant", "content": response})
                 messages.append({"role": "user", "content": followup})
@@ -142,7 +142,7 @@ class Executor:
             else:
                 step_result = response
 
-            print(f"  [步骤 {i} 结果]\n{step_result[:300]}{'...' if len(step_result)>300 else ''}")
+print(f" [результат шага {i}]\n{step_result[:300]}{'...' if len(step_result)>300 else ''}")
 
             history += f"\n--- 步骤{i}: {step} ---\n{step_result}\n"
             final_result = step_result
@@ -151,7 +151,7 @@ class Executor:
 
 
 class PlanAndSolveStockAgent:
-    """Plan-and-Solve 股票分析 Agent"""
+"""Агент анализа запасов "Планируй и решай"""
 
     def __init__(self, llm_client: HelloAgentsLLM):
         self.llm_client = llm_client
@@ -160,20 +160,20 @@ class PlanAndSolveStockAgent:
 
     def run(self, question: str):
         print(f"\n{'='*60}")
-        print(f"  Plan-and-Solve 模式")
-        print(f"  问题: {question}")
+print(f"Режим планирования и решения")
+print(f" Вопрос: {question}")
         print(f"{'='*60}")
 
-        # 1. 规划
+№ 1. Планирование
         plan = self.planner.plan(question)
-        print(f"\n  分析计划:")
+print(f"\n План анализа:")
         for i, step in enumerate(plan, 1):
             print(f"    {i}. {step}")
 
-        # 2. 执行
+# 2. Выполнить
         final_answer = self.executor.execute(question, plan)
 
         print(f"\n{'='*60}")
-        print(f"  分析完成")
+print(f"Анализ завершен")
         print(f"{'='*60}")
         return final_answer

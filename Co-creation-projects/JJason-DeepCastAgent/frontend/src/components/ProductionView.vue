@@ -11,13 +11,13 @@
             <span class="text-xl font-bold text-white tracking-tight">DeepCast</span>
           </div>
           <div class="flex items-center gap-2">
-            <button v-if="reportReady" class="nav-action-btn text-blue-300" @click="$emit('downloadReport')" aria-label="下载研究报告">
+            <button v-if="reportReady" class="nav-action-btn text-blue-300" @click="$emit('downloadReport')" aria-label="Скачать отчёт">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              研究报告
+              Отчёт
             </button>
-            <button v-if="!podcastReady" class="nav-action-btn text-red-400" @click="$emit('cancel')" aria-label="取消制作">
+            <button v-if="!podcastReady" class="nav-action-btn text-red-400" @click="$emit('cancel')" aria-label="Отменить">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-              取消
+              Отмена
             </button>
           </div>
         </div>
@@ -49,7 +49,7 @@
                   </svg>
                 </div>
                 <div>
-                  <h2 class="text-base font-bold text-white leading-tight">制作流程</h2>
+                  <h2 class="text-base font-bold text-white leading-tight">Процесс создания</h2>
                   <p class="text-[11px] text-gray-500 mt-0.5">{{ stageLabel }}</p>
                 </div>
                 <div class="ml-auto">
@@ -111,9 +111,9 @@
                     'bg-blue-400 animate-pulse'
                   "></span>
                   <span class="text-[11px] font-medium">{{
-                    productionStage === 'done' ? '制作完成' :
-                    isCancelled ? '已取消' :
-                    '正在处理...'
+                    productionStage === 'done' ? 'Создание завершено' :
+                    isCancelled ? 'Отменено' :
+                    'Обработка...'
                   }}</span>
                 </div>
               </div>
@@ -131,11 +131,11 @@
           <div v-if="podcastReady" class="flex gap-3">
             <a :href="audioUrl" download class="btn macos-btn-primary flex-1 btn-lg text-base rounded-xl border-0 gap-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              下载 MP3
+              Скачать MP3
             </a>
             <button class="btn result-btn-secondary flex-1 btn-lg text-base rounded-xl gap-2" @click="$emit('goPlayer')">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-              进入播放器
+              Открыть плеер
             </button>
           </div>
 
@@ -146,7 +146,7 @@
                 <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
                   <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>
                 </div>
-                <h3 class="text-sm font-semibold text-gray-200">快速试听</h3>
+                <h3 class="text-sm font-semibold text-gray-200">Быстрый прослушивание</h3>
               </div>
               <audio class="w-full audio-player" :src="audioUrl" controls></audio>
             </div>
@@ -173,10 +173,10 @@ interface PipelineStep {
 }
 
 const pipelineSteps: PipelineStep[] = [
-  { id: "research", icon: "🔍", label: "深度研究", desc: "网络搜索 & 信息聚合" },
-  { id: "script", icon: "✍️", label: "剧本创作", desc: "生成对话 & 角色分配" },
-  { id: "audio", icon: "🎵", label: "音频合成", desc: "TTS 语音生成 & 拼接" },
-  { id: "done", icon: "🎉", label: "制作完成", desc: "播放 & 下载播客" },
+  { id: "research", icon: "🔍", label: "Глубокое исследование", desc: "Веб-поиск и агрегация" },
+  { id: "script", icon: "✍️", label: "Написание сценария", desc: "Диалоги и распределение ролей" },
+  { id: "audio", icon: "🎵", label: "Синтез аудио", desc: "TTS и склейка" },
+  { id: "done", icon: "🎉", label: "Создание завершено", desc: "Воспроизведение и скачивание" },
 ];
 
 const stepsOrder: ProductionStage[] = ["research", "script", "audio", "done"];
@@ -213,11 +213,11 @@ const isCancelled = computed(() => props.productionStage === 'cancelled');
 
 const stageLabel = computed(() => {
   const labels: Record<ProductionStage, string> = {
-    research: "正在进行深度研究...",
-    script: "正在创作剧本...",
-    audio: "正在合成音频...",
-    done: "播客制作完成！",
-    cancelled: "已取消制作",
+    research: "Выполняется глубокое исследование...",
+    script: "Создание сценария...",
+    audio: "Синтез аудио...",
+    done: "Подкаст готов!",
+    cancelled: "Создание отменено",
   };
   return labels[props.productionStage] || "";
 });
